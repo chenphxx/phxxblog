@@ -1,0 +1,27 @@
+# 依赖
+node_modules/
+frontend/node_modules/
+frontend/dist/
+backend/.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# 环境与本地配置
+.env
+
+# 上传文件(保留目录, 忽略内容)
+assets/uploads/*
+!assets/uploads/.gitkeep
+
+# WordPress 导出数据(含文章内容与个人信息, 不入库)
+assets/wordpress/
+
+# 离线 IP 库(可用脚本下载)
+backend/data/*.xdb
+
+# 编辑器
+.vscode/
+.idea/
