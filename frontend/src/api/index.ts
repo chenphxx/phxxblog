@@ -52,9 +52,9 @@ export const postApi = {
   changeStatus: (id: number, status: number) =>
     http.post(`/posts/${id}/publish`, { status }),
   like: (id: number) => http.post<{ liked: boolean; likes_count: number }>(`/posts/${id}/like`),
-  exportPosts: async (ids: number[]) => {
+  exportPosts: async (ids: number[], fmt = 'markdown') => {
     const token = localStorage.getItem('blog_access_token') || ''
-    const response = await fetch(`/api/v1/posts/export?ids=${ids.join(',')}`, {
+    const response = await fetch(`/api/v1/posts/export?ids=${ids.join(',')}&fmt=${fmt}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
     if (!response.ok) {

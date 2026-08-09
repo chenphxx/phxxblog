@@ -30,7 +30,6 @@ const router = createRouter({
         { path: 'search', name: 'search', component: () => import('@/views/SearchView.vue') },
         { path: 'write', name: 'write', component: () => import('@/views/WriteView.vue'), meta: { requiresAuth: true } },
         { path: 'write/:id', name: 'write-edit', component: () => import('@/views/WriteView.vue'), meta: { requiresAuth: true } },
-        { path: 'mine', name: 'mine', component: () => import('@/views/MyPostsView.vue'), meta: { requiresAuth: true } },
         { path: 'changelog', name: 'changelog', component: () => import('@/views/ChangelogView.vue'), meta: { requiresAuth: true } },
         { path: 'diary', name: 'diary', component: () => import('@/views/DiaryView.vue'), meta: { requiresAuth: true } },
       ],
