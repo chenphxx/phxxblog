@@ -32,6 +32,8 @@ export const authApi = {
   changePassword: (data: { old_password: string; new_password: string }) =>
     http.put('/auth/password', data),
   changeEmail: (data: { email: string }) => http.put('/auth/email', data),
+  updateProfile: (data: { username?: string; nickname?: string }) =>
+    http.put<User>('/auth/profile', data),
 }
 
 /** 文章 */
@@ -113,6 +115,7 @@ export const diaryApi = {
 export const miscApi = {
   changelog: () => http.get<{ content: string }>('/misc/changelog'),
   updateChangelog: (content: string) => http.put<null>('/misc/changelog', { content }),
+  saying: () => http.get<{ text: string }>('/misc/saying'),
 }
 
 /** 操作日志 */
@@ -143,6 +146,8 @@ export const userApi = {
   list: (params?: Record<string, unknown>) => http.get<Page<User>>('/users', { params }),
   create: (data: Record<string, unknown>) => http.post<User>('/users', data),
   update: (id: number, data: Record<string, unknown>) => http.put<User>(`/users/${id}`, data),
+  resetPassword: (id: number, password: string) =>
+    http.put<null>(`/users/${id}/password`, { password }),
   remove: (id: number) => http.delete<null>(`/users/${id}`),
   roles: () => http.get<Role[]>('/users/roles'),
   createRole: (data: Record<string, unknown>) => http.post<null>('/users/roles', data),

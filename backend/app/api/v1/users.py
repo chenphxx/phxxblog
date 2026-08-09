@@ -10,7 +10,15 @@ from app.core.response import ok
 from app.core.security import hash_password
 from app.models.user import Permission, Role, User
 from app.schemas.common import Page
-from app.schemas.user import PermissionOut, RoleIn, RoleOut, UserCreate, UserOut, UserUpdate
+from app.schemas.user import (
+    PasswordResetIn,
+    PermissionOut,
+    RoleIn,
+    RoleOut,
+    UserCreate,
+    UserOut,
+    UserUpdate,
+)
 from app.services.log import write_operation_log
 
 router = APIRouter(prefix="/users", tags=["用户管理"])
@@ -90,6 +98,27 @@ def update_user(
         target_type="user", target_id=user.id, detail=changes,
     )
     return ok(UserOut.model_validate(user), "保存成功")
+
+
+@router.put("/{user_id}/password", response_model=dict)
+def reset_password(
+    user_id: int,
+    data: PasswordResetIn,
+    request: Request,
+    admin: User = Depends(require_permission(Perm.USER_MANAGE)),
+    db: Session = Depends(get_db),
+):
+    """重置用户密码。"""
+    user = db.get(User, user_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="用户不存在")
+    user.password_hash = hash_password(data.password)
+    db.commit()
+    write_operation_log(
+        db, request=request, user=admin, module="user", action="reset_password",
+        target_type="user", target_id=user_id, detail={"username": user.username},
+    )
+    return ok(message="密码已重置")
 
 
 @router.delete("/{user_id}", response_model=dict)

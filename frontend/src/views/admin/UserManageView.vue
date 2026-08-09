@@ -13,6 +13,8 @@ const keyword = ref('')
 const loading = ref(false)
 
 const dialog = ref(false)
+const resetDialog = ref(false)
+const resetForm = ref({ id: 0, username: '', password: '' })
 const form = ref({
   id: 0,
   username: '',
@@ -83,6 +85,25 @@ async function remove(user: User) {
   load()
 }
 
+function openReset(user: User) {
+  resetForm.value = { id: user.id, username: user.username, password: '' }
+  resetDialog.value = true
+}
+
+async function resetPassword() {
+  if (!resetForm.value.password) {
+    ElMessage.warning('请输入新密码')
+    return
+  }
+  if (resetForm.value.password.length < 6) {
+    ElMessage.warning('密码至少 6 位')
+    return
+  }
+  await userApi.resetPassword(resetForm.value.id, resetForm.value.password)
+  ElMessage.success('密码已重置')
+  resetDialog.value = false
+}
+
 onMounted(load)
 </script>
 
@@ -117,10 +138,13 @@ onMounted(load)
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="140">
+        <el-table-column label="操作" width="250">
           <template #default="{ row }">
-            <el-button size="small" @click="openDialog(row)">编辑</el-button>
-            <el-button size="small" type="danger" @click="remove(row)">删除</el-button>
+            <div class="op-row">
+              <el-button size="small" @click="openDialog(row)">编辑</el-button>
+              <el-button size="small" type="warning" @click="openReset(row)">重置密码</el-button>
+              <el-button size="small" type="danger" @click="remove(row)">删除</el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -159,6 +183,27 @@ onMounted(load)
         <el-button type="primary" @click="save">保存</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog v-model="resetDialog" title="重置密码" width="420px">
+      <el-form label-position="top" @submit.prevent>
+        <el-form-item label="用户名">
+          <el-input :model-value="resetForm.username" disabled />
+        </el-form-item>
+        <el-form-item label="新密码">
+          <el-input
+            v-model="resetForm.password"
+            type="password"
+            show-password
+            placeholder="至少 6 位"
+            @keyup.enter="resetPassword"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="resetDialog = false">取消</el-button>
+        <el-button type="primary" @click="resetPassword">确认重置</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -169,5 +214,15 @@ onMounted(load)
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
+}
+.op-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+.op-row .el-button {
+  margin-left: 0;
 }
 </style>

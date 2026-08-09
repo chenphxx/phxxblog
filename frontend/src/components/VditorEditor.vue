@@ -105,5 +105,5 @@ watch(
 </script>
 
 <template>
-  <div ref="el" />
+  <div ref="el" class="vditor-editor" style="width: 100%; display: block" />
 </template>

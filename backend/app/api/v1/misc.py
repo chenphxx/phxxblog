@@ -3,6 +3,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
+import requests
 from sqlalchemy.orm import Session
 
 from app.core.config import PROJECT_ROOT
@@ -45,3 +46,15 @@ def update_changelog(
     path = PROJECT_ROOT / "CHANGELOG.md"
     path.write_text(data.content, encoding="utf-8")
     return ok(message="更新日志已保存")
+
+
+@router.get("/saying", response_model=dict)
+def saying():
+    """一言(随机语录): 代理 uapis.cn 接口, 避免前端跨域。"""
+    try:
+        resp = requests.get("https://uapis.cn/api/v1/saying", timeout=10)
+        resp.raise_for_status()
+        data = resp.json()
+        return ok({"text": (data.get("text") or "").strip()})
+    except Exception:
+        return ok({"text": ""})

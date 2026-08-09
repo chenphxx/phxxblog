@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { commentApi } from '@/api'
 import type { CommentItem } from '@/types'
 
+const router = useRouter()
 const statusFilter = ref<number | undefined>(undefined)
 const comments = ref<CommentItem[]>([])
 const total = ref(0)
@@ -71,8 +73,24 @@ onMounted(load)
             <span class="muted" style="font-size: 12px">{{ row.ip || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="content" label="内容" min-width="220" show-overflow-tooltip />
-        <el-table-column prop="post_id" label="文章ID" width="90" />
+        <el-table-column prop="content" label="内容" min-width="220">
+          <template #default="{ row }">
+            <a
+              class="comment-link"
+              :title="`查看文章 #${row.post_id}`"
+              @click="router.push(`/post/${row.post_id}`)"
+            >
+              {{ row.content }}
+            </a>
+          </template>
+        </el-table-column>
+        <el-table-column prop="post_id" label="文章ID" width="90">
+          <template #default="{ row }">
+            <a class="comment-link" :title="`查看文章 #${row.post_id}`" @click="router.push(`/post/${row.post_id}`)">
+              #{{ row.post_id }}
+            </a>
+          </template>
+        </el-table-column>
         <el-table-column label="状态" width="90">
           <template #default="{ row }">
             <el-tag size="small" :type="STATUS_TYPE[row.status]">{{ STATUS_TEXT[row.status] }}</el-tag>
@@ -81,12 +99,14 @@ onMounted(load)
         <el-table-column label="时间" width="110">
           <template #default="{ row }">{{ row.created_at.slice(0, 10) }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="200">
+        <el-table-column label="操作" width="300">
           <template #default="{ row }">
-            <el-button v-if="row.status !== 1" size="small" type="success" @click="setStatus(row, 1)">显示</el-button>
-            <el-button v-if="row.status === 1" size="small" type="warning" @click="setStatus(row, 0)">隐藏</el-button>
-            <el-button v-if="row.status !== 2" size="small" type="info" @click="setStatus(row, 2)">回收站</el-button>
-            <el-button size="small" type="danger" @click="remove(row)">删除</el-button>
+            <div class="op-row">
+              <el-button v-if="row.status !== 1" size="small" type="success" @click="setStatus(row, 1)">显示</el-button>
+              <el-button v-if="row.status === 1" size="small" type="warning" @click="setStatus(row, 0)">隐藏</el-button>
+              <el-button v-if="row.status !== 2" size="small" type="info" @click="setStatus(row, 2)">回收站</el-button>
+              <el-button size="small" type="danger" @click="remove(row)">删除</el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -110,5 +130,27 @@ onMounted(load)
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
+}
+.comment-link {
+  color: var(--text);
+  cursor: pointer;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.comment-link:hover {
+  color: var(--primary);
+  text-decoration: underline;
+}
+.op-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+.op-row .el-button {
+  margin-left: 0;
 }
 </style>
