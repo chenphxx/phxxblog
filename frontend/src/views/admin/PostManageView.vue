@@ -14,6 +14,12 @@ const page = ref(1)
 const pageSize = 10
 const loading = ref(false)
 const selected = ref<PostItem[]>([])
+const importDialog = ref(false)
+const exportDialog = ref(false)
+const exportFmt = ref<'markdown' | 'html'>('markdown')
+const exporting = ref(false)
+const importing = ref(false)
+const importFiles = ref<File[]>([])
 
 const STATUS_TEXT = ['草稿', '审核中', '已发布', '私密', '回收站']
 const STATUS_TYPE: Record<number, string> = { 0: 'info', 1: 'warning', 2: 'success', 3: 'danger', 4: 'info' }
@@ -123,6 +129,62 @@ async function batchForceDelete() {
   load()
 }
 
+function openExportDialog() {
+  if (!selected.value.length) {
+    ElMessage.warning('请先勾选要导出的文章')
+    return
+  }
+  exportFmt.value = 'markdown'
+  exportDialog.value = true
+}
+
+async function doExport() {
+  exporting.value = true
+  try {
+    const blob = await postApi.exportPosts(selected.value.map((post) => post.id), exportFmt.value)
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `phxxblog-posts-${new Date().toISOString().slice(0, 10)}.zip`
+    document.body.appendChild(anchor)
+    anchor.click()
+    anchor.remove()
+    URL.revokeObjectURL(url)
+    ElMessage.success(`已导出 ${selected.value.length} 篇文章`)
+    exportDialog.value = false
+  } catch {
+    // 错误已由拦截器提示
+  } finally {
+    exporting.value = false
+  }
+}
+
+function onImportPick(event: Event) {
+  const input = event.target as HTMLInputElement
+  importFiles.value = input.files ? Array.from(input.files) : []
+}
+
+async function doImport() {
+  if (!importFiles.value.length) {
+    ElMessage.warning('请先选择文件')
+    return
+  }
+  importing.value = true
+  try {
+    const result = await postApi.importPosts(importFiles.value)
+    ElMessage.success(`导入完成: 成功 ${result.imported} 篇, 跳过 ${result.skipped} 篇`)
+    if (result.errors?.length) {
+      ElMessage.warning(`部分文件导入失败: ${result.errors.slice(0, 3).join('; ')}`)
+    }
+    importDialog.value = false
+    importFiles.value = []
+    page.value = 1
+    load()
+  } finally {
+    importing.value = false
+  }
+}
+
 onMounted(load)
 </script>
 
@@ -130,7 +192,10 @@ onMounted(load)
   <div>
     <div class="toolbar">
       <h2 style="margin: 0">文章管理</h2>
-      <el-button type="primary" @click="router.push('/admin/posts/new')">新建文章</el-button>
+      <div class="toolbar-actions">
+        <el-button @click="importDialog = true">导入文章</el-button>
+        <el-button type="primary" @click="router.push('/admin/posts/new')">新建文章</el-button>
+      </div>
     </div>
 
     <div class="toolbar" style="margin-top: 12px">
@@ -147,6 +212,7 @@ onMounted(load)
         <span class="muted">已选 {{ selected.length }} 篇</span>
         <el-button size="small" type="warning" @click="batchSetPrivate">设为私密</el-button>
         <el-button size="small" type="info" @click="batchTrash">移入回收站</el-button>
+        <el-button size="small" @click="openExportDialog">导出选中</el-button>
         <el-button size="small" type="danger" @click="batchForceDelete">彻底删除</el-button>
       </div>
       <el-table :data="posts" v-loading="loading" @selection-change="onSelectionChange">
@@ -199,6 +265,48 @@ onMounted(load)
         @current-change="load"
       />
     </div>
+
+    <!-- 导入文章 -->
+    <el-dialog v-model="importDialog" title="导入文章" width="600px">
+      <el-alert type="info" :closable="false" show-icon>
+        <template #title>文件要求</template>
+        支持 .md 文件或 .zip 压缩包(可多选)。zip 内需包含 .md 文章文件; 文章图片可放在任意目录,
+        在正文中用相对路径引用(如 images/xxx.png), 导入时图片会一并上传并自动改写为可访问的 URL。
+        支持 YAML frontmatter 元信息: title / slug / status / date / summary / cover_image / category / tags。
+        未提供标题时取文件名或首个 # 标题, 默认导入为草稿。
+      </el-alert>
+      <div class="import-picker">
+        <label class="el-button">
+          <input type="file" multiple accept=".md,.zip" hidden @change="onImportPick" />
+          选择文件
+        </label>
+        <span v-if="importFiles.length" class="muted">已选 {{ importFiles.length }} 个文件</span>
+        <ul v-if="importFiles.length" class="import-files">
+          <li v-for="(file, index) in importFiles" :key="index">{{ file.name }}</li>
+        </ul>
+      </div>
+      <template #footer>
+        <el-button @click="importDialog = false">取消</el-button>
+        <el-button type="primary" :loading="importing" @click="doImport">开始导入</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 导出选中 -->
+    <el-dialog v-model="exportDialog" title="导出选中文章" width="460px">
+      <el-form label-position="top">
+        <el-form-item label="导出格式">
+          <el-radio-group v-model="exportFmt">
+            <el-radio value="markdown">Markdown(.md)</el-radio>
+            <el-radio value="html">HTML(.html)</el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-form>
+      <p class="muted">导出为 zip 压缩包, 文章引用的图片会一并打包, 并自动改写为相对路径。</p>
+      <template #footer>
+        <el-button @click="exportDialog = false">取消</el-button>
+        <el-button type="primary" :loading="exporting" @click="doExport">导出</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -209,6 +317,11 @@ onMounted(load)
   gap: 12px;
   justify-content: space-between;
   flex-wrap: wrap;
+}
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 .batch-bar {
   display: flex;
@@ -229,5 +342,15 @@ onMounted(load)
 }
 .op-row .el-button {
   margin-left: 0;
+}
+.import-picker {
+  margin-top: 16px;
+}
+.import-files {
+  margin: 10px 0 0;
+  padding-left: 20px;
+  max-height: 160px;
+  overflow-y: auto;
+  font-size: 13px;
 }
 </style>

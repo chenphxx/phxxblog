@@ -43,7 +43,6 @@ onMounted(async () => {
           <router-link to="/search">搜索</router-link>
           <template v-if="hasToken">
             <router-link to="/write">写文章</router-link>
-            <router-link to="/mine">我的文章</router-link>
             <template v-if="isAdmin">
               <router-link to="/changelog">更新日志</router-link>
               <router-link to="/diary">日记</router-link>

@@ -111,7 +111,7 @@ async function save(targetStatus: number) {
     }
     const statusText: Record<number, string> = { 0: '草稿', 1: '审核中', 2: '已发布', 3: '私密' }
     ElMessage.success(`已保存为${statusText[targetStatus] || ''}`)
-    router.push('/mine')
+    router.push('/admin/posts')
   } finally {
     saving.value = false
   }
@@ -134,7 +134,7 @@ async function removePost() {
   })
   await postApi.trash(postId.value)
   ElMessage.success('已删除')
-  router.push('/mine')
+  router.push('/admin/posts')
 }
 
 onMounted(async () => {

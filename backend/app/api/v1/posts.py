@@ -1,14 +1,17 @@
 """文章接口: 前台浏览、后台管理、发布流程、点赞、归档。"""
 import io
 import json
+import re
 import uuid
 import zipfile
 from datetime import datetime, timedelta
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, Response, UploadFile
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
+from app.core.config import PROJECT_ROOT, settings
 from app.core.database import get_db
 from app.core.deps import (
     get_client_ip,
@@ -253,9 +256,104 @@ def _unique_slug(db: Session, model, slug: str) -> str:
     return slug
 
 
-def _import_markdown(db: Session, user: User, filename: str, content: str) -> tuple[bool, str | None]:
+_IMAGE_URL_RE = re.compile(
+    r"/assets/[^\s)\"']+\.(?:png|jpe?g|gif|webp|svg|bmp|avif)", re.IGNORECASE
+)
+_IMPORT_IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".bmp", ".avif"}
+
+
+def _collect_uploaded_images(text: str) -> list[str]:
+    """提取文本中 /assets/... 图片 URL。"""
+    urls: list[str] = []
+    for match in _IMAGE_URL_RE.finditer(text or ""):
+        url = match.group(0)
+        if url not in urls:
+            urls.append(url)
+    return urls
+
+
+def _image_url_to_path(url: str) -> Path | None:
+    """将 /assets/... URL 映射为服务器上的图片文件路径。"""
+    assets_root = (PROJECT_ROOT / "assets").resolve()
+    candidate = (PROJECT_ROOT / url.lstrip("/")).resolve()
+    if candidate.is_file() and assets_root in candidate.parents:
+        return candidate
+    return None
+
+
+def _normalize_rel(path: str) -> str:
+    """归一化相对路径: 统一斜杠、去掉 ./ 与开头斜杠。"""
+    return path.replace("\\", "/").lstrip("./").strip()
+
+
+def _rewrite_import_images(text: str, image_map: dict[str, str]) -> str:
+    """把导入文本中的相对图片路径改写为服务器 URL。"""
+    if not image_map or not text:
+        return text
+
+    def lookup(norm: str) -> str | None:
+        target = image_map.get(norm)
+        if target is None:
+            target = image_map.get(norm.rsplit("/", 1)[-1])
+        return target
+
+    def repl_md(match: re.Match) -> str:
+        alt, url = match.group(1), match.group(2)
+        target = lookup(_normalize_rel(url))
+        return f"![{alt}]({target})" if target else match.group(0)
+
+    def repl_html(match: re.Match) -> str:
+        url = match.group(2)
+        target = lookup(_normalize_rel(url))
+        return f'{match.group(1)}{target}{match.group(3)}' if target else match.group(0)
+
+    text = re.sub(r"!\[([^\]]*)\]\(([^)]+)\)", repl_md, text)
+    text = re.sub(r'(<img[^>]*\bsrc=")([^"]+)(")', repl_html, text)
+    return text
+
+
+def _rewrite_cover_image(cover: str | None, image_map: dict[str, str]) -> str | None:
+    """改写 frontmatter 中的封面图片路径。"""
+    if not cover:
+        return cover
+    norm = _normalize_rel(cover)
+    target = image_map.get(norm) or image_map.get(norm.rsplit("/", 1)[-1])
+    return target or cover
+
+
+def _save_import_images(entries: list[tuple[str, bytes]], date_dir: str) -> dict[str, str]:
+    """把压缩包中的图片保存到 uploads/import/<date>/, 返回 相对路径 -> URL 映射。"""
+    image_map: dict[str, str] = {}
+    uploads_root = (Path(settings.upload_dir) / "import" / date_dir).resolve()
+    for name, data in entries:
+        if Path(name).suffix.lower() not in _IMPORT_IMAGE_EXTS:
+            continue
+        norm = _normalize_rel(name)
+        parts = [part for part in norm.split("/") if part not in ("", ".", "..")]
+        if not parts:
+            continue
+        safe_rel = "/".join(parts)
+        dest = (uploads_root / safe_rel).resolve()
+        if dest != uploads_root and uploads_root not in dest.parents:
+            continue
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(data)
+        url = f"/assets/uploads/import/{date_dir}/{safe_rel}"
+        image_map.setdefault(norm, url)
+        image_map.setdefault(parts[-1], url)
+    return image_map
+
+
+def _import_markdown(
+    db: Session,
+    user: User,
+    filename: str,
+    content: str,
+    image_map: dict[str, str] | None = None,
+) -> tuple[bool, str | None]:
     """解析并创建一篇文章(默认草稿)。返回 (是否导入, 错误信息)。"""
     meta, body = _parse_frontmatter(content)
+    image_map = image_map or {}
     title = str(meta.get("title") or "").strip()
     if not title:
         for line in body.splitlines():
@@ -319,6 +417,8 @@ def _import_markdown(db: Session, user: User, filename: str, content: str) -> tu
 
     summary = str(meta.get("summary") or "").strip() or None
     cover_image = str(meta.get("cover_image") or "").strip() or None
+    body = _rewrite_import_images(body, image_map)
+    cover_image = _rewrite_cover_image(cover_image, image_map)
     post = Post(
         author_id=user.id,
         title=title[:200],
@@ -347,10 +447,11 @@ def _import_markdown(db: Session, user: User, filename: str, content: str) -> tu
 @router.get("/export", response_model=None)
 def export_posts(
     ids: str | None = Query(None, description="逗号分隔的文章ID, 不传则导出全部(作者本人/管理员)"),
+    fmt: str = Query("markdown", pattern="^(markdown|html)$", description="导出格式: markdown / html"),
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """导出文章为 Markdown 压缩包(仅作者本人/管理员可导)。"""
+    """导出文章压缩包(markdown/html, 图片一并打包; 仅作者本人/管理员可导)。"""
     query = db.query(Post)
     if Perm.POST_MANAGE not in user.permission_codes:
         query = query.filter(Post.author_id == user.id)
@@ -363,7 +464,29 @@ def export_posts(
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
         for post in posts:
-            zf.writestr(f"{post.slug or str(post.id)}.md", _post_to_markdown(post))
+            slug = post.slug or str(post.id)
+            if fmt == "html":
+                content = post.content_html or render_markdown(post.content_md)
+                body = (
+                    "<!DOCTYPE html>\n<html lang='zh-CN'>\n<head>\n<meta charset='utf-8'>\n"
+                    f"<title>{post.title}</title>\n</head>\n<body>\n{content}\n</body>\n</html>"
+                )
+                filename = f"{slug}.html"
+                text_for_images = f"{content} {post.cover_image or ''}"
+            else:
+                body = _post_to_markdown(post)
+                filename = f"{slug}.md"
+                text_for_images = body
+            for url in _collect_uploaded_images(text_for_images):
+                path = _image_url_to_path(url)
+                if path is None:
+                    continue
+                rel = path.relative_to(PROJECT_ROOT / "assets")
+                zpath = f"images/{slug}/{rel.as_posix()}"
+                if zpath not in zf.namelist():
+                    zf.write(str(path), zpath)
+                body = body.replace(url, zpath)
+            zf.writestr(filename, body)
     buf.seek(0)
     stamp = datetime.now().strftime("%Y%m%d%H%M%S")
     return Response(
@@ -390,25 +513,31 @@ def import_posts(
         name = upload.filename or "untitled"
         raw = upload.file.read()
         md_files: list[tuple[str, str]] = []
+        image_map: dict[str, str] = {}
         if name.lower().endswith(".zip"):
             try:
                 with zipfile.ZipFile(io.BytesIO(raw)) as zf:
-                    for info in zf.infolist():
-                        if info.is_dir() or not info.filename.lower().endswith(".md"):
-                            continue
-                        md_files.append(
-                            (info.filename, zf.read(info).decode("utf-8", errors="replace"))
-                        )
+                    entries = [
+                        (info.filename, zf.read(info))
+                        for info in zf.infolist()
+                        if not info.is_dir()
+                    ]
             except zipfile.BadZipFile:
                 errors.append(f"{name}: 不是有效的 zip 压缩包")
                 continue
+            date_dir = datetime.now().strftime("%Y/%m")
+            image_map = _save_import_images(entries, date_dir)
+            for fname, data in entries:
+                if not fname.lower().endswith(".md"):
+                    continue
+                md_files.append((fname, data.decode("utf-8", errors="replace")))
         elif name.lower().endswith(".md"):
             md_files.append((name, raw.decode("utf-8", errors="replace")))
         else:
             errors.append(f"{name}: 仅支持 .md 或 .zip 文件")
             continue
         for fname, content in md_files:
-            ok_imported, err = _import_markdown(db, user, fname, content)
+            ok_imported, err = _import_markdown(db, user, fname, content, image_map)
             if ok_imported:
                 imported += 1
             elif err:
