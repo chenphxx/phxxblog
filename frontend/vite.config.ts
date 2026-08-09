@@ -12,6 +12,8 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    // 监听所有地址, 保证 localhost / 127.0.0.1 均可访问
+    host: true,
     // 开发环境代理: 前端请求统一转发到 FastAPI 后端
     proxy: {
       '/api': {
