@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onActivated, onMounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Refresh } from '@element-plus/icons-vue'
+import { CopyDocument, Refresh } from '@element-plus/icons-vue'
 import { categoryApi, mediaApi, miscApi, postApi, settingsApi, statsApi } from '@/api'
 import type { Category, ContributionPoint, PostItem, PublicSettings } from '@/types'
 import PostCard from '@/components/PostCard.vue'
@@ -99,6 +99,16 @@ async function loadSaying() {
   }
 }
 
+async function copySaying() {
+  if (!saying.value) return
+  try {
+    await navigator.clipboard.writeText(saying.value)
+    ElMessage.success('一言已复制')
+  } catch {
+    ElMessage.error('复制失败')
+  }
+}
+
 watch(contributionYear, loadContributions)
 
 // keep-alive 缓存下, 从后台修改设置返回后刷新首页信息(头像/简介/链接等)
@@ -191,15 +201,24 @@ onMounted(async () => {
               {{ saying || '一言加载中...' }}
             </span>
           </div>
-          <el-button
-            class="saying-refresh"
-            size="small"
-            circle
-            :loading="sayingLoading"
-            :icon="Refresh"
-            title="换一句"
-            @click="loadSaying"
-          />
+          <div class="saying-actions">
+            <el-button
+              size="small"
+              circle
+              :disabled="!saying"
+              :icon="CopyDocument"
+              title="复制一言"
+              @click="copySaying"
+            />
+            <el-button
+              size="small"
+              circle
+              :loading="sayingLoading"
+              :icon="Refresh"
+              title="换一句"
+              @click="loadSaying"
+            />
+          </div>
         </section>
 
         <section v-if="settings?.site_readme" class="card">
@@ -408,7 +427,9 @@ onMounted(async () => {
   line-height: 1.6;
   overflow-wrap: anywhere;
 }
-.saying-refresh {
+.saying-actions {
+  display: flex;
+  gap: 8px;
   flex-shrink: 0;
 }
 @media (max-width: 900px) {

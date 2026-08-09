@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Vditor 本地静态资源(由 predev/prebuild 自动从 node_modules 复制)
+public/vditor/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
