@@ -12,6 +12,8 @@ const page = ref(1)
 const pageSize = 10
 const loading = ref(false)
 const selected = ref<PostItem[]>([])
+const exporting = ref(false)
+const importing = ref(false)
 
 const STATUS_TEXT = ['草稿', '审核中', '已发布', '私密', '回收站']
 const STATUS_TYPE: Record<number, string> = { 0: 'info', 1: 'warning', 2: 'success', 3: 'danger', 4: 'info' }
@@ -93,6 +95,46 @@ async function batchForceDelete() {
   load()
 }
 
+async function exportSelected() {
+  if (!selected.value.length) return
+  exporting.value = true
+  try {
+    const blob = await postApi.exportPosts(selected.value.map((post) => post.id))
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `phxxblog-posts-${new Date().toISOString().slice(0, 10)}.zip`
+    document.body.appendChild(anchor)
+    anchor.click()
+    anchor.remove()
+    URL.revokeObjectURL(url)
+    ElMessage.success(`已导出 ${selected.value.length} 篇文章`)
+  } catch {
+    // 拦截器已提示错误
+  } finally {
+    exporting.value = false
+  }
+}
+
+async function onImportChange(event: Event) {
+  const input = event.target as HTMLInputElement
+  const files = input.files
+  if (!files?.length) return
+  importing.value = true
+  try {
+    const result = await postApi.importPosts(Array.from(files))
+    ElMessage.success(`导入完成: 成功 ${result.imported} 篇, 跳过 ${result.skipped} 篇`)
+    if (result.errors?.length) {
+      ElMessage.warning(`部分文件导入失败: ${result.errors.slice(0, 3).join('; ')}`)
+    }
+    page.value = 1
+    load()
+  } finally {
+    importing.value = false
+    input.value = ''
+  }
+}
+
 onMounted(load)
 </script>
 
@@ -100,7 +142,13 @@ onMounted(load)
   <div class="page-container">
     <div class="mine-header">
       <h1 style="margin: 0">我的文章</h1>
-      <el-button type="primary" @click="router.push('/write')">写文章</el-button>
+      <div class="mine-actions">
+        <label class="el-button" :class="{ 'is-loading': importing }">
+          <input type="file" multiple accept=".md,.zip" hidden @change="onImportChange" />
+          导入文章
+        </label>
+        <el-button type="primary" @click="router.push('/write')">写文章</el-button>
+      </div>
     </div>
 
     <div class="card" style="margin-top: 16px">
@@ -108,6 +156,7 @@ onMounted(load)
         <span class="muted">已选 {{ selected.length }} 篇</span>
         <el-button size="small" type="warning" @click="batchSetPrivate">设为私密</el-button>
         <el-button size="small" type="info" @click="batchTrash">移入回收站</el-button>
+        <el-button size="small" :loading="exporting" @click="exportSelected">导出选中</el-button>
         <el-button size="small" type="danger" @click="batchForceDelete">彻底删除</el-button>
       </div>
       <el-table :data="posts" v-loading="loading" @selection-change="onSelectionChange">
@@ -161,6 +210,11 @@ onMounted(load)
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+.mine-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 .batch-bar {
   display: flex;

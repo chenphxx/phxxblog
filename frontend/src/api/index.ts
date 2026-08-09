@@ -52,6 +52,21 @@ export const postApi = {
   changeStatus: (id: number, status: number) =>
     http.post(`/posts/${id}/publish`, { status }),
   like: (id: number) => http.post<{ liked: boolean; likes_count: number }>(`/posts/${id}/like`),
+  exportPosts: async (ids: number[]) => {
+    const token = localStorage.getItem('blog_access_token') || ''
+    const response = await fetch(`/api/v1/posts/export?ids=${ids.join(',')}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (!response.ok) {
+      throw new Error(`导出失败(${response.status})`)
+    }
+    return response.blob()
+  },
+  importPosts: (files: File[]) => {
+    const form = new FormData()
+    files.forEach((file) => form.append('files', file))
+    return http.post<{ imported: number; skipped: number; errors: string[] }>('/posts/import', form)
+  },
 }
 
 /** 分类与标签 */
