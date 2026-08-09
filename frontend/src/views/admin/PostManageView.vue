@@ -13,6 +13,7 @@ const total = ref(0)
 const page = ref(1)
 const pageSize = 10
 const loading = ref(false)
+const selected = ref<PostItem[]>([])
 
 const STATUS_TEXT = ['草稿', '审核中', '已发布', '私密', '回收站']
 const STATUS_TYPE: Record<number, string> = { 0: 'info', 1: 'warning', 2: 'success', 3: 'danger', 4: 'info' }
@@ -63,6 +64,65 @@ async function forceDelete(post: PostItem) {
   load()
 }
 
+function onSelectionChange(rows: PostItem[]) {
+  selected.value = rows
+}
+
+async function togglePrivate(post: PostItem) {
+  const target = post.status === 2 ? 3 : 2
+  await postApi.changeStatus(post.id, target)
+  ElMessage.success(target === 3 ? '已设为私密(仅管理员可见)' : '已设为公开可见')
+  load()
+}
+
+async function batchSetPrivate() {
+  if (!selected.value.length) return
+  await ElMessageBox.confirm(`将选中的 ${selected.value.length} 篇文章设为私密(仅管理员可见)吗?`, '确认', { type: 'warning' })
+  for (const post of selected.value) {
+    try {
+      await postApi.changeStatus(post.id, 3)
+    } catch {
+      // 单篇失败继续处理其余文章
+    }
+  }
+  ElMessage.success('批量设为私密完成')
+  selected.value = []
+  load()
+}
+
+async function batchTrash() {
+  if (!selected.value.length) return
+  await ElMessageBox.confirm(`将选中的 ${selected.value.length} 篇文章移入回收站吗?`, '确认', { type: 'warning' })
+  for (const post of selected.value) {
+    try {
+      await postApi.trash(post.id)
+    } catch {
+      // 忽略单篇失败
+    }
+  }
+  ElMessage.success('批量移入回收站完成')
+  selected.value = []
+  load()
+}
+
+async function batchForceDelete() {
+  if (!selected.value.length) return
+  await ElMessageBox.confirm(`彻底删除选中的 ${selected.value.length} 篇文章? 该操作不可恢复!`, '危险操作', {
+    type: 'error',
+    confirmButtonText: '彻底删除',
+  })
+  for (const post of selected.value) {
+    try {
+      await postApi.forceDelete(post.id)
+    } catch {
+      // 忽略单篇失败
+    }
+  }
+  ElMessage.success('批量彻底删除完成')
+  selected.value = []
+  load()
+}
+
 onMounted(load)
 </script>
 
@@ -83,7 +143,14 @@ onMounted(load)
     </div>
 
     <div class="card" style="margin-top: 16px">
-      <el-table :data="posts" v-loading="loading">
+      <div v-if="selected.length" class="batch-bar">
+        <span class="muted">已选 {{ selected.length }} 篇</span>
+        <el-button size="small" type="warning" @click="batchSetPrivate">设为私密</el-button>
+        <el-button size="small" type="info" @click="batchTrash">移入回收站</el-button>
+        <el-button size="small" type="danger" @click="batchForceDelete">彻底删除</el-button>
+      </div>
+      <el-table :data="posts" v-loading="loading" @selection-change="onSelectionChange">
+        <el-table-column type="selection" width="45" />
         <el-table-column prop="id" label="ID" width="70" />
         <el-table-column prop="title" label="标题" min-width="200" show-overflow-tooltip>
           <template #default="{ row }">
@@ -105,16 +172,20 @@ onMounted(load)
         <el-table-column label="更新时间" width="110">
           <template #default="{ row }">{{ row.updated_at.slice(0, 10) }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="250" fixed="right">
+        <el-table-column label="操作" width="320" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" @click="router.push(`/admin/posts/${row.id}/edit`)">编辑</el-button>
-            <el-button v-if="row.status === 4" size="small" type="success" @click="restore(row)">恢复</el-button>
-            <el-button v-if="row.status === 4" size="small" type="danger" @click="forceDelete(row)">彻底删除</el-button>
-            <template v-else>
-              <el-button v-if="row.status !== 2" size="small" type="primary" @click="changeStatus(row, 2, '发布')">发布</el-button>
-              <el-button v-if="row.status === 0" size="small" type="warning" @click="changeStatus(row, 1, '提交审核')">审核</el-button>
-              <el-button size="small" type="danger" @click="trash(row)">删除</el-button>
-            </template>
+            <div class="op-row">
+              <el-button v-if="row.status === 2" size="small" type="warning" @click="togglePrivate(row)">私密</el-button>
+              <el-button v-else-if="row.status === 3" size="small" type="success" @click="togglePrivate(row)">公开</el-button>
+              <el-button size="small" @click="router.push(`/admin/posts/${row.id}/edit`)">编辑</el-button>
+              <el-button v-if="row.status === 4" size="small" type="success" @click="restore(row)">恢复</el-button>
+              <el-button v-if="row.status === 4" size="small" type="danger" @click="forceDelete(row)">彻底删除</el-button>
+              <template v-else>
+                <el-button v-if="row.status !== 2 && row.status !== 3" size="small" type="primary" @click="changeStatus(row, 2, '发布')">发布</el-button>
+                <el-button v-if="row.status === 0" size="small" type="warning" @click="changeStatus(row, 1, '提交审核')">审核</el-button>
+                <el-button size="small" type="danger" @click="trash(row)">删除</el-button>
+              </template>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -138,5 +209,25 @@ onMounted(load)
   gap: 12px;
   justify-content: space-between;
   flex-wrap: wrap;
+}
+.batch-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.op-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+.op-row .el-button {
+  margin-left: 0;
 }
 </style>
