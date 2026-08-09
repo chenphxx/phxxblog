@@ -3,7 +3,7 @@ import { computed, onActivated, onMounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { CopyDocument, Refresh } from '@element-plus/icons-vue'
 import { categoryApi, mediaApi, miscApi, postApi, settingsApi, statsApi } from '@/api'
-import type { Category, ContributionPoint, PostItem, PublicSettings } from '@/types'
+import type { Category, ContributionPoint, HistoryEvent, PostItem, PublicSettings, TrackingResult } from '@/types'
 import PostCard from '@/components/PostCard.vue'
 import MarkdownView from '@/components/MarkdownView.vue'
 import ContributionsChart from '@/components/ContributionsChart.vue'
@@ -19,6 +19,12 @@ const isAdmin = computed(() => auth.user?.role_codes.includes('admin'))
 const contributionYear = ref<number | null>(null)
 const saying = ref('')
 const sayingLoading = ref(false)
+const historyEvents = ref<HistoryEvent[]>([])
+const historyDate = ref('')
+const historyLoading = ref(false)
+const trackingForm = ref({ number: '', phone: '' })
+const trackingLoading = ref(false)
+const trackingResult = ref<TrackingResult | null>(null)
 /** 可筛选年份(近 6 年) */
 const contributionYears = computed(() => {
   const current = new Date().getFullYear()
@@ -109,6 +115,37 @@ async function copySaying() {
   }
 }
 
+async function loadHistory() {
+  historyLoading.value = true
+  try {
+    const data = await miscApi.historyToday()
+    historyDate.value = data.date
+    historyEvents.value = data.events || []
+  } catch {
+    historyEvents.value = []
+  } finally {
+    historyLoading.value = false
+  }
+}
+
+async function queryTracking() {
+  const number = trackingForm.value.number.trim()
+  if (!number) {
+    ElMessage.warning('请输入快递单号')
+    return
+  }
+  trackingLoading.value = true
+  trackingResult.value = null
+  try {
+    trackingResult.value = await miscApi.trackingQuery({
+      tracking_number: number,
+      phone: trackingForm.value.phone.trim() || undefined,
+    })
+  } finally {
+    trackingLoading.value = false
+  }
+}
+
 watch(contributionYear, loadContributions)
 
 // keep-alive 缓存下, 从后台修改设置返回后刷新首页信息(头像/简介/链接等)
@@ -130,7 +167,7 @@ onMounted(async () => {
     settings.value = settingData
     posts.value = postData.items
     categories.value = categoryData
-    await Promise.all([loadContributions(), loadSaying()])
+    await Promise.all([loadContributions(), loadSaying(), loadHistory()])
   } finally {
     loading.value = false
   }
@@ -221,8 +258,51 @@ onMounted(async () => {
           </div>
         </section>
 
+        <section class="card history-card">
+          <div class="history-head">
+            <h3>程序员历史上的今天</h3>
+            <el-button size="small" circle :loading="historyLoading" :icon="Refresh" title="刷新" @click="loadHistory" />
+          </div>
+          <template v-if="historyEvents.length">
+            <p class="muted history-date">{{ historyDate || '今日' }}</p>
+            <div v-for="(event, index) in historyEvents" :key="index" class="history-event">
+              <span class="history-year">{{ event.year }}</span>
+              <div class="history-body">
+                <div class="history-title">{{ event.title }}</div>
+                <div class="history-desc">{{ event.description }}</div>
+                <div class="history-tags">
+                  <el-tag v-if="event.category" size="small" effect="plain">{{ event.category }}</el-tag>
+                  <el-tag v-for="tag in event.tags || []" :key="tag" size="small" type="info" effect="plain">{{ tag }}</el-tag>
+                </div>
+              </div>
+            </div>
+          </template>
+          <el-empty v-else-if="!historyLoading" description="暂无历史上的今天数据" :image-size="60" />
+        </section>
+
         <section v-if="settings?.site_readme" class="card">
           <MarkdownView :content="settings.site_readme" />
+        </section>
+
+        <section v-if="isAdmin" class="card tracking-card">
+          <h3>快递查询</h3>
+          <div class="tracking-form">
+            <el-input v-model="trackingForm.number" placeholder="输入快递单号" clearable @keyup.enter="queryTracking" />
+            <el-input v-model="trackingForm.phone" placeholder="手机尾号(选填)" maxlength="4" clearable @keyup.enter="queryTracking" />
+            <el-button type="primary" :loading="trackingLoading" @click="queryTracking">查询</el-button>
+          </div>
+          <div v-if="trackingResult" class="tracking-result">
+            <div class="tracking-meta">
+              <strong>{{ trackingResult.carrier_name || trackingResult.carrier_code || '快递' }}</strong>
+              <span class="muted">{{ trackingResult.tracking_number }}</span>
+            </div>
+            <el-timeline v-if="trackingResult.tracks?.length">
+              <el-timeline-item v-for="(track, index) in trackingResult.tracks" :key="index" :timestamp="track.time">
+                {{ track.context }}
+              </el-timeline-item>
+            </el-timeline>
+            <el-empty v-else description="暂无物流信息" :image-size="60" />
+          </div>
         </section>
 
         <section class="card" style="margin-top: 20px">
@@ -431,6 +511,83 @@ onMounted(async () => {
   display: flex;
   gap: 8px;
   flex-shrink: 0;
+}
+.history-card {
+  margin-bottom: 20px;
+}
+.history-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.history-head h3 {
+  margin: 0;
+  font-size: 16px;
+}
+.history-date {
+  margin: 0 0 8px;
+}
+.history-event {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px dashed var(--border);
+}
+.history-event:last-child {
+  border-bottom: none;
+}
+.history-year {
+  flex-shrink: 0;
+  width: 54px;
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 15px;
+}
+.history-body {
+  min-width: 0;
+}
+.history-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+.history-desc {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 4px 0 6px;
+  line-height: 1.6;
+}
+.history-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.tracking-card {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+.tracking-card h3 {
+  margin: 0 0 12px;
+  font-size: 16px;
+}
+.tracking-form {
+  display: flex;
+  gap: 10px;
+}
+.tracking-form .el-input:first-child {
+  flex: 1;
+}
+.tracking-form .el-input:nth-child(2) {
+  width: 150px;
+}
+.tracking-result {
+  margin-top: 16px;
+}
+.tracking-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 @media (max-width: 900px) {
   .home-grid {
