@@ -36,6 +36,7 @@ class UserCreate(BaseModel):
 class UserUpdate(BaseModel):
     """编辑用户(管理端)。"""
 
+    username: str | None = Field(default=None, min_length=3, max_length=50)
     nickname: str | None = Field(default=None, max_length=50)
     email: EmailStr | None = None
     avatar: str | None = None

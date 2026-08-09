@@ -57,6 +57,7 @@ function openDialog(user?: User) {
 
 async function save() {
   const payload = {
+    username: form.value.username,
     nickname: form.value.nickname,
     email: form.value.email,
     roles: form.value.roles,
@@ -162,7 +163,7 @@ onMounted(load)
     <el-dialog v-model="dialog" :title="form.id ? '编辑用户' : '新增用户'" width="480px">
       <el-form label-position="top">
         <el-form-item label="用户名">
-          <el-input v-model="form.username" :disabled="Boolean(form.id)" />
+          <el-input v-model="form.username" />
         </el-form-item>
         <el-form-item label="邮箱"><el-input v-model="form.email" /></el-form-item>
         <el-form-item v-if="!form.id" label="密码">

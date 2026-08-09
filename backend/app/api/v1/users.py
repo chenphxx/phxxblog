@@ -88,6 +88,9 @@ def update_user(
         raise HTTPException(status_code=404, detail="用户不存在")
     changes = data.model_dump(exclude_unset=True)
     roles = changes.pop("roles", None)
+    if "username" in changes and changes["username"] != user.username:
+        if db.query(User).filter(User.username == changes["username"]).first():
+            raise HTTPException(status_code=400, detail="用户名已存在")
     for field, value in changes.items():
         setattr(user, field, value)
     if roles is not None:

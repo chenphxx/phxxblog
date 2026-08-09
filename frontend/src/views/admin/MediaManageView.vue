@@ -107,7 +107,7 @@ onMounted(load)
 </script>
 
 <template>
-  <div>
+  <div class="media-page">
     <div class="toolbar">
       <h2 style="margin: 0">媒体库</h2>
       <div class="toolbar-actions">
@@ -155,6 +155,11 @@ onMounted(load)
 </template>
 
 <style scoped>
+.media-page {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 100px);
+}
 .toolbar {
   display: flex;
   align-items: center;
@@ -171,12 +176,16 @@ onMounted(load)
 .media-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-auto-rows: minmax(210px, 1fr);
+  height: calc(100vh - 210px);
   gap: 16px;
-  min-height: 120px;
+  align-content: stretch;
 }
 .media-item {
   position: relative;
   padding: 12px;
+  display: flex;
+  flex-direction: column;
 }
 .media-check {
   position: absolute;
@@ -185,13 +194,15 @@ onMounted(load)
   z-index: 2;
 }
 .media-preview {
-  height: 120px;
+  flex: 1;
+  min-height: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--code-bg);
   border-radius: 6px;
   overflow: hidden;
+  margin-bottom: 8px;
 }
 .media-preview img,
 .media-preview video {
@@ -202,14 +213,14 @@ onMounted(load)
   font-size: 40px;
 }
 .media-name {
-  margin-top: 8px;
   font-size: 13px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .media-actions {
-  margin-top: 8px;
+  margin-top: auto;
+  padding-top: 8px;
   display: flex;
   gap: 6px;
   flex-wrap: nowrap;

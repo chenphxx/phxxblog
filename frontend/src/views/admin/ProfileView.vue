@@ -85,26 +85,24 @@ onMounted(() => {
     </div>
 
     <div class="card" style="margin-bottom: 20px">
-      <h3>修改用户名/昵称</h3>
-      <el-form label-position="top" style="max-width: 360px">
-        <el-form-item label="用户名">
-          <el-input v-model="profileForm.username" placeholder="用户名" />
-        </el-form-item>
-        <el-form-item label="昵称">
-          <el-input v-model="profileForm.nickname" placeholder="昵称" />
-        </el-form-item>
-        <el-button type="primary" :loading="savingProfile" @click="saveProfile">保存资料</el-button>
-      </el-form>
-    </div>
-
-    <div class="card" style="margin-bottom: 20px">
-      <h3>修改邮箱</h3>
-      <el-form label-position="top" style="max-width: 360px">
-        <el-form-item label="新邮箱">
-          <el-input v-model="emailForm.email" :placeholder="auth.user?.email" />
-        </el-form-item>
-        <el-button type="primary" :loading="savingEmail" @click="changeEmail">保存邮箱</el-button>
-      </el-form>
+      <h3>修改资料</h3>
+      <div class="profile-edit-row">
+        <el-form label-position="top" class="profile-edit-col">
+          <el-form-item label="用户名">
+            <el-input v-model="profileForm.username" placeholder="用户名" />
+          </el-form-item>
+          <el-form-item label="昵称">
+            <el-input v-model="profileForm.nickname" placeholder="昵称" />
+          </el-form-item>
+          <el-button type="primary" :loading="savingProfile" @click="saveProfile">保存资料</el-button>
+        </el-form>
+        <el-form label-position="top" class="profile-edit-col">
+          <el-form-item label="新邮箱">
+            <el-input v-model="emailForm.email" :placeholder="auth.user?.email" />
+          </el-form-item>
+          <el-button type="primary" :loading="savingEmail" @click="changeEmail">保存邮箱</el-button>
+        </el-form>
+      </div>
     </div>
 
     <div class="card">
@@ -124,3 +122,28 @@ onMounted(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.profile-edit-row {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+}
+.profile-edit-col {
+  flex: 1;
+  max-width: 360px;
+}
+.profile-edit-col + .profile-edit-col {
+  border-left: 1px solid var(--border);
+  padding-left: 32px;
+}
+@media (max-width: 720px) {
+  .profile-edit-row {
+    flex-direction: column;
+  }
+  .profile-edit-col + .profile-edit-col {
+    border-left: none;
+    padding-left: 0;
+  }
+}
+</style>
