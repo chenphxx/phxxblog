@@ -46,6 +46,12 @@ class UserUpdate(BaseModel):
     roles: list[str] | None = None
 
 
+class PasswordResetIn(BaseModel):
+    """重置密码(管理员操作)。"""
+
+    password: str = Field(min_length=6, max_length=64)
+
+
 class RoleOut(BaseModel):
     """角色信息输出。"""
 

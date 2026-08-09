@@ -87,7 +87,9 @@ onMounted(load)
         <el-table-column prop="id" label="ID" width="70" />
         <el-table-column prop="title" label="标题" min-width="200" show-overflow-tooltip>
           <template #default="{ row }">
-            <router-link :to="`/admin/posts/${row.id}/edit`">{{ row.title }}</router-link>
+            <router-link :to="row.status === 2 || row.status === 3 ? `/post/${row.id}` : `/admin/posts/${row.id}/edit`">
+              {{ row.title }}
+            </router-link>
           </template>
         </el-table-column>
         <el-table-column label="状态" width="90">

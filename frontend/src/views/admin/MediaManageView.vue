@@ -170,7 +170,7 @@ onMounted(load)
 }
 .media-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 16px;
   min-height: 120px;
 }
@@ -212,6 +212,15 @@ onMounted(load)
   margin-top: 8px;
   display: flex;
   gap: 6px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+.media-actions .el-button {
+  padding: 3px 8px;
+  font-size: 12px;
+  margin-left: 0;
+}
+.media-actions .el-button + .el-button {
+  margin-left: 0;
 }
 </style>

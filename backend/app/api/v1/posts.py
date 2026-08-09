@@ -1,6 +1,6 @@
 """文章接口: 前台浏览、后台管理、发布流程、点赞、归档。"""
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import func, or_
@@ -92,6 +92,8 @@ def list_posts(
     tag: int | None = Query(None, description="标签ID"),
     year: int | None = Query(None, description="年份筛选"),
     month: int | None = Query(None, description="月份筛选"),
+    start_date: str | None = Query(None, description="发布时间起始 YYYY-MM-DD"),
+    end_date: str | None = Query(None, description="发布时间结束 YYYY-MM-DD"),
     keyword: str | None = Query(None, description="关键词(标题/摘要)"),
     db: Session = Depends(get_db),
 ):
@@ -105,6 +107,12 @@ def list_posts(
         query = query.filter(func.year(Post.published_at) == year)
     if month:
         query = query.filter(func.month(Post.published_at) == month)
+    if start_date:
+        query = query.filter(Post.published_at >= datetime.strptime(start_date, "%Y-%m-%d"))
+    if end_date:
+        query = query.filter(
+            Post.published_at <= datetime.strptime(end_date, "%Y-%m-%d") + timedelta(days=1)
+        )
     if keyword:
         like = f"%{keyword}%"
         query = query.filter(or_(Post.title.like(like), Post.summary.like(like)))

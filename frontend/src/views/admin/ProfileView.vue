@@ -1,14 +1,34 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { authApi } from '@/api'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
+const profileForm = ref({ username: '', nickname: '' })
 const passwordForm = ref({ old_password: '', new_password: '', confirm: '' })
 const emailForm = ref({ email: '' })
+const savingProfile = ref(false)
 const savingPwd = ref(false)
 const savingEmail = ref(false)
+
+async function saveProfile() {
+  if (!profileForm.value.username.trim()) {
+    ElMessage.warning('用户名不能为空')
+    return
+  }
+  savingProfile.value = true
+  try {
+    await authApi.updateProfile({
+      username: profileForm.value.username.trim(),
+      nickname: profileForm.value.nickname.trim(),
+    })
+    ElMessage.success('资料已更新')
+    await auth.fetchMe()
+  } finally {
+    savingProfile.value = false
+  }
+}
 
 async function changePassword() {
   if (passwordForm.value.new_password !== passwordForm.value.confirm) {
@@ -38,6 +58,11 @@ async function changeEmail() {
     savingEmail.value = false
   }
 }
+
+onMounted(() => {
+  profileForm.value.username = auth.user?.username || ''
+  profileForm.value.nickname = auth.user?.nickname || ''
+})
 </script>
 
 <template>
@@ -57,6 +82,19 @@ async function changeEmail() {
         </el-descriptions-item>
         <el-descriptions-item label="注册时间">{{ auth.user?.created_at.slice(0, 10) }}</el-descriptions-item>
       </el-descriptions>
+    </div>
+
+    <div class="card" style="margin-bottom: 20px">
+      <h3>修改用户名/昵称</h3>
+      <el-form label-position="top" style="max-width: 360px">
+        <el-form-item label="用户名">
+          <el-input v-model="profileForm.username" placeholder="用户名" />
+        </el-form-item>
+        <el-form-item label="昵称">
+          <el-input v-model="profileForm.nickname" placeholder="昵称" />
+        </el-form-item>
+        <el-button type="primary" :loading="savingProfile" @click="saveProfile">保存资料</el-button>
+      </el-form>
     </div>
 
     <div class="card" style="margin-bottom: 20px">

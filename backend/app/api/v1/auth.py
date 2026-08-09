@@ -21,6 +21,7 @@ from app.schemas.auth import (
     EmailChangeIn,
     LoginIn,
     PasswordChangeIn,
+    ProfileUpdateIn,
     RefreshIn,
     RegisterIn,
     TokenPair,
@@ -177,3 +178,25 @@ def change_email(
     db.commit()
     write_operation_log(db, request=request, user=user, module="auth", action="change_email")
     return ok(message="邮箱修改成功")
+
+
+@router.put("/profile", response_model=dict)
+def update_profile(
+    data: ProfileUpdateIn,
+    request: Request,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """修改用户名/昵称。"""
+    if data.username and data.username != user.username:
+        if db.query(User).filter(User.username == data.username).first():
+            raise HTTPException(status_code=400, detail="用户名已存在")
+        user.username = data.username
+    if data.nickname is not None:
+        user.nickname = data.nickname
+    db.commit()
+    write_operation_log(
+        db, request=request, user=user, module="auth", action="update_profile",
+        detail={"username": user.username, "nickname": user.nickname},
+    )
+    return ok(UserOut.model_validate(user), "资料已更新")

@@ -43,3 +43,10 @@ class EmailChangeIn(BaseModel):
     """修改邮箱请求。"""
 
     email: EmailStr
+
+
+class ProfileUpdateIn(BaseModel):
+    """修改用户名/昵称请求。"""
+
+    username: str | None = Field(default=None, min_length=3, max_length=50)
+    nickname: str | None = Field(default=None, max_length=50)

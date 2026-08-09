@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, onActivated, onMounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { categoryApi, mediaApi, postApi, settingsApi, statsApi } from '@/api'
+import { Refresh } from '@element-plus/icons-vue'
+import { categoryApi, mediaApi, miscApi, postApi, settingsApi, statsApi } from '@/api'
 import type { Category, ContributionPoint, PostItem, PublicSettings } from '@/types'
 import PostCard from '@/components/PostCard.vue'
 import MarkdownView from '@/components/MarkdownView.vue'
@@ -16,6 +17,8 @@ const loading = ref(true)
 const auth = useAuthStore()
 const isAdmin = computed(() => auth.user?.role_codes.includes('admin'))
 const contributionYear = ref<number | null>(null)
+const saying = ref('')
+const sayingLoading = ref(false)
 /** 可筛选年份(近 6 年) */
 const contributionYears = computed(() => {
   const current = new Date().getFullYear()
@@ -84,6 +87,18 @@ async function loadContributions() {
   })
 }
 
+async function loadSaying() {
+  sayingLoading.value = true
+  try {
+    const data = await miscApi.saying()
+    saying.value = data.text
+  } catch {
+    saying.value = '一言暂时走神了, 点击右侧刷新重试'
+  } finally {
+    sayingLoading.value = false
+  }
+}
+
 watch(contributionYear, loadContributions)
 
 // keep-alive 缓存下, 从后台修改设置返回后刷新首页信息(头像/简介/链接等)
@@ -105,7 +120,7 @@ onMounted(async () => {
     settings.value = settingData
     posts.value = postData.items
     categories.value = categoryData
-    await loadContributions()
+    await Promise.all([loadContributions(), loadSaying()])
   } finally {
     loading.value = false
   }
@@ -169,6 +184,24 @@ onMounted(async () => {
 
       <!-- 右侧: README + 贡献 + 最新文章 -->
       <main class="home-main">
+        <section class="card saying-card">
+          <div class="saying-head">
+            <span class="saying-quote">“</span>
+            <span class="saying-text">
+              {{ saying || '一言加载中...' }}
+            </span>
+          </div>
+          <el-button
+            class="saying-refresh"
+            size="small"
+            circle
+            :loading="sayingLoading"
+            :icon="Refresh"
+            title="换一句"
+            @click="loadSaying"
+          />
+        </section>
+
         <section v-if="settings?.site_readme" class="card">
           <MarkdownView :content="settings.site_readme" />
         </section>
@@ -348,6 +381,35 @@ onMounted(async () => {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 12px;
+}
+.saying-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 14px 20px;
+}
+.saying-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+.saying-quote {
+  font-size: 28px;
+  line-height: 1;
+  color: var(--primary);
+  font-family: Georgia, serif;
+}
+.saying-text {
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.saying-refresh {
+  flex-shrink: 0;
 }
 @media (max-width: 900px) {
   .home-grid {
