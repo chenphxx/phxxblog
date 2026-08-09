@@ -53,10 +53,21 @@ echo 正在启动前端 http://localhost:5173 ...
 start "phxxblog-frontend" cmd /k "cd /d %~dp0frontend && npm.cmd run dev"
 
 echo.
-echo 启动完成! 地址如下:
+echo 等待服务启动...
+timeout /t 5 /nobreak >nul
+
+echo 检查服务状态:
+netstat -ano | findstr LISTENING | findstr ":8000" >nul && echo   [OK] 后端已启动  http://127.0.0.1:8000/docs || echo   [失败] 后端未启动, 请查看后端窗口的报错信息
+netstat -ano | findstr LISTENING | findstr ":5173" >nul && echo   [OK] 前端已启动  http://localhost:5173 || echo   [失败] 前端未启动, 请查看前端窗口的报错信息
+
+echo.
+echo 将在浏览器中打开博客前台...
+start "" http://localhost:5173
+echo.
+echo 访问地址:
 echo   博客前台:   http://localhost:5173
 echo   管理后台:   http://localhost:5173/#/admin
 echo   接口文档:   http://127.0.0.1:8000/docs
 echo.
-echo 两个服务窗口请保留运行; 关闭本窗口不影响服务。
+echo 两个服务窗口请保留运行。
 pause
