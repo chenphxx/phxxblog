@@ -28,7 +28,11 @@ rawAxios.interceptors.response.use(
   (response) => response.data.data as never,
   (error) => {
     const status = error.response?.status
-    const message = error.response?.data?.message || error.message || '请求失败'
+    const message =
+      error.response?.data?.message ||
+      error.response?.data?.detail ||
+      error.message ||
+      '请求失败'
     if (status === 401) {
       localStorage.removeItem('blog_access_token')
       localStorage.removeItem('blog_refresh_token')

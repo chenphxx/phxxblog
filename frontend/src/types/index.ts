@@ -208,3 +208,32 @@ export interface DiaryEntry {
   created_at: string
   updated_at: string
 }
+
+/** 程序员历史上的今天-事件 */
+export interface HistoryEvent {
+  year: number
+  month?: number
+  day?: number
+  title: string
+  description: string
+  category?: string
+  tags?: string[]
+  importance?: number
+  relevance_score?: number
+  source?: string
+  url?: string
+}
+
+/** 快递物流轨迹 */
+export interface TrackingEvent {
+  time: string
+  context: string
+}
+
+export interface TrackingResult {
+  tracking_number: string
+  carrier_code?: string
+  carrier_name?: string
+  track_count?: number
+  tracks: TrackingEvent[]
+}

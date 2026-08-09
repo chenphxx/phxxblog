@@ -5,6 +5,7 @@ import type {
   CommentItem,
   ContributionPoint,
   DiaryEntry,
+  HistoryEvent,
   LinkPreview,
   MediaItem,
   OperationLog,
@@ -15,6 +16,7 @@ import type {
   Role,
   Tag,
   TokenPair,
+  TrackingResult,
   TrendPoint,
   User,
   VisitItem,
@@ -116,6 +118,9 @@ export const miscApi = {
   changelog: () => http.get<{ content: string }>('/misc/changelog'),
   updateChangelog: (content: string) => http.put<null>('/misc/changelog', { content }),
   saying: () => http.get<{ text: string }>('/misc/saying'),
+  historyToday: () => http.get<{ date: string; events: HistoryEvent[] }>('/misc/history/programmer-today'),
+  trackingQuery: (params: Record<string, unknown>) =>
+    http.get<TrackingResult>('/misc/tracking/query', { params }),
 }
 
 /** 操作日志 */
