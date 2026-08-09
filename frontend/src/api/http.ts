@@ -25,7 +25,11 @@ rawAxios.interceptors.request.use((config) => {
 
 rawAxios.interceptors.response.use(
   // 后端统一返回 { code, message, data }, 这里解出 data 供调用方直接使用
-  (response) => response.data.data as never,
+  // blob 响应(文件下载)不拆包, 直接返回完整响应
+  (response) =>
+    response.config.responseType === 'blob'
+      ? (response as never)
+      : (response.data.data as never),
   (error) => {
     const status = error.response?.status
     const message =

@@ -1,8 +1,11 @@
 """文章接口: 前台浏览、后台管理、发布流程、点赞、归档。"""
+import io
+import json
 import uuid
+import zipfile
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, Response, UploadFile
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
@@ -184,6 +187,240 @@ def admin_list_posts(
         items=[PostListItem.model_validate(p) for p in items],
         total=total, page=page, page_size=page_size,
     ))
+
+
+def _post_to_markdown(post: Post) -> str:
+    """将文章序列化为带 YAML frontmatter 的 Markdown 文本。"""
+    lines = ["---"]
+    lines.append(f"title: {json.dumps(post.title, ensure_ascii=False)}")
+    lines.append(f"slug: {json.dumps(post.slug, ensure_ascii=False)}")
+    lines.append(f"status: {post.status}")
+    if post.published_at:
+        lines.append(f"date: {json.dumps(post.published_at.strftime('%Y-%m-%d %H:%M:%S'), ensure_ascii=False)}")
+    if post.summary:
+        lines.append(f"summary: {json.dumps(post.summary, ensure_ascii=False)}")
+    if post.cover_image:
+        lines.append(f"cover_image: {json.dumps(post.cover_image, ensure_ascii=False)}")
+    if post.category:
+        lines.append(f"category: {json.dumps(post.category.name, ensure_ascii=False)}")
+    if post.tags:
+        lines.append("tags: " + json.dumps([t.name for t in post.tags], ensure_ascii=False))
+    lines.append("---")
+    lines.append("")
+    lines.append(post.content_md)
+    return "\n".join(lines)
+
+
+def _parse_frontmatter(content: str) -> tuple[dict, str]:
+    """解析 Markdown 头部的 YAML frontmatter, 返回 (元信息, 正文)。"""
+    if not content.startswith("---"):
+        return {}, content
+    end = content.find("\n---", 3)
+    if end == -1:
+        return {}, content
+    block = content[3:end]
+    body = content[end + 4:].lstrip("\r\n")
+    meta: dict = {}
+    for line in block.splitlines():
+        if ":" not in line:
+            continue
+        key, _, value = line.partition(":")
+        key = key.strip()
+        value = value.strip()
+        if not key:
+            continue
+        if value.startswith('"') and value.endswith('"') and len(value) >= 2:
+            try:
+                value = json.loads(value)
+            except Exception:
+                pass
+        elif value.startswith("[") and value.endswith("]"):
+            try:
+                value = json.loads(value)
+            except Exception:
+                pass
+        meta[key] = value
+    return meta, body
+
+
+def _unique_slug(db: Session, model, slug: str) -> str:
+    """保证 slug 唯一(重名时追加 -1, -2 ...)。"""
+    base = slug
+    index = 1
+    while db.query(model).filter(model.slug == slug).first():
+        slug = f"{base}-{index}"
+        index += 1
+    return slug
+
+
+def _import_markdown(db: Session, user: User, filename: str, content: str) -> tuple[bool, str | None]:
+    """解析并创建一篇文章(默认草稿)。返回 (是否导入, 错误信息)。"""
+    meta, body = _parse_frontmatter(content)
+    title = str(meta.get("title") or "").strip()
+    if not title:
+        for line in body.splitlines():
+            if line.startswith("# "):
+                title = line[2:].strip()
+                break
+    if not title:
+        stem = filename.rsplit("/", 1)[-1].rsplit("\\", 1)[-1]
+        title = stem[:-3] if stem.lower().endswith(".md") else stem
+    if not title:
+        return False, f"{filename}: 无法识别标题"
+
+    slug = str(meta.get("slug") or "").strip() or f"post-{uuid.uuid4().hex[:8]}"
+    slug = _unique_slug(db, Post, slug)
+
+    status = 0
+    try:
+        raw_status = int(str(meta.get("status") or "0"))
+    except (TypeError, ValueError):
+        raw_status = 0
+    if raw_status == 2 and Perm.POST_PUBLISH in user.permission_codes:
+        status = 2
+    elif raw_status == 3 and Perm.POST_MANAGE in user.permission_codes:
+        status = 3
+    elif raw_status in (0, 1):
+        status = raw_status
+
+    category = None
+    category_name = str(meta.get("category") or "").strip()
+    if category_name:
+        category = (
+            db.query(Category)
+            .filter(func.lower(Category.name) == category_name.lower())
+            .first()
+        )
+        if category is None:
+            category = Category(
+                name=category_name[:50],
+                slug=_unique_slug(db, Category, category_name[:80]),
+            )
+            db.add(category)
+            db.flush()
+
+    raw_tags = meta.get("tags") or []
+    if isinstance(raw_tags, str):
+        raw_tags = [t.strip() for t in raw_tags.strip("[]").split(",") if t.strip()]
+    tags: list[Tag] = []
+    for tag_name in raw_tags:
+        tag_name = str(tag_name).strip()
+        if not tag_name:
+            continue
+        tag = db.query(Tag).filter(func.lower(Tag.name) == tag_name.lower()).first()
+        if tag is None:
+            tag = Tag(
+                name=tag_name[:50],
+                slug=_unique_slug(db, Tag, tag_name[:80]),
+            )
+            db.add(tag)
+            db.flush()
+        tags.append(tag)
+
+    summary = str(meta.get("summary") or "").strip() or None
+    cover_image = str(meta.get("cover_image") or "").strip() or None
+    post = Post(
+        author_id=user.id,
+        title=title[:200],
+        slug=slug,
+        summary=summary[:500] if summary else None,
+        content_md=body,
+        cover_image=cover_image[:255] if cover_image else None,
+        category_id=category.id if category else None,
+        status=status,
+    )
+    if status == 2:
+        date_str = str(meta.get("date") or "").strip()
+        try:
+            post.published_at = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+        except (ValueError, TypeError):
+            try:
+                post.published_at = datetime.strptime(date_str, "%Y-%m-%d")
+            except (ValueError, TypeError):
+                post.published_at = datetime.now()
+    post.tags = tags
+    db.add(post)
+    db.flush()
+    return True, None
+
+
+@router.get("/export", response_model=None)
+def export_posts(
+    ids: str | None = Query(None, description="逗号分隔的文章ID, 不传则导出全部(作者本人/管理员)"),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """导出文章为 Markdown 压缩包(仅作者本人/管理员可导)。"""
+    query = db.query(Post)
+    if Perm.POST_MANAGE not in user.permission_codes:
+        query = query.filter(Post.author_id == user.id)
+    if ids:
+        id_list = [int(i) for i in ids.split(",") if i.strip().isdigit()]
+        if id_list:
+            query = query.filter(Post.id.in_(id_list))
+    posts = query.order_by(Post.created_at.desc()).all()
+
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        for post in posts:
+            zf.writestr(f"{post.slug or str(post.id)}.md", _post_to_markdown(post))
+    buf.seek(0)
+    stamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    return Response(
+        buf.getvalue(),
+        media_type="application/zip",
+        headers={"Content-Disposition": f'attachment; filename="phxxblog-posts-{stamp}.zip"'},
+    )
+
+
+@router.post("/import", response_model=dict)
+def import_posts(
+    request: Request,
+    files: list[UploadFile] = File(...),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """导入文章: 支持 .md 文件或包含 .md 的 zip 压缩包。"""
+    if Perm.POST_CREATE not in user.permission_codes:
+        raise HTTPException(status_code=403, detail="缺少权限: post:create")
+    imported = 0
+    skipped = 0
+    errors: list[str] = []
+    for upload in files:
+        name = upload.filename or "untitled"
+        raw = upload.file.read()
+        md_files: list[tuple[str, str]] = []
+        if name.lower().endswith(".zip"):
+            try:
+                with zipfile.ZipFile(io.BytesIO(raw)) as zf:
+                    for info in zf.infolist():
+                        if info.is_dir() or not info.filename.lower().endswith(".md"):
+                            continue
+                        md_files.append(
+                            (info.filename, zf.read(info).decode("utf-8", errors="replace"))
+                        )
+            except zipfile.BadZipFile:
+                errors.append(f"{name}: 不是有效的 zip 压缩包")
+                continue
+        elif name.lower().endswith(".md"):
+            md_files.append((name, raw.decode("utf-8", errors="replace")))
+        else:
+            errors.append(f"{name}: 仅支持 .md 或 .zip 文件")
+            continue
+        for fname, content in md_files:
+            ok_imported, err = _import_markdown(db, user, fname, content)
+            if ok_imported:
+                imported += 1
+            elif err:
+                errors.append(err)
+            else:
+                skipped += 1
+    db.commit()
+    write_operation_log(
+        db, request=request, user=user, module="post", action="import",
+        detail={"imported": imported, "skipped": skipped, "errors": len(errors)},
+    )
+    return ok({"imported": imported, "skipped": skipped, "errors": errors[:20]}, "导入完成")
 
 
 @router.get("/{post_id}", response_model=dict)
