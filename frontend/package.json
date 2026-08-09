@@ -4,7 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/copy-vditor-assets.mjs",
     "dev": "vite",
+    "prebuild": "node scripts/copy-vditor-assets.mjs",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview"
   },

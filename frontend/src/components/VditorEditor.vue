@@ -11,11 +11,15 @@ const emit = defineEmits<{ (e: 'update:modelValue', value: string): void }>()
 
 const el = ref<HTMLDivElement>()
 let vditor: Vditor | null = null
+let ready = false
 const theme = useThemeStore()
 
 onMounted(() => {
   if (!el.value) return
   vditor = new Vditor(el.value, {
+    // 资源全部走本地 public/vditor, 避免依赖 unpkg/jsdelivr CDN 导致编辑器无法初始化
+    cdn: '/vditor',
+    width: '100%',
     value: props.modelValue,
     height: props.height,
     theme: theme.isDark ? 'dark' : 'classic',
@@ -85,19 +89,27 @@ onMounted(() => {
       },
     },
     input: (value) => emit('update:modelValue', value),
+    after: () => {
+      ready = true
+      // 初始化完成后再同步外部值(编辑文章时带出原文)
+      if (props.modelValue && props.modelValue !== vditor?.getValue()) {
+        vditor?.setValue(props.modelValue)
+      }
+    },
   })
 })
 
 onBeforeUnmount(() => {
+  ready = false
   vditor?.destroy()
   vditor = null
 })
 
-// 外部传入的值变化时同步到编辑器(编辑文章时带出原文)
+// 外部传入的值变化时同步到编辑器; 编辑器未初始化完成前跳过, 由 after 回调接管
 watch(
   () => props.modelValue,
   (value) => {
-    if (vditor && value !== vditor.getValue()) {
+    if (ready && vditor && value !== vditor.getValue()) {
       vditor.setValue(value)
     }
   },
@@ -105,5 +117,5 @@ watch(
 </script>
 
 <template>
-  <div ref="el" class="vditor-editor" style="width: 100%; display: block" />
+  <div ref="el" class="vditor-editor" />
 </template>
