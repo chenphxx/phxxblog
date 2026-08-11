@@ -146,7 +146,10 @@ onMounted(async () => {
 <template>
   <div class="page-container">
     <div class="write-header">
-      <h1 style="margin: 0">{{ isEdit ? '编辑文章' : '写文章' }}</h1>
+      <div>
+        <p class="eyebrow" style="margin: 0 0 4px">editor — {{ isEdit ? '编辑文章' : '写文章' }}</p>
+        <h1 style="margin: 0">{{ isEdit ? '编辑文章' : '写文章' }}</h1>
+      </div>
       <div>
         <el-button @click="cancel">取消</el-button>
         <el-button :loading="saving" @click="save(0)">保存草稿</el-button>

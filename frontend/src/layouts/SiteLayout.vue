@@ -36,7 +36,10 @@ onMounted(async () => {
   <div class="site-layout">
     <header class="site-header">
       <div class="site-header-inner">
-        <router-link to="/" class="site-brand">{{ settings?.site_name || "chenphxx's blog" }}</router-link>
+        <router-link to="/" class="site-brand">
+          <span class="brand-user">{{ settings?.site_name || 'chenphxx' }}</span>
+          <span class="brand-host">@blog</span><span class="brand-path">:~$</span>
+        </router-link>
         <nav class="site-nav">
           <router-link to="/">首页</router-link>
           <router-link to="/archive">归档</router-link>
@@ -67,8 +70,8 @@ onMounted(async () => {
     </div>
 
     <footer class="site-footer">
-      <div class="muted">
-        © {{ new Date().getFullYear() }} {{ settings?.site_name || "chenphxx's blog" }} · Powered by Vue &amp; FastAPI
+      <div class="footer-meta">
+        © {{ new Date().getFullYear() }} {{ settings?.site_name || 'chenphxx' }} · Vue3 + FastAPI
       </div>
     </footer>
   </div>
@@ -94,7 +97,15 @@ onMounted(async () => {
 .site-footer {
   margin-top: auto;
   text-align: center;
-  padding: 28px 16px 24px;
+  padding: 22px 16px 26px;
+  border-top: 1px solid var(--border);
+  background: var(--card-bg);
+}
+
+.footer-meta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
 }
 
 </style>

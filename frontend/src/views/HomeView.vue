@@ -11,6 +11,7 @@ import { useAuthStore } from '@/stores/auth'
 
 const settings = ref<PublicSettings | null>(null)
 const posts = ref<PostItem[]>([])
+const totalPosts = ref(0)
 const categories = ref<Category[]>([])
 const contributions = ref<ContributionPoint[]>([])
 const loading = ref(true)
@@ -166,6 +167,7 @@ onMounted(async () => {
     ])
     settings.value = settingData
     posts.value = postData.items
+    totalPosts.value = postData.total
     categories.value = categoryData
     await Promise.all([loadContributions(), loadSaying(), loadHistory()])
   } finally {
@@ -229,38 +231,40 @@ onMounted(async () => {
         </aside>
       </div>
 
-      <!-- 右侧: README + 贡献 + 最新文章 -->
+      <!-- 右侧: 终端会话 + 内容区块 -->
       <main class="home-main">
-        <section class="card saying-card">
-          <div class="saying-head">
-            <span class="saying-quote">“</span>
-            <span class="saying-text">
-              {{ saying || '一言加载中...' }}
-            </span>
+        <section class="term-card">
+          <div class="term-head">
+            <span class="term-dot term-dot-red" />
+            <span class="term-dot term-dot-amber" />
+            <span class="term-dot term-dot-green" />
+            <span class="term-title">session — {{ settings?.site_name || 'blog' }}</span>
+            <div class="term-actions">
+              <el-button size="small" circle :disabled="!saying" :icon="CopyDocument" title="复制一言" @click="copySaying" />
+              <el-button size="small" circle :loading="sayingLoading" :icon="Refresh" title="换一句" @click="loadSaying" />
+            </div>
           </div>
-          <div class="saying-actions">
-            <el-button
-              size="small"
-              circle
-              :disabled="!saying"
-              :icon="CopyDocument"
-              title="复制一言"
-              @click="copySaying"
-            />
-            <el-button
-              size="small"
-              circle
-              :loading="sayingLoading"
-              :icon="Refresh"
-              title="换一句"
-              @click="loadSaying"
-            />
+          <div class="term-body">
+            <p class="term-line"><span class="term-prompt">$</span> whoami</p>
+            <p class="term-out">{{ settings?.site_name || 'chenphxx' }}<span v-if="settings?.site_bio"> — {{ settings.site_bio }}</span></p>
+            <p class="term-line"><span class="term-prompt">$</span> ls posts | wc -l</p>
+            <p class="term-out">{{ totalPosts }}</p>
+            <p class="term-line"><span class="term-prompt">$</span> tail -n 1 posts/latest</p>
+            <p v-if="posts.length" class="term-out">
+              <router-link :to="`/post/${posts[0].id}`" class="term-link">
+                {{ (posts[0].published_at || posts[0].created_at).slice(0, 10) }} · {{ posts[0].title }}
+              </router-link>
+            </p>
+            <p v-else class="term-out">暂无文章</p>
+            <p class="term-line"><span class="term-prompt">$</span> say</p>
+            <p class="term-out">{{ saying || '一言加载中...' }}</p>
+            <p class="term-line"><span class="term-prompt">$</span><span class="term-cursor" aria-hidden="true" /></p>
           </div>
         </section>
 
         <section class="card history-card">
           <div class="history-head">
-            <h3>程序员历史上的今天</h3>
+            <p class="eyebrow">history — 程序员历史上的今天</p>
             <el-button size="small" circle :loading="historyLoading" :icon="Refresh" title="刷新" @click="loadHistory" />
           </div>
           <template v-if="historyEvents.length">
@@ -271,8 +275,8 @@ onMounted(async () => {
                 <div class="history-title">{{ event.title }}</div>
                 <div class="history-desc">{{ event.description }}</div>
                 <div class="history-tags">
-                  <el-tag v-if="event.category" size="small" effect="plain">{{ event.category }}</el-tag>
-                  <el-tag v-for="tag in event.tags || []" :key="tag" size="small" type="info" effect="plain">{{ tag }}</el-tag>
+                  <span v-if="event.category" class="code-token">{{ event.category }}</span>
+                  <span v-for="tag in event.tags || []" :key="tag" class="code-token">#{{ tag }}</span>
                 </div>
               </div>
             </div>
@@ -280,12 +284,13 @@ onMounted(async () => {
           <el-empty v-else-if="!historyLoading" description="暂无历史上的今天数据" :image-size="60" />
         </section>
 
-        <section v-if="settings?.site_readme" class="card">
+        <section v-if="settings?.site_readme" class="card section-card">
+          <p class="eyebrow" style="margin-bottom: 10px">readme — 关于</p>
           <MarkdownView :content="settings.site_readme" />
         </section>
 
         <section v-if="isAdmin" class="card tracking-card">
-          <h3>快递查询</h3>
+          <p class="eyebrow" style="margin-bottom: 12px">tracking — 快递查询</p>
           <div class="tracking-form">
             <el-input v-model="trackingForm.number" placeholder="输入快递单号" clearable @keyup.enter="queryTracking" />
             <el-input v-model="trackingForm.phone" placeholder="手机尾号(选填)" maxlength="4" clearable @keyup.enter="queryTracking" />
@@ -305,8 +310,8 @@ onMounted(async () => {
           </div>
         </section>
 
-        <section class="card" style="margin-top: 20px">
-          <h3 style="margin: 0 0 12px">文章发布记录</h3>
+        <section class="card section-card">
+          <p class="eyebrow" style="margin-bottom: 12px">activity — 文章发布记录</p>
           <ContributionsChart
             :points="contributions"
             :years="contributionYears"
@@ -315,9 +320,12 @@ onMounted(async () => {
           />
         </section>
 
-        <section style="margin-top: 24px">
+        <section style="margin-top: 28px">
           <div class="posts-head">
-            <h2 style="margin: 0">最新文章</h2>
+            <div>
+              <p class="eyebrow" style="margin-bottom: 4px">posts — 最新文章</p>
+              <h2 class="posts-title">最新文章</h2>
+            </div>
             <el-button size="small" @click="$router.push('/posts')">全部文章</el-button>
           </div>
           <PostCard v-for="post in posts" :key="post.id" :post="post" />
@@ -376,7 +384,7 @@ onMounted(async () => {
 }
 .profile-card {
   text-align: center;
-  padding: 24px 16px;
+  padding: 26px 18px 20px;
 }
 .profile-avatar {
   margin-bottom: 12px;
@@ -386,11 +394,14 @@ onMounted(async () => {
 }
 .profile-name {
   margin: 0 0 6px;
-  font-size: 20px;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 .profile-bio {
+  font-family: var(--font-mono);
   color: var(--muted);
-  font-size: 13px;
+  font-size: 12px;
   margin: 0 0 16px;
 }
 .profile-social {
@@ -404,11 +415,12 @@ onMounted(async () => {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 10px;
+  padding: 3px 10px;
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: 4px;
   color: var(--text);
-  font-size: 12px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
   text-decoration: none;
 }
 .social-link:hover {
@@ -461,10 +473,11 @@ onMounted(async () => {
   justify-content: center;
 }
 .category-chip {
-  font-size: 12px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
   color: var(--muted);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 4px;
   padding: 2px 10px;
 }
 .category-chip:hover {
@@ -479,38 +492,121 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  gap: 12px;
+  margin-bottom: 14px;
 }
-.saying-card {
+.posts-title {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: -0.01em;
+}
+.section-card {
+  margin-top: 20px;
+}
+
+/* ---------- 终端会话卡片(招牌元素) ---------- */
+.term-card {
+  margin-bottom: 20px;
+  background: var(--term-bg);
+  border: 1px solid var(--term-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.term-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 20px;
-  padding: 14px 20px;
-}
-.saying-head {
-  display: flex;
-  align-items: baseline;
   gap: 8px;
-  min-width: 0;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--term-border);
+  background: color-mix(in srgb, var(--term-bg) 82%, #0d1b22);
 }
-.saying-quote {
-  font-size: 28px;
-  line-height: 1;
-  color: var(--primary);
-  font-family: Georgia, serif;
+.term-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
-.saying-text {
-  font-size: 15px;
-  color: var(--text);
-  line-height: 1.6;
+.term-dot-red {
+  background: #f87171;
+}
+.term-dot-amber {
+  background: #fbbf24;
+}
+.term-dot-green {
+  background: #34d399;
+}
+.term-title {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--term-dim);
+  flex: 1;
+  text-align: center;
+  margin-right: 58px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.term-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.term-actions .el-button {
+  --el-button-bg-color: transparent;
+  --el-button-border-color: var(--term-border);
+  --el-button-text-color: var(--term-dim);
+  --el-button-hover-bg-color: #16222b;
+  --el-button-hover-border-color: var(--term-dim);
+  --el-button-hover-text-color: var(--term-text);
+}
+.term-body {
+  padding: 16px 20px 18px;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  line-height: 1.75;
+}
+.term-line {
+  margin: 8px 0 0;
+  color: var(--term-prompt);
+}
+.term-prompt {
+  color: var(--term-accent);
+  margin-right: 8px;
+  user-select: none;
+}
+.term-out {
+  margin: 0 0 2px 20px;
+  color: var(--term-text);
   overflow-wrap: anywhere;
 }
-.saying-actions {
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
+.term-link {
+  color: var(--term-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, var(--term-text) 45%, transparent);
+}
+.term-link:hover {
+  color: #ffffff;
+}
+.term-cursor {
+  display: inline-block;
+  width: 8px;
+  height: 15px;
+  margin-left: 2px;
+  vertical-align: -2px;
+  background: var(--term-accent);
+  animation: term-blink 1.1s steps(2, start) infinite;
+}
+@keyframes term-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
 }
 .history-card {
   margin-bottom: 20px;
@@ -521,9 +617,8 @@ onMounted(async () => {
   justify-content: space-between;
   margin-bottom: 12px;
 }
-.history-head h3 {
+.history-head .eyebrow {
   margin: 0;
-  font-size: 16px;
 }
 .history-date {
   margin: 0 0 8px;
@@ -548,7 +643,7 @@ onMounted(async () => {
   min-width: 0;
 }
 .history-title {
-  font-size: 14px;
+  font-size: 14.5px;
   font-weight: 600;
 }
 .history-desc {
@@ -562,13 +657,17 @@ onMounted(async () => {
   flex-wrap: wrap;
   gap: 6px;
 }
+.code-token {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--primary);
+  background: var(--primary-weak);
+  border-radius: 4px;
+  padding: 1px 7px;
+}
 .tracking-card {
   margin-top: 20px;
   margin-bottom: 20px;
-}
-.tracking-card h3 {
-  margin: 0 0 12px;
-  font-size: 16px;
 }
 .tracking-form {
   display: flex;
@@ -595,6 +694,12 @@ onMounted(async () => {
   }
   .home-left {
     position: static;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .term-cursor {
+    animation: none;
+    opacity: 1;
   }
 }
 </style>

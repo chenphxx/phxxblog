@@ -45,7 +45,10 @@ onMounted(load)
 <template>
   <div class="page-container" v-loading="loading">
     <div class="changelog-header">
-      <h1 style="margin: 0">更新日志</h1>
+      <div>
+        <p class="eyebrow" style="margin: 0 0 4px">changelog — 更新日志</p>
+        <h1 style="margin: 0">更新日志</h1>
+      </div>
       <div v-if="!editing">
         <el-button type="primary" @click="startEdit">编辑</el-button>
       </div>
