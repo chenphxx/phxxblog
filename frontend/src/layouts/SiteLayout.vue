@@ -36,7 +36,10 @@ onMounted(async () => {
   <div class="site-layout">
     <header class="site-header">
       <div class="site-header-inner">
-        <router-link to="/" class="site-brand">{{ settings?.site_name || "chenphxx's blog" }}</router-link>
+        <router-link to="/" class="site-brand">
+          <span class="brand-user">{{ settings?.site_name || 'chenphxx' }}</span>
+          <span class="brand-host">@blog</span><span class="brand-path">:~$</span>
+        </router-link>
         <nav class="site-nav">
           <router-link to="/">首页</router-link>
           <router-link to="/archive">归档</router-link>
@@ -69,12 +72,12 @@ onMounted(async () => {
     <footer class="site-footer">
       <div class="footer-icp">
         <a href="https://beian.mps.gov.cn/#/query/webSearch?code=51150002000777" target="_blank" rel="noopener noreferrer">
-          <span class="beian-icon">🛡️</span> 川公安网备51150002000777
+          <span class="beian-icon">🛡</span> 川公安网备51150002000777
         </a>
         <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">蜀ICP备2024103895号-1</a>
       </div>
-      <div class="muted">
-        © {{ new Date().getFullYear() }} {{ settings?.site_name || "chenphxx's blog" }} · Powered by Vue &amp; FastAPI
+      <div class="footer-meta">
+        © {{ new Date().getFullYear() }} {{ settings?.site_name || 'chenphxx' }} · Vue3 + FastAPI
       </div>
     </footer>
   </div>
@@ -100,23 +103,31 @@ onMounted(async () => {
 .site-footer {
   margin-top: auto;
   text-align: center;
-  padding: 28px 16px 24px;
+  padding: 22px 16px 26px;
+  border-top: 1px solid var(--border);
+  background: var(--card-bg);
 }
 .footer-icp {
   display: flex;
   justify-content: center;
-  gap: 20px;
+  gap: 24px;
   flex-wrap: wrap;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 .footer-icp a {
+  font-family: var(--font-mono);
+  font-size: 12px;
   color: var(--muted);
-  font-size: 13px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
 }
+.footer-meta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+}
 .beian-icon {
-  font-size: 14px;
+  font-size: 12px;
 }
 </style>

@@ -39,7 +39,8 @@ onMounted(async () => {
 
 <template>
   <div class="page-container archive-page" v-loading="loading">
-    <h1>归档 <span class="muted">共 {{ totalPosts }} 篇文章</span></h1>
+    <p class="eyebrow" style="margin: 0 0 4px">archive — 归档</p>
+    <h1 style="margin: 0 0 16px">归档 <span class="muted count-label">共 {{ totalPosts }} 篇文章</span></h1>
 
     <div class="archive-body">
       <!-- 侧边栏: 年份/月份跳转 -->
@@ -104,26 +105,37 @@ onMounted(async () => {
   display: block;
   font-weight: 700;
   margin-bottom: 6px;
+  font-family: var(--font-mono);
+  font-size: 14px;
 }
 .nav-month {
   display: block;
   padding: 3px 0 3px 12px;
   color: var(--muted);
-  font-size: 13px;
+  font-family: var(--font-mono);
+  font-size: 12px;
 }
 .year-title {
   border-bottom: 2px solid var(--border);
   padding-bottom: 8px;
+  font-size: 22px;
 }
 .month-title {
   color: var(--primary);
+  font-family: var(--font-mono);
+  font-size: 15px;
 }
 .timeline-date {
-  font-size: 12px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
 }
 .timeline-title {
   font-size: 15px;
   font-weight: 600;
+}
+.count-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
 }
 @media (max-width: 768px) {
   .archive-body {

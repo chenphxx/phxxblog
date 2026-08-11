@@ -116,13 +116,16 @@ onMounted(load)
 <template>
   <div class="page-container" v-loading="loading">
     <div class="diary-header">
-      <h1 style="margin: 0">日记</h1>
+      <div>
+        <p class="eyebrow" style="margin: 0 0 4px">diary — 日记</p>
+        <h1 style="margin: 0">日记</h1>
+      </div>
       <el-button type="primary" @click="openCreate">新增日记</el-button>
     </div>
 
     <!-- 日记贡献热力图 -->
     <div class="card" style="margin-top: 16px">
-      <h3 style="margin: 0 0 12px">日记记录</h3>
+      <p class="eyebrow" style="margin: 0 0 12px">activity — 日记记录</p>
       <ContributionsChart
         :points="contributions"
         :years="contributionYears"
@@ -215,19 +218,25 @@ onMounted(load)
   display: block;
   font-weight: 700;
   margin-bottom: 6px;
+  font-family: var(--font-mono);
+  font-size: 14px;
 }
 .nav-month {
   display: block;
   padding: 3px 0 3px 12px;
   color: var(--muted);
-  font-size: 13px;
+  font-family: var(--font-mono);
+  font-size: 12px;
 }
 .year-title {
   border-bottom: 2px solid var(--border);
   padding-bottom: 8px;
+  font-size: 22px;
 }
 .month-title {
   color: var(--primary);
+  font-family: var(--font-mono);
+  font-size: 15px;
 }
 .timeline {
   position: relative;

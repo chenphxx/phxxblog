@@ -126,7 +126,9 @@ onMounted(() => {
   padding: 0 20px;
   font-weight: 700;
   font-size: 18px;
+  font-family: var(--font-mono);
   border-bottom: 1px solid var(--border);
+  color: var(--text);
 }
 .admin-header {
   display: flex;

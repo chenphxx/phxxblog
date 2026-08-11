@@ -64,7 +64,8 @@ onMounted(async () => {
 
 <template>
   <div class="page-container">
-    <h1>搜索</h1>
+    <p class="eyebrow" style="margin: 0 0 4px">search — 搜索</p>
+    <h1 style="margin: 0 0 16px">搜索</h1>
 
     <div class="search-bar">
       <el-input

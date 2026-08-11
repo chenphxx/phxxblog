@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Calendar, View, Star } from '@element-plus/icons-vue'
+import { Star } from '@element-plus/icons-vue'
 import { postApi } from '@/api'
 import type { PostDetail } from '@/types'
 import MarkdownView from '@/components/MarkdownView.vue'
@@ -60,73 +60,121 @@ onMounted(load)
 <template>
   <div class="page-container" v-loading="loading">
     <template v-if="post">
-      <article class="post-detail">
-        <el-button size="small" class="back-button" @click="goBack">← 返回</el-button>
-        <h1 class="post-detail-title">{{ post.title }}</h1>
-        <el-button v-if="canEdit" size="small" type="primary" @click="$router.push(`/write/${post.id}`)">
-          编辑
-        </el-button>
-        <div class="post-detail-meta muted">
-          <span>
-            <el-icon><Calendar /></el-icon>
-            {{ (post.published_at || post.created_at).slice(0, 10) }}
-          </span>
-          <span>作者: {{ post.author?.nickname || post.author?.username || '匿名' }}</span>
-          <router-link v-if="post.category" :to="`/search?category=${post.category.id}`">
-            <el-tag size="small" effect="plain">{{ post.category.name }}</el-tag>
-          </router-link>
-          <router-link v-for="tag in post.tags" :key="tag.id" :to="`/search?tag=${tag.id}`">
-            <el-tag size="small" type="info" effect="plain">#{{ tag.name }}</el-tag>
-          </router-link>
-          <span class="meta-right">
-            <el-icon><View /></el-icon> {{ post.views }}
+      <div class="post-column">
+        <article class="post-detail">
+          <div class="post-topbar">
+            <button class="back-link" @click="goBack">← 返回</button>
+            <el-button v-if="canEdit" size="small" @click="$router.push(`/write/${post.id}`)">编辑</el-button>
+          </div>
+          <h1 class="post-detail-title">{{ post.title }}</h1>
+          <div class="post-detail-meta">
+            <span class="meta-item">date: {{ (post.published_at || post.created_at).slice(0, 10) }}</span>
+            <span class="meta-item">author: {{ post.author?.nickname || post.author?.username || '匿名' }}</span>
+            <span class="meta-item">views: {{ post.views }}</span>
+            <span class="meta-item">likes: {{ post.likes_count }}</span>
+            <router-link v-if="post.category" :to="`/search?category=${post.category.id}`" class="cat-chip">
+              {{ post.category.name }}/
+            </router-link>
+            <router-link v-for="tag in post.tags" :key="tag.id" :to="`/search?tag=${tag.id}`" class="tag-token">
+              #{{ tag.name }}
+            </router-link>
             <el-button
+              class="like-btn"
               size="small"
               :type="liked ? 'warning' : 'default'"
               :icon="Star"
               circle
+              :title="liked ? '取消点赞' : '点赞'"
               @click="toggleLike"
             />
-            {{ post.likes_count }}
-          </span>
-        </div>
+          </div>
 
-        <img v-if="post.cover_image" :src="post.cover_image" class="post-cover" alt="封面" />
-        <MarkdownView :content="post.content_md" />
-      </article>
+          <img v-if="post.cover_image" :src="post.cover_image" class="post-cover" alt="封面" />
+          <MarkdownView :content="post.content_md" />
+        </article>
 
-      <CommentSection :post-id="post.id" />
+        <CommentSection :post-id="post.id" />
+      </div>
     </template>
     <el-empty v-else-if="!loading" description="文章不存在或未发布" />
   </div>
 </template>
 
 <style scoped>
-.post-detail-title {
-  font-size: 30px;
-  margin: 0 0 12px;
+.post-column {
+  max-width: 880px;
+  margin: 0 auto;
 }
-.back-button {
-  margin-bottom: 12px;
+.post-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.back-link {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.back-link:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+.post-detail-title {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  margin: 0 0 16px;
 }
 .post-detail-meta {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   flex-wrap: wrap;
-  margin-bottom: 20px;
+  margin-bottom: 22px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
 }
-.meta-right {
+.meta-item {
+  white-space: nowrap;
+}
+.cat-chip {
+  color: var(--muted);
+}
+.cat-chip:hover {
+  color: var(--primary);
+  text-decoration: none;
+}
+.tag-token {
+  color: var(--primary);
+  background: var(--primary-weak);
+  border-radius: 4px;
+  padding: 1px 7px;
+  font-size: 11px;
+}
+.tag-token:hover {
+  color: var(--primary-strong);
+  text-decoration: none;
+}
+.like-btn {
   margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
 }
 .post-cover {
   width: 100%;
-  border-radius: 8px;
+  border-radius: var(--radius);
   margin-bottom: 20px;
   max-height: 400px;
   object-fit: cover;
+  border: 1px solid var(--border);
 }
 </style>
