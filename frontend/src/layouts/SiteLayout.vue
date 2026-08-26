@@ -9,6 +9,7 @@ const auth = useAuthStore()
 const hasToken = computed(() => !!auth.accessToken)
 const isAdmin = computed(() => auth.user?.role_codes.includes('admin'))
 const settings = ref<PublicSettings | null>(null)
+const beianList = computed(() => (settings.value?.beian_info ?? []).filter((b) => b.name))
 
 onMounted(async () => {
   // 页面访问埋点(PV/UV)
@@ -70,6 +71,12 @@ onMounted(async () => {
     </div>
 
     <footer class="site-footer">
+      <div v-if="beianList.length" class="footer-icp">
+        <a v-for="(item, index) in beianList" :key="index" :href="item.url" target="_blank" rel="noopener noreferrer">
+          <span v-if="item.icon" class="beian-icon">{{ item.icon }}</span>
+          {{ item.name }}
+        </a>
+      </div>
       <div class="footer-meta">
         © {{ new Date().getFullYear() }} {{ settings?.site_name || 'chenphxx' }} · Vue3 + FastAPI
       </div>
@@ -101,11 +108,27 @@ onMounted(async () => {
   border-top: 1px solid var(--border);
   background: var(--card-bg);
 }
-
+.footer-icp {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.footer-icp a {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
 .footer-meta {
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--muted);
 }
-
+.beian-icon {
+  font-size: 12px;
+}
 </style>

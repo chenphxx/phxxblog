@@ -143,6 +143,7 @@ export interface PublicSettings {
   tech_tags: string[]
   social_links: { name: string; url: string }[]
   website_links: { name: string; url: string }[]
+  beian_info: { name: string; url: string; icon?: string }[]
 }
 
 export interface LinkPreview {

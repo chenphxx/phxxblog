@@ -14,6 +14,7 @@ const form = ref({
   tech_tags: [] as string[],
   social_links: [] as { name: string; url: string }[],
   website_links: [] as { name: string; url: string }[],
+  beian_info: [] as { name: string; url: string; icon?: string }[],
 })
 const saving = ref(false)
 const uploadingIcon = ref(false)
@@ -40,6 +41,7 @@ async function load() {
     tech_tags: parseArray<string[]>(data.tech_tags, []),
     social_links: parseArray<{ name: string; url: string }[]>(data.social_links, []),
     website_links: parseArray<{ name: string; url: string }[]>(data.website_links, []),
+    beian_info: parseArray<{ name: string; url: string; icon?: string }[]>(data.beian_info, []),
   }
 }
 
@@ -134,6 +136,17 @@ onMounted(load)
               <el-button type="danger" text @click="form.website_links.splice(index, 1)">删除</el-button>
             </div>
             <el-button size="small" @click="form.website_links.push({ name: '', url: '' })">添加链接</el-button>
+          </div>
+        </el-form-item>
+        <el-form-item label="网站备案信息(选填, 显示在页脚)">
+          <div style="width: 100%">
+            <div v-for="(item, index) in form.beian_info" :key="index" class="link-row">
+              <el-input v-model="item.name" placeholder="备案名称(如: 蜀ICP备xxxxxxxx号-1)" style="width: 200px" />
+              <el-input v-model="item.url" placeholder="链接(如: https://beian.miit.gov.cn/)" />
+              <el-input v-model="item.icon" placeholder="图标(选填, 如: 🛡)" style="width: 90px" />
+              <el-button type="danger" text @click="form.beian_info.splice(index, 1)">删除</el-button>
+            </div>
+            <el-button size="small" @click="form.beian_info.push({ name: '', url: '', icon: '' })">添加备案信息</el-button>
           </div>
         </el-form-item>
       </el-form>

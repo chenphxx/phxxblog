@@ -24,6 +24,7 @@ PUBLIC_KEYS = [
     "tech_tags",
     "social_links",
     "website_links",
+    "beian_info",
 ]
 
 DEFAULTS = {
@@ -37,6 +38,7 @@ DEFAULTS = {
     "tech_tags": "Python, Vue, FastAPI",
     "social_links": "[]",
     "website_links": "[]",
+    "beian_info": "[]",
 }
 
 
@@ -49,7 +51,7 @@ def public_settings(db: Session = Depends(get_db)):
     # 对列表型字段尝试 JSON 解析
     import json
 
-    for key in ("tech_tags", "social_links", "website_links"):
+    for key in ("tech_tags", "social_links", "website_links", "beian_info"):
         raw = result.get(key, "")
         if isinstance(raw, str):
             try:

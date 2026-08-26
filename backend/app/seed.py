@@ -63,6 +63,7 @@ DEFAULT_SETTINGS = {
     "tech_tags": ('["Python", "Vue", "FastAPI", "MySQL"]', "首页技术标签(JSON数组)"),
     "social_links": ('[{"name": "GitHub", "url": "https://github.com/chenphxx"}]', "社交账号链接(JSON数组)"),
     "website_links": ("[]", "网站链接(JSON数组)"),
+    "beian_info": ("[]", "网站备案信息(JSON数组, 元素含 name/url/icon)"),
 }
 
 
