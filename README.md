@@ -42,8 +42,9 @@
 ```text
 phxxblog/
 ├── README.md              # 本文件: 架构与模块设计说明
-├── mysql.md               # 数据库表结构设计
-├── docs/                  # 开发文档(API 设计、开发进度等)
+├── docs/                  # 开发文档(接口、数据库表结构)
+│   ├── api.md             # 接口文档
+│   └── mysql.md           # 数据库表结构设计
 ├── assets/                # 附件/媒体存放目录(上传文件落盘位置)
 ├── frontend/              # 前端工程(Vue3 + TS + Vite)
 │   └── src/
