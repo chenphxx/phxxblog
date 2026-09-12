@@ -5,6 +5,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { postApi } from '@/api'
 import type { PostItem } from '@/types'
 import { formatDateTime } from '@/utils/datetime'
+import MetaIcon from '@/components/MetaIcon.vue'
 
 const router = useRouter()
 const statusFilter = ref<number | undefined>(undefined)
@@ -256,12 +257,23 @@ onMounted(load)
             <el-tag size="small" :type="STATUS_TYPE[row.status]">{{ STATUS_TEXT[row.status] }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="views" label="阅读" width="70" />
-        <el-table-column prop="likes_count" label="点赞" width="70" />
+        <el-table-column prop="views" width="70">
+          <template #header>
+            <span class="th-icon" title="阅读量"><MetaIcon name="eye" /> 阅读</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="likes_count" width="70">
+          <template #header>
+            <span class="th-icon" title="点赞数"><MetaIcon name="thumb" /> 点赞</span>
+          </template>
+        </el-table-column>
         <el-table-column label="作者" width="100">
           <template #default="{ row }">{{ row.author?.nickname || row.author?.username || '-' }}</template>
         </el-table-column>
         <el-table-column label="更新时间" width="170">
+          <template #header>
+            <span class="th-icon" title="最后更新时间"><MetaIcon name="calendar" /> 更新时间</span>
+          </template>
           <template #default="{ row }">{{ formatDateTime(row.updated_at) }}</template>
         </el-table-column>
         <el-table-column label="操作" width="320" fixed="right">
@@ -354,6 +366,15 @@ onMounted(load)
 </template>
 
 <style scoped>
+/* 表头图标: 与文字垂直居中, 图标略淡 */
+.th-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.th-icon .meta-icon {
+  opacity: 0.7;
+}
 .toolbar {
   display: flex;
   align-items: center;

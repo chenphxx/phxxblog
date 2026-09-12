@@ -16,7 +16,7 @@ import {
   User,
 } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
-import ThemeToggle from '@/components/ThemeToggle.vue'
+import ThemeSwitcher from '@/components/ThemeSwitcher.vue'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -106,7 +106,7 @@ onMounted(() => {
             <el-icon><Notebook /></el-icon>
             <span>API 文档</span>
           </el-button>
-          <ThemeToggle />
+          <ThemeSwitcher />
           <el-dropdown @command="(cmd: string) => cmd === 'logout' && logout()">
             <span class="user-chip">
               <el-avatar :size="28">{{ (auth.user?.nickname || '管')[0] }}</el-avatar>

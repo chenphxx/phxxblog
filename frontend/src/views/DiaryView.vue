@@ -6,6 +6,7 @@ import type { ContributionPoint, DiaryEntry } from '@/types'
 import MarkdownView from '@/components/MarkdownView.vue'
 import VditorEditor from '@/components/VditorEditor.vue'
 import ContributionsChart from '@/components/ContributionsChart.vue'
+import MetaIcon from '@/components/MetaIcon.vue'
 import { formatDateTime } from '@/utils/datetime'
 
 const entries = ref<DiaryEntry[]>([])
@@ -245,7 +246,10 @@ onMounted(load)
             <h3 :id="`diary-${month}`" class="month-title">{{ month }}</h3>
             <div class="timeline">
               <div v-for="entry in groups.get(month) || []" :key="entry.id" class="timeline-item">
-                <div class="timeline-date muted">{{ formatDateTime(entry.created_at) }}</div>
+                <div class="timeline-date muted">
+                  <MetaIcon name="calendar" />
+                  <span>{{ formatDateTime(entry.created_at) }}</span>
+                </div>
                 <div class="card diary-card">
                   <MarkdownView :content="entry.content_md" />
                   <div class="diary-actions">
@@ -430,6 +434,9 @@ onMounted(load)
   background: var(--primary);
 }
 .timeline-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 12px;
   margin-bottom: 4px;
 }

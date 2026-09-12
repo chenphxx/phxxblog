@@ -1,0 +1,44 @@
+/* ============================================================
+ * 增强层: 柔和抬升族 (soft)
+ * 大圆角、渐变主色、多层柔和阴影。悬停是「轻轻抬起来」。
+ * 占位符由 design/themes/generate-themes.mjs 替换。
+ * ============================================================ */
+
+@@BASE@@
+
+/* ---------- 柔和族专有: 文章卡悬停左移 + 左侧色条生长 ---------- */
+.post-card:hover {
+  transform: translateY(-3px);
+}
+
+.post-card:hover::before {
+  transform: scaleY(1);
+}
+
+/* ---------- 站点头部: 顶部一条渐变光带 ---------- */
+.site-header::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  opacity: 0.35;
+}
+
+/* ---------- 终端卡片: 顶部渐变光带 ---------- */
+.term-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--grad-from), var(--grad-to));
+}
+
+/* ---------- 编辑区: 引用块配色跟随主题 ---------- */
+.markdown-body blockquote {
+  border-left-color: var(--primary);
+}

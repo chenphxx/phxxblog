@@ -1,0 +1,87 @@
+/* ============================================================
+ * 默认主题: 预设 (Preset)
+ * 新访客(未在 localStorage 里存过主题)看到的就是这一套。
+ * 下面的裸 :root 浅色令牌属于它; 其余主题只写
+ * html[data-theme='<id>'], 两者互不覆盖。
+ * 想换默认主题: 把 tokens.mjs 里想用的那套挪到 THEMES 数组第一位。
+ * ============================================================ */
+
+:root {
+  /* 超过 20 行的代码块折叠后的高度(MarkdownView 会覆盖这个值) */
+  --code-fold-height: 420px;
+
+  /*
+   * 字体: 字母 / 数字 / 符号统一用 Cascadia Code。
+   * Cascadia Code 不含中文字形, 中文会自动回退到后面的系统字体
+   * (PingFang SC / 微软雅黑), 中文排版质量不受影响。
+   */
+  --font-sans: 'Cascadia Code', 'Cascadia Mono', ui-monospace, 'PingFang SC', 'Microsoft YaHei',
+    'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'Cascadia Code', 'Cascadia Mono', 'JetBrains Mono', ui-monospace, 'SFMono-Regular',
+    Consolas, 'Liberation Mono', monospace;
+
+  --bg: #f6f6f7;
+  --card-bg: #ffffff;
+  --text: #3c3c43;
+  --muted: #67676c;
+  --border: #e2e2e3;
+  --border-strong: #c2c2c4;
+  --primary: #3a5ccc;
+  --primary-strong: #3451b2;
+  --primary-weak: #eff2fd;
+  --on-primary: #ffffff;
+  --link: #3451b2;
+  --code-bg: #f6f6f7;
+  --code-block-bg: #ffffff;
+  --ok: #18794e;
+  --warn: #915930;
+  --danger: #b8272c;
+  --ring: rgba(58, 92, 204, 0.28);
+  --grad-from: #5672cd;
+  --grad-to: #3a5ccc;
+  --term-bg: #1b1b1f;
+  --term-border: #2e2e32;
+  --term-text: #dfdfd6;
+  --term-dim: #8f8f97;
+  --term-accent: #a8b1ff;
+  --term-prompt: #ffffff;
+  --cell-0: #ebedf0;
+  --cell-1: #9be9a8;
+  --cell-2: #40c463;
+  --cell-3: #30a14e;
+  --cell-4: #216e39;
+
+--radius: 8px;
+--radius-sm: 8px;
+--radius-lg: 8px;
+--radius-pill: 999px;
+--shadow: 0 1px 2px rgba(16, 45, 32, 0.04), 0 8px 24px -14px rgba(16, 45, 32, 0.18);
+--shadow-hover: 0 4px 10px -4px var(--ring), 0 22px 40px -22px rgba(16, 45, 32, 0.28);
+--ease: cubic-bezier(0.22, 0.72, 0.28, 1);
+--dur: 220ms;
+--accent-grad: linear-gradient(135deg, var(--grad-from), var(--grad-to));
+
+/* Element Plus 主色对齐(色阶由主色推导, 保证 EP 组件与主题一致) */
+--el-color-primary: #3a5ccc;
+--el-color-primary-light-3: #758ddb;
+--el-color-primary-light-5: #9daee6;
+--el-color-primary-light-7: #c4cef0;
+--el-color-primary-light-8: #d8def5;
+--el-color-primary-light-9: #ebeffa;
+--el-color-primary-dark-2: #2e4aa3;
+--el-border-radius-base: 10px;
+--el-border-radius-small: 8px;
+--el-border-radius-round: 999px;
+--el-bg-color: #ffffff;
+--el-bg-color-overlay: #ffffff;
+--el-fill-color: #f6f6f7;
+--el-fill-color-light: color-mix(in srgb, #f6f6f7 60%, #ffffff);
+--el-fill-color-lighter: color-mix(in srgb, #f6f6f7 30%, #ffffff);
+--el-text-color-primary: #3c3c43;
+--el-text-color-regular: color-mix(in srgb, #3c3c43 78%, #67676c);
+--el-text-color-secondary: #67676c;
+--el-border-color: #c2c2c4;
+--el-border-color-light: #e2e2e3;
+--el-border-color-lighter: color-mix(in srgb, #e2e2e3 60%, #ffffff);
+}
+

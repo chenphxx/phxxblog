@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import ThemeToggle from '@/components/ThemeToggle.vue'
+import ThemeSwitcher from '@/components/ThemeSwitcher.vue'
 import { settingsApi, statsApi } from '@/api'
 import { useAuthStore } from '@/stores/auth'
 import type { PublicSettings } from '@/types'
@@ -69,7 +69,7 @@ onMounted(async () => {
           </template>
           <router-link v-else to="/admin/login?redirect=/write">登录</router-link>
         </nav>
-        <ThemeToggle />
+        <ThemeSwitcher />
       </div>
     </header>
 

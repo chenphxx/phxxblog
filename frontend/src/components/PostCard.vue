@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { PostItem } from '@/types'
+import MetaIcon from '@/components/MetaIcon.vue'
 import { chipStyle, LIKES_COLOR, VIEWS_COLOR } from '@/utils/chipColor'
 import { formatDateTime } from '@/utils/datetime'
 
@@ -25,28 +26,51 @@ const STATUS_TEXT: Record<number, string> = {
       </el-tag>
     </div>
     <p v-if="post.summary" class="post-summary">{{ post.summary }}</p>
+
     <div class="post-meta">
       <router-link
         v-if="post.category"
         :to="`/search?category=${post.category.id}`"
-        class="chip"
+        class="chip chip-icon"
         :style="chipStyle(post.category.name, post.category.color)"
       >
-        {{ post.category.name }}
+        <MetaIcon name="folder" />
+        <span>{{ post.category.name }}</span>
       </router-link>
-      <span class="meta-item">约 {{ post.word_count }} 字 · 大约 {{ post.reading_minutes }} 分钟</span>
+
+      <span class="meta-item">
+        <MetaIcon name="file" />
+        <span>约 {{ post.word_count }} 字</span>
+      </span>
+      <span class="meta-item">
+        <MetaIcon name="clock" />
+        <span>{{ post.reading_minutes }} 分钟</span>
+      </span>
+
       <router-link
         v-for="tag in post.tags"
         :key="tag.id"
         :to="`/search?tag=${tag.id}`"
-        class="chip"
+        class="chip chip-icon"
         :style="chipStyle(tag.name, tag.color)"
       >
-        #{{ tag.name }}
+        <MetaIcon name="hash" />
+        <span>{{ tag.name }}</span>
       </router-link>
-      <span class="meta-item">{{ formatDateTime(post.published_at || post.created_at) }}</span>
-      <span class="chip" :style="chipStyle('views', VIEWS_COLOR)">views {{ post.views }}</span>
-      <span class="chip" :style="chipStyle('likes', LIKES_COLOR)">likes {{ post.likes_count }}</span>
+
+      <span class="meta-item">
+        <MetaIcon name="calendar" />
+        <span>{{ formatDateTime(post.published_at || post.created_at) }}</span>
+      </span>
+
+      <span class="chip chip-icon" :style="chipStyle('views', VIEWS_COLOR)">
+        <MetaIcon name="eye" />
+        <span>{{ post.views }}</span>
+      </span>
+      <span class="chip chip-icon" :style="chipStyle('likes', LIKES_COLOR)">
+        <MetaIcon name="thumb" />
+        <span>{{ post.likes_count }}</span>
+      </span>
     </div>
   </article>
 </template>
@@ -100,7 +124,22 @@ const STATUS_TEXT: Record<number, string> = {
   font-size: 11.5px;
   color: var(--muted);
 }
+/* 带图标的元信息: 图标与文字基线对齐, 图标略淡以免抢戏 */
 .meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   white-space: nowrap;
+}
+.meta-item .meta-icon {
+  opacity: 0.75;
+}
+/* 带图标的彩色标签: 沿用 chipStyle 的配色, 只加图标与间距 */
+.chip-icon {
+  gap: 4px;
+  padding: 2px 9px;
+}
+.chip-icon .meta-icon {
+  opacity: 0.85;
 }
 </style>

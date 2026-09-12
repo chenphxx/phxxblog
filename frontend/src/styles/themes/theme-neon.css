@@ -1,0 +1,487 @@
+/* ============================================================
+ * 主题: 霓虹青柠 (Neon Lime)
+ * 荧光青柠 + 近黑底色，方正硬阴影与等宽标题，开发者气质最强。
+ * ------------------------------------------------------------
+ * 本文件由 design/themes/generate-themes.mjs 生成, 请勿手改。
+ * 改配色/圆角请改 design/themes/tokens.mjs, 然后重新运行:
+ *   node design/themes/generate-themes.mjs
+ *
+ * 切换方式: html[data-theme='neon'] (见 stores/theme.ts), 深色再加 .dark
+ * ============================================================ */
+
+/* ---------------- 与主题模式无关的共享令牌 ---------------- */
+:root {
+  /* 超过 20 行的代码块折叠后的高度(MarkdownView 会覆盖这个值) */
+  --code-fold-height: 420px;
+
+  /*
+   * 字体: 字母 / 数字 / 符号统一用 Cascadia Code。
+   *
+   * Cascadia Code 不含中文字形, 所以中文字符会自动回退到后面的系统字体
+   * (PingFang SC / 微软雅黑), 中文排版质量不受影响 —— 这正是想要的效果:
+   * 西文数字符号是等宽代码字体, 中文仍是标准无衬线。
+   */
+  --font-sans: 'Cascadia Code', 'Cascadia Mono', ui-monospace, 'PingFang SC', 'Microsoft YaHei',
+    'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'Cascadia Code', 'Cascadia Mono', 'JetBrains Mono', ui-monospace, 'SFMono-Regular',
+    Consolas, 'Liberation Mono', monospace;
+}
+
+/* ---------------- 浅色 ---------------- */
+/* 这里刻意不写裸 :root —— 12 套主题都写 :root 的话后者会盖掉前者,
+   「默认主题」就无法确定。默认主题的浅色令牌由生成器单独写进 :root。 */
+html[data-theme='neon'] {
+  --bg: #f4f6ec;
+  --card-bg: #ffffff;
+  --text: #131a10;
+  --muted: #5d6852;
+  --border: #dde3c9;
+  --border-strong: #b9c39c;
+  --primary: #5f9c00;
+  --primary-strong: #4a7a00;
+  --primary-weak: #eaf5d2;
+  --on-primary: #0a1405;
+  --link: #4a7a00;
+  --code-bg: #eef1e3;
+  --code-block-bg: #ffffff;
+  --ok: #4e8f00;
+  --warn: #a16207;
+  --danger: #c02b2b;
+  --ring: rgba(95, 156, 0, 0.3);
+  --grad-from: #7fbf00;
+  --grad-to: #4e8f00;
+  --term-bg: #0a0f0b;
+  --term-border: #22331f;
+  --term-text: #d7f7a8;
+  --term-dim: #6b7f5f;
+  --term-accent: #a3e635;
+  --term-prompt: #e8f5d5;
+  --cell-0: #e8edda;
+  --cell-1: #cbe89c;
+  --cell-2: #9ed94f;
+  --cell-3: #6cb01f;
+  --cell-4: #437a00;
+
+--radius: 6px;
+--radius-sm: 5px;
+--radius-lg: 6px;
+--radius-pill: 999px;
+--shadow: 0 1px 2px rgba(16, 45, 32, 0.04), 0 8px 24px -14px rgba(16, 45, 32, 0.18);
+--shadow-hover: 0 4px 10px -4px var(--ring), 0 22px 40px -22px rgba(16, 45, 32, 0.28);
+--ease: cubic-bezier(0.22, 0.72, 0.28, 1);
+--dur: 170ms;
+--accent-grad: linear-gradient(135deg, var(--grad-from), var(--grad-to));
+
+/* Element Plus 主色对齐(色阶由主色推导, 保证 EP 组件与主题一致) */
+--el-color-primary: #5f9c00;
+--el-color-primary-light-3: #8fba4d;
+--el-color-primary-light-5: #afce80;
+--el-color-primary-light-7: #cfe1b3;
+--el-color-primary-light-8: #dfebcc;
+--el-color-primary-light-9: #eff5e6;
+--el-color-primary-dark-2: #4c7d00;
+--el-border-radius-base: 6px;
+--el-border-radius-small: 5px;
+--el-border-radius-round: 999px;
+--el-bg-color: #ffffff;
+--el-bg-color-overlay: #ffffff;
+--el-fill-color: #f4f6ec;
+--el-fill-color-light: color-mix(in srgb, #f4f6ec 60%, #ffffff);
+--el-fill-color-lighter: color-mix(in srgb, #f4f6ec 30%, #ffffff);
+--el-text-color-primary: #131a10;
+--el-text-color-regular: color-mix(in srgb, #131a10 78%, #5d6852);
+--el-text-color-secondary: #5d6852;
+--el-border-color: #b9c39c;
+--el-border-color-light: #dde3c9;
+--el-border-color-lighter: color-mix(in srgb, #dde3c9 60%, #ffffff);
+}
+
+/* ---------------- 深色 ---------------- */
+html[data-theme='neon'].dark {
+  --bg: #070d0a;
+  --card-bg: #0d1611;
+  --text: #e9f5e0;
+  --muted: #92a48a;
+  --border: #1e2b1e;
+  --border-strong: #33452c;
+  --primary: #a3e635;
+  --primary-strong: #c2f05c;
+  --primary-weak: #17280c;
+  --on-primary: #0a1405;
+  --link: #a3e635;
+  --code-bg: #0a130d;
+  --code-block-bg: #1e1e1e;
+  --ok: #a3e635;
+  --warn: #fbbf24;
+  --danger: #f87171;
+  --ring: rgba(163, 230, 53, 0.34);
+  --grad-from: #c2f05c;
+  --grad-to: #34d399;
+  --term-bg: #040907;
+  --term-border: #1c2a1a;
+  --term-text: #d7f7a8;
+  --term-dim: #5f7355;
+  --term-accent: #a3e635;
+  --term-prompt: #e9f5e0;
+  --cell-0: #16220f;
+  --cell-1: #2c4413;
+  --cell-2: #4d7a15;
+  --cell-3: #7cb81c;
+  --cell-4: #c2f05c;
+
+--radius: 6px;
+--radius-sm: 5px;
+--radius-lg: 6px;
+--radius-pill: 999px;
+--shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 12px 32px -20px rgba(0, 0, 0, 0.7);
+--shadow-hover: 0 6px 14px -6px var(--ring), 0 26px 46px -26px rgba(0, 0, 0, 0.8);
+--ease: cubic-bezier(0.22, 0.72, 0.28, 1);
+--dur: 170ms;
+--accent-grad: linear-gradient(135deg, var(--grad-from), var(--grad-to));
+
+/* Element Plus 主色对齐(色阶由主色推导, 保证 EP 组件与主题一致) */
+--el-color-primary: #a3e635;
+--el-color-primary-light-3: #bfee72;
+--el-color-primary-light-5: #d1f39a;
+--el-color-primary-light-7: #e3f8c2;
+--el-color-primary-light-8: #edfad7;
+--el-color-primary-light-9: #f6fdeb;
+--el-color-primary-dark-2: #82b82a;
+--el-border-radius-base: 6px;
+--el-border-radius-small: 5px;
+--el-border-radius-round: 999px;
+--el-bg-color: #0d1611;
+--el-bg-color-overlay: #0d1611;
+--el-fill-color: #070d0a;
+--el-fill-color-light: color-mix(in srgb, #070d0a 60%, #0d1611);
+--el-fill-color-lighter: color-mix(in srgb, #070d0a 30%, #0d1611);
+--el-text-color-primary: #e9f5e0;
+--el-text-color-regular: color-mix(in srgb, #e9f5e0 78%, #92a48a);
+--el-text-color-secondary: #92a48a;
+--el-border-color: #33452c;
+--el-border-color-light: #1e2b1e;
+--el-border-color-lighter: color-mix(in srgb, #1e2b1e 60%, #0d1611);
+}
+
+/* ============================================================
+ * 增强层
+ * ============================================================ */
+
+/* ============================================================
+ * 增强层: 硬朗位移族 (hard)
+ * 方正小圆角、偏移硬阴影、位移式反馈。悬停是「按住往右上顶一格」。
+ * 占位符由 design/themes/generate-themes.mjs 替换。
+ * ============================================================ */
+
+/* ---------- 链接/强调文字统一走 --link, 保证对比度 ---------- */
+a {
+  color: var(--link);
+}
+
+/* ---------- 卡片 ---------- */
+.card {
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease),
+    border-color var(--dur) var(--ease), background-color 0.35s var(--ease);
+}
+
+.card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-hover);
+}
+
+/* ---------- 文章卡 ---------- */
+.post-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+
+.post-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--primary);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform var(--dur) var(--ease), width var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
+
+.post-card:hover::before {
+  transform: scaleY(1);
+}
+
+.post-title a {
+  transition: color var(--dur) var(--ease);
+}
+
+.post-title a:hover {
+  color: var(--primary);
+}
+
+/* ---------- 小标签 ---------- */
+.chip {
+  border-radius: var(--radius-pill);
+  padding: 2px 10px;
+  transition: transform var(--dur) var(--ease), filter var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
+}
+
+.chip:hover {
+  transform: translateY(-1px);
+  filter: saturate(1.25);
+}
+
+/* ---------- 按钮 ---------- */
+.el-button {
+  font-family: var(--font-sans);
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease),
+    background-color var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.el-button--primary:not(.is-text):not(.is-link) {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--on-primary);
+  box-shadow: 3px 3px 0 color-mix(in srgb, var(--primary) 26%, transparent);
+}
+
+.el-button--primary:not(.is-text):not(.is-link):hover,
+.el-button--primary:not(.is-text):not(.is-link):focus-visible {
+  background: var(--primary-strong);
+  border-color: var(--primary-strong);
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 color-mix(in srgb, var(--primary) 34%, transparent), 0 0 22px -6px var(--ring);
+}
+
+.el-button--primary:not(.is-text):not(.is-link):active {
+  transform: translate(1px, 1px);
+}
+
+.el-button.is-circle {
+  border-radius: var(--radius-sm);
+}
+
+.el-button:not(.is-circle):not(.is-round) {
+  border-radius: var(--radius-sm);
+}
+
+/* ---------- 输入框: 聚焦光环 ---------- */
+.el-input__wrapper,
+.el-textarea__inner,
+.el-select__wrapper {
+  border-radius: var(--radius-sm);
+  transition: box-shadow var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+
+.el-input__wrapper.is-focus,
+.el-select__wrapper.is-focused {
+  box-shadow: 0 0 0 1px var(--primary) inset, 0 0 0 4px var(--ring);
+}
+
+/* ---------- 分页 ---------- */
+.el-pagination.is-background .el-pager li {
+  border-radius: var(--radius-sm);
+  transition: transform var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+
+.el-pagination.is-background .el-pager li:not(.is-active):hover {
+  transform: translateY(-1px);
+}
+
+.el-pagination.is-background .el-pager li.is-active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--on-primary);
+}
+
+/* ---------- 消息 / 弹窗 / 下拉 ---------- */
+.el-message {
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-hover);
+}
+
+.el-message-box,
+.el-dialog,
+.el-dropdown__popper,
+.el-popper.is-light {
+  border-radius: var(--radius);
+}
+
+.el-dialog {
+  box-shadow: var(--shadow-hover);
+}
+
+/* ---------- 站点头部与导航 ---------- */
+.site-header {
+  transition: box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+.site-nav a {
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+
+.site-nav a:hover {
+  background: var(--primary-weak);
+  color: var(--primary);
+}
+
+.site-nav a.router-link-active {
+  color: var(--primary);
+  background: var(--primary-weak);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 35%, transparent);
+}
+
+
+
+.site-brand {
+  transition: opacity var(--dur) var(--ease);
+}
+
+.site-brand:hover {
+  opacity: 0.86;
+}
+
+/* ---------- 终端卡片 ---------- */
+.term-card {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+
+
+/* ---------- 归档时间轴 ---------- */
+.timeline-item::before {
+  transition: box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
+}
+
+.timeline-item:hover::before {
+  box-shadow: 0 0 0 2px var(--primary), 0 0 18px -2px var(--ring);
+  transform: none;
+}
+
+/* ---------- 正文 ---------- */
+.markdown-body a {
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, var(--primary) 55%, transparent);
+  transition: color var(--dur) var(--ease), text-decoration-color var(--dur) var(--ease);
+}
+
+.markdown-body a:hover {
+  text-decoration-color: var(--primary);
+}
+
+
+
+/* ---------- 入场动画与主题过渡 ---------- */
+@keyframes snap-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.site-main > * {
+  animation: snap-in 300ms var(--ease) both;
+}
+
+/* 切换主题/深浅色时让颜色平滑过渡, 不闪白 */
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition: background-color 320ms var(--ease), border-color 320ms var(--ease),
+    color 320ms var(--ease), fill 320ms var(--ease) !important;
+}
+
+/* ---------- 尊重系统减少动态效果偏好 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .site-main > *,
+  .post-card,
+  .card,
+  .el-button,
+  .timeline-item:hover::before {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
+/* ---------- 硬朗族专有: 文章卡左侧色条常显, 悬停变宽并位移 ---------- */
+.post-card {
+  padding-left: 22px;
+}
+
+.post-card::before {
+  width: 2px;
+  transform: scaleY(1);
+  background: var(--primary);
+}
+
+.post-card:hover {
+  transform: translate(-2px, -2px);
+}
+
+.post-card:hover::before {
+  width: 4px;
+  box-shadow: 0 0 20px -4px var(--ring);
+}
+
+/* ---------- 站点头部: 底部一条荧光细线 ---------- */
+.site-header::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  opacity: 0.55;
+}
+
+/* ---------- 标题与终端使用等宽字体 ---------- */
+.post-title {
+  font-family: var(--font-mono);
+  letter-spacing: -0.01em;
+}
+
+/* ---------- 终端卡片: 扫描线 + 光晕 ---------- */
+.term-card {
+  box-shadow: var(--shadow-hover);
+}
+
+.term-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.035) 0 1px,
+    transparent 1px 3px
+  );
+}
+
+.term-cursor {
+  box-shadow: 0 0 18px -2px var(--primary);
+}
+
+/* ---------- 编辑区: 表头与行分隔用实线 ---------- */
+.markdown-body blockquote {
+  border-left-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+}

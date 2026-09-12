@@ -31,9 +31,17 @@
   --term-prompt: #e2e8f0;
 
   /* 字体 */
-  --font-sans: 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-  --font-mono: 'Cascadia Code', 'JetBrains Mono', 'SFMono-Regular', Consolas, 'Liberation Mono',
-    'Courier New', monospace;
+  /*
+   * 字母 / 数字 / 符号统一用 Cascadia Code。
+   * Cascadia Code 不含中文字形, 中文会自动回退到后面的系统字体
+   * (PingFang SC / 微软雅黑), 所以中文排版不受影响。
+   * 注意: 这两项与 design/themes/template.css 里的同名令牌保持一致,
+   * 主题 CSS 是按主题分文件生成的, 每个文件都会写入这份定义。
+   */
+  --font-sans: 'Cascadia Code', 'Cascadia Mono', ui-monospace, 'PingFang SC', 'Microsoft YaHei',
+    'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'Cascadia Code', 'Cascadia Mono', 'JetBrains Mono', ui-monospace, 'SFMono-Regular',
+    Consolas, 'Liberation Mono', monospace;
 
   /* Element Plus 主色对齐 */
   --el-color-primary: #0e7490;
@@ -181,6 +189,29 @@ a:hover {
   filter: saturate(1.2);
 }
 
+/* 带图标的标签(分类/标签/阅读量…): 图标与文字对齐, 图标略淡不抢戏。
+   放全局是因为 PostCard / PostDetailView / HomeView 都会用到。 */
+.chip-icon {
+  gap: 4px;
+  padding: 1px 9px;
+}
+
+.chip-icon .meta-icon {
+  opacity: 0.85;
+}
+
+/* 带图标的普通元信息(字数/时长/日期…) */
+.meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.meta-item .meta-icon {
+  opacity: 0.75;
+}
+
 /* 代码注释式小标签: // 区块标题 */
 .eyebrow {
   font-family: var(--font-mono);
@@ -255,6 +286,29 @@ a:hover {
   background: var(--code-bg);
   padding: 0.15em 0.4em;
   border-radius: 4px;
+}
+
+/*
+ * 正文与 Vditor 预览区的字体必须显式覆盖。
+ *
+ * Vditor 自带样式里的 `.vditor-reset`(见 vditor/dist/index.css)写的是硬编码字体栈
+ * ("Helvetica Neue", …, "Microsoft Yahei", sans-serif), 并不引用 var(--font-sans)。
+ * 它是 class 选择器(特异性 0,1,0), 高于 body 的类型选择器(0,0,1),
+ * 因此 MarkdownView 的根节点 <div class="markdown-body vditor-reset"> 里
+ * 所有文字都会走 Vditor 的字体 —— 表现为"主题换了字体但正文没变"。
+ * 这里用同样的 class 特异性、但更晚加载(主题入口 @import theme.css 在前)把它压回去。
+ */
+.markdown-body,
+.vditor-reset {
+  font-family: var(--font-sans);
+}
+
+/* 代码块字体同理: Vditor 给 code 用的是 mononoki/Consolas 而不是 --font-mono */
+.markdown-body code,
+.markdown-body pre,
+.vditor-reset code,
+.vditor-reset pre {
+  font-family: var(--font-mono);
 }
 
 .markdown-body pre {

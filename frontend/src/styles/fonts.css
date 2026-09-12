@@ -1,0 +1,33 @@
+/* ============================================================
+ * 自托管字体: Cascadia Code
+ * ------------------------------------------------------------
+ * 为什么自托管:
+ *   主题的 --font-sans / --font-mono 首选 'Cascadia Code', 但这份字体只有本机装了
+ *   才生效。自托管两份 latin 子集(各约 29 KB)后, 任何访问者都能看到同样效果,
+ *   也不依赖外部 CDN。
+ *
+ * 为什么只有 latin 子集:
+ *   Cascadia Code 本身不含中文字形(全量 ttf 有 379 KB, 体积大且仍无中文)。
+ *   latin 子集覆盖字母/数字/符号 —— 正是需要的部分; 中文继续由
+ *   --font-sans 后面的 PingFang SC / 微软雅黑 承担。
+ *
+ * 许可: Cascadia Code 采用 SIL Open Font License 1.1, 允许随站点分发,
+ *       版权声明见 public/fonts/LICENSE.txt。
+ * font-display: swap —— 字体未就绪时先用回退字体渲染, 避免文字长时间不可见。
+ * ============================================================ */
+
+@font-face {
+  font-family: 'Cascadia Code';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/cascadia-code-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Cascadia Code';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/cascadia-code-latin-700-normal.woff2') format('woff2');
+}

@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { postApi } from '@/api'
 import type { ArchiveGroup } from '@/types'
+import MetaIcon from '@/components/MetaIcon.vue'
 import { formatDateTime } from '@/utils/datetime'
 
 const groups = ref<ArchiveGroup[]>([])
@@ -71,7 +72,8 @@ onMounted(async () => {
             <div class="timeline">
               <div v-for="post in month.posts" :key="post.id" class="timeline-item">
                 <div class="timeline-date muted">
-                  {{ formatDateTime(post.published_at || post.created_at) }}
+                  <MetaIcon name="calendar" />
+                  <span>{{ formatDateTime(post.published_at || post.created_at) }}</span>
                 </div>
                 <router-link :to="`/post/${post.id}`" class="timeline-title">
                   {{ post.title }}
@@ -127,6 +129,9 @@ onMounted(async () => {
   font-size: 15px;
 }
 .timeline-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-family: var(--font-mono);
   font-size: 11.5px;
 }

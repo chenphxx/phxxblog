@@ -1,0 +1,37 @@
+@@HEADER@@
+
+/* ---------------- 与主题模式无关的共享令牌 ---------------- */
+:root {
+  /* 超过 20 行的代码块折叠后的高度(MarkdownView 会覆盖这个值) */
+  --code-fold-height: 420px;
+
+  /*
+   * 字体: 字母 / 数字 / 符号统一用 Cascadia Code。
+   *
+   * Cascadia Code 不含中文字形, 所以中文字符会自动回退到后面的系统字体
+   * (PingFang SC / 微软雅黑), 中文排版质量不受影响 —— 这正是想要的效果:
+   * 西文数字符号是等宽代码字体, 中文仍是标准无衬线。
+   */
+  --font-sans: 'Cascadia Code', 'Cascadia Mono', ui-monospace, 'PingFang SC', 'Microsoft YaHei',
+    'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'Cascadia Code', 'Cascadia Mono', 'JetBrains Mono', ui-monospace, 'SFMono-Regular',
+    Consolas, 'Liberation Mono', monospace;
+}
+
+/* ---------------- 浅色 ---------------- */
+/* 这里刻意不写裸 :root —— 12 套主题都写 :root 的话后者会盖掉前者,
+   「默认主题」就无法确定。默认主题的浅色令牌由生成器单独写进 :root。 */
+html[data-theme='@@ID@@'] {
+@@LIGHT@@
+}
+
+/* ---------------- 深色 ---------------- */
+html[data-theme='@@ID@@'].dark {
+@@DARK@@
+}
+
+/* ============================================================
+ * 增强层
+ * ============================================================ */
+
+@@ENHANCE@@

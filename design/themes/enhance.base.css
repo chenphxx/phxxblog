@@ -1,0 +1,243 @@
+/* ---------- 链接/强调文字统一走 --link, 保证对比度 ---------- */
+a {
+  color: var(--link);
+}
+
+/* ---------- 卡片 ---------- */
+.card {
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease),
+    border-color var(--dur) var(--ease), background-color 0.35s var(--ease);
+}
+
+.card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-hover);
+}
+
+/* ---------- 文章卡 ---------- */
+.post-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+
+.post-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: @@POST_BAR_W@@;
+  background: @@POST_BAR_BG@@;
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform var(--dur) var(--ease), width var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
+
+.post-card:hover::before {
+  transform: scaleY(1);
+}
+
+.post-title a {
+  transition: color var(--dur) var(--ease);
+}
+
+.post-title a:hover {
+  color: var(--primary);
+}
+
+/* ---------- 小标签 ---------- */
+.chip {
+  border-radius: var(--radius-pill);
+  padding: 2px 10px;
+  transition: transform var(--dur) var(--ease), filter var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
+}
+
+.chip:hover {
+  transform: translateY(-1px);
+  filter: saturate(1.25);
+}
+
+/* ---------- 按钮 ---------- */
+.el-button {
+  font-family: var(--font-sans);
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease),
+    background-color var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.el-button--primary:not(.is-text):not(.is-link) {
+  background: @@BTN_BG@@;
+  border-color: @@BTN_BORDER@@;
+  color: var(--on-primary);
+  box-shadow: @@BTN_SHADOW@@;
+}
+
+.el-button--primary:not(.is-text):not(.is-link):hover,
+.el-button--primary:not(.is-text):not(.is-link):focus-visible {
+  background: @@BTN_HOVER_BG@@;
+  border-color: @@BTN_HOVER_BORDER@@;
+  transform: @@BTN_HOVER_TRANSFORM@@;
+  box-shadow: @@BTN_HOVER_SHADOW@@;
+}
+
+.el-button--primary:not(.is-text):not(.is-link):active {
+  transform: @@BTN_ACTIVE_TRANSFORM@@;
+}
+
+.el-button.is-circle {
+  border-radius: var(--radius-sm);
+}
+
+.el-button:not(.is-circle):not(.is-round) {
+  border-radius: var(--radius-sm);
+}
+
+/* ---------- 输入框: 聚焦光环 ---------- */
+.el-input__wrapper,
+.el-textarea__inner,
+.el-select__wrapper {
+  border-radius: var(--radius-sm);
+  transition: box-shadow var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+
+.el-input__wrapper.is-focus,
+.el-select__wrapper.is-focused {
+  box-shadow: 0 0 0 1px var(--primary) inset, 0 0 0 4px var(--ring);
+}
+
+/* ---------- 分页 ---------- */
+.el-pagination.is-background .el-pager li {
+  border-radius: var(--radius-sm);
+  transition: transform var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+
+.el-pagination.is-background .el-pager li:not(.is-active):hover {
+  transform: translateY(-1px);
+}
+
+.el-pagination.is-background .el-pager li.is-active {
+  background: @@PAGER_ACTIVE_BG@@;
+  border-color: @@PAGER_ACTIVE_BORDER@@;
+  color: var(--on-primary);
+}
+
+/* ---------- 消息 / 弹窗 / 下拉 ---------- */
+.el-message {
+  border-radius: @@RADIUS_PILL_OR_SM@@;
+  box-shadow: var(--shadow-hover);
+}
+
+.el-message-box,
+.el-dialog,
+.el-dropdown__popper,
+.el-popper.is-light {
+  border-radius: var(--radius);
+}
+
+.el-dialog {
+  box-shadow: var(--shadow-hover);
+}
+
+/* ---------- 站点头部与导航 ---------- */
+.site-header {
+  transition: box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+.site-nav a {
+  @@NAV_A_BASE@@
+  transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+
+.site-nav a:hover {
+  @@NAV_A_HOVER@@
+}
+
+.site-nav a.router-link-active {
+  @@NAV_A_ACTIVE@@
+}
+
+@@NAV_EXTRA@@
+
+.site-brand {
+  transition: opacity var(--dur) var(--ease);
+}
+
+.site-brand:hover {
+  opacity: 0.86;
+}
+
+/* ---------- 终端卡片 ---------- */
+.term-card {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+@@TERM_EXTRA@@
+
+/* ---------- 归档时间轴 ---------- */
+.timeline-item::before {
+  transition: box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
+}
+
+.timeline-item:hover::before {
+  box-shadow: @@TIMELINE_HOVER_SHADOW@@;
+  transform: @@TIMELINE_HOVER_TRANSFORM@@;
+}
+
+/* ---------- 正文 ---------- */
+.markdown-body a {
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, var(--primary) 55%, transparent);
+  transition: color var(--dur) var(--ease), text-decoration-color var(--dur) var(--ease);
+}
+
+.markdown-body a:hover {
+  text-decoration-color: var(--primary);
+}
+
+@@MARKDOWN_EXTRA@@
+
+/* ---------- 入场动画与主题过渡 ---------- */
+@keyframes @@KEYFRAME_NAME@@ {
+  from {
+    opacity: 0;
+    transform: translateY(@@RISE_Y@@);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.site-main > * {
+  animation: @@KEYFRAME_NAME@@ @@RISE_DUR@@ var(--ease) both;
+}
+
+/* 切换主题/深浅色时让颜色平滑过渡, 不闪白 */
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition: background-color 320ms var(--ease), border-color 320ms var(--ease),
+    color 320ms var(--ease), fill 320ms var(--ease) !important;
+}
+
+/* ---------- 尊重系统减少动态效果偏好 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .site-main > *,
+  .post-card,
+  .card,
+  .el-button,
+  .timeline-item:hover::before {
+    animation: none !important;
+    transform: none !important;
+  }
+}

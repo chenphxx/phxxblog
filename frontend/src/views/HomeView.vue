@@ -7,6 +7,7 @@ import type { Category, ContributionPoint, HistoryEvent, PostItem, PublicSetting
 import PostCard from '@/components/PostCard.vue'
 import MarkdownView from '@/components/MarkdownView.vue'
 import ContributionsChart from '@/components/ContributionsChart.vue'
+import MetaIcon from '@/components/MetaIcon.vue'
 import { useAuthStore } from '@/stores/auth'
 import { chipStyle } from '@/utils/chipColor'
 import { formatDateTime } from '@/utils/datetime'
@@ -264,7 +265,10 @@ onMounted(async () => {
             <p class="term-line"><span class="term-prompt">$</span> tail -n 1 posts/latest</p>
             <p v-if="latestPost" class="term-out">
               <router-link :to="`/post/${latestPost.id}`" class="term-link">
-                {{ formatDateTime(latestPost.published_at || latestPost.created_at) }} · {{ latestPost.title }}
+                <MetaIcon name="calendar" />
+                <span>{{ formatDateTime(latestPost.published_at || latestPost.created_at) }}</span>
+                <span class="term-sep">·</span>
+                <span>{{ latestPost.title }}</span>
               </router-link>
             </p>
             <p v-else class="term-out">暂无文章</p>
@@ -280,15 +284,24 @@ onMounted(async () => {
             <el-button size="small" circle :loading="historyLoading" :icon="Refresh" title="刷新" @click="loadHistory" />
           </div>
           <template v-if="historyEvents.length">
-            <p class="muted history-date">{{ historyDate || '今日' }}</p>
+            <p class="muted history-date">
+              <MetaIcon name="calendar" />
+              <span>{{ historyDate || '今日' }}</span>
+            </p>
             <div v-for="(event, index) in historyEvents" :key="index" class="history-event">
               <span class="history-year">{{ event.year }}</span>
               <div class="history-body">
                 <div class="history-title">{{ event.title }}</div>
                 <div class="history-desc">{{ event.description }}</div>
                 <div class="history-tags">
-                  <span v-if="event.category" class="code-token">{{ event.category }}</span>
-                  <span v-for="tag in event.tags || []" :key="tag" class="code-token">#{{ tag }}</span>
+                  <span v-if="event.category" class="code-token">
+                    <MetaIcon name="folder" />
+                    <span>{{ event.category }}</span>
+                  </span>
+                  <span v-for="tag in event.tags || []" :key="tag" class="code-token">
+                    <MetaIcon name="hash" />
+                    <span>{{ tag }}</span>
+                  </span>
                 </div>
               </div>
             </div>
@@ -564,8 +577,9 @@ onMounted(async () => {
   --el-button-bg-color: transparent;
   --el-button-border-color: var(--term-border);
   --el-button-text-color: var(--term-dim);
-  --el-button-hover-bg-color: #16222b;
-  --el-button-hover-border-color: var(--term-dim);
+  /* 悬停底色由终端令牌推导, 跟随主题而不是写死 #16222b */
+  --el-button-hover-bg-color: color-mix(in srgb, var(--term-bg) 78%, var(--term-accent));
+  --el-button-hover-border-color: color-mix(in srgb, var(--term-border) 55%, var(--term-accent));
   --el-button-hover-text-color: var(--term-text);
 }
 .term-body {
@@ -589,6 +603,9 @@ onMounted(async () => {
   overflow-wrap: anywhere;
 }
 .term-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   color: var(--term-text);
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -596,6 +613,9 @@ onMounted(async () => {
 }
 .term-link:hover {
   color: #ffffff;
+}
+.term-sep {
+  color: var(--term-dim);
 }
 .term-cursor {
   display: inline-block;
@@ -630,6 +650,9 @@ onMounted(async () => {
 }
 .history-date {
   margin: 0 0 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 .history-event {
   display: flex;
@@ -666,6 +689,9 @@ onMounted(async () => {
   gap: 6px;
 }
 .code-token {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-family: var(--font-mono);
   font-size: 11.5px;
   color: var(--primary);

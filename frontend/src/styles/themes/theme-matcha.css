@@ -1,0 +1,516 @@
+/* ============================================================
+ * 主题: 抹茶奶绿 (Matcha Latte)
+ * 暖调抹茶绿配奶油底色，低饱和、温柔治愈，久看不累。
+ * ------------------------------------------------------------
+ * 本文件由 design/themes/generate-themes.mjs 生成, 请勿手改。
+ * 改配色/圆角请改 design/themes/tokens.mjs, 然后重新运行:
+ *   node design/themes/generate-themes.mjs
+ *
+ * 切换方式: html[data-theme='matcha'] (见 stores/theme.ts), 深色再加 .dark
+ * ============================================================ */
+
+/* ---------------- 与主题模式无关的共享令牌 ---------------- */
+:root {
+  /* 超过 20 行的代码块折叠后的高度(MarkdownView 会覆盖这个值) */
+  --code-fold-height: 420px;
+
+  /*
+   * 字体: 字母 / 数字 / 符号统一用 Cascadia Code。
+   *
+   * Cascadia Code 不含中文字形, 所以中文字符会自动回退到后面的系统字体
+   * (PingFang SC / 微软雅黑), 中文排版质量不受影响 —— 这正是想要的效果:
+   * 西文数字符号是等宽代码字体, 中文仍是标准无衬线。
+   */
+  --font-sans: 'Cascadia Code', 'Cascadia Mono', ui-monospace, 'PingFang SC', 'Microsoft YaHei',
+    'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'Cascadia Code', 'Cascadia Mono', 'JetBrains Mono', ui-monospace, 'SFMono-Regular',
+    Consolas, 'Liberation Mono', monospace;
+}
+
+/* ---------------- 浅色 ---------------- */
+/* 这里刻意不写裸 :root —— 12 套主题都写 :root 的话后者会盖掉前者,
+   「默认主题」就无法确定。默认主题的浅色令牌由生成器单独写进 :root。 */
+html[data-theme='matcha'] {
+  --bg: #faf8ef;
+  --card-bg: #fffdf6;
+  --text: #22271a;
+  --muted: #6a705a;
+  --border: #e8e5cf;
+  --border-strong: #d0cbaa;
+  --primary: #566f2a;
+  --primary-strong: #425520;
+  --primary-weak: #eef2dc;
+  --on-primary: #ffffff;
+  --link: #566f2a;
+  --code-bg: #f3f1e2;
+  --code-block-bg: #ffffff;
+  --ok: #3f7a3f;
+  --warn: #96700f;
+  --danger: #b04432;
+  --ring: rgba(86, 111, 42, 0.24);
+  --grad-from: #7a9440;
+  --grad-to: #566f2a;
+  --term-bg: #151a10;
+  --term-border: #2b3320;
+  --term-text: #dbe8c0;
+  --term-dim: #7d8768;
+  --term-accent: #b3cc7a;
+  --term-prompt: #eef2dc;
+  --cell-0: #efeee1;
+  --cell-1: #d8dcb4;
+  --cell-2: #b0bd7e;
+  --cell-3: #8aa055;
+  --cell-4: #566f2a;
+
+--radius: 12px;
+--radius-sm: 8px;
+--radius-lg: 12px;
+--radius-pill: 999px;
+--shadow: 0 1px 2px rgba(16, 45, 32, 0.04), 0 8px 24px -14px rgba(16, 45, 32, 0.18);
+--shadow-hover: 0 4px 10px -4px var(--ring), 0 22px 40px -22px rgba(16, 45, 32, 0.28);
+--ease: cubic-bezier(0.22, 0.72, 0.28, 1);
+--dur: 280ms;
+--accent-grad: linear-gradient(135deg, var(--grad-from), var(--grad-to));
+
+/* Element Plus 主色对齐(色阶由主色推导, 保证 EP 组件与主题一致) */
+--el-color-primary: #566f2a;
+--el-color-primary-light-3: #899a6a;
+--el-color-primary-light-5: #abb795;
+--el-color-primary-light-7: #ccd4bf;
+--el-color-primary-light-8: #dde2d4;
+--el-color-primary-light-9: #eef1ea;
+--el-color-primary-dark-2: #455922;
+--el-border-radius-base: 10px;
+--el-border-radius-small: 8px;
+--el-border-radius-round: 999px;
+--el-bg-color: #fffdf6;
+--el-bg-color-overlay: #fffdf6;
+--el-fill-color: #faf8ef;
+--el-fill-color-light: color-mix(in srgb, #faf8ef 60%, #fffdf6);
+--el-fill-color-lighter: color-mix(in srgb, #faf8ef 30%, #fffdf6);
+--el-text-color-primary: #22271a;
+--el-text-color-regular: color-mix(in srgb, #22271a 78%, #6a705a);
+--el-text-color-secondary: #6a705a;
+--el-border-color: #d0cbaa;
+--el-border-color-light: #e8e5cf;
+--el-border-color-lighter: color-mix(in srgb, #e8e5cf 60%, #fffdf6);
+}
+
+/* ---------------- 深色 ---------------- */
+html[data-theme='matcha'].dark {
+  --bg: #14170f;
+  --card-bg: #1b1f15;
+  --text: #ecefdf;
+  --muted: #a5ab93;
+  --border: #2e3325;
+  --border-strong: #444b34;
+  --primary: #b3cc7a;
+  --primary-strong: #cfe09b;
+  --primary-weak: #232b18;
+  --on-primary: #1a2110;
+  --link: #b3cc7a;
+  --code-bg: #181c12;
+  --code-block-bg: #1e1e1e;
+  --ok: #9ec96a;
+  --warn: #dcb45f;
+  --danger: #e08a72;
+  --ring: rgba(179, 204, 122, 0.24);
+  --grad-from: #cfe09b;
+  --grad-to: #8fb45a;
+  --term-bg: #0f1209;
+  --term-border: #2b3320;
+  --term-text: #dbe8c0;
+  --term-dim: #717a5c;
+  --term-accent: #b3cc7a;
+  --term-prompt: #e6ecd4;
+  --cell-0: #20261a;
+  --cell-1: #333f22;
+  --cell-2: #4d6130;
+  --cell-3: #748f43;
+  --cell-4: #b3cc7a;
+
+--radius: 12px;
+--radius-sm: 8px;
+--radius-lg: 12px;
+--radius-pill: 999px;
+--shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 12px 32px -20px rgba(0, 0, 0, 0.7);
+--shadow-hover: 0 6px 14px -6px var(--ring), 0 26px 46px -26px rgba(0, 0, 0, 0.8);
+--ease: cubic-bezier(0.22, 0.72, 0.28, 1);
+--dur: 280ms;
+--accent-grad: linear-gradient(135deg, var(--grad-from), var(--grad-to));
+
+/* Element Plus 主色对齐(色阶由主色推导, 保证 EP 组件与主题一致) */
+--el-color-primary: #b3cc7a;
+--el-color-primary-light-3: #cadba2;
+--el-color-primary-light-5: #d9e6bd;
+--el-color-primary-light-7: #e8f0d7;
+--el-color-primary-light-8: #f0f5e4;
+--el-color-primary-light-9: #f7faf2;
+--el-color-primary-dark-2: #8fa362;
+--el-border-radius-base: 10px;
+--el-border-radius-small: 8px;
+--el-border-radius-round: 999px;
+--el-bg-color: #1b1f15;
+--el-bg-color-overlay: #1b1f15;
+--el-fill-color: #14170f;
+--el-fill-color-light: color-mix(in srgb, #14170f 60%, #1b1f15);
+--el-fill-color-lighter: color-mix(in srgb, #14170f 30%, #1b1f15);
+--el-text-color-primary: #ecefdf;
+--el-text-color-regular: color-mix(in srgb, #ecefdf 78%, #a5ab93);
+--el-text-color-secondary: #a5ab93;
+--el-border-color: #444b34;
+--el-border-color-light: #2e3325;
+--el-border-color-lighter: color-mix(in srgb, #2e3325 60%, #1b1f15);
+}
+
+/* ============================================================
+ * 增强层
+ * ============================================================ */
+
+/* ============================================================
+ * 增强层: 编辑细线族 (editorial)
+ * 中庸圆角、极淡阴影、衬线标题。悬停只在标题下浮出一条细线。
+ * 占位符由 design/themes/generate-themes.mjs 替换。
+ * ============================================================ */
+
+/* ---------- 链接/强调文字统一走 --link, 保证对比度 ---------- */
+a {
+  color: var(--link);
+}
+
+/* ---------- 卡片 ---------- */
+.card {
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease),
+    border-color var(--dur) var(--ease), background-color 0.35s var(--ease);
+}
+
+.card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-hover);
+}
+
+/* ---------- 文章卡 ---------- */
+.post-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+
+.post-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, var(--grad-from), var(--grad-to));
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform var(--dur) var(--ease), width var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
+
+.post-card:hover::before {
+  transform: scaleY(1);
+}
+
+.post-title a {
+  transition: color var(--dur) var(--ease);
+}
+
+.post-title a:hover {
+  color: var(--primary);
+}
+
+/* ---------- 小标签 ---------- */
+.chip {
+  border-radius: var(--radius-pill);
+  padding: 2px 10px;
+  transition: transform var(--dur) var(--ease), filter var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
+}
+
+.chip:hover {
+  transform: translateY(-1px);
+  filter: saturate(1.25);
+}
+
+/* ---------- 按钮 ---------- */
+.el-button {
+  font-family: var(--font-sans);
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease),
+    background-color var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.el-button--primary:not(.is-text):not(.is-link) {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--on-primary);
+  box-shadow: 0 8px 18px -14px var(--ring);
+}
+
+.el-button--primary:not(.is-text):not(.is-link):hover,
+.el-button--primary:not(.is-text):not(.is-link):focus-visible {
+  background: var(--primary-strong);
+  border-color: var(--primary-strong);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px -14px var(--ring);
+}
+
+.el-button--primary:not(.is-text):not(.is-link):active {
+  transform: none;
+}
+
+.el-button.is-circle {
+  border-radius: var(--radius-sm);
+}
+
+.el-button:not(.is-circle):not(.is-round) {
+  border-radius: var(--radius-sm);
+}
+
+/* ---------- 输入框: 聚焦光环 ---------- */
+.el-input__wrapper,
+.el-textarea__inner,
+.el-select__wrapper {
+  border-radius: var(--radius-sm);
+  transition: box-shadow var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+
+.el-input__wrapper.is-focus,
+.el-select__wrapper.is-focused {
+  box-shadow: 0 0 0 1px var(--primary) inset, 0 0 0 4px var(--ring);
+}
+
+/* ---------- 分页 ---------- */
+.el-pagination.is-background .el-pager li {
+  border-radius: var(--radius-sm);
+  transition: transform var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+
+.el-pagination.is-background .el-pager li:not(.is-active):hover {
+  transform: translateY(-1px);
+}
+
+.el-pagination.is-background .el-pager li.is-active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--on-primary);
+}
+
+/* ---------- 消息 / 弹窗 / 下拉 ---------- */
+.el-message {
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-hover);
+}
+
+.el-message-box,
+.el-dialog,
+.el-dropdown__popper,
+.el-popper.is-light {
+  border-radius: var(--radius);
+}
+
+.el-dialog {
+  box-shadow: var(--shadow-hover);
+}
+
+/* ---------- 站点头部与导航 ---------- */
+.site-header {
+  transition: box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+.site-nav a {
+  border-radius: 0;
+  color: var(--muted);
+  transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+
+.site-nav a:hover {
+  background: transparent;
+  color: var(--text);
+}
+
+.site-nav a.router-link-active {
+  background: transparent;
+  color: var(--primary-strong);
+  font-weight: 600;
+}
+
+/* 导航细下划线(编辑族用线条而不是色块) */
+.site-nav a {
+  position: relative;
+}
+
+.site-nav a::after {
+  content: '';
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 2px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transition: transform var(--dur) var(--ease);
+}
+
+.site-nav a:hover::after,
+.site-nav a.router-link-active::after {
+  transform: scaleX(1);
+}
+
+.site-brand {
+  transition: opacity var(--dur) var(--ease);
+}
+
+.site-brand:hover {
+  opacity: 0.86;
+}
+
+/* ---------- 终端卡片 ---------- */
+.term-card {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+
+
+/* ---------- 归档时间轴 ---------- */
+.timeline-item::before {
+  transition: box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
+}
+
+.timeline-item:hover::before {
+  box-shadow: none;
+  transform: scale(1.15);
+}
+
+/* ---------- 正文 ---------- */
+.markdown-body a {
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, var(--primary) 55%, transparent);
+  transition: color var(--dur) var(--ease), text-decoration-color var(--dur) var(--ease);
+}
+
+.markdown-body a:hover {
+  text-decoration-color: var(--primary);
+}
+
+
+
+/* ---------- 入场动画与主题过渡 ---------- */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.site-main > * {
+  animation: fade-up 460ms var(--ease) both;
+}
+
+/* 切换主题/深浅色时让颜色平滑过渡, 不闪白 */
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition: background-color 320ms var(--ease), border-color 320ms var(--ease),
+    color 320ms var(--ease), fill 320ms var(--ease) !important;
+}
+
+/* ---------- 尊重系统减少动态效果偏好 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .site-main > *,
+  .post-card,
+  .card,
+  .el-button,
+  .timeline-item:hover::before {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
+/* ---------- 编辑族专有: 悬停只做很轻的抬升 ---------- */
+.post-card:hover {
+  transform: translateY(-2px);
+}
+
+/* ---------- 衬线标题, 刊物感 ---------- */
+.profile-name,
+.posts-title,
+.post-title,
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.site-links-card h3 {
+  font-family: var(--font-serif, Georgia, 'Songti SC', serif);
+  letter-spacing: 0;
+  font-weight: 600;
+}
+
+/* ---------- 文章卡: 悬停时标题下方浮现一条细线 ---------- */
+.post-card .post-title {
+  display: inline-block;
+  position: relative;
+  line-height: 1.5;
+}
+
+.post-card .post-title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 1px;
+  background: var(--primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur) var(--ease);
+}
+
+.post-card:hover .post-title::after {
+  transform: scaleX(1);
+}
+
+/* 左侧色条在编辑族不参与(改由标题细线表达) */
+.post-card::before {
+  display: none;
+}
+
+/* ---------- 列表分隔用虚线, 更轻 ---------- */
+.post-card + .post-card {
+  border-top-style: dashed;
+}
+
+/* ---------- 站点头部: 导航细下划线 ---------- */
+.site-header::after {
+  display: none;
+}
+
+/* ---------- 归档时间轴: 节点改成白芯色环 ---------- */
+.timeline-item::before {
+  background: var(--card-bg);
+  border: 2px solid var(--primary);
+  box-shadow: none;
+}
+
+/* ---------- 编辑区: 引用块用主色淡底 ---------- */
+.markdown-body {
+  line-height: 1.9;
+}
+
+.markdown-body blockquote {
+  background: color-mix(in srgb, var(--primary) 7%, transparent);
+}
