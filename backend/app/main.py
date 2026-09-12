@@ -11,7 +11,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.api.v1 import api_router
 from app.api.v1.rss import router as rss_router
 from app.core.config import settings
-from app.core.database import Base, engine
+from app.core.database import Base, engine, ensure_columns
 from app.core.middleware import restrict_docs_to_admin
 
 # 项目根目录(backend/app/main.py -> 上两级为仓库根目录)
@@ -38,8 +38,15 @@ app.middleware("http")(restrict_docs_to_admin)
 
 @app.on_event("startup")
 def on_startup() -> None:
-    """启动时自动建表(幂等), 正式环境可改用 Alembic 迁移。"""
+    """启动时自动建表(幂等)并补齐新增列, 正式环境可改用 Alembic 迁移。"""
     Base.metadata.create_all(bind=engine)
+    try:
+        ensure_columns()
+    except Exception as exc:  # noqa: BLE001
+        print(
+            f"[warn] 自动补齐数据库列失败: {exc}; "
+            "请手动执行 backend/scripts/migration_20260912.sql"
+        )
 
 
 # ---------- 统一异常处理 ----------

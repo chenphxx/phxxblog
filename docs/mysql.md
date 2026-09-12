@@ -102,6 +102,7 @@
 | slug | VARCHAR(80) UNIQUE | URL别名 |
 | parent_id | BIGINT NULL | 父分类, 支持层级 |
 | description | VARCHAR(200) | 描述 |
+| color | VARCHAR(20) NULL | 自定义颜色(留空按名称自动生成) |
 | sort_order | INT | 排序(小在前) |
 | created_at / updated_at | DATETIME | 时间 |
 
@@ -112,6 +113,7 @@
 | id | BIGINT UNSIGNED PK | 标签ID |
 | name | VARCHAR(50) UNIQUE | 标签名 |
 | slug | VARCHAR(80) UNIQUE | URL别名 |
+| color | VARCHAR(20) NULL | 自定义颜色(留空按名称自动生成) |
 | created_at | DATETIME | 创建时间 |
 
 ### posts 文章表
@@ -235,7 +237,7 @@
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| setting_key | VARCHAR(100) PK | 配置键(site_name/site_desc/seo_keywords/social_links...) |
+| setting_key | VARCHAR(100) PK | 配置键(site_name/site_title/site_desc/seo_keywords/social_links...) |
 | setting_value | TEXT | 配置值 |
 | description | VARCHAR(255) | 说明 |
 | updated_at | DATETIME | 更新时间 |
@@ -311,6 +313,7 @@ CREATE TABLE categories (
   slug VARCHAR(80) NOT NULL UNIQUE,
   parent_id BIGINT UNSIGNED DEFAULT NULL,
   description VARCHAR(200) DEFAULT NULL,
+  color VARCHAR(20) DEFAULT NULL,
   sort_order INT NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -321,6 +324,7 @@ CREATE TABLE tags (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(50) NOT NULL UNIQUE,
   slug VARCHAR(80) NOT NULL UNIQUE,
+  color VARCHAR(20) DEFAULT NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='文章标签表';
 

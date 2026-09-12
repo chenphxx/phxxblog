@@ -17,6 +17,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+from app.services.text import count_words, reading_minutes
 
 
 # 文章-标签关联表
@@ -40,6 +41,7 @@ class Category(Base):
         BigInteger, ForeignKey("categories.id", ondelete="SET NULL"), nullable=True
     )
     description: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    color: Mapped[str | None] = mapped_column(String(20), nullable=True)
     sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(
@@ -62,6 +64,7 @@ class Tag(Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     slug: Mapped[str] = mapped_column(String(80), unique=True, nullable=False)
+    color: Mapped[str | None] = mapped_column(String(20), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.now)
 
 
@@ -114,6 +117,16 @@ class Post(Base):
     likes: Mapped[list["PostLike"]] = relationship(
         back_populates="post", lazy="selectin"
     )
+
+    @property
+    def word_count(self) -> int:
+        """正文字数(用于列表/详情展示)。"""
+        return count_words(self.content_md)
+
+    @property
+    def reading_minutes(self) -> int:
+        """预计阅读时间(分钟)。"""
+        return reading_minutes(self.word_count)
 
 
 class PostLike(Base):

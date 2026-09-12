@@ -3,14 +3,21 @@ import { onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { categoryApi, tagApi } from '@/api'
 import type { Category, Tag } from '@/types'
+import { chipStyle } from '@/utils/chipColor'
 
 const tab = ref('category')
 const categories = ref<Category[]>([])
 const tags = ref<Tag[]>([])
 
-const categoryForm = ref({ id: 0, name: '', slug: '', description: '', sort_order: 0 })
+/** 颜色预设(留空则由前端按名称自动生成) */
+const COLOR_PRESETS = [
+  '#0e7490', '#2563eb', '#7c3aed', '#db2777', '#dc2626',
+  '#ea580c', '#ca8a04', '#16a34a', '#0d9488', '#64748b',
+]
+
+const categoryForm = ref({ id: 0, name: '', slug: '', description: '', color: '', sort_order: 0 })
 const categoryDialog = ref(false)
-const tagForm = ref({ id: 0, name: '', slug: '' })
+const tagForm = ref({ id: 0, name: '', slug: '', color: '' })
 const tagDialog = ref(false)
 
 async function load() {
@@ -20,8 +27,8 @@ async function load() {
 
 function openCategoryDialog(category?: Category) {
   categoryForm.value = category
-    ? { id: category.id, name: category.name, slug: category.slug, description: category.description || '', sort_order: category.sort_order }
-    : { id: 0, name: '', slug: '', description: '', sort_order: 0 }
+    ? { id: category.id, name: category.name, slug: category.slug, description: category.description || '', color: category.color || '', sort_order: category.sort_order }
+    : { id: 0, name: '', slug: '', description: '', color: '', sort_order: 0 }
   categoryDialog.value = true
 }
 
@@ -45,7 +52,9 @@ async function removeCategory(category: Category) {
 }
 
 function openTagDialog(tag?: Tag) {
-  tagForm.value = tag ? { id: tag.id, name: tag.name, slug: tag.slug } : { id: 0, name: '', slug: '' }
+  tagForm.value = tag
+    ? { id: tag.id, name: tag.name, slug: tag.slug, color: tag.color || '' }
+    : { id: 0, name: '', slug: '', color: '' }
   tagDialog.value = true
 }
 
@@ -86,6 +95,11 @@ onMounted(load)
             <el-table-column prop="post_count" label="文章数" width="90" />
             <el-table-column prop="sort_order" label="排序" width="70" />
             <el-table-column prop="description" label="描述" min-width="160" show-overflow-tooltip />
+            <el-table-column label="颜色" width="130">
+              <template #default="{ row }">
+                <span class="chip" :style="chipStyle(row.name, row.color)">{{ row.name }}</span>
+              </template>
+            </el-table-column>
             <el-table-column label="操作" width="140">
               <template #default="{ row }">
                 <el-button size="small" @click="openCategoryDialog(row)">编辑</el-button>
@@ -106,6 +120,11 @@ onMounted(load)
             <el-table-column prop="name" label="名称" />
             <el-table-column prop="slug" label="别名" />
             <el-table-column prop="post_count" label="文章数" width="90" />
+            <el-table-column label="颜色" width="130">
+              <template #default="{ row }">
+                <span class="chip" :style="chipStyle(row.name, row.color)">#{{ row.name }}</span>
+              </template>
+            </el-table-column>
             <el-table-column label="操作" width="140">
               <template #default="{ row }">
                 <el-button size="small" @click="openTagDialog(row)">编辑</el-button>
@@ -122,6 +141,14 @@ onMounted(load)
         <el-form-item label="名称"><el-input v-model="categoryForm.name" /></el-form-item>
         <el-form-item label="别名"><el-input v-model="categoryForm.slug" /></el-form-item>
         <el-form-item label="描述"><el-input v-model="categoryForm.description" /></el-form-item>
+        <el-form-item label="颜色(留空自动生成)">
+          <div style="display: flex; align-items: center; gap: 10px">
+            <el-color-picker v-model="categoryForm.color" :predefine="COLOR_PRESETS" />
+            <span class="chip" :style="chipStyle(categoryForm.name || '分类', categoryForm.color)">
+              {{ categoryForm.name || '分类' }}
+            </span>
+          </div>
+        </el-form-item>
         <el-form-item label="排序(小在前)"><el-input-number v-model="categoryForm.sort_order" /></el-form-item>
       </el-form>
       <template #footer>
@@ -134,6 +161,14 @@ onMounted(load)
       <el-form label-position="top">
         <el-form-item label="名称"><el-input v-model="tagForm.name" /></el-form-item>
         <el-form-item label="别名"><el-input v-model="tagForm.slug" /></el-form-item>
+        <el-form-item label="颜色(留空自动生成)">
+          <div style="display: flex; align-items: center; gap: 10px">
+            <el-color-picker v-model="tagForm.color" :predefine="COLOR_PRESETS" />
+            <span class="chip" :style="chipStyle(tagForm.name || '标签', tagForm.color)">
+              #{{ tagForm.name || '标签' }}
+            </span>
+          </div>
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="tagDialog = false">取消</el-button>

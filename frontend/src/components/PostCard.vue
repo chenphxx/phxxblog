@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { PostItem } from '@/types'
+import { chipStyle, LIKES_COLOR, VIEWS_COLOR } from '@/utils/chipColor'
 
 defineProps<{ post: PostItem }>()
 
@@ -24,15 +25,27 @@ const STATUS_TEXT: Record<number, string> = {
     </div>
     <p v-if="post.summary" class="post-summary">{{ post.summary }}</p>
     <div class="post-meta">
-      <span class="meta-item">{{ (post.published_at || post.created_at).slice(0, 10) }}</span>
-      <span class="meta-item">views {{ post.views }}</span>
-      <span class="meta-item">likes {{ post.likes_count }}</span>
-      <router-link v-if="post.category" :to="`/search?category=${post.category.id}`" class="cat-chip">
-        {{ post.category.name }}/
+      <router-link
+        v-if="post.category"
+        :to="`/search?category=${post.category.id}`"
+        class="chip"
+        :style="chipStyle(post.category.name, post.category.color)"
+      >
+        {{ post.category.name }}
       </router-link>
-      <router-link v-for="tag in post.tags" :key="tag.id" :to="`/search?tag=${tag.id}`" class="tag-token">
+      <span class="meta-item">约 {{ post.word_count }} 字 · 大约 {{ post.reading_minutes }} 分钟</span>
+      <router-link
+        v-for="tag in post.tags"
+        :key="tag.id"
+        :to="`/search?tag=${tag.id}`"
+        class="chip"
+        :style="chipStyle(tag.name, tag.color)"
+      >
         #{{ tag.name }}
       </router-link>
+      <span class="meta-item">{{ (post.published_at || post.created_at).slice(0, 10) }}</span>
+      <span class="chip" :style="chipStyle('views', VIEWS_COLOR)">views {{ post.views }}</span>
+      <span class="chip" :style="chipStyle('likes', LIKES_COLOR)">likes {{ post.likes_count }}</span>
     </div>
   </article>
 </template>
@@ -88,23 +101,5 @@ const STATUS_TEXT: Record<number, string> = {
 }
 .meta-item {
   white-space: nowrap;
-}
-.cat-chip {
-  color: var(--muted);
-}
-.cat-chip:hover {
-  color: var(--primary);
-  text-decoration: none;
-}
-.tag-token {
-  color: var(--primary);
-  background: var(--primary-weak);
-  border-radius: 4px;
-  padding: 1px 7px;
-  font-size: 11px;
-}
-.tag-token:hover {
-  color: var(--primary-strong);
-  text-decoration: none;
 }
 </style>

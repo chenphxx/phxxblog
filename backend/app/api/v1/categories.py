@@ -25,7 +25,7 @@ def _category_out(db: Session, category: Category) -> CategoryOut:
     return CategoryOut(
         id=category.id, name=category.name, slug=category.slug,
         parent_id=category.parent_id, description=category.description,
-        sort_order=category.sort_order, post_count=count,
+        color=category.color, sort_order=category.sort_order, post_count=count,
     )
 
 

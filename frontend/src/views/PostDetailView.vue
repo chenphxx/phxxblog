@@ -8,6 +8,7 @@ import type { PostDetail } from '@/types'
 import MarkdownView from '@/components/MarkdownView.vue'
 import CommentSection from '@/components/CommentSection.vue'
 import { useAuthStore } from '@/stores/auth'
+import { chipStyle, LIKES_COLOR, VIEWS_COLOR } from '@/utils/chipColor'
 
 const route = useRoute()
 const router = useRouter()
@@ -68,16 +69,28 @@ onMounted(load)
           </div>
           <h1 class="post-detail-title">{{ post.title }}</h1>
           <div class="post-detail-meta">
-            <span class="meta-item">date: {{ (post.published_at || post.created_at).slice(0, 10) }}</span>
-            <span class="meta-item">author: {{ post.author?.nickname || post.author?.username || '匿名' }}</span>
-            <span class="meta-item">views: {{ post.views }}</span>
-            <span class="meta-item">likes: {{ post.likes_count }}</span>
-            <router-link v-if="post.category" :to="`/search?category=${post.category.id}`" class="cat-chip">
-              {{ post.category.name }}/
+            <router-link
+              v-if="post.category"
+              :to="`/search?category=${post.category.id}`"
+              class="chip"
+              :style="chipStyle(post.category.name, post.category.color)"
+            >
+              {{ post.category.name }}
             </router-link>
-            <router-link v-for="tag in post.tags" :key="tag.id" :to="`/search?tag=${tag.id}`" class="tag-token">
+            <span class="meta-item">约 {{ post.word_count }} 字 · 大约 {{ post.reading_minutes }} 分钟</span>
+            <router-link
+              v-for="tag in post.tags"
+              :key="tag.id"
+              :to="`/search?tag=${tag.id}`"
+              class="chip"
+              :style="chipStyle(tag.name, tag.color)"
+            >
               #{{ tag.name }}
             </router-link>
+            <span class="meta-item">date: {{ (post.published_at || post.created_at).slice(0, 10) }}</span>
+            <span class="meta-item">author: {{ post.author?.nickname || post.author?.username || '匿名' }}</span>
+            <span class="chip" :style="chipStyle('views', VIEWS_COLOR)">views: {{ post.views }}</span>
+            <span class="chip" :style="chipStyle('likes', LIKES_COLOR)">likes: {{ post.likes_count }}</span>
             <el-button
               class="like-btn"
               size="small"
@@ -89,6 +102,7 @@ onMounted(load)
             />
           </div>
 
+          <p v-if="post.summary" class="post-detail-summary">{{ post.summary }}</p>
           <img v-if="post.cover_image" :src="post.cover_image" class="post-cover" alt="封面" />
           <MarkdownView :content="post.content_md" />
         </article>
@@ -148,23 +162,16 @@ onMounted(load)
 .meta-item {
   white-space: nowrap;
 }
-.cat-chip {
-  color: var(--muted);
-}
-.cat-chip:hover {
-  color: var(--primary);
-  text-decoration: none;
-}
-.tag-token {
-  color: var(--primary);
+/* 正文上方的摘要(仅当作者填写摘要时展示) */
+.post-detail-summary {
+  margin: 0 0 20px;
+  padding: 10px 16px;
+  border-left: 3px solid var(--primary);
   background: var(--primary-weak);
-  border-radius: 4px;
-  padding: 1px 7px;
-  font-size: 11px;
-}
-.tag-token:hover {
-  color: var(--primary-strong);
-  text-decoration: none;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  color: var(--muted);
+  font-size: 14.5px;
+  line-height: 1.75;
 }
 .like-btn {
   margin-left: auto;

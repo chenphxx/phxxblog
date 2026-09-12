@@ -27,7 +27,8 @@ onMounted(() => {
     cache: { enable: false },
     preview: {
       theme: { current: theme.isDark ? 'dark' : 'light' },
-      hljs: { lineNumber: true, style: theme.isDark ? 'github-dark' : 'github' },
+      // 对齐 VSCode 默认配色: 浅色 vs(Visual Studio), 深色 vs2015
+      hljs: { lineNumber: true, style: theme.isDark ? 'vs2015' : 'vs' },
     },
     toolbar: [
       'headings',

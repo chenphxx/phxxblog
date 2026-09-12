@@ -23,7 +23,9 @@ def _tag_out(db: Session, tag: Tag) -> TagOut:
         .filter(post_tags.c.tag_id == tag.id, Post.status == 2)
         .scalar()
     )
-    return TagOut(id=tag.id, name=tag.name, slug=tag.slug, post_count=count)
+    return TagOut(
+        id=tag.id, name=tag.name, slug=tag.slug, color=tag.color, post_count=count
+    )
 
 
 @router.get("", response_model=dict)

@@ -14,6 +14,7 @@ class CategoryOut(BaseModel):
     slug: str
     parent_id: int | None = None
     description: str | None = None
+    color: str | None = None
     sort_order: int
     post_count: int = 0
 
@@ -25,6 +26,7 @@ class CategoryIn(BaseModel):
     slug: str = Field(min_length=1, max_length=80)
     parent_id: int | None = None
     description: str | None = None
+    color: str | None = Field(default=None, max_length=20)
     sort_order: int = 0
 
 
@@ -36,6 +38,7 @@ class TagOut(BaseModel):
     id: int
     name: str
     slug: str
+    color: str | None = None
     post_count: int = 0
 
 
@@ -44,6 +47,7 @@ class TagIn(BaseModel):
 
     name: str = Field(min_length=1, max_length=50)
     slug: str = Field(min_length=1, max_length=80)
+    color: str | None = Field(default=None, max_length=20)
 
 
 class PostBase(BaseModel):
@@ -80,6 +84,8 @@ class PostListItem(BaseModel):
     status: int
     views: int
     likes_count: int
+    word_count: int = 0
+    reading_minutes: int = 0
     published_at: datetime | None = None
     created_at: datetime
     updated_at: datetime

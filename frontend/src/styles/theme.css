@@ -14,6 +14,8 @@
   --primary-strong: #155e75;
   --primary-weak: #e6f4f8;
   --code-bg: #eef1f4;
+  /* 代码块背景对齐 VSCode 浅色主题 */
+  --code-block-bg: #ffffff;
   --ok: #15803d;
   --warn: #b45309;
   --danger: #b91c1c;
@@ -66,6 +68,8 @@ html.dark {
   --primary-strong: #5eead4;
   --primary-weak: #12312e;
   --code-bg: #121922;
+  /* 代码块背景对齐 VSCode 深色主题 */
+  --code-block-bg: #1e1e1e;
   --ok: #4ade80;
   --warn: #fbbf24;
   --danger: #f87171;
@@ -159,6 +163,24 @@ a:hover {
   font-size: 13px;
 }
 
+/* 分类/标签彩色小标签(背景色由 utils/chipColor.ts 计算) */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 1px 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.75;
+  white-space: nowrap;
+}
+
+.chip:hover {
+  text-decoration: none;
+  filter: saturate(1.2);
+}
+
 /* 代码注释式小标签: // 区块标题 */
 .eyebrow {
   font-family: var(--font-mono);
@@ -236,19 +258,65 @@ a:hover {
 }
 
 .markdown-body pre {
-  background: var(--code-bg);
+  background: var(--code-block-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 16px;
   overflow-x: auto;
   font-family: var(--font-mono);
-  font-size: 13.5px;
+  font-size: 15px;
   line-height: 1.65;
 }
 
-.markdown-body pre code {
+/*
+ * 覆盖 Vditor 的代码块字号(85%), 让代码块字号跟随 pre。
+ * 注意 .vditor-reset code:not(.hljs):not(.highlight-chroma) 优先级更高, 必须一并覆盖:
+ * Vditor 的高亮是异步给 code 加 hljs 类的, 否则代码块会先小后大跳动一下。
+ */
+.markdown-body.vditor-reset pre > code,
+.markdown-body.vditor-reset pre > code:not(.hljs):not(.highlight-chroma) {
+  font-size: 1em;
   background: transparent;
   padding: 0;
+}
+
+/* 代码块纵向不出现滚动条(长代码用折叠按钮展开) */
+.markdown-body pre,
+.markdown-body.vditor-reset pre > code {
+  overflow-y: hidden;
+}
+
+/* 超过 20 行的代码块折叠 */
+.markdown-body .code-block > pre {
+  margin-bottom: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.markdown-body .code-block.is-collapsed > pre {
+  max-height: var(--code-fold-height);
+}
+.markdown-body .code-fold-toggle {
+  display: block;
+  width: 100%;
+  margin: -1px 0 1em;
+  padding: 7px 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+  background: var(--code-block-bg);
+  border: 1px solid var(--border);
+  border-radius: 0 0 var(--radius) var(--radius);
+  cursor: pointer;
+}
+.markdown-body .code-fold-toggle:hover {
+  color: var(--primary);
+  border-color: var(--border-strong);
+}
+
+/* 代码注释在深色/浅色主题下统一为斜体(vs 浅色主题默认不是斜体) */
+.vditor-reset pre code .hljs-comment,
+.vditor-reset pre code .hljs-quote {
+  font-style: italic;
 }
 
 .markdown-body table {
