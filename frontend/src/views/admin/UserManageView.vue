@@ -112,10 +112,16 @@ onMounted(load)
   <div>
     <div class="toolbar">
       <h2 style="margin: 0">用户管理</h2>
-      <div>
-        <el-input v-model="keyword" placeholder="搜索用户名/昵称/邮箱" style="max-width: 220px; margin-right: 8px" clearable @keyup.enter="page = 1; load()" @clear="page = 1; load()" />
-        <el-button @click="page = 1; load()">搜索</el-button>
+      <div class="toolbar-actions">
         <el-button type="primary" @click="openDialog()">新增用户</el-button>
+        <el-input
+          v-model="keyword"
+          placeholder="搜索用户名/昵称/邮箱"
+          clearable
+          @keyup.enter="page = 1; load()"
+          @clear="page = 1; load()"
+        />
+        <el-button @click="page = 1; load()">搜索</el-button>
       </div>
     </div>
 
@@ -215,6 +221,15 @@ onMounted(load)
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
+}
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+.toolbar-actions .el-input {
+  width: 220px;
 }
 .op-row {
   display: flex;

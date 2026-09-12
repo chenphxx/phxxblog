@@ -36,6 +36,7 @@ export interface Category {
   slug: string
   parent_id?: number | null
   description?: string | null
+  color?: string | null
   sort_order: number
   post_count: number
 }
@@ -44,6 +45,7 @@ export interface Tag {
   id: number
   name: string
   slug: string
+  color?: string | null
   post_count: number
 }
 
@@ -63,6 +65,8 @@ export interface PostItem {
   status: number
   views: number
   likes_count: number
+  word_count: number
+  reading_minutes: number
   published_at?: string | null
   created_at: string
   updated_at: string
@@ -134,12 +138,23 @@ export interface TokenPair {
 
 export interface PublicSettings {
   site_name: string
+  site_title: string
   site_desc: string
   site_keywords: string
   site_icon: string
   site_avatar: string
   site_bio: string
   site_readme: string
+  /** 首页是否展示 README 模块 */
+  show_readme: boolean
+  /** 首页是否展示文章发布记录(贡献热力图) */
+  show_contributions: boolean
+  /** 首页是否展示程序员历史上的今天 */
+  show_history: boolean
+  /** 首页是否展示 session 终端卡片 */
+  show_session: boolean
+  /** 页脚版权信息(支持 {year}/{site_name} 占位符, 留空不显示) */
+  footer_text: string
   tech_tags: string[]
   social_links: { name: string; url: string }[]
   website_links: { name: string; url: string }[]
@@ -223,18 +238,4 @@ export interface HistoryEvent {
   relevance_score?: number
   source?: string
   url?: string
-}
-
-/** 快递物流轨迹 */
-export interface TrackingEvent {
-  time: string
-  context: string
-}
-
-export interface TrackingResult {
-  tracking_number: string
-  carrier_code?: string
-  carrier_name?: string
-  track_count?: number
-  tracks: TrackingEvent[]
 }

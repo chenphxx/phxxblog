@@ -49,6 +49,15 @@ onMounted(() => {
   if (!auth.user && auth.accessToken) {
     auth.fetchMe().catch(() => {})
   }
+  // 浏览器标签页名称(与前台保持一致)
+  import('@/api').then(({ settingsApi }) =>
+    settingsApi
+      .public()
+      .then((data) => {
+        document.title = data.site_title || data.site_name || "chenphxx's blog"
+      })
+      .catch(() => {}),
+  )
 })
 </script>
 

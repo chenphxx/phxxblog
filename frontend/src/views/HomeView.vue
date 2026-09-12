@@ -3,15 +3,22 @@ import { computed, onActivated, onMounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { CopyDocument, Refresh } from '@element-plus/icons-vue'
 import { categoryApi, mediaApi, miscApi, postApi, settingsApi, statsApi } from '@/api'
-import type { Category, ContributionPoint, HistoryEvent, PostItem, PublicSettings, TrackingResult } from '@/types'
+import type { Category, ContributionPoint, HistoryEvent, PostItem, PublicSettings } from '@/types'
 import PostCard from '@/components/PostCard.vue'
 import MarkdownView from '@/components/MarkdownView.vue'
 import ContributionsChart from '@/components/ContributionsChart.vue'
 import { useAuthStore } from '@/stores/auth'
+import { chipStyle } from '@/utils/chipColor'
 
 const settings = ref<PublicSettings | null>(null)
 const posts = ref<PostItem[]>([])
 const totalPosts = ref(0)
+/** 首页文章分页: 每页 10 篇, 第 1 页即最近 10 篇 */
+const page = ref(1)
+const pageSize = 10
+const postsLoading = ref(false)
+const latestPost = ref<PostItem | null>(null)
+const postsAnchor = ref<HTMLElement>()
 const categories = ref<Category[]>([])
 const contributions = ref<ContributionPoint[]>([])
 const loading = ref(true)
@@ -23,9 +30,6 @@ const sayingLoading = ref(false)
 const historyEvents = ref<HistoryEvent[]>([])
 const historyDate = ref('')
 const historyLoading = ref(false)
-const trackingForm = ref({ number: '', phone: '' })
-const trackingLoading = ref(false)
-const trackingResult = ref<TrackingResult | null>(null)
 /** 可筛选年份(近 6 年) */
 const contributionYears = computed(() => {
   const current = new Date().getFullYear()
@@ -86,6 +90,26 @@ function linkName(link: { name?: string; url: string }) {
   }
 }
 
+/** 加载首页文章列表(全部文章, 按发布时间倒序) */
+async function loadPosts() {
+  postsLoading.value = true
+  try {
+    const data = await postApi.list({ page: page.value, page_size: pageSize })
+    posts.value = data.items
+    totalPosts.value = data.total
+    // 终端卡片里的"最新一篇"始终取第 1 页的第一条
+    if (page.value === 1) latestPost.value = data.items[0] || null
+  } finally {
+    postsLoading.value = false
+  }
+}
+
+/** 翻页后回到文章列表顶部, 便于查看更早的文章 */
+watch(page, async () => {
+  await loadPosts()
+  postsAnchor.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+})
+
 async function loadContributions() {
   contributions.value = await statsApi.contributions({
     source: 'post',
@@ -94,10 +118,10 @@ async function loadContributions() {
   })
 }
 
-async function loadSaying() {
+async function loadSaying(force = false) {
   sayingLoading.value = true
   try {
-    const data = await miscApi.saying()
+    const data = await miscApi.saying(force)
     saying.value = data.text
   } catch {
     saying.value = '一言暂时走神了, 点击右侧刷新重试'
@@ -129,24 +153,6 @@ async function loadHistory() {
   }
 }
 
-async function queryTracking() {
-  const number = trackingForm.value.number.trim()
-  if (!number) {
-    ElMessage.warning('请输入快递单号')
-    return
-  }
-  trackingLoading.value = true
-  trackingResult.value = null
-  try {
-    trackingResult.value = await miscApi.trackingQuery({
-      tracking_number: number,
-      phone: trackingForm.value.phone.trim() || undefined,
-    })
-  } finally {
-    trackingLoading.value = false
-  }
-}
-
 watch(contributionYear, loadContributions)
 
 // keep-alive 缓存下, 从后台修改设置返回后刷新首页信息(头像/简介/链接等)
@@ -160,16 +166,15 @@ onActivated(async () => {
 
 onMounted(async () => {
   try {
-    const [settingData, postData, categoryData] = await Promise.all([
-      settingsApi.public(),
-      postApi.list({ page: 1, page_size: 8 }),
-      categoryApi.list(),
-    ])
+    const [settingData, categoryData] = await Promise.all([settingsApi.public(), categoryApi.list()])
     settings.value = settingData
-    posts.value = postData.items
-    totalPosts.value = postData.total
     categories.value = categoryData
-    await Promise.all([loadContributions(), loadSaying(), loadHistory()])
+    const tasks: Promise<unknown>[] = [loadPosts()]
+    // 后台关闭的模块不再请求对应接口
+    if (settingData?.show_contributions !== false) tasks.push(loadContributions())
+    if (settingData?.show_history !== false) tasks.push(loadHistory())
+    if (settingData?.show_session !== false) tasks.push(loadSaying())
+    await Promise.all(tasks)
   } finally {
     loading.value = false
   }
@@ -208,7 +213,13 @@ onMounted(async () => {
           </div>
 
           <div class="profile-categories">
-            <router-link v-for="cat in categories" :key="cat.id" :to="`/search?category=${cat.id}`" class="category-chip">
+            <router-link
+              v-for="cat in categories"
+              :key="cat.id"
+              :to="`/search?category=${cat.id}`"
+              class="category-chip chip"
+              :style="chipStyle(cat.name, cat.color)"
+            >
               {{ cat.name }} ({{ cat.post_count }})
             </router-link>
           </div>
@@ -233,7 +244,7 @@ onMounted(async () => {
 
       <!-- 右侧: 终端会话 + 内容区块 -->
       <main class="home-main">
-        <section class="term-card">
+        <section v-if="settings?.show_session !== false" class="term-card">
           <div class="term-head">
             <span class="term-dot term-dot-red" />
             <span class="term-dot term-dot-amber" />
@@ -241,7 +252,7 @@ onMounted(async () => {
             <span class="term-title">session — {{ settings?.site_name || 'blog' }}</span>
             <div class="term-actions">
               <el-button size="small" circle :disabled="!saying" :icon="CopyDocument" title="复制一言" @click="copySaying" />
-              <el-button size="small" circle :loading="sayingLoading" :icon="Refresh" title="换一句" @click="loadSaying" />
+              <el-button size="small" circle :loading="sayingLoading" :icon="Refresh" title="换一句" @click="loadSaying(true)" />
             </div>
           </div>
           <div class="term-body">
@@ -250,9 +261,9 @@ onMounted(async () => {
             <p class="term-line"><span class="term-prompt">$</span> ls posts | wc -l</p>
             <p class="term-out">{{ totalPosts }}</p>
             <p class="term-line"><span class="term-prompt">$</span> tail -n 1 posts/latest</p>
-            <p v-if="posts.length" class="term-out">
-              <router-link :to="`/post/${posts[0].id}`" class="term-link">
-                {{ (posts[0].published_at || posts[0].created_at).slice(0, 10) }} · {{ posts[0].title }}
+            <p v-if="latestPost" class="term-out">
+              <router-link :to="`/post/${latestPost.id}`" class="term-link">
+                {{ (latestPost.published_at || latestPost.created_at).slice(0, 10) }} · {{ latestPost.title }}
               </router-link>
             </p>
             <p v-else class="term-out">暂无文章</p>
@@ -262,7 +273,7 @@ onMounted(async () => {
           </div>
         </section>
 
-        <section class="card history-card">
+        <section v-if="settings?.show_history !== false" class="card history-card">
           <div class="history-head">
             <p class="eyebrow">history — 程序员历史上的今天</p>
             <el-button size="small" circle :loading="historyLoading" :icon="Refresh" title="刷新" @click="loadHistory" />
@@ -284,33 +295,12 @@ onMounted(async () => {
           <el-empty v-else-if="!historyLoading" description="暂无历史上的今天数据" :image-size="60" />
         </section>
 
-        <section v-if="settings?.site_readme" class="card section-card">
+        <section v-if="settings?.show_readme !== false && settings?.site_readme" class="card section-card">
           <p class="eyebrow" style="margin-bottom: 10px">readme — 关于</p>
           <MarkdownView :content="settings.site_readme" />
         </section>
 
-        <section v-if="isAdmin" class="card tracking-card">
-          <p class="eyebrow" style="margin-bottom: 12px">tracking — 快递查询</p>
-          <div class="tracking-form">
-            <el-input v-model="trackingForm.number" placeholder="输入快递单号" clearable @keyup.enter="queryTracking" />
-            <el-input v-model="trackingForm.phone" placeholder="手机尾号(选填)" maxlength="4" clearable @keyup.enter="queryTracking" />
-            <el-button type="primary" :loading="trackingLoading" @click="queryTracking">查询</el-button>
-          </div>
-          <div v-if="trackingResult" class="tracking-result">
-            <div class="tracking-meta">
-              <strong>{{ trackingResult.carrier_name || trackingResult.carrier_code || '快递' }}</strong>
-              <span class="muted">{{ trackingResult.tracking_number }}</span>
-            </div>
-            <el-timeline v-if="trackingResult.tracks?.length">
-              <el-timeline-item v-for="(track, index) in trackingResult.tracks" :key="index" :timestamp="track.time">
-                {{ track.context }}
-              </el-timeline-item>
-            </el-timeline>
-            <el-empty v-else description="暂无物流信息" :image-size="60" />
-          </div>
-        </section>
-
-        <section class="card section-card">
+        <section v-if="settings?.show_contributions !== false" class="card section-card">
           <p class="eyebrow" style="margin-bottom: 12px">activity — 文章发布记录</p>
           <ContributionsChart
             :points="contributions"
@@ -320,16 +310,27 @@ onMounted(async () => {
           />
         </section>
 
-        <section style="margin-top: 28px">
+        <section ref="postsAnchor" class="home-posts">
           <div class="posts-head">
             <div>
-              <p class="eyebrow" style="margin-bottom: 4px">posts — 最新文章</p>
-              <h2 class="posts-title">最新文章</h2>
+              <p class="eyebrow" style="margin-bottom: 4px">posts — 全部文章</p>
+              <h2 class="posts-title">全部文章</h2>
             </div>
-            <el-button size="small" @click="$router.push('/posts')">全部文章</el-button>
+            <span class="count-label">共 {{ totalPosts }} 篇</span>
           </div>
-          <PostCard v-for="post in posts" :key="post.id" :post="post" />
-          <el-empty v-if="!loading && posts.length === 0" description="还没有发布文章" />
+          <div v-loading="postsLoading" style="min-height: 120px">
+            <PostCard v-for="post in posts" :key="post.id" :post="post" />
+            <el-empty v-if="!postsLoading && posts.length === 0" description="还没有发布文章" />
+            <div v-if="totalPosts > pageSize" class="pagination-row">
+              <el-pagination
+                v-model:current-page="page"
+                :page-size="pageSize"
+                :total="totalPosts"
+                layout="prev, pager, next, total"
+                background
+              />
+            </div>
+          </div>
         </section>
       </main>
     </div>
@@ -473,20 +474,26 @@ onMounted(async () => {
   justify-content: center;
 }
 .category-chip {
-  font-family: var(--font-mono);
   font-size: 11.5px;
-  color: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: 4px;
   padding: 2px 10px;
-}
-.category-chip:hover {
-  color: var(--primary);
-  border-color: var(--primary);
-  text-decoration: none;
 }
 .home-main {
   min-width: 0;
+}
+.home-posts {
+  margin-top: 28px;
+  /* 站点头部是 sticky 的, 翻页滚动时留出间距 */
+  scroll-margin-top: 84px;
+}
+.count-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+.pagination-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
 }
 .posts-head {
   display: flex;
@@ -664,29 +671,6 @@ onMounted(async () => {
   background: var(--primary-weak);
   border-radius: 4px;
   padding: 1px 7px;
-}
-.tracking-card {
-  margin-top: 20px;
-  margin-bottom: 20px;
-}
-.tracking-form {
-  display: flex;
-  gap: 10px;
-}
-.tracking-form .el-input:first-child {
-  flex: 1;
-}
-.tracking-form .el-input:nth-child(2) {
-  width: 150px;
-}
-.tracking-result {
-  margin-top: 16px;
-}
-.tracking-meta {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  margin-bottom: 12px;
 }
 @media (max-width: 900px) {
   .home-grid {

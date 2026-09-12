@@ -15,6 +15,7 @@ router = APIRouter(prefix="/settings", tags=["设置"])
 # 前台公开的配置键
 PUBLIC_KEYS = [
     "site_name",
+    "site_title",
     "site_desc",
     "site_keywords",
     "site_icon",
@@ -25,10 +26,16 @@ PUBLIC_KEYS = [
     "social_links",
     "website_links",
     "beian_info",
+    "show_readme",
+    "show_contributions",
+    "show_history",
+    "show_session",
+    "footer_text",
 ]
 
 DEFAULTS = {
     "site_name": "chenphxx's blog",
+    "site_title": "",
     "site_desc": "记录技术成长与生活点滴的个人博客",
     "site_keywords": "blog, 技术, 分享",
     "site_icon": "",
@@ -39,7 +46,15 @@ DEFAULTS = {
     "social_links": "[]",
     "website_links": "[]",
     "beian_info": "[]",
+    "show_readme": "1",
+    "show_contributions": "1",
+    "show_history": "1",
+    "show_session": "1",
+    "footer_text": "© {year} {site_name} · Vue3 + FastAPI",
 }
+
+# 布尔型开关: 1/true/yes/on 视为开启
+BOOL_KEYS = ("show_readme", "show_contributions", "show_history", "show_session")
 
 
 @router.get("/public", response_model=dict)
@@ -58,6 +73,9 @@ def public_settings(db: Session = Depends(get_db)):
                 result[key] = json.loads(raw)
             except json.JSONDecodeError:
                 result[key] = [item.strip() for item in raw.split(",") if item.strip()]
+    # 布尔开关统一转成 true/false, 前端直接当布尔值使用
+    for key in BOOL_KEYS:
+        result[key] = str(result.get(key, "")).strip().lower() in ("1", "true", "yes", "on")
     return ok(result)
 
 
