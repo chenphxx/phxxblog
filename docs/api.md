@@ -107,6 +107,6 @@
 | GET | /api/v1/search | 全文搜索(标题/摘要/正文) |
 | GET | /rss.xml | RSS 订阅 |
 | GET | /sitemap.xml | SEO 站点地图 |
-| GET | /api/v1/settings/public | 前台公开配置(站点名/简介/社交链接等) |
+| GET | /api/v1/settings/public | 前台公开配置(站点名/标签页标题/简介/社交链接等) |
 | GET | /api/v1/settings | 后台设置列表 |
 | PUT | /api/v1/settings | 更新设置 |

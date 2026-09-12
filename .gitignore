@@ -29,3 +29,6 @@ backend/data/*.xdb
 # 编辑器
 .vscode/
 .idea/
+
+# 本地验证产物(截图等, 非源码)
+output/
