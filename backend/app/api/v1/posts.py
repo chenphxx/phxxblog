@@ -1,17 +1,13 @@
 """文章接口: 前台浏览、后台管理、发布流程、点赞、归档。"""
 import io
-import json
-import re
 import uuid
 import zipfile
 from datetime import datetime, timedelta
-from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, Response, UploadFile
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
-from app.core.config import PROJECT_ROOT, settings
 from app.core.database import get_db
 from app.core.deps import (
     get_client_ip,
@@ -35,6 +31,17 @@ from app.schemas.post import (
     PostStatusIn,
     PostUpdate,
     TagOut,
+)
+from app.services.archive import (
+    frontmatter_lines,
+    lookup_image,
+    pack_images,
+    parse_frontmatter,
+    rewrite_import_images,
+    save_import_images,
+    split_import_archive,
+    title_key,
+    unique_slug,
 )
 from app.services.log import write_operation_log
 from app.services.markdown import render_markdown
@@ -194,154 +201,52 @@ def admin_list_posts(
 
 def _post_to_markdown(post: Post) -> str:
     """将文章序列化为带 YAML frontmatter 的 Markdown 文本。"""
-    lines = ["---"]
-    lines.append(f"title: {json.dumps(post.title, ensure_ascii=False)}")
-    lines.append(f"slug: {json.dumps(post.slug, ensure_ascii=False)}")
-    lines.append(f"status: {post.status}")
+    pairs: list[tuple[str, object]] = [
+        ("title", post.title),
+        ("slug", post.slug),
+        ("status", post.status),
+    ]
     if post.published_at:
-        lines.append(f"date: {json.dumps(post.published_at.strftime('%Y-%m-%d %H:%M:%S'), ensure_ascii=False)}")
+        pairs.append(("date", post.published_at.strftime("%Y-%m-%d %H:%M:%S")))
     if post.summary:
-        lines.append(f"summary: {json.dumps(post.summary, ensure_ascii=False)}")
+        pairs.append(("summary", post.summary))
     if post.cover_image:
-        lines.append(f"cover_image: {json.dumps(post.cover_image, ensure_ascii=False)}")
+        pairs.append(("cover_image", post.cover_image))
     if post.category:
-        lines.append(f"category: {json.dumps(post.category.name, ensure_ascii=False)}")
+        pairs.append(("category", post.category.name))
     if post.tags:
-        lines.append("tags: " + json.dumps([t.name for t in post.tags], ensure_ascii=False))
-    lines.append("---")
+        pairs.append(("tags", [t.name for t in post.tags]))
+    lines = frontmatter_lines(pairs)
     lines.append("")
     lines.append(post.content_md)
     return "\n".join(lines)
-
-
-def _parse_frontmatter(content: str) -> tuple[dict, str]:
-    """解析 Markdown 头部的 YAML frontmatter, 返回 (元信息, 正文)。"""
-    if not content.startswith("---"):
-        return {}, content
-    end = content.find("\n---", 3)
-    if end == -1:
-        return {}, content
-    block = content[3:end]
-    body = content[end + 4:].lstrip("\r\n")
-    meta: dict = {}
-    for line in block.splitlines():
-        if ":" not in line:
-            continue
-        key, _, value = line.partition(":")
-        key = key.strip()
-        value = value.strip()
-        if not key:
-            continue
-        if value.startswith('"') and value.endswith('"') and len(value) >= 2:
-            try:
-                value = json.loads(value)
-            except Exception:
-                pass
-        elif value.startswith("[") and value.endswith("]"):
-            try:
-                value = json.loads(value)
-            except Exception:
-                pass
-        meta[key] = value
-    return meta, body
-
-
-def _unique_slug(db: Session, model, slug: str) -> str:
-    """保证 slug 唯一(重名时追加 -1, -2 ...)。"""
-    base = slug
-    index = 1
-    while db.query(model).filter(model.slug == slug).first():
-        slug = f"{base}-{index}"
-        index += 1
-    return slug
-
-
-_IMAGE_URL_RE = re.compile(
-    r"/assets/[^\s)\"']+\.(?:png|jpe?g|gif|webp|svg|bmp|avif)", re.IGNORECASE
-)
-_IMPORT_IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".bmp", ".avif"}
-
-
-def _collect_uploaded_images(text: str) -> list[str]:
-    """提取文本中 /assets/... 图片 URL。"""
-    urls: list[str] = []
-    for match in _IMAGE_URL_RE.finditer(text or ""):
-        url = match.group(0)
-        if url not in urls:
-            urls.append(url)
-    return urls
-
-
-def _image_url_to_path(url: str) -> Path | None:
-    """将 /assets/... URL 映射为服务器上的图片文件路径。"""
-    assets_root = (PROJECT_ROOT / "assets").resolve()
-    candidate = (PROJECT_ROOT / url.lstrip("/")).resolve()
-    if candidate.is_file() and assets_root in candidate.parents:
-        return candidate
-    return None
-
-
-def _normalize_rel(path: str) -> str:
-    """归一化相对路径: 统一斜杠、去掉 ./ 与开头斜杠。"""
-    return path.replace("\\", "/").lstrip("./").strip()
-
-
-def _rewrite_import_images(text: str, image_map: dict[str, str]) -> str:
-    """把导入文本中的相对图片路径改写为服务器 URL。"""
-    if not image_map or not text:
-        return text
-
-    def lookup(norm: str) -> str | None:
-        target = image_map.get(norm)
-        if target is None:
-            target = image_map.get(norm.rsplit("/", 1)[-1])
-        return target
-
-    def repl_md(match: re.Match) -> str:
-        alt, url = match.group(1), match.group(2)
-        target = lookup(_normalize_rel(url))
-        return f"![{alt}]({target})" if target else match.group(0)
-
-    def repl_html(match: re.Match) -> str:
-        url = match.group(2)
-        target = lookup(_normalize_rel(url))
-        return f'{match.group(1)}{target}{match.group(3)}' if target else match.group(0)
-
-    text = re.sub(r"!\[([^\]]*)\]\(([^)]+)\)", repl_md, text)
-    text = re.sub(r'(<img[^>]*\bsrc=")([^"]+)(")', repl_html, text)
-    return text
 
 
 def _rewrite_cover_image(cover: str | None, image_map: dict[str, str]) -> str | None:
     """改写 frontmatter 中的封面图片路径。"""
     if not cover:
         return cover
-    norm = _normalize_rel(cover)
-    target = image_map.get(norm) or image_map.get(norm.rsplit("/", 1)[-1])
-    return target or cover
+    return lookup_image(image_map, cover) or cover
 
 
-def _save_import_images(entries: list[tuple[str, bytes]], date_dir: str) -> dict[str, str]:
-    """把压缩包中的图片保存到 uploads/import/<date>/, 返回 相对路径 -> URL 映射。"""
-    image_map: dict[str, str] = {}
-    uploads_root = (Path(settings.upload_dir) / "import" / date_dir).resolve()
-    for name, data in entries:
-        if Path(name).suffix.lower() not in _IMPORT_IMAGE_EXTS:
-            continue
-        norm = _normalize_rel(name)
-        parts = [part for part in norm.split("/") if part not in ("", ".", "..")]
-        if not parts:
-            continue
-        safe_rel = "/".join(parts)
-        dest = (uploads_root / safe_rel).resolve()
-        if dest != uploads_root and uploads_root not in dest.parents:
-            continue
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        dest.write_bytes(data)
-        url = f"/assets/uploads/import/{date_dir}/{safe_rel}"
-        image_map.setdefault(norm, url)
-        image_map.setdefault(parts[-1], url)
-    return image_map
+def _import_title(meta: dict, body: str, filename: str) -> str:
+    """推断文章标题: frontmatter -> 首个一级标题 -> 文件名。"""
+    title = str(meta.get("title") or "").strip()
+    if not title:
+        for line in body.splitlines():
+            if line.startswith("# "):
+                title = line[2:].strip()
+                break
+    if not title:
+        stem = filename.rsplit("/", 1)[-1].rsplit("\\", 1)[-1]
+        title = stem[:-3] if stem.lower().endswith(".md") else stem
+    return title
+
+
+def _existing_titles(db: Session) -> set[str]:
+    """已有文章标题的查重键(回收站中的文章不算重复)。"""
+    rows = db.query(Post.title).filter(Post.status != 4).all()
+    return {title_key(str(title)) for (title,) in rows if str(title).strip()}
 
 
 def _import_markdown(
@@ -352,22 +257,14 @@ def _import_markdown(
     image_map: dict[str, str] | None = None,
 ) -> tuple[bool, str | None]:
     """解析并创建一篇文章(默认草稿)。返回 (是否导入, 错误信息)。"""
-    meta, body = _parse_frontmatter(content)
+    meta, body = parse_frontmatter(content)
     image_map = image_map or {}
-    title = str(meta.get("title") or "").strip()
-    if not title:
-        for line in body.splitlines():
-            if line.startswith("# "):
-                title = line[2:].strip()
-                break
-    if not title:
-        stem = filename.rsplit("/", 1)[-1].rsplit("\\", 1)[-1]
-        title = stem[:-3] if stem.lower().endswith(".md") else stem
+    title = _import_title(meta, body, filename)
     if not title:
         return False, f"{filename}: 无法识别标题"
 
     slug = str(meta.get("slug") or "").strip() or f"post-{uuid.uuid4().hex[:8]}"
-    slug = _unique_slug(db, Post, slug)
+    slug = unique_slug(db, Post, slug)
 
     status = 0
     try:
@@ -392,7 +289,7 @@ def _import_markdown(
         if category is None:
             category = Category(
                 name=category_name[:50],
-                slug=_unique_slug(db, Category, category_name[:80]),
+                slug=unique_slug(db, Category, category_name[:80]),
             )
             db.add(category)
             db.flush()
@@ -409,7 +306,7 @@ def _import_markdown(
         if tag is None:
             tag = Tag(
                 name=tag_name[:50],
-                slug=_unique_slug(db, Tag, tag_name[:80]),
+                slug=unique_slug(db, Tag, tag_name[:80]),
             )
             db.add(tag)
             db.flush()
@@ -417,7 +314,7 @@ def _import_markdown(
 
     summary = str(meta.get("summary") or "").strip() or None
     cover_image = str(meta.get("cover_image") or "").strip() or None
-    body = _rewrite_import_images(body, image_map)
+    body = rewrite_import_images(body, image_map)
     cover_image = _rewrite_cover_image(cover_image, image_map)
     post = Post(
         author_id=user.id,
@@ -477,15 +374,7 @@ def export_posts(
                 body = _post_to_markdown(post)
                 filename = f"{slug}.md"
                 text_for_images = body
-            for url in _collect_uploaded_images(text_for_images):
-                path = _image_url_to_path(url)
-                if path is None:
-                    continue
-                rel = path.relative_to(PROJECT_ROOT / "assets")
-                zpath = f"images/{slug}/{rel.as_posix()}"
-                if zpath not in zf.namelist():
-                    zf.write(str(path), zpath)
-                body = body.replace(url, zpath)
+            body = pack_images(zf, body, text_for_images, f"images/{slug}")
             zf.writestr(filename, body)
     buf.seek(0)
     stamp = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -500,56 +389,92 @@ def export_posts(
 def import_posts(
     request: Request,
     files: list[UploadFile] = File(...),
+    mode: str = Query("import", pattern="^(check|import)$", description="check=只查重不写入, import=执行导入"),
+    on_duplicate: str = Query("skip", pattern="^(skip|all)$", description="重复时: skip=仅导入不重复, all=一并导入"),
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """导入文章: 支持 .md 文件或包含 .md 的 zip 压缩包。"""
+    """导入文章: 支持 .md 文件或包含 .md 的 zip 压缩包; mode=check 只返回查重结果。"""
     if Perm.POST_CREATE not in user.permission_codes:
         raise HTTPException(status_code=403, detail="缺少权限: post:create")
-    imported = 0
-    skipped = 0
+
     errors: list[str] = []
+    # 每个上传文件拆成 (压缩包内的原始条目, 其中的 md 文件), 便于后续按包共用图片落盘结果
+    groups: list[tuple[list[tuple[str, bytes]], list[tuple[str, str]]]] = []
     for upload in files:
         name = upload.filename or "untitled"
-        raw = upload.file.read()
-        md_files: list[tuple[str, str]] = []
-        image_map: dict[str, str] = {}
-        if name.lower().endswith(".zip"):
-            try:
-                with zipfile.ZipFile(io.BytesIO(raw)) as zf:
-                    entries = [
-                        (info.filename, zf.read(info))
-                        for info in zf.infolist()
-                        if not info.is_dir()
-                    ]
-            except zipfile.BadZipFile:
-                errors.append(f"{name}: 不是有效的 zip 压缩包")
-                continue
-            date_dir = datetime.now().strftime("%Y/%m")
-            image_map = _save_import_images(entries, date_dir)
-            for fname, data in entries:
-                if not fname.lower().endswith(".md"):
-                    continue
-                md_files.append((fname, data.decode("utf-8", errors="replace")))
-        elif name.lower().endswith(".md"):
-            md_files.append((name, raw.decode("utf-8", errors="replace")))
-        else:
-            errors.append(f"{name}: 仅支持 .md 或 .zip 文件")
+        md_files, entries, err = split_import_archive(name, upload.file.read())
+        if err:
+            errors.append(err)
             continue
+        groups.append((entries, md_files))
+
+    # 先整体解析一遍: 与库中已有标题、本批已出现的标题比对, 得出重复情况
+    known_titles = _existing_titles(db)
+    plans: list[dict] = []
+    for group_index, (_entries, md_files) in enumerate(groups):
         for fname, content in md_files:
-            ok_imported, err = _import_markdown(db, user, fname, content, image_map)
-            if ok_imported:
-                imported += 1
-            elif err:
-                errors.append(err)
-            else:
-                skipped += 1
+            meta, body = parse_frontmatter(content)
+            title = _import_title(meta, body, fname)
+            if not title:
+                errors.append(f"{fname}: 无法识别标题")
+                continue
+            key = title_key(title)
+            duplicated = key in known_titles
+            known_titles.add(key)
+            plans.append({
+                "group": group_index,
+                "filename": fname,
+                "content": content,
+                "title": title,
+                "duplicated": duplicated,
+            })
+
+    duplicates = [plan["title"] for plan in plans if plan["duplicated"]]
+    if mode == "check":
+        return ok({
+            "total": len(plans),
+            "duplicates_count": len(duplicates),
+            "duplicates": duplicates[:50],
+        }, "查重完成")
+
+    image_maps: dict[int, dict[str, str]] = {}
+
+    def image_map_of(group_index: int) -> dict[str, str]:
+        """同一份压缩包内的多篇文章共用一次图片落盘结果。"""
+        if group_index not in image_maps:
+            entries = groups[group_index][0]
+            image_maps[group_index] = (
+                save_import_images(entries, datetime.now().strftime("%Y/%m")) if entries else {}
+            )
+        return image_maps[group_index]
+
+    imported = 0
+    skipped = 0
+    for plan in plans:
+        if plan["duplicated"] and on_duplicate == "skip":
+            skipped += 1
+            continue
+        ok_imported, err = _import_markdown(
+            db, user, plan["filename"], plan["content"], image_map_of(plan["group"])
+        )
+        if ok_imported:
+            imported += 1
+        elif err:
+            errors.append(err)
+        else:
+            skipped += 1
     db.commit()
     write_operation_log(
         db, request=request, user=user, module="post", action="import",
-        detail={"imported": imported, "skipped": skipped, "errors": len(errors)},
+        detail={"imported": imported, "skipped": skipped, "duplicates": len(duplicates)},
     )
-    return ok({"imported": imported, "skipped": skipped, "errors": errors[:20]}, "导入完成")
+    return ok({
+        "imported": imported,
+        "skipped": skipped,
+        "errors": errors[:20],
+        "duplicates_count": len(duplicates),
+    }, "导入完成")
 
 
 @router.get("/{post_id}", response_model=dict)

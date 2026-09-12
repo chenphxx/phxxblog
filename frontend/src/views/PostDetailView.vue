@@ -9,6 +9,7 @@ import MarkdownView from '@/components/MarkdownView.vue'
 import CommentSection from '@/components/CommentSection.vue'
 import { useAuthStore } from '@/stores/auth'
 import { chipStyle, LIKES_COLOR, VIEWS_COLOR } from '@/utils/chipColor'
+import { formatDateTime } from '@/utils/datetime'
 
 const route = useRoute()
 const router = useRouter()
@@ -87,7 +88,7 @@ onMounted(load)
             >
               #{{ tag.name }}
             </router-link>
-            <span class="meta-item">date: {{ (post.published_at || post.created_at).slice(0, 10) }}</span>
+            <span class="meta-item">date: {{ formatDateTime(post.published_at || post.created_at) }}</span>
             <span class="meta-item">author: {{ post.author?.nickname || post.author?.username || '匿名' }}</span>
             <span class="chip" :style="chipStyle('views', VIEWS_COLOR)">views: {{ post.views }}</span>
             <span class="chip" :style="chipStyle('likes', LIKES_COLOR)">likes: {{ post.likes_count }}</span>

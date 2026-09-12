@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { postApi } from '@/api'
 import type { ArchiveGroup } from '@/types'
+import { formatDateTime } from '@/utils/datetime'
 
 const groups = ref<ArchiveGroup[]>([])
 const loading = ref(true)
@@ -70,7 +71,7 @@ onMounted(async () => {
             <div class="timeline">
               <div v-for="post in month.posts" :key="post.id" class="timeline-item">
                 <div class="timeline-date muted">
-                  {{ (post.published_at || post.created_at).slice(0, 10) }}
+                  {{ formatDateTime(post.published_at || post.created_at) }}
                 </div>
                 <router-link :to="`/post/${post.id}`" class="timeline-title">
                   {{ post.title }}

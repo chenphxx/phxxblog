@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { PostItem } from '@/types'
 import { chipStyle, LIKES_COLOR, VIEWS_COLOR } from '@/utils/chipColor'
+import { formatDateTime } from '@/utils/datetime'
 
 defineProps<{ post: PostItem }>()
 
@@ -43,7 +44,7 @@ const STATUS_TEXT: Record<number, string> = {
       >
         #{{ tag.name }}
       </router-link>
-      <span class="meta-item">{{ (post.published_at || post.created_at).slice(0, 10) }}</span>
+      <span class="meta-item">{{ formatDateTime(post.published_at || post.created_at) }}</span>
       <span class="chip" :style="chipStyle('views', VIEWS_COLOR)">views {{ post.views }}</span>
       <span class="chip" :style="chipStyle('likes', LIKES_COLOR)">likes {{ post.likes_count }}</span>
     </div>

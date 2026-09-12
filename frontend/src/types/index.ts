@@ -210,6 +210,21 @@ export interface TrendPoint {
   post_views: number
 }
 
+/** 导入查重结果(mode=check) */
+export interface ImportCheckResult {
+  total: number
+  duplicates_count: number
+  duplicates: string[]
+}
+
+/** 导入结果(mode=import) */
+export interface ImportResult {
+  imported: number
+  skipped: number
+  errors: string[]
+  duplicates_count: number
+}
+
 export interface ContributionPoint {
   date: string
   count: number

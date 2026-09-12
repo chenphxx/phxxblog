@@ -9,6 +9,7 @@ import MarkdownView from '@/components/MarkdownView.vue'
 import ContributionsChart from '@/components/ContributionsChart.vue'
 import { useAuthStore } from '@/stores/auth'
 import { chipStyle } from '@/utils/chipColor'
+import { formatDateTime } from '@/utils/datetime'
 
 const settings = ref<PublicSettings | null>(null)
 const posts = ref<PostItem[]>([])
@@ -263,7 +264,7 @@ onMounted(async () => {
             <p class="term-line"><span class="term-prompt">$</span> tail -n 1 posts/latest</p>
             <p v-if="latestPost" class="term-out">
               <router-link :to="`/post/${latestPost.id}`" class="term-link">
-                {{ (latestPost.published_at || latestPost.created_at).slice(0, 10) }} · {{ latestPost.title }}
+                {{ formatDateTime(latestPost.published_at || latestPost.created_at) }} · {{ latestPost.title }}
               </router-link>
             </p>
             <p v-else class="term-out">暂无文章</p>

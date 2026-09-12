@@ -96,7 +96,7 @@ phxxblog/
     │   ├── core/                 # config / database / security / deps / permissions / middleware / response
     │   ├── models/               # ORM 模型
     │   ├── schemas/              # Pydantic 请求与响应模型
-    │   └── services/             # 业务服务(markdown / upload / stats / geo / ua / log / text / link_preview)
+    │   └── services/             # 业务服务(markdown / upload / stats / geo / ua / log / text / link_preview / archive)
     ├── scripts/                  # init_db.sql、migration_*.sql、WordPress 导入、IP 库下载等
     └── requirements.txt
 ```
@@ -166,6 +166,7 @@ phxxblog/
 | `stats.py` | 记录访问明细: 写 `visit_logs`、累加 PV、当日首次 IP 累加 UV、文章访问累加阅读量 |
 | `log.py` | 写操作日志(谁、何时、哪个模块、什么动作、目标对象、IP) |
 | `link_preview.py` | 抓取目标网页的 og:title / description / image 生成链接卡片 |
+| `archive.py` | 导入导出公共工具: frontmatter 解析/生成、zip 内图片落盘与正文图片路径改写(文章与日记共用) |
 
 ### 5.7 路由模块一览 `backend/app/api/v1/`
 
@@ -321,8 +322,10 @@ phxxblog/
 
 ### 7.19 文章导入导出
 
-- 导出: `/posts/export?ids=...&fmt=markdown|zip` 把选中文章导出为 Markdown(带 frontmatter: 标题、slug、摘要、分类、标签、发布时间、状态等)或打包为 zip, 一并附带正文引用到的本地图片。
+- 导出: `/posts/export?ids=...&fmt=markdown|html` 把选中文章导出为 Markdown(带 frontmatter: 标题、slug、摘要、分类、标签、发布时间、状态等)或打包为 zip, 一并附带正文引用到的本地图片。
 - 导入: 上传一个或多个 Markdown/zip 文件, 解析 frontmatter、自动生成不冲突的 slug、按名称匹配或创建分类与标签, 并把压缩包内的图片保存到上传目录同时改写正文中的图片地址。
+- 查重: 导入前先按标题(忽略大小写与首尾空格)与库中已有文章、本批已出现的标题比对, 接口返回 `mode=check` 的查重结果; 前端据此提示重复, 由用户选择"仅导入不重复"(`on_duplicate=skip`)或"导入全部"(`on_duplicate=all`)。
+- 文章与日记的导入导出共用 `services/archive.py`: frontmatter 解析、zip 内图片落盘、正文图片地址改写只有一份实现。
 
 ### 7.20 WordPress 数据迁移
 
@@ -338,6 +341,15 @@ phxxblog/
 4. 通过后放行到 FastAPI 自带的文档页面。
 
 令牌来源的配合: 前端登录或恢复会话时把 access token 写入 `phxxblog_doc_token` cookie(SameSite=Lax, https 下附带 Secure), 登出或令牌失效时清除; 因此后台顶栏的"API 文档"按钮可以直接新窗口打开 `/docs`, 无需在 URL 上携带令牌。
+
+### 7.22 日记导入导出
+
+日记(/diary, 仅管理员)与文章使用同一套导入导出机制:
+
+- 导出: `GET /api/v1/diaries/export?ids=...&fmt=markdown|html` 打包为 zip。Markdown 文件按 `YYYY-MM-DD.md` 命名(同一天多条追加 `-2`、`-3` 序号), frontmatter 记录 `date` 与 `created_at`; html 格式输出完整 HTML 文档。正文引用到的本地图片一并放入 `images/<日期>/` 并改写为包内相对路径。
+- 导入: `POST /api/v1/diaries/import` 支持 .md 或 zip(可多选)。日期优先取 frontmatter 的 `date`, 其次取文件名开头的 `YYYY-MM-DD`, 都取不到则记为今天; `created_at` 有效时一并还原, 用于同一天多条日记的排序。zip 内的图片保存到上传目录并自动改写正文地址, 内容为空的文件会被跳过并在结果中给出提示。
+- 查重: 导入前按正文比对(`normalize_content` 忽略空白差异, 图片地址只比较文件名, 因此"相对路径"与导入后改写出的 `/assets/uploads/...` 地址视为同一张图), 与库中已有日记及本批内容比对; 前端可选择仅导入不重复或全部导入。
+- 前端入口: 日记页右上角的"导入日记 / 导出日记"按钮(导出可选 Markdown 或 HTML 格式)。
 
 ## 8. 数据模型概览
 

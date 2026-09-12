@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { postApi } from '@/api'
 import type { PostItem } from '@/types'
+import { formatDateTime } from '@/utils/datetime'
 
 const router = useRouter()
 const statusFilter = ref<number | undefined>(undefined)
@@ -20,6 +21,10 @@ const exportFmt = ref<'markdown' | 'html'>('markdown')
 const exporting = ref(false)
 const importing = ref(false)
 const importFiles = ref<File[]>([])
+const dupDialog = ref(false)
+const duplicates = ref<string[]>([])
+const duplicateCount = ref(0)
+const duplicateTotal = ref(0)
 
 const STATUS_TEXT = ['草稿', '审核中', '已发布', '私密', '回收站']
 const STATUS_TYPE: Record<number, string> = { 0: 'info', 1: 'warning', 2: 'success', 3: 'danger', 4: 'info' }
@@ -171,11 +176,32 @@ async function doImport() {
   }
   importing.value = true
   try {
-    const result = await postApi.importPosts(importFiles.value)
+    // 先查重(不写入), 有重复时交给用户决定如何导入
+    const check = await postApi.checkImportPosts(importFiles.value)
+    if (check.duplicates_count > 0) {
+      duplicates.value = check.duplicates
+      duplicateCount.value = check.duplicates_count
+      duplicateTotal.value = check.total
+      importDialog.value = false
+      dupDialog.value = true
+      return
+    }
+    await runImport('skip')
+  } finally {
+    importing.value = false
+  }
+}
+
+/** onDuplicate: skip=仅导入不重复, all=重复的也一并导入 */
+async function runImport(onDuplicate: 'skip' | 'all') {
+  importing.value = true
+  try {
+    const result = await postApi.importPosts(importFiles.value, onDuplicate)
     ElMessage.success(`导入完成: 成功 ${result.imported} 篇, 跳过 ${result.skipped} 篇`)
     if (result.errors?.length) {
       ElMessage.warning(`部分文件导入失败: ${result.errors.slice(0, 3).join('; ')}`)
     }
+    dupDialog.value = false
     importDialog.value = false
     importFiles.value = []
     page.value = 1
@@ -235,8 +261,8 @@ onMounted(load)
         <el-table-column label="作者" width="100">
           <template #default="{ row }">{{ row.author?.nickname || row.author?.username || '-' }}</template>
         </el-table-column>
-        <el-table-column label="更新时间" width="110">
-          <template #default="{ row }">{{ row.updated_at.slice(0, 10) }}</template>
+        <el-table-column label="更新时间" width="170">
+          <template #default="{ row }">{{ formatDateTime(row.updated_at) }}</template>
         </el-table-column>
         <el-table-column label="操作" width="320" fixed="right">
           <template #default="{ row }">
@@ -274,6 +300,7 @@ onMounted(load)
         在正文中用相对路径引用(如 images/xxx.png), 导入时图片会一并上传并自动改写为可访问的 URL。
         支持 YAML frontmatter 元信息: title / slug / status / date / summary / cover_image / category / tags。
         未提供标题时取文件名或首个 # 标题, 默认导入为草稿。
+        导入前会按标题查重(忽略大小写与首尾空格), 有重复时可选择仅导入不重复或全部导入。
       </el-alert>
       <div class="import-picker">
         <label class="el-button">
@@ -288,6 +315,22 @@ onMounted(load)
       <template #footer>
         <el-button @click="importDialog = false">取消</el-button>
         <el-button type="primary" :loading="importing" @click="doImport">开始导入</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 导入查重 -->
+    <el-dialog v-model="dupDialog" title="检测到重复文章" width="560px">
+      <el-alert type="warning" :closable="false" show-icon>
+        <template #title>共 {{ duplicateTotal }} 篇待导入, 其中 {{ duplicateCount }} 篇与已有文章重复</template>
+        重复依据为文章标题(忽略大小写与首尾空格)。可跳过重复内容, 也可全部导入。
+      </el-alert>
+      <ul v-if="duplicates.length" class="import-files">
+        <li v-for="(title, index) in duplicates" :key="index">{{ title }}</li>
+      </ul>
+      <template #footer>
+        <el-button @click="dupDialog = false">取消</el-button>
+        <el-button :loading="importing" @click="runImport('skip')">仅导入不重复</el-button>
+        <el-button type="primary" :loading="importing" @click="runImport('all')">导入全部</el-button>
       </template>
     </el-dialog>
 

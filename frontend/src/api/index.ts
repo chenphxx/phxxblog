@@ -6,6 +6,8 @@ import type {
   ContributionPoint,
   DiaryEntry,
   HistoryEvent,
+  ImportCheckResult,
+  ImportResult,
   LinkPreview,
   MediaItem,
   OperationLog,
@@ -20,6 +22,13 @@ import type {
   User,
   VisitItem,
 } from '@/types'
+
+/** 导入文件打包为 FormData */
+function importForm(files: File[]) {
+  const form = new FormData()
+  files.forEach((file) => form.append('files', file))
+  return form
+}
 
 /** 认证 */
 export const authApi = {
@@ -61,11 +70,13 @@ export const postApi = {
     }
     return response.blob()
   },
-  importPosts: (files: File[]) => {
-    const form = new FormData()
-    files.forEach((file) => form.append('files', file))
-    return http.post<{ imported: number; skipped: number; errors: string[] }>('/posts/import', form)
-  },
+  // 先查重(不写入), 由用户选择"仅导入不重复"或"导入全部"后再真正导入
+  checkImportPosts: (files: File[]) =>
+    http.post<ImportCheckResult>('/posts/import', importForm(files), { params: { mode: 'check' } }),
+  importPosts: (files: File[], onDuplicate: 'skip' | 'all' = 'skip') =>
+    http.post<ImportResult>('/posts/import', importForm(files), {
+      params: { mode: 'import', on_duplicate: onDuplicate },
+    }),
 }
 
 /** 分类与标签 */
@@ -125,6 +136,24 @@ export const diaryApi = {
   create: (data: Record<string, unknown>) => http.post<DiaryEntry>('/diaries', data),
   update: (id: number, data: Record<string, unknown>) => http.put<DiaryEntry>(`/diaries/${id}`, data),
   remove: (id: number) => http.delete<null>(`/diaries/${id}`),
+  exportDiaries: async (ids: number[] = [], fmt = 'markdown') => {
+    const token = localStorage.getItem('blog_access_token') || ''
+    const query = new URLSearchParams({ fmt })
+    if (ids.length) query.set('ids', ids.join(','))
+    const response = await fetch(`/api/v1/diaries/export?${query.toString()}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (!response.ok) {
+      throw new Error(`导出失败(${response.status})`)
+    }
+    return response.blob()
+  },
+  checkImportDiaries: (files: File[]) =>
+    http.post<ImportCheckResult>('/diaries/import', importForm(files), { params: { mode: 'check' } }),
+  importDiaries: (files: File[], onDuplicate: 'skip' | 'all' = 'skip') =>
+    http.post<ImportResult>('/diaries/import', importForm(files), {
+      params: { mode: 'import', on_duplicate: onDuplicate },
+    }),
 }
 
 /** 杂项 */

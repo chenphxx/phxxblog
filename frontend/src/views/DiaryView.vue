@@ -6,6 +6,7 @@ import type { ContributionPoint, DiaryEntry } from '@/types'
 import MarkdownView from '@/components/MarkdownView.vue'
 import VditorEditor from '@/components/VditorEditor.vue'
 import ContributionsChart from '@/components/ContributionsChart.vue'
+import { formatDateTime } from '@/utils/datetime'
 
 const entries = ref<DiaryEntry[]>([])
 const contributions = ref<ContributionPoint[]>([])
@@ -15,6 +16,16 @@ const saving = ref(false)
 const editingId = ref<number | null>(null)
 const form = ref({ content_md: '', entry_date: new Date().toISOString().slice(0, 10) })
 const contributionYear = ref<number | null>(null)
+const importDialog = ref(false)
+const importing = ref(false)
+const importFiles = ref<File[]>([])
+const dupDialog = ref(false)
+const duplicates = ref<string[]>([])
+const duplicateCount = ref(0)
+const duplicateTotal = ref(0)
+const exportDialog = ref(false)
+const exporting = ref(false)
+const exportFmt = ref<'markdown' | 'html'>('markdown')
 const contributionYears = computed(() => {
   const current = new Date().getFullYear()
   return Array.from({ length: 6 }, (_, i) => current - i)
@@ -110,6 +121,78 @@ async function remove(entry: DiaryEntry) {
   load()
 }
 
+function openExportDialog() {
+  exportFmt.value = 'markdown'
+  exportDialog.value = true
+}
+
+async function doExport() {
+  exporting.value = true
+  try {
+    const blob = await diaryApi.exportDiaries([], exportFmt.value)
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `phxxblog-diaries-${new Date().toISOString().slice(0, 10)}.zip`
+    document.body.appendChild(anchor)
+    anchor.click()
+    anchor.remove()
+    URL.revokeObjectURL(url)
+    ElMessage.success('已导出全部日记')
+    exportDialog.value = false
+  } catch {
+    // 错误已由拦截器提示
+  } finally {
+    exporting.value = false
+  }
+}
+
+function onImportPick(event: Event) {
+  const input = event.target as HTMLInputElement
+  importFiles.value = input.files ? Array.from(input.files) : []
+}
+
+async function doImport() {
+  if (!importFiles.value.length) {
+    ElMessage.warning('请先选择文件')
+    return
+  }
+  importing.value = true
+  try {
+    // 先查重(不写入), 有重复时交给用户决定如何导入
+    const check = await diaryApi.checkImportDiaries(importFiles.value)
+    if (check.duplicates_count > 0) {
+      duplicates.value = check.duplicates
+      duplicateCount.value = check.duplicates_count
+      duplicateTotal.value = check.total
+      importDialog.value = false
+      dupDialog.value = true
+      return
+    }
+    await runImport('skip')
+  } finally {
+    importing.value = false
+  }
+}
+
+/** onDuplicate: skip=仅导入不重复, all=重复的也一并导入 */
+async function runImport(onDuplicate: 'skip' | 'all') {
+  importing.value = true
+  try {
+    const result = await diaryApi.importDiaries(importFiles.value, onDuplicate)
+    ElMessage.success(`导入完成: 成功 ${result.imported} 条, 跳过 ${result.skipped} 条`)
+    if (result.errors?.length) {
+      ElMessage.warning(`部分文件导入失败: ${result.errors.slice(0, 3).join('; ')}`)
+    }
+    dupDialog.value = false
+    importDialog.value = false
+    importFiles.value = []
+    load()
+  } finally {
+    importing.value = false
+  }
+}
+
 onMounted(load)
 </script>
 
@@ -120,7 +203,11 @@ onMounted(load)
         <p class="eyebrow" style="margin: 0 0 4px">diary — 日记</p>
         <h1 style="margin: 0">日记</h1>
       </div>
-      <el-button type="primary" @click="openCreate">新增日记</el-button>
+      <div class="diary-actions-bar">
+        <el-button @click="importDialog = true">导入日记</el-button>
+        <el-button @click="openExportDialog">导出日记</el-button>
+        <el-button type="primary" @click="openCreate">新增日记</el-button>
+      </div>
     </div>
 
     <!-- 日记贡献热力图 -->
@@ -158,7 +245,7 @@ onMounted(load)
             <h3 :id="`diary-${month}`" class="month-title">{{ month }}</h3>
             <div class="timeline">
               <div v-for="entry in groups.get(month) || []" :key="entry.id" class="timeline-item">
-                <div class="timeline-date muted">{{ entry.entry_date }}</div>
+                <div class="timeline-date muted">{{ formatDateTime(entry.created_at) }}</div>
                 <div class="card diary-card">
                   <MarkdownView :content="entry.content_md" />
                   <div class="diary-actions">
@@ -173,6 +260,65 @@ onMounted(load)
         <el-empty v-if="!loading && entries.length === 0" description="还没有日记, 点击右上角开始记录" />
       </main>
     </div>
+
+    <!-- 导入日记 -->
+    <el-dialog v-model="importDialog" title="导入日记" width="600px">
+      <el-alert type="info" :closable="false" show-icon>
+        <template #title>文件要求</template>
+        支持 .md 文件或 .zip 压缩包(可多选)。zip 内需包含 .md 日记文件; 日记图片可放在任意目录,
+        在正文中用相对路径引用(如 images/xxx.png), 导入时图片会一并上传并自动改写为可访问的 URL。
+        支持 YAML frontmatter 元信息: date(YYYY-MM-DD) / created_at。
+        未提供日期时取文件名开头的日期, 仍取不到则记为今天。
+        导入前会按正文查重(忽略空白与图片地址差异), 有重复时可选择仅导入不重复或全部导入。
+      </el-alert>
+      <div class="import-picker">
+        <label class="el-button">
+          <input type="file" multiple accept=".md,.zip" hidden @change="onImportPick" />
+          选择文件
+        </label>
+        <span v-if="importFiles.length" class="muted">已选 {{ importFiles.length }} 个文件</span>
+        <ul v-if="importFiles.length" class="import-files">
+          <li v-for="(file, index) in importFiles" :key="index">{{ file.name }}</li>
+        </ul>
+      </div>
+      <template #footer>
+        <el-button @click="importDialog = false">取消</el-button>
+        <el-button type="primary" :loading="importing" @click="doImport">开始导入</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 导入查重 -->
+    <el-dialog v-model="dupDialog" title="检测到重复日记" width="560px">
+      <el-alert type="warning" :closable="false" show-icon>
+        <template #title>共 {{ duplicateTotal }} 条待导入, 其中 {{ duplicateCount }} 条与已有日记重复</template>
+        重复依据为日记正文(忽略空白与图片地址差异)。可跳过重复内容, 也可全部导入。
+      </el-alert>
+      <ul v-if="duplicates.length" class="import-files">
+        <li v-for="(item, index) in duplicates" :key="index">{{ item }}</li>
+      </ul>
+      <template #footer>
+        <el-button @click="dupDialog = false">取消</el-button>
+        <el-button :loading="importing" @click="runImport('skip')">仅导入不重复</el-button>
+        <el-button type="primary" :loading="importing" @click="runImport('all')">导入全部</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 导出日记 -->
+    <el-dialog v-model="exportDialog" title="导出日记" width="460px">
+      <el-form label-position="top">
+        <el-form-item label="导出格式">
+          <el-radio-group v-model="exportFmt">
+            <el-radio value="markdown">Markdown(.md)</el-radio>
+            <el-radio value="html">HTML(.html)</el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-form>
+      <p class="muted">导出全部日记为 zip 压缩包, 正文引用的图片会一并打包, 并自动改写为相对路径。</p>
+      <template #footer>
+        <el-button @click="exportDialog = false">取消</el-button>
+        <el-button type="primary" :loading="exporting" @click="doExport">导出</el-button>
+      </template>
+    </el-dialog>
 
     <!-- 新增/编辑对话框 -->
     <el-dialog v-model="dialog" :title="editingId ? '编辑日记' : '新增日记'" width="720px" top="5vh">
@@ -197,6 +343,24 @@ onMounted(load)
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.diary-actions-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.import-picker {
+  margin-top: 16px;
+}
+.import-files {
+  margin: 10px 0 0;
+  padding-left: 20px;
+  max-height: 160px;
+  overflow-y: auto;
+  font-size: 13px;
 }
 .diary-body {
   display: grid;

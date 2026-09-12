@@ -55,6 +55,24 @@
 
 > 文章与评论均记录发布/评论时的 IP, 并在响应中返回 `location`(省市区文案, 基于离线 ip2region 定位)。
 
+> 导入导出: `GET /api/v1/posts/export?ids=1,2&fmt=markdown|html` 导出 zip(markdown 带 frontmatter, 图片一并打包); `POST /api/v1/posts/import` 上传 .md 或 zip 导入(默认草稿), 支持 `mode=check`(只查重不写入)与 `on_duplicate=skip|all`(重复时跳过 / 一并导入)。
+
+## 日记 diaries
+
+仅管理员可访问(其他角色返回 403, 未登录返回 401)。
+
+| 方法 | 路径 | 说明 |
+| --- | --- | --- |
+| GET | /api/v1/diaries | 日记列表(分页, 按日期倒序) |
+| POST | /api/v1/diaries | 新增日记 |
+| PUT | /api/v1/diaries/{id} | 编辑日记 |
+| DELETE | /api/v1/diaries/{id} | 删除日记 |
+| GET | /api/v1/diaries/export | 导出 zip(参数 ids 逗号分隔, 不传导出全部; fmt=markdown\|html) |
+| POST | /api/v1/diaries/import | 上传 .md 或 zip 导入(可多选); `mode=check` 只查重, `on_duplicate=skip\|all` 决定重复内容的处理 |
+
+> 导出的 Markdown 以 `YYYY-MM-DD.md` 命名并带 `date`/`created_at` frontmatter, 图片一并打包; 导入时日期优先取 frontmatter 再取文件名日期。
+> 查重口径: 文章按标题(忽略大小写与首尾空格), 日记按正文(忽略空白差异, 图片地址只比较文件名), 同一批文件内部重复同样会被识别。
+
 ## 分类与标签
 
 | 方法 | 路径 | 说明 |
