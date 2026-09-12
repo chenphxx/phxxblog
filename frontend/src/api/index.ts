@@ -16,7 +16,6 @@ import type {
   Role,
   Tag,
   TokenPair,
-  TrackingResult,
   TrendPoint,
   User,
   VisitItem,
@@ -132,10 +131,10 @@ export const diaryApi = {
 export const miscApi = {
   changelog: () => http.get<{ content: string }>('/misc/changelog'),
   updateChangelog: (content: string) => http.put<null>('/misc/changelog', { content }),
-  saying: () => http.get<{ text: string }>('/misc/saying'),
+  // force=true 用于手动"换一句", 否则服务端每天只取一次
+  saying: (force = false) =>
+    http.get<{ text: string }>('/misc/saying', { params: force ? { force: true } : undefined }),
   historyToday: () => http.get<{ date: string; events: HistoryEvent[] }>('/misc/history/programmer-today'),
-  trackingQuery: (params: Record<string, unknown>) =>
-    http.get<TrackingResult>('/misc/tracking/query', { params }),
 }
 
 /** 操作日志 */
