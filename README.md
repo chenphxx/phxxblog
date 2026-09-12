@@ -1,44 +1,16 @@
 # phxxblog
 
-## 项目结构
-
-```text
-phxxblog/
-├── README.md              # 本文件: 架构与模块设计说明
-├── docs/                  # 开发文档(接口、数据库表结构)
-│   ├── api.md             # 接口文档
-│   └── mysql.md           # 数据库表结构设计
-├── assets/                # 附件/媒体存放目录(上传文件落盘位置)
-├── frontend/              # 前端工程(Vue3 + TS + Vite)
-│   └── src/
-│       ├── api/           # 接口封装(Axios)
-│       ├── components/    # 通用组件
-│       ├── router/        # 路由
-│       ├── stores/        # Pinia 状态(主题/认证等)
-│       ├── styles/        # 全局样式(深浅色主题变量)
-│       └── views/         # 页面(home / post / archive / admin ...)
-└── backend/               # 后端工程(FastAPI)
-    ├── app/
-    │   ├── api/v1/        # 路由: auth / users / posts / comments / media / stats / logs / rss / search / dashboard ...
-    │   ├── core/          # 配置、数据库、安全、依赖
-    │   ├── models/        # ORM 模型(按模块拆分)
-    │   ├── schemas/       # Pydantic 请求/响应模型
-    │   └── services/      # 业务逻辑
-    ├── scripts/           # 数据库初始化脚本
-    └── requirements.txt
-```
-
 ## 快速开始
 
 > 最简单的方式: 双击项目根目录的 `start.bat`, 脚本会自动检查环境并同时启动前后端 
 
-### 0. 环境要求
+### 环境要求
 
 - Node.js ≥ 18(推荐 20+) 
 - Python ≥ 3.10 
 - MySQL 9(本项目使用的是MySQL 9, 其他版本自行测试即可) 
 
-### 1. 初始化数据库
+### 初始化数据库
 
 确认 MySQL 服务已启动后, 创建数据库: 
 
@@ -46,9 +18,9 @@ phxxblog/
 mysql -u root -p < backend/scripts/init_db.sql
 ```
 
-> 表结构会在后端首次启动时自动创建, 无需手工建表。
+> 表结构会在后端首次启动时自动创建, 无需手工建表 
 
-### 2. 启动后端
+### 启动后端
 
 ```bash
 cd backend
@@ -79,7 +51,7 @@ uvicorn app.main:app --reload --port 8000
 
 > 首次初始化会创建管理员账号(admin), 请登录后台后尽快修改密码 
 
-### 3. 启动前端
+### 启动前端
 
 ```bash
 cd frontend
@@ -87,7 +59,7 @@ npm install
 npm run dev
 ```
 
-### 4. 访问地址
+### 访问地址
 
 | 地址                              | 说明                          |
 | ------------------------------- | --------------------------- |
@@ -114,4 +86,11 @@ python scripts/import_wordpress.py                 # 自动找 assets/wordpress 
 python scripts/import_wordpress.py --xml 路径.xml --no-download   # 跳过附件下载
 ```
 
-迁移规则: 文章正文会从 Gutenberg/HTML 转为 Markdown; 作者账号自动创建(随机密码, 可在后台重置); 可下载的附件保存到 `assets/uploads/wordpress/` 并登记到媒体库, 正文中的旧站图片链接会自动改写为本地地址 
+迁移规则: 文章正文会从 Gutenberg/HTML 转为 Markdown; 作者账号自动创建(随机密码, 可在后台重置); 可下载的附件保存到 `assets/uploads/wordpress/` 并登记到媒体库, 正文中的旧站图片链接会自动改写为本地地址
+
+## 开发文档
+
+- [技术架构与实现说明](docs/architecture.md) — 技术栈、系统架构、目录职责与各功能的实现方式
+- [接口文档](docs/api.md)
+- [数据库表结构设计](docs/mysql.md)
+- [更新日志](CHANGELOG.md)
