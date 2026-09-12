@@ -9,8 +9,12 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 
-# 环境与本地配置
-.env
+# 环境与本地配置(忽略 .env 及其变体, 保留可提交的示例文件)
+.env*
+!.env.example
+
+# 日志与临时文件
+*.log
 
 # 上传文件(保留目录, 忽略内容)
 assets/uploads/*

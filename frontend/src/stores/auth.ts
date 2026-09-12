@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { User } from '@/types'
+import { clearDocTokenCookie, setDocTokenCookie } from '@/utils/docToken'
 
 const ACCESS_KEY = 'blog_access_token'
 const REFRESH_KEY = 'blog_refresh_token'
@@ -11,6 +12,11 @@ export const useAuthStore = defineStore('auth', () => {
   const accessToken = ref(localStorage.getItem(ACCESS_KEY) || '')
   const refreshToken = ref(localStorage.getItem(REFRESH_KEY) || '')
   const user = ref<User | null>(readUser())
+
+  // 会话恢复: 用本地已有的 access token 同步 API 文档鉴权 cookie
+  if (accessToken.value) {
+    setDocTokenCookie(accessToken.value)
+  }
 
   function readUser(): User | null {
     try {
@@ -27,6 +33,7 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem(ACCESS_KEY, access)
     localStorage.setItem(REFRESH_KEY, refresh)
     localStorage.setItem(USER_KEY, JSON.stringify(userData))
+    setDocTokenCookie(access)
   }
 
   function setUser(userData: User) {
@@ -41,6 +48,7 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem(ACCESS_KEY)
     localStorage.removeItem(REFRESH_KEY)
     localStorage.removeItem(USER_KEY)
+    clearDocTokenCookie()
     if (location.hash.includes('/admin')) {
       location.hash = '#/admin/login'
     }
@@ -50,6 +58,9 @@ export const useAuthStore = defineStore('auth', () => {
     const { authApi } = await import('@/api')
     const data = await authApi.me()
     setUser(data as User)
+    if (accessToken.value) {
+      setDocTokenCookie(accessToken.value)
+    }
     return data as User
   }
 

@@ -142,9 +142,9 @@ npm run dev
 | --- | --- |
 | <http://localhost:5173> | 博客前台(首页/文章/归档/搜索/日记) |
 | <http://localhost:5173/#/admin> | 管理后台(登录后使用) |
-| <http://localhost:8000/docs> | 后端 API 文档(Swagger) |
+| <http://localhost:8000/docs> | 后端 API 文档(Swagger, 仅管理员可访问) |
 
-前端开发服务器会把 `/api` 和 `/assets` 自动代理到后端(见 `frontend/vite.config.ts`), 因此只需分别启动后端和前端即可联调。
+前端开发服务器会把 `/api`、`/assets` 以及文档路径 `/docs`、`/redoc`、`/openapi.json` 自动代理到后端(见 `frontend/vite.config.ts`), 因此只需分别启动后端和前端即可联调。
 
 ### 常见问题
 

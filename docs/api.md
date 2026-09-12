@@ -1,7 +1,9 @@
 # API 接口设计
 
 > 基础路径: `/api/v1`, 数据格式 JSON, 认证使用 `Authorization: Bearer <access_token>`。
-> 在线文档: 后端启动后访问 <http://localhost:8000/docs>(Swagger UI)。
+> 在线文档: `/docs`(Swagger UI)、`/redoc`、`/openapi.json` 仅 `admin` 角色可访问,
+> 支持 `Authorization: Bearer <access_token>` 或登录后自动写入的 cookie `phxxblog_doc_token`;
+> 未登录返回 401, 已登录但非管理员返回 403。
 
 ## 通用约定
 

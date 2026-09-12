@@ -12,6 +12,7 @@ from app.api.v1 import api_router
 from app.api.v1.rss import router as rss_router
 from app.core.config import settings
 from app.core.database import Base, engine
+from app.core.middleware import restrict_docs_to_admin
 
 # 项目根目录(backend/app/main.py -> 上两级为仓库根目录)
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -30,6 +31,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# API 文档(/docs、/redoc、/openapi.json)仅 admin 角色可访问
+app.middleware("http")(restrict_docs_to_admin)
 
 
 @app.on_event("startup")

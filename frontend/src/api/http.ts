@@ -1,5 +1,6 @@
 import axios, { type AxiosRequestConfig } from 'axios'
 import { ElMessage } from 'element-plus'
+import { clearDocTokenCookie } from '@/utils/docToken'
 
 /** 解包后的请求接口: get/post/put/delete 直接返回后端 data 字段 */
 interface Http {
@@ -41,6 +42,7 @@ rawAxios.interceptors.response.use(
       localStorage.removeItem('blog_access_token')
       localStorage.removeItem('blog_refresh_token')
       localStorage.removeItem('blog_user')
+      clearDocTokenCookie()
       if (location.hash.includes('/admin') && !location.hash.includes('/admin/login')) {
         location.hash = '#/admin/login'
       }

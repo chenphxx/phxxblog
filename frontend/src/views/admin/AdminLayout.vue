@@ -9,6 +9,7 @@ import {
   Document,
   Folder,
   HomeFilled,
+  Notebook,
   Operation,
   Picture,
   Setting,
@@ -27,6 +28,11 @@ const activeMenu = computed(() => {
 })
 
 const isAdmin = computed(() => auth.user?.role_codes.includes('admin'))
+
+/** 新窗口打开后端 API 文档(仅 admin 可访问) */
+function openDocs() {
+  window.open('/docs', '_blank', 'noopener,noreferrer')
+}
 
 async function logout() {
   await ElMessageBox.confirm('确定退出登录吗?', '提示', { type: 'warning' })
@@ -87,6 +93,10 @@ onMounted(() => {
           <el-icon><HomeFilled /></el-icon> 返回前台
         </router-link>
         <div class="header-right">
+          <el-button v-if="isAdmin" text class="docs-btn" @click="openDocs">
+            <el-icon><Notebook /></el-icon>
+            <span>API 文档</span>
+          </el-button>
           <ThemeToggle />
           <el-dropdown @command="(cmd: string) => cmd === 'logout' && logout()">
             <span class="user-chip">
@@ -147,6 +157,11 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   cursor: pointer;
+}
+.docs-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 .admin-main {
   background: var(--bg);
