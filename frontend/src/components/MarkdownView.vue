@@ -136,6 +136,9 @@ const CODE_FOLD_LINES = 20
 /** 已展开的代码块(按代码块序号记录; 主题切换会重新渲染, 借此保持展开状态) */
 const expandedBlocks = new Set<number>()
 
+/** 点击正文图片时预览的地址(空字符串表示不展示) */
+const previewSrc = ref('')
+
 /**
  * 长代码块折叠: 超过 20 行的代码块只展示前 20 行, 点击按钮展开/收起。
  * 折叠时用 max-height 裁剪并隐藏纵向溢出, 不出现滚动条。
@@ -206,9 +209,11 @@ async function render() {
   await highlightCode(el.value)
   // 长代码块折叠
   applyCodeFold(el.value)
-  // 图片点击放大
+  // 图片点击预览: 用 Element Plus 看图器(自适应窗口居中显示, 支持滚轮缩放与拖拽平移)
   el.value.querySelectorAll('img').forEach((img) => {
-    img.addEventListener('click', () => Vditor.previewImage(img as HTMLImageElement))
+    img.addEventListener('click', () => {
+      previewSrc.value = img.src
+    })
   })
 }
 
@@ -226,4 +231,11 @@ watch(() => theme.isDark, render)
 
 <template>
   <div ref="el" class="markdown-body vditor-reset" />
+  <el-image-viewer
+    v-if="previewSrc"
+    :url-list="[previewSrc]"
+    teleported
+    hide-on-click-modal
+    @close="previewSrc = ''"
+  />
 </template>
