@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.deps import get_client_ip, get_current_user
+from app.core.ratelimit import login_limiter as _login_limiter
 from app.core.response import ok
 from app.core.security import (
     create_access_token,
@@ -51,7 +52,15 @@ def _issue_tokens(db: Session, user: User, request: Request) -> TokenPair:
 
 @router.post("/register", response_model=dict)
 def register(data: RegisterIn, request: Request, db: Session = Depends(get_db)):
-    """注册账号, 默认赋予 author 角色, 注册成功后直接登录。"""
+    """注册账号, 默认赋予 author 角色, 注册成功后直接登录。
+
+    默认关闭(settings.allow_register): 注册即获得 author 角色 -> 拥有上传权限,
+    而上传目录与站点同源托管, 因此公开注册等于把上传能力开放给任何访客。
+    个人博客请在 .env 里保持 PHXXBLOG_ALLOW_REGISTER=false。
+    """
+    if not settings.allow_register:
+        raise HTTPException(status_code=403, detail="本站未开放注册")
+
     if db.query(User).filter(User.username == data.username).first():
         raise HTTPException(status_code=400, detail="用户名已存在")
     if db.query(User).filter(User.email == data.email).first():
@@ -82,7 +91,11 @@ def register(data: RegisterIn, request: Request, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=dict)
 def login(data: LoginIn, request: Request, db: Session = Depends(get_db)):
-    """登录, 支持用户名或邮箱。"""
+    """登录, 支持用户名或邮箱。带失败次数限流。"""
+    client_ip = get_client_ip(request)
+    # 按 "IP + 账号" 限流: 只按 IP 会误伤同一出口的多个用户, 只按账号则可被拿来锁别人
+    _login_limiter.check(f"{client_ip}:{data.username}")
+
     user = (
         db.query(User)
         .filter(or_(User.username == data.username, User.email == data.username))
@@ -93,6 +106,7 @@ def login(data: LoginIn, request: Request, db: Session = Depends(get_db)):
     if user.status == 0:
         raise HTTPException(status_code=403, detail="账号已被禁用")
 
+    _login_limiter.reset(f"{client_ip}:{data.username}")
     user.last_login_at = datetime.now()
     db.commit()
     write_operation_log(db, request=request, user=user, module="auth", action="login")

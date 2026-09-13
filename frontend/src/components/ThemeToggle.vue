@@ -7,6 +7,13 @@ const theme = useThemeStore()
 
 <template>
   <el-tooltip :content="theme.isDark ? '切换到浅色模式' : '切换到深色模式'">
-    <el-button circle :icon="theme.isDark ? Sunny : Moon" @click="theme.toggle()" />
+    <!-- el-tooltip 不会给触发器加 aria-label(只加在提示内容上), 这里显式补上:
+         否则纯图标按钮在屏幕阅读器里是一个"没有名字的按钮" -->
+    <el-button
+      circle
+      :icon="theme.isDark ? Sunny : Moon"
+      :aria-label="theme.isDark ? '切换到浅色模式' : '切换到深色模式'"
+      @click="theme.toggle()"
+    />
   </el-tooltip>
 </template>

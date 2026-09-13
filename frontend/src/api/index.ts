@@ -1,9 +1,11 @@
 import http from './http'
+import { getAccessToken } from '@/utils/tokenStorage'
 import type {
   ArchiveGroup,
   Category,
   CommentItem,
   ContributionPoint,
+  DashboardData,
   DiaryEntry,
   HistoryEvent,
   ImportCheckResult,
@@ -13,6 +15,7 @@ import type {
   OperationLog,
   Page,
   PostDetail,
+  PostDetailAdmin,
   PostItem,
   PublicSettings,
   Role,
@@ -52,8 +55,8 @@ export const postApi = {
   archive: () => http.get<ArchiveGroup[]>('/posts/archive'),
   detail: (id: number) => http.get<PostDetail>(`/posts/${id}`),
   adminList: (params?: Record<string, unknown>) => http.get<Page<PostItem>>('/posts/admin', { params }),
-  create: (data: Record<string, unknown>) => http.post<PostDetail>('/posts', data),
-  update: (id: number, data: Record<string, unknown>) => http.put<PostDetail>(`/posts/${id}`, data),
+  create: (data: Record<string, unknown>) => http.post<PostDetailAdmin>('/posts', data),
+  update: (id: number, data: Record<string, unknown>) => http.put<PostDetailAdmin>(`/posts/${id}`, data),
   trash: (id: number) => http.delete<null>(`/posts/${id}`),
   forceDelete: (id: number) => http.delete<null>(`/posts/${id}/force`),
   restore: (id: number) => http.post<null>(`/posts/${id}/restore`),
@@ -61,7 +64,7 @@ export const postApi = {
     http.post(`/posts/${id}/publish`, { status }),
   like: (id: number) => http.post<{ liked: boolean; likes_count: number }>(`/posts/${id}/like`),
   exportPosts: async (ids: number[], fmt = 'markdown') => {
-    const token = localStorage.getItem('blog_access_token') || ''
+    const token = getAccessToken()
     const response = await fetch(`/api/v1/posts/export?ids=${ids.join(',')}&fmt=${fmt}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -124,7 +127,7 @@ export const statsApi = {
   overview: () => http.get<Record<string, number>>('/stats/overview'),
   trend: (params?: Record<string, unknown>) => http.get<TrendPoint[]>('/stats/trend', { params }),
   sources: () => http.get<Record<string, { name: string; count: number }[]>>('/stats/sources'),
-  dashboard: () => http.get<Record<string, unknown>>('/dashboard'),
+  dashboard: () => http.get<DashboardData>('/dashboard'),
   visits: (params?: Record<string, unknown>) => http.get<Page<VisitItem>>('/stats/visits', { params }),
   contributions: (params?: Record<string, unknown>) =>
     http.get<ContributionPoint[]>('/stats/contributions', { params }),
@@ -137,7 +140,7 @@ export const diaryApi = {
   update: (id: number, data: Record<string, unknown>) => http.put<DiaryEntry>(`/diaries/${id}`, data),
   remove: (id: number) => http.delete<null>(`/diaries/${id}`),
   exportDiaries: async (ids: number[] = [], fmt = 'markdown') => {
-    const token = localStorage.getItem('blog_access_token') || ''
+    const token = getAccessToken()
     const query = new URLSearchParams({ fmt })
     if (ids.length) query.set('ids', ids.join(','))
     const response = await fetch(`/api/v1/diaries/export?${query.toString()}`, {

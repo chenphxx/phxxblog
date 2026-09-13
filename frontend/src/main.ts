@@ -1,13 +1,20 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import ElementPlus from 'element-plus'
 import { messageConfig } from 'element-plus'
-import zhCn from 'element-plus/es/locale/lang/zh-cn'
 
-import 'element-plus/dist/index.css'
+/*
+ * 样式引入顺序(有意义, 别随手调换):
+ *   1. element-plus/theme-chalk/dark/css-vars.css —— 深色模式的 CSS 变量
+ *   2. vditor/dist/index.css                      —— 编辑器与正文预览
+ *   3. styles/fonts.css                           —— 自托管 Cascadia Code
+ *   4. styles/theme-green.css                     —— 主题令牌 + 后台主题层
+ * 主题令牌必须晚于 Element Plus 与 Vditor 才能覆盖它们(见 admin.css 的说明)。
+ *
+ * 这里**不再**引入 element-plus/dist/index.css(整包 349 KB):
+ * 组件与它们的样式改由 vite.config.ts 的 ElementPlusResolver 按需注入。
+ */
 import 'element-plus/theme-chalk/dark/css-vars.css'
 import 'vditor/dist/index.css'
-// 自托管 @font-face 要放在主题之前, 保证 --font-sans/--font-mono 引用时字体已注册
 import './styles/fonts.css'
 import './styles/theme-green.css'
 
@@ -27,7 +34,8 @@ const app = createApp(App)
 // 全局: 顶部提示条支持手动点击关闭
 messageConfig.showClose = true
 
+// 组件按需引入, 不再 app.use(ElementPlus)。
+// Element Plus 的中文语言包通过 App.vue 里的 <el-config-provider :locale="zhCn"> 提供。
 app.use(createPinia())
 app.use(router)
-app.use(ElementPlus, { locale: zhCn })
 app.mount('#app')

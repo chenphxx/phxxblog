@@ -6,6 +6,7 @@ from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.core.security import decode_token
 from app.models.user import User
@@ -14,11 +15,30 @@ bearer_scheme = HTTPBearer(auto_error=False)
 
 
 def get_client_ip(request: Request) -> str:
-    """获取客户端 IP, 兼容反向代理的 X-Forwarded-For。"""
+    """获取客户端 IP。
+
+    X-Forwarded-For 是**客户端可伪造**的请求头, 只有在请求确实经过我们自己配置的
+    反向代理时才可信。以前无条件采信它, 导致:
+      - 点赞去重(按 IP)可绕过 -> 刷 likes_count
+      - 游客评论归属(按 IP)可伪造 -> 改别人的游客评论
+      - UV 去重与操作日志里的 IP 全部失真
+    现在只有 TCP 直连地址出现在 PHXXBLOG_TRUSTED_PROXIES 里时才采信 XFF,
+    否则一律使用直连地址。反代部署时把它设为反代的内网地址即可。
+    """
+    peer = request.client.host if request.client else "unknown"
+    trusted = settings.trusted_proxy_list
+    if not trusted or peer not in trusted:
+        return peer
+
     forwarded = request.headers.get("x-forwarded-for")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return request.client.host if request.client else "unknown"
+    if not forwarded:
+        return peer
+    # XFF 形如 "client, proxy1, proxy2" —— 取最左边第一个非空值
+    for candidate in forwarded.split(","):
+        candidate = candidate.strip()
+        if candidate:
+            return candidate
+    return peer
 
 
 def get_current_user(

@@ -1,0 +1,81 @@
+/* ============================================================
+ * 增强层: 编辑细线族 (editorial)
+ * 中庸圆角、极淡阴影、衬线标题。悬停只在标题下浮出一条细线。
+ * 占位符由 _source/generate-themes.mjs 替换。
+ * ============================================================ */
+
+@@BASE@@
+
+/* ---------- 编辑族专有: 悬停只做很轻的抬升 ---------- */
+.post-card:hover {
+  transform: translateY(-2px);
+}
+
+/* ---------- 衬线标题, 刊物感 ---------- */
+.profile-name,
+.posts-title,
+.post-title,
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.site-links-card h3 {
+  font-family: var(--font-serif, Georgia, 'Songti SC', serif);
+  letter-spacing: 0;
+  font-weight: 600;
+}
+
+/* ---------- 文章卡: 悬停时标题下方浮现一条细线 ---------- */
+.post-card .post-title {
+  display: inline-block;
+  position: relative;
+  line-height: 1.5;
+}
+
+.post-card .post-title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 1px;
+  background: var(--primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur) var(--ease);
+}
+
+.post-card:hover .post-title::after {
+  transform: scaleX(1);
+}
+
+/* 左侧色条在编辑族不参与(改由标题细线表达) */
+.post-card::before {
+  display: none;
+}
+
+/* ---------- 列表分隔用虚线, 更轻 ---------- */
+.post-card + .post-card {
+  border-top-style: dashed;
+}
+
+/* ---------- 站点头部: 导航细下划线 ---------- */
+.site-header::after {
+  display: none;
+}
+
+/* ---------- 归档时间轴: 节点改成白芯色环 ---------- */
+.timeline-item::before {
+  background: var(--card-bg);
+  border: 2px solid var(--primary);
+  box-shadow: none;
+}
+
+/* ---------- 编辑区: 引用块用主色淡底 ---------- */
+.markdown-body {
+  line-height: 1.9;
+}
+
+.markdown-body blockquote {
+  background: color-mix(in srgb, var(--primary) 7%, transparent);
+}

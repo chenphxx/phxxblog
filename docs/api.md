@@ -1,130 +1,265 @@
-# API 接口设计
+# 接口文档
 
-> 基础路径: `/api/v1`, 数据格式 JSON, 认证使用 `Authorization: Bearer <access_token>`。
-> 在线文档: `/docs`(Swagger UI)、`/redoc`、`/openapi.json` 仅 `admin` 角色可访问,
-> 支持 `Authorization: Bearer <access_token>` 或登录后自动写入的 cookie `phxxblog_doc_token`;
-> 未登录返回 401, 已登录但非管理员返回 403。
+后端为 FastAPI 应用，统一前缀 `/api/v1`。也可用 Swagger 交互式调试：
+`http://localhost:8000/docs`（仅具备 `setting:manage` 权限的账号可访问）。
 
-## 通用约定
+## 统一约定
 
-- 成功响应统一为 `{ "code": 0, "message": "ok", "data": ... }`
-- 失败响应统一为 `{ "code": <非0>, "message": "错误说明", "data": null }`
-- 列表接口统一分页参数: `page`(默认1)、`page_size`(默认10), 返回 `{ "items": [...], "total": n, "page": p, "page_size": s }`
+### 响应结构
 
-## 认证 auth
+所有接口（含错误响应）统一返回同一外壳，HTTP 状态码与 `code` 一致：
 
-| 方法 | 路径 | 说明 |
-| --- | --- | --- |
-| POST | /api/v1/auth/register | 注册 |
-| POST | /api/v1/auth/login | 登录, 返回 access_token + refresh_token |
-| POST | /api/v1/auth/refresh | 刷新令牌 |
-| POST | /api/v1/auth/logout | 注销(吊销 refresh token) |
-| GET | /api/v1/auth/me | 当前登录用户信息 |
-| PUT | /api/v1/auth/password | 修改密码 |
-| PUT | /api/v1/auth/email | 修改邮箱 |
+```json
+{ "code": 0, "message": "ok", "data": { } }
+```
 
-## 用户 users
+失败时 `data` 为 `null`：
 
-| 方法 | 路径 | 说明 |
-| --- | --- | --- |
-| GET | /api/v1/users | 用户列表(管理) |
-| POST | /api/v1/users | 创建用户 |
-| PUT | /api/v1/users/{id} | 编辑用户 |
-| DELETE | /api/v1/users/{id} | 删除用户 |
-| GET | /api/v1/roles | 角色列表 |
-| POST | /api/v1/roles | 创建角色 |
-| PUT | /api/v1/roles/{id} | 编辑角色(含权限) |
-| DELETE | /api/v1/roles/{id} | 删除角色 |
-| GET | /api/v1/permissions | 权限列表 |
+```json
+{ "code": 403, "message": "缺少权限: post:manage", "data": null }
+```
 
-## 文章 posts
+### 鉴权
 
-| 方法 | 路径 | 说明 |
-| --- | --- | --- |
-| GET | /api/v1/posts | 已发布文章列表(前台, 支持关键词/分类/标签/时间筛选) |
-| GET | /api/v1/posts/admin | 文章管理列表(后台, 含草稿/审核中/私密/回收站) |
-| GET | /api/v1/posts/{id} | 文章详情(已发布公开; 作者/管理员可见非公开) |
-| POST | /api/v1/posts | 新增文章(草稿) |
-| PUT | /api/v1/posts/{id} | 编辑文章 |
-| DELETE | /api/v1/posts/{id} | 删除(进回收站) |
-| DELETE | /api/v1/posts/{id}/force | 彻底删除 |
-| POST | /api/v1/posts/{id}/publish | 发布(草稿→审核中/已发布, 依权限) |
-| POST | /api/v1/posts/{id}/restore | 从回收站恢复 |
-| POST | /api/v1/posts/{id}/like | 点赞(游客按IP) |
-| GET | /api/v1/posts/archive | 归档数据(按年/月分组) |
+除标注为「公开」外，均需在请求头携带访问令牌：
 
-> 文章与评论均记录发布/评论时的 IP, 并在响应中返回 `location`(省市区文案, 基于离线 ip2region 定位)。
+```
+Authorization: Bearer <access_token>
+```
 
-> 导入导出: `GET /api/v1/posts/export?ids=1,2&fmt=markdown|html` 导出 zip(markdown 带 frontmatter, 图片一并打包); `POST /api/v1/posts/import` 上传 .md 或 zip 导入(默认草稿), 支持 `mode=check`(只查重不写入)与 `on_duplicate=skip|all`(重复时跳过 / 一并导入)。
+授权判断一律基于**权限码**（由角色聚合而来），不在业务代码里判断角色名 ——
+角色 code 可被后台修改，用角色名判断会在改名后静默失效。
 
-## 日记 diaries
+| 「鉴权」列取值 | 含义 |
+| --- | --- |
+| 公开 | 无需令牌 |
+| 可选登录 | 匿名可用；带令牌时行为不同（如能看到自己的草稿、点赞按用户去重） |
+| 登录 | 任意已登录用户 |
+| `<资源>:<动作>` | 需要该权限码，如 `post:manage`、`diary:manage` |
 
-仅管理员可访问(其他角色返回 403, 未登录返回 401)。
+权限码定义在 `backend/app/core/permissions.py`，由 `app/seed.py` 初始化并分配给内置角色。
 
-| 方法 | 路径 | 说明 |
-| --- | --- | --- |
-| GET | /api/v1/diaries | 日记列表(分页, 按日期倒序) |
-| POST | /api/v1/diaries | 新增日记 |
-| PUT | /api/v1/diaries/{id} | 编辑日记 |
-| DELETE | /api/v1/diaries/{id} | 删除日记 |
-| GET | /api/v1/diaries/export | 导出 zip(参数 ids 逗号分隔, 不传导出全部; fmt=markdown\|html) |
-| POST | /api/v1/diaries/import | 上传 .md 或 zip 导入(可多选); `mode=check` 只查重, `on_duplicate=skip\|all` 决定重复内容的处理 |
+### 分页
 
-> 导出的 Markdown 以 `YYYY-MM-DD.md` 命名并带 `date`/`created_at` frontmatter, 图片一并打包; 导入时日期优先取 frontmatter 再取文件名日期。
-> 查重口径: 文章按标题(忽略大小写与首尾空格), 日记按正文(忽略空白差异, 图片地址只比较文件名), 同一批文件内部重复同样会被识别。
+列表接口统一接受 `page`（从 1 开始）与 `page_size`，返回：
 
-## 分类与标签
+```json
+{ "items": [], "total": 0, "page": 1, "page_size": 10 }
+```
 
-| 方法 | 路径 | 说明 |
-| --- | --- | --- |
-| GET | /api/v1/categories | 分类列表 |
-| POST / PUT / DELETE | /api/v1/categories[/{id}] | 分类管理 |
-| GET | /api/v1/tags | 标签列表 |
-| POST / PUT / DELETE | /api/v1/tags[/{id}] | 标签管理 |
+### 状态码
 
-## 评论 comments
+| 状态码 | 含义 |
+| --- | --- |
+| 400 | 参数或业务校验失败 |
+| 401 | 未登录 / 令牌无效或过期 |
+| 403 | 已登录但无权限，或账号被禁用 |
+| 404 | 资源不存在**或不可见**（私密内容对无权者一律 404） |
+| 413 | 上传文件超过大小限制 |
+| 429 | 请求过于频繁（目前用于登录失败限流） |
 
-| 方法 | 路径 | 说明 |
-| --- | --- | --- |
-| GET | /api/v1/posts/{post_id}/comments | 文章评论列表 |
-| POST | /api/v1/posts/{post_id}/comments | 发表评论(游客/用户, 支持回复) |
-| GET | /api/v1/comments/admin | 评论管理列表(后台) |
-| PUT | /api/v1/comments/{id} | 修改评论状态(隐藏/显示/回收站) |
-| DELETE | /api/v1/comments/{id} | 删除评论 |
+### 请求体与响应字段
 
-> 前台评论列表只展示 `location`(省市区), 原始 `ip` 字段仅后台管理接口可见。
+字段级细节以 Swagger 为准 —— 本页负责说明**有哪些接口、需要什么权限、有哪些业务约束**。
 
-## 媒体 media
+---
 
-| 方法 | 路径 | 说明 |
-| --- | --- | --- |
-| POST | /api/v1/media/upload | 上传图片/视频/附件(multipart), 存储到 `assets/` |
-| GET | /api/v1/media | 媒体列表(管理) |
-| DELETE | /api/v1/media/{id} | 删除媒体(同时删除文件) |
-| GET | /assets/{path} | 静态文件访问(由后端挂载) |
+## 路由总览
 
-## 统计与看板
+下表按模块列出全部接口，由 `scripts/dump_routes.py` 从源码提取，与实现保持一致。
+改动路由或权限后请重新生成：
 
-| 方法 | 路径 | 说明 |
-| --- | --- | --- |
-| GET | /api/v1/stats/overview | 统计总览(文章数/总访问量/评论数/用户数) |
-| GET | /api/v1/stats/trend | 按日趋势(PV/UV) |
-| GET | /api/v1/stats/sources | 访问来源/浏览器/设备占比 |
-| GET | /api/v1/dashboard | Dashboard 汇总数据 |
+```bash
+cd backend
+python scripts/gen_api_doc.py
+```
 
-## 日志 logs
 
-| 方法 | 路径 | 说明 |
-| --- | --- | --- |
-| GET | /api/v1/logs | 操作日志列表(可按用户/模块/时间筛选) |
+## 认证（8 个接口）
 
-## 其他
+> `/auth/register` 是否可用由 `PHXXBLOG_ALLOW_REGISTER` 控制，个人博客默认关闭。登录带失败限流（同一 IP+账号 5 分钟内 10 次失败即 429）；刷新令牌一次性，轮换后旧令牌立即失效。`/auth/logout` 只需请求体里的 refresh_token，因此不需要访问令牌。
 
-| 方法 | 路径 | 说明 |
-| --- | --- | --- |
-| GET | /api/v1/search | 全文搜索(标题/摘要/正文) |
-| GET | /rss.xml | RSS 订阅 |
-| GET | /sitemap.xml | SEO 站点地图 |
-| GET | /api/v1/settings/public | 前台公开配置(站点名/标签页标题/简介/社交链接等) |
-| GET | /api/v1/settings | 后台设置列表 |
-| PUT | /api/v1/settings | 更新设置 |
+| 方法 | 路径 | 鉴权 | 处理函数 |
+| --- | --- | --- | --- |
+| `POST` | `/auth/register` | 公开 | `register` |
+| `POST` | `/auth/login` | 公开 | `login` |
+| `POST` | `/auth/refresh` | 公开 | `refresh_token` |
+| `POST` | `/auth/logout` | 公开 | `logout` |
+| `GET` | `/auth/me` | 登录 | `me` |
+| `PUT` | `/auth/password` | 登录 | `change_password` |
+| `PUT` | `/auth/email` | 登录 | `change_email` |
+| `PUT` | `/auth/profile` | 登录 | `update_profile` |
+
+## 分类（4 个接口）
+
+> 列表公开；写操作需 `post:manage`。列表里的 `post_count` 只统计已发布文章。
+
+| 方法 | 路径 | 鉴权 | 处理函数 |
+| --- | --- | --- | --- |
+| `GET` | `/categories` | 公开 | `list_categories` |
+| `POST` | `/categories` | post:manage | `create_category` |
+| `PUT` | `/categories/{category_id}` | post:manage | `update_category` |
+| `DELETE` | `/categories/{category_id}` | post:manage | `delete_category` |
+
+## 评论（6 个接口）
+
+> 游客可评论（按 IP 归属，只能编辑/删除自己的游客评论）；列表与创建为可选登录；管理列表 `GET /comments/admin` 与状态变更需 `comment:manage`；编辑/删除自身评论走 `_can_manage_comment` 判定，故标注为可选登录。
+
+| 方法 | 路径 | 鉴权 | 处理函数 |
+| --- | --- | --- | --- |
+| `GET` | `/posts/{post_id}/comments` | 可选登录 | `list_comments` |
+| `POST` | `/posts/{post_id}/comments` | 可选登录 | `create_comment` |
+| `GET` | `/comments/admin` | comment:manage | `admin_list_comments` |
+| `PUT` | `/comments/{comment_id}` | 可选登录 | `update_comment` |
+| `PATCH` | `/comments/{comment_id}/status` | comment:manage | `update_comment_status` |
+| `DELETE` | `/comments/{comment_id}` | 可选登录 | `delete_comment` |
+
+## 看板（1 个接口）
+
+> 后台首页聚合数据；需 `stats:view`。`trend` 为近 14 天 `{date, pv, uv}`（与 `/stats/trend` 字段名不同）。
+
+| 方法 | 路径 | 鉴权 | 处理函数 |
+| --- | --- | --- | --- |
+| `GET` | `/dashboard` | stats:view | `dashboard` |
+
+## 日记（6 个接口）
+
+> 整组接口需 `diary:manage`；导入/导出支持 zip 与 markdown，导入的 frontmatter 与文章导入共用同一套解析（`services/archive.py`）。
+
+| 方法 | 路径 | 鉴权 | 处理函数 |
+| --- | --- | --- | --- |
+| `GET` | `/diaries` | diary:manage | `list_diaries` |
+| `GET` | `/diaries/export` | diary:manage | `export_diaries` |
+| `POST` | `/diaries/import` | diary:manage | `import_diaries` |
+| `POST` | `/diaries` | diary:manage | `create_diary` |
+| `PUT` | `/diaries/{diary_id}` | diary:manage | `update_diary` |
+| `DELETE` | `/diaries/{diary_id}` | diary:manage | `delete_diary` |
+
+## 链接预览（1 个接口）
+
+> 公开；用于抓取外链标题与图标。
+
+| 方法 | 路径 | 鉴权 | 处理函数 |
+| --- | --- | --- | --- |
+| `GET` | `/links/preview` | 公开 | `link_preview` |
+
+## 操作日志（1 个接口）
+
+> 需 `log:view`。
+
+| 方法 | 路径 | 鉴权 | 处理函数 |
+| --- | --- | --- | --- |
+| `GET` | `/logs` | log:view | `list_logs` |
+
+## 媒体（3 个接口）
+
+> 整组接口需 `media:manage`；上传有**扩展名白名单**与图片文件头校验，拒绝 .svg/.html/.js 等可执行文档（上传目录与站点同源，否则等于开放 XSS）；单文件上限见 `PHXXBLOG_MAX_UPLOAD_SIZE`（默认 100MB），超限返回 413 并删除半成品文件。
+
+| 方法 | 路径 | 鉴权 | 处理函数 |
+| --- | --- | --- | --- |
+| `POST` | `/media/upload` | 登录 | `upload_file` |
+| `GET` | `/media` | media:manage | `list_media` |
+| `DELETE` | `/media/{media_id}` | media:manage | `delete_media` |
+
+## 其他（4 个接口）
+
+> 更新日志读写需 `changelog:manage`（注意 `PUT /misc/changelog` 会直接写仓库里的 CHANGELOG.md，要求该目录可写，且会让 git 工作区变 dirty）；一言与历史上的今天是公开代理接口。
+
+| 方法 | 路径 | 鉴权 | 处理函数 |
+| --- | --- | --- | --- |
+| `GET` | `/misc/changelog` | changelog:manage | `changelog` |
+| `PUT` | `/misc/changelog` | changelog:manage | `update_changelog` |
+| `GET` | `/misc/saying` | 公开 | `saying` |
+| `GET` | `/misc/history/programmer-today` | 公开 | `programmer_history_today` |
+
+## 文章（13 个接口）
+
+> 列表仅返回已发布文章；状态为 0草稿/1审核中/2已发布/3私密/4回收站。无 `post:publish` 者提交 status=2 会被**静默降级**为审核中（作者提交发布请求不该收到报错），而状态流转接口 `PATCH /posts/{id}/status` 对越权直接返回 403。私密/回收站内容对无权者返回 404 而非 403，不暴露存在性。
+
+| 方法 | 路径 | 鉴权 | 处理函数 |
+| --- | --- | --- | --- |
+| `GET` | `/posts` | 公开 | `list_posts` |
+| `GET` | `/posts/archive` | 公开 | `archive` |
+| `GET` | `/posts/admin` | 登录 | `admin_list_posts` |
+| `GET` | `/posts/export` | 登录 | `export_posts` |
+| `POST` | `/posts/import` | post:create | `import_posts` |
+| `GET` | `/posts/{post_id}` | 可选登录 | `get_post` |
+| `POST` | `/posts` | post:create | `create_post` |
+| `PUT` | `/posts/{post_id}` | post:edit | `update_post` |
+| `DELETE` | `/posts/{post_id}` | post:delete | `trash_post` |
+| `DELETE` | `/posts/{post_id}/force` | post:manage | `force_delete_post` |
+| `POST` | `/posts/{post_id}/restore` | 登录 | `restore_post` |
+| `POST` | `/posts/{post_id}/publish` | 登录 | `change_post_status` |
+| `POST` | `/posts/{post_id}/like` | 可选登录 | `like_post` |
+
+## RSS/SEO（2 个接口）
+
+> 公开；输出 RSS 与 sitemap。
+
+| 方法 | 路径 | 鉴权 | 处理函数 |
+| --- | --- | --- | --- |
+| `GET` | `/rss.xml` | 公开 | `rss_feed` |
+| `GET` | `/sitemap.xml` | 公开 | `sitemap` |
+
+## 搜索（1 个接口）
+
+> 公开。关键词长度上限 100 字符。
+
+| 方法 | 路径 | 鉴权 | 处理函数 |
+| --- | --- | --- | --- |
+| `GET` | `/search` | 公开 | `search` |
+
+## 设置（3 个接口）
+
+> 公开设置可匿名读取（站点名/简介/模块开关等）；更新需 `setting:manage`。
+
+| 方法 | 路径 | 鉴权 | 处理函数 |
+| --- | --- | --- | --- |
+| `GET` | `/settings/public` | 公开 | `public_settings` |
+| `GET` | `/settings` | setting:manage | `admin_settings` |
+| `PUT` | `/settings` | setting:manage | `update_settings` |
+
+## 统计（6 个接口）
+
+> `/stats/track` 由前台埋点调用（公开）；其余为后台统计，需 `stats:view`。自定义区间的天数上限为 366 天。
+
+| 方法 | 路径 | 鉴权 | 处理函数 |
+| --- | --- | --- | --- |
+| `POST` | `/stats/track` | 公开 | `track` |
+| `GET` | `/stats/overview` | stats:view | `overview` |
+| `GET` | `/stats/trend` | stats:view | `trend` |
+| `GET` | `/stats/visits` | stats:view | `visits` |
+| `GET` | `/stats/contributions` | 公开 | `contributions` |
+| `GET` | `/stats/sources` | stats:view | `sources` |
+
+## 标签（4 个接口）
+
+> 列表公开；写操作需 `post:manage`。
+
+| 方法 | 路径 | 鉴权 | 处理函数 |
+| --- | --- | --- | --- |
+| `GET` | `/tags` | 公开 | `list_tags` |
+| `POST` | `/tags` | 登录 | `create_tag` |
+| `PUT` | `/tags/{tag_id}` | post:manage | `update_tag` |
+| `DELETE` | `/tags/{tag_id}` | post:manage | `delete_tag` |
+
+## 用户管理（10 个接口）
+
+> 需 `user:manage`；角色与权限相关接口需 `role:manage`。内置角色的 code 建议不要修改（业务代码已改为按权限码授权，但前端菜单等仍依赖 admin 角色名）。
+
+| 方法 | 路径 | 鉴权 | 处理函数 |
+| --- | --- | --- | --- |
+| `GET` | `/users` | user:manage | `list_users` |
+| `POST` | `/users` | user:manage | `create_user` |
+| `PUT` | `/users/{user_id}` | user:manage | `update_user` |
+| `PUT` | `/users/{user_id}/password` | user:manage | `reset_password` |
+| `DELETE` | `/users/{user_id}` | user:manage | `delete_user` |
+| `GET` | `/users/roles` | 登录 | `list_roles` |
+| `POST` | `/users/roles` | role:manage | `create_role` |
+| `PUT` | `/users/roles/{role_id}` | role:manage | `update_role` |
+| `DELETE` | `/users/roles/{role_id}` | role:manage | `delete_role` |
+| `GET` | `/users/permissions` | 登录 | `list_permissions` |
+
+---
+
+共 **73** 个接口：17 个公开，56 个需要鉴权。

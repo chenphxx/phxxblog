@@ -3,14 +3,14 @@ import json
 from datetime import date
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 import requests
 from sqlalchemy.orm import Session
-
 from app.core.config import PROJECT_ROOT
 from app.core.database import get_db
-from app.core.deps import get_current_user
+from app.core.deps import require_permission
+from app.core.permissions import Perm
 from app.core.response import ok
 from app.models.setting import Setting
 from app.models.user import User
@@ -26,12 +26,10 @@ class ChangelogIn(BaseModel):
 
 @router.get("/changelog", response_model=dict)
 def changelog(
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_permission(Perm.CHANGELOG_MANAGE)),
     _db: Session = Depends(get_db),
 ):
-    """更新日志内容(仅管理员, 内容同 CHANGELOG.md)。"""
-    if "admin" not in user.role_codes:
-        raise HTTPException(status_code=403, detail="仅管理员可查看")
+    """更新日志内容(需 changelog:manage 权限, 内容同 CHANGELOG.md)。"""
     path = PROJECT_ROOT / "CHANGELOG.md"
     content = path.read_text(encoding="utf-8") if path.exists() else ""
     return ok({"content": content})
@@ -40,12 +38,10 @@ def changelog(
 @router.put("/changelog", response_model=dict)
 def update_changelog(
     data: ChangelogIn,
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_permission(Perm.CHANGELOG_MANAGE)),
     _db: Session = Depends(get_db),
 ):
-    """保存更新日志(仅管理员, 写回 CHANGELOG.md)。"""
-    if "admin" not in user.role_codes:
-        raise HTTPException(status_code=403, detail="仅管理员可编辑")
+    """保存更新日志(需 changelog:manage 权限, 写回 CHANGELOG.md)。"""
     path = PROJECT_ROOT / "CHANGELOG.md"
     path.write_text(data.content, encoding="utf-8")
     return ok(message="更新日志已保存")

@@ -1,4 +1,6 @@
 """初始化脚本: 建表、创建权限/角色/管理员、写入默认设置。"""
+import os
+import secrets
 from pathlib import Path
 import sys
 
@@ -26,6 +28,8 @@ PERMISSIONS = [
     (Perm.LOG_VIEW, "查看日志", "log:view"),
     (Perm.STATS_VIEW, "查看统计", "stats:view"),
     (Perm.DATA_EXPORT, "导出数据", "data:export"),
+    (Perm.DIARY_MANAGE, "管理日记", "diary:manage"),
+    (Perm.CHANGELOG_MANAGE, "管理更新日志", "changelog:manage"),
 ]
 
 
@@ -105,16 +109,26 @@ def seed() -> None:
 
         # 3. 管理员账号(仅当没有任何用户时创建)
         if db.query(User).count() == 0:
+            # 初始密码优先取环境变量; 没配就随机生成并打印一次。
+            # 不再硬编码固定的 "admin123456" —— 公开仓库里的默认口令等于没有口令,
+            # 而 seed 往往在部署脚本里跑, 很容易忘记改。
+            admin_password = os.getenv("PHXXBLOG_ADMIN_PASSWORD") or secrets.token_urlsafe(12)
             admin = User(
                 username="admin",
                 email="admin@example.com",
-                password_hash=hash_password("admin123456"),
+                password_hash=hash_password(admin_password),
                 nickname="管理员",
                 bio="博客管理员",
             )
             admin.roles = [role_map["admin"]]
             db.add(admin)
-            print("已创建管理员账号: admin / admin123456(请尽快修改密码)")
+            print("=" * 60)
+            print("已创建管理员账号")
+            print(f"  用户名: admin")
+            print(f"  密码  : {admin_password}")
+            if not os.getenv("PHXXBLOG_ADMIN_PASSWORD"):
+                print("  (随机生成, 仅本次显示; 请立即登录后台修改)")
+            print("=" * 60)
         db.commit()
 
         # 4. 默认设置

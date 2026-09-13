@@ -6,6 +6,8 @@ import { postApi } from '@/api'
 import type { PostItem } from '@/types'
 import { formatDateTime } from '@/utils/datetime'
 import MetaIcon from '@/components/MetaIcon.vue'
+import ImportExportDialogs from '@/components/ImportExportDialogs.vue'
+import { useImportExport } from '@/composables/useImportExport'
 
 const router = useRouter()
 const statusFilter = ref<number | undefined>(undefined)
@@ -16,19 +18,29 @@ const page = ref(1)
 const pageSize = 10
 const loading = ref(false)
 const selected = ref<PostItem[]>([])
-const importDialog = ref(false)
-const exportDialog = ref(false)
-const exportFmt = ref<'markdown' | 'html'>('markdown')
-const exporting = ref(false)
-const importing = ref(false)
-const importFiles = ref<File[]>([])
-const dupDialog = ref(false)
-const duplicates = ref<string[]>([])
-const duplicateCount = ref(0)
-const duplicateTotal = ref(0)
+
+const io = useImportExport({
+  filePrefix: 'phxxblog-posts',
+  entity: '文章',
+  unit: '篇',
+  canExport: () => selected.value.length > 0,
+  exportMessage: () => `已导出 ${selected.value.length} 篇文章`,
+  exportFile: (fmt) => postApi.exportPosts(selected.value.map((post) => post.id), fmt),
+  checkImports: (files) => postApi.checkImportPosts(files),
+  submitImports: (files, onDuplicate) => postApi.importPosts(files, onDuplicate),
+  onImported: () => {
+    page.value = 1
+    load()
+  },
+})
 
 const STATUS_TEXT = ['草稿', '审核中', '已发布', '私密', '回收站']
-const STATUS_TYPE: Record<number, string> = { 0: 'info', 1: 'warning', 2: 'success', 3: 'danger', 4: 'info' }
+/**
+ * 文章状态 -> el-tag 的 type。
+ * 用字面量联合而非 string: el-tag 的 type 只接受固定几个值(见 CommentManageView 同样处理)。
+ */
+type TagType = 'primary' | 'success' | 'warning' | 'info' | 'danger'
+const STATUS_TYPE: Record<number, TagType> = { 0: 'info', 1: 'warning', 2: 'success', 3: 'danger', 4: 'info' }
 
 async function load() {
   loading.value = true
@@ -135,83 +147,6 @@ async function batchForceDelete() {
   load()
 }
 
-function openExportDialog() {
-  if (!selected.value.length) {
-    ElMessage.warning('请先勾选要导出的文章')
-    return
-  }
-  exportFmt.value = 'markdown'
-  exportDialog.value = true
-}
-
-async function doExport() {
-  exporting.value = true
-  try {
-    const blob = await postApi.exportPosts(selected.value.map((post) => post.id), exportFmt.value)
-    const url = URL.createObjectURL(blob)
-    const anchor = document.createElement('a')
-    anchor.href = url
-    anchor.download = `phxxblog-posts-${new Date().toISOString().slice(0, 10)}.zip`
-    document.body.appendChild(anchor)
-    anchor.click()
-    anchor.remove()
-    URL.revokeObjectURL(url)
-    ElMessage.success(`已导出 ${selected.value.length} 篇文章`)
-    exportDialog.value = false
-  } catch {
-    // 错误已由拦截器提示
-  } finally {
-    exporting.value = false
-  }
-}
-
-function onImportPick(event: Event) {
-  const input = event.target as HTMLInputElement
-  importFiles.value = input.files ? Array.from(input.files) : []
-}
-
-async function doImport() {
-  if (!importFiles.value.length) {
-    ElMessage.warning('请先选择文件')
-    return
-  }
-  importing.value = true
-  try {
-    // 先查重(不写入), 有重复时交给用户决定如何导入
-    const check = await postApi.checkImportPosts(importFiles.value)
-    if (check.duplicates_count > 0) {
-      duplicates.value = check.duplicates
-      duplicateCount.value = check.duplicates_count
-      duplicateTotal.value = check.total
-      importDialog.value = false
-      dupDialog.value = true
-      return
-    }
-    await runImport('skip')
-  } finally {
-    importing.value = false
-  }
-}
-
-/** onDuplicate: skip=仅导入不重复, all=重复的也一并导入 */
-async function runImport(onDuplicate: 'skip' | 'all') {
-  importing.value = true
-  try {
-    const result = await postApi.importPosts(importFiles.value, onDuplicate)
-    ElMessage.success(`导入完成: 成功 ${result.imported} 篇, 跳过 ${result.skipped} 篇`)
-    if (result.errors?.length) {
-      ElMessage.warning(`部分文件导入失败: ${result.errors.slice(0, 3).join('; ')}`)
-    }
-    dupDialog.value = false
-    importDialog.value = false
-    importFiles.value = []
-    page.value = 1
-    load()
-  } finally {
-    importing.value = false
-  }
-}
-
 onMounted(load)
 </script>
 
@@ -220,7 +155,7 @@ onMounted(load)
     <div class="toolbar">
       <h2 style="margin: 0">文章管理</h2>
       <div class="toolbar-actions">
-        <el-button @click="importDialog = true">导入文章</el-button>
+        <el-button @click="io.importDialog = true">导入文章</el-button>
         <el-button type="primary" @click="router.push('/admin/posts/new')">新建文章</el-button>
       </div>
     </div>
@@ -239,7 +174,7 @@ onMounted(load)
         <span class="muted">已选 {{ selected.length }} 篇</span>
         <el-button size="small" type="warning" @click="batchSetPrivate">设为私密</el-button>
         <el-button size="small" type="info" @click="batchTrash">移入回收站</el-button>
-        <el-button size="small" @click="openExportDialog">导出选中</el-button>
+        <el-button size="small" @click="io.openExportDialog">导出选中</el-button>
         <el-button size="small" type="danger" @click="batchForceDelete">彻底删除</el-button>
       </div>
       <el-table :data="posts" v-loading="loading" @selection-change="onSelectionChange">
@@ -278,16 +213,18 @@ onMounted(load)
         </el-table-column>
         <el-table-column label="操作" width="320" fixed="right">
           <template #default="{ row }">
+            <!-- el-table 插槽的 row 是 DefaultRow(Record<string, any>),
+                 显式断言成实际行类型以保留函数的类型约束 -->
             <div class="op-row">
-              <el-button v-if="row.status === 2" size="small" type="warning" @click="togglePrivate(row)">私密</el-button>
-              <el-button v-else-if="row.status === 3" size="small" type="success" @click="togglePrivate(row)">公开</el-button>
+              <el-button v-if="row.status === 2" size="small" type="warning" @click="togglePrivate(row as PostItem)">私密</el-button>
+              <el-button v-else-if="row.status === 3" size="small" type="success" @click="togglePrivate(row as PostItem)">公开</el-button>
               <el-button size="small" @click="router.push(`/admin/posts/${row.id}/edit`)">编辑</el-button>
-              <el-button v-if="row.status === 4" size="small" type="success" @click="restore(row)">恢复</el-button>
-              <el-button v-if="row.status === 4" size="small" type="danger" @click="forceDelete(row)">彻底删除</el-button>
+              <el-button v-if="row.status === 4" size="small" type="success" @click="restore(row as PostItem)">恢复</el-button>
+              <el-button v-if="row.status === 4" size="small" type="danger" @click="forceDelete(row as PostItem)">彻底删除</el-button>
               <template v-else>
-                <el-button v-if="row.status !== 2 && row.status !== 3" size="small" type="primary" @click="changeStatus(row, 2, '发布')">发布</el-button>
-                <el-button v-if="row.status === 0" size="small" type="warning" @click="changeStatus(row, 1, '提交审核')">审核</el-button>
-                <el-button size="small" type="danger" @click="trash(row)">删除</el-button>
+                <el-button v-if="row.status !== 2 && row.status !== 3" size="small" type="primary" @click="changeStatus(row as PostItem, 2, '发布')">发布</el-button>
+                <el-button v-if="row.status === 0" size="small" type="warning" @click="changeStatus(row as PostItem, 1, '提交审核')">审核</el-button>
+                <el-button size="small" type="danger" @click="trash(row as PostItem)">删除</el-button>
               </template>
             </div>
           </template>
@@ -304,64 +241,15 @@ onMounted(load)
       />
     </div>
 
-    <!-- 导入文章 -->
-    <el-dialog v-model="importDialog" title="导入文章" width="600px">
-      <el-alert type="info" :closable="false" show-icon>
-        <template #title>文件要求</template>
-        支持 .md 文件或 .zip 压缩包(可多选)。zip 内需包含 .md 文章文件; 文章图片可放在任意目录,
-        在正文中用相对路径引用(如 images/xxx.png), 导入时图片会一并上传并自动改写为可访问的 URL。
-        支持 YAML frontmatter 元信息: title / slug / status / date / summary / cover_image / category / tags。
-        未提供标题时取文件名或首个 # 标题, 默认导入为草稿。
-        导入前会按标题查重(忽略大小写与首尾空格), 有重复时可选择仅导入不重复或全部导入。
-      </el-alert>
-      <div class="import-picker">
-        <label class="el-button">
-          <input type="file" multiple accept=".md,.zip" hidden @change="onImportPick" />
-          选择文件
-        </label>
-        <span v-if="importFiles.length" class="muted">已选 {{ importFiles.length }} 个文件</span>
-        <ul v-if="importFiles.length" class="import-files">
-          <li v-for="(file, index) in importFiles" :key="index">{{ file.name }}</li>
-        </ul>
-      </div>
-      <template #footer>
-        <el-button @click="importDialog = false">取消</el-button>
-        <el-button type="primary" :loading="importing" @click="doImport">开始导入</el-button>
-      </template>
-    </el-dialog>
-
-    <!-- 导入查重 -->
-    <el-dialog v-model="dupDialog" title="检测到重复文章" width="560px">
-      <el-alert type="warning" :closable="false" show-icon>
-        <template #title>共 {{ duplicateTotal }} 篇待导入, 其中 {{ duplicateCount }} 篇与已有文章重复</template>
-        重复依据为文章标题(忽略大小写与首尾空格)。可跳过重复内容, 也可全部导入。
-      </el-alert>
-      <ul v-if="duplicates.length" class="import-files">
-        <li v-for="(title, index) in duplicates" :key="index">{{ title }}</li>
-      </ul>
-      <template #footer>
-        <el-button @click="dupDialog = false">取消</el-button>
-        <el-button :loading="importing" @click="runImport('skip')">仅导入不重复</el-button>
-        <el-button type="primary" :loading="importing" @click="runImport('all')">导入全部</el-button>
-      </template>
-    </el-dialog>
-
-    <!-- 导出选中 -->
-    <el-dialog v-model="exportDialog" title="导出选中文章" width="460px">
-      <el-form label-position="top">
-        <el-form-item label="导出格式">
-          <el-radio-group v-model="exportFmt">
-            <el-radio value="markdown">Markdown(.md)</el-radio>
-            <el-radio value="html">HTML(.html)</el-radio>
-          </el-radio-group>
-        </el-form-item>
-      </el-form>
-      <p class="muted">导出为 zip 压缩包, 文章引用的图片会一并打包, 并自动改写为相对路径。</p>
-      <template #footer>
-        <el-button @click="exportDialog = false">取消</el-button>
-        <el-button type="primary" :loading="exporting" @click="doExport">导出</el-button>
-      </template>
-    </el-dialog>
+    <ImportExportDialogs
+      :io="io"
+      import-title="导入文章"
+      dup-title="检测到重复文章"
+      export-title="导出选中文章"
+      import-hint="支持 .md 文件或 .zip 压缩包(可多选)。zip 内需包含 .md 文章文件; 文章图片可放在任意目录, 在正文中用相对路径引用(如 images/xxx.png), 导入时图片会一并上传并自动改写为可访问的 URL。支持 YAML frontmatter 元信息: title / slug / status / date / summary / cover_image / category / tags。未提供标题时取文件名或首个 # 标题, 默认导入为草稿。导入前会按标题查重(忽略大小写与首尾空格), 有重复时可选择仅导入不重复或全部导入。"
+      dup-hint="重复依据为文章标题(忽略大小写与首尾空格)。可跳过重复内容, 也可全部导入。"
+      export-hint="导出为 zip 压缩包, 文章引用的图片会一并打包, 并自动改写为相对路径。"
+    />
   </div>
 </template>
 
@@ -406,15 +294,5 @@ onMounted(load)
 }
 .op-row .el-button {
   margin-left: 0;
-}
-.import-picker {
-  margin-top: 16px;
-}
-.import-files {
-  margin: 10px 0 0;
-  padding-left: 20px;
-  max-height: 160px;
-  overflow-y: auto;
-  font-size: 13px;
 }
 </style>

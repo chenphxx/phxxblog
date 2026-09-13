@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import Vditor from 'vditor'
 import { useThemeStore } from '@/stores/theme'
 
@@ -133,7 +133,13 @@ async function highlightCode(root: HTMLDivElement) {
 /** 超过该行数的代码块默认折叠 */
 const CODE_FOLD_LINES = 20
 
-/** 已展开的代码块(按代码块序号记录; 主题切换会重新渲染, 借此保持展开状态) */
+/**
+ * 已展开的代码块(按代码块序号记录; 主题切换会重新渲染, 借此保持展开状态)。
+ *
+ * 必须在组件作用域内: 以前它定义在模块顶层, 是**跨实例共享**的隐藏状态。
+ * 首页的 README 区与文章详情会同时渲染 MarkdownView, 两处都会读写同一个 Set,
+ * 于是"展开第 3 个代码块"会同时影响另一个实例。
+ */
 const expandedBlocks = new Set<number>()
 
 /** 点击正文图片时预览的地址(空字符串表示不展示) */
@@ -226,7 +232,29 @@ watch(
     render()
   },
 )
-watch(() => theme.isDark, render)
+
+/*
+ * 主题变化需要重新渲染: 代码高亮的配色是 Vditor 按主题名(vs / vs2015)加载的,
+ * 只切 CSS 变量不会让 <code> 里的 hljs token 换色。
+ * 用 200ms 去抖合并"连点主题/深浅色"产生的多次触发 —— 每次 render 都会
+ * 清空 innerHTML 再整篇重排, 连续触发既浪费又会闪。
+ */
+let themeRenderTimer: number | undefined
+watch(
+  () => theme.isDark,
+  () => {
+    if (themeRenderTimer !== undefined) window.clearTimeout(themeRenderTimer)
+    themeRenderTimer = window.setTimeout(() => {
+      themeRenderTimer = undefined
+      render()
+    }, 200)
+  },
+)
+
+// 组件卸载时清掉待执行的定时器, 避免在已销毁的实例上重渲染
+onBeforeUnmount(() => {
+  if (themeRenderTimer !== undefined) window.clearTimeout(themeRenderTimer)
+})
 </script>
 
 <template>

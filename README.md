@@ -59,6 +59,33 @@ npm install
 npm run dev
 ```
 
+### 运行测试
+
+```bash
+# 后端(pytest + 内存 SQLite)
+cd backend
+pip install -r requirements-dev.txt
+python -m pytest tests -q
+
+# 前端(Vitest + jsdom)
+cd frontend
+npm run test            # 单次
+npm run test:watch      # 监听
+npm run test:coverage   # 覆盖率 -> coverage/index.html
+```
+
+后端测试使用**内存 SQLite**，不会连接也不会修改你的开发数据库；前端测试用 jsdom，
+不发真实请求（接口层整体 mock）。两者都可以随时运行。
+
+一键跑完所有检查（类型检查、两端测试、主题令牌一致性、图标路径）：
+
+```bash
+cd backend
+.venv/Scripts/python.exe scripts/verify_all.py
+```
+
+CI 见 `.github/workflows/backend-tests.yml`；前端构建发布见 `.github/workflows/build-frontend.yml`。
+
 ### 访问地址
 
 | 地址                              | 说明                          |
@@ -91,6 +118,6 @@ python scripts/import_wordpress.py --xml 路径.xml --no-download   # 跳过附�
 ## 开发文档
 
 - [技术架构与实现说明](docs/architecture.md) — 技术栈、系统架构、目录职责与各功能的实现方式
-- [接口文档](docs/api.md)
-- [数据库表结构设计](docs/mysql.md)
+- [接口文档](docs/api.md) — 全部 73 个接口的路径、鉴权要求与业务约束
+- [数据库表结构设计](docs/mysql.md) — 18 张表的字段说明、完整 DDL 与「表结构演进」约定
 - [更新日志](CHANGELOG.md)

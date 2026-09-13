@@ -102,8 +102,10 @@ onMounted(load)
             </el-table-column>
             <el-table-column label="操作" width="140">
               <template #default="{ row }">
-                <el-button size="small" @click="openCategoryDialog(row)">编辑</el-button>
-                <el-button size="small" type="danger" @click="removeCategory(row)">删除</el-button>
+                <!-- el-table 的插槽 row 是 DefaultRow(相当于 Record<string, any>),
+                     这里显式断言成实际行类型: 类型更安全, 也不需要改函数签名 -->
+                <el-button size="small" @click="openCategoryDialog(row as Category)">编辑</el-button>
+                <el-button size="small" type="danger" @click="removeCategory(row as Category)">删除</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -127,8 +129,8 @@ onMounted(load)
             </el-table-column>
             <el-table-column label="操作" width="140">
               <template #default="{ row }">
-                <el-button size="small" @click="openTagDialog(row)">编辑</el-button>
-                <el-button size="small" type="danger" @click="removeTag(row)">删除</el-button>
+                <el-button size="small" @click="openTagDialog(row as Tag)">编辑</el-button>
+                <el-button size="small" type="danger" @click="removeTag(row as Tag)">删除</el-button>
               </template>
             </el-table-column>
           </el-table>

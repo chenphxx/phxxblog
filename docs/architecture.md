@@ -18,7 +18,12 @@ phxxblog 是一个前后端分离的个人博客系统, 前台与管理后台共
 | 前端 | Vue 3(组合式 API + `script setup`)、TypeScript、Vite、Vue Router(hash 模式)、Pinia、Axios、Element Plus、Vditor(Markdown 编辑与渲染) |
 | 后端 | Python 3.10+、FastAPI、SQLAlchemy 2.x(声明式 ORM)、Pydantic v2 / pydantic-settings、PyMySQL、PyJWT、bcrypt、feedgen、Markdown、requests |
 | 数据库 | MySQL 9(utf8mb4 / utf8mb4_unicode_ci, `posts` 表带 ngram 中文全文索引) |
-| 其他 | ip2region 离线 IP 库(可选)、start.bat 一键启动脚本 |
+| 字体 | Cascadia Code(自托管 latin 子集, `frontend/public/fonts/`) |
+| 测试 | pytest + httpx(内存 SQLite, 见 `backend/tests/`) |
+| 其他 | ip2region 离线 IP 库(vendored, 可选)、start.bat 一键启动脚本 |
+
+> **没有引入数据库迁移工具**（Alembic）。新表由 `create_all` 自动创建，已有表加列需手工写迁移 SQL；
+> 应用启动时会校验模型与库结构是否一致，缺列则拒绝启动。约定见 `docs/mysql.md` 的「表结构演进」。
 
 主要依赖版本(节选, 完整清单见 `backend/requirements.txt` 与 `frontend/package.json`):
 
@@ -71,34 +76,47 @@ phxxblog/
 ├── start.bat                     # 一键启动前后端(检查环境 -> 启动 -> 打印访问地址)
 ├── CHANGELOG.md                  # 更新日志(前台可直接展示与编辑)
 ├── docs/                         # 开发文档
-│   ├── api.md                    # 接口清单
+│   ├── api.md                    # 接口清单(由 backend/scripts/gen_api_doc.py 生成)
 │   ├── mysql.md                  # 数据库表结构设计
 │   └── architecture.md           # 本文档: 技术架构与实现说明
 ├── assets/                       # 上传文件与素材(uploads/<年>/<月>/ 由后端写入)
+├── .github/workflows/            # CI: 前端构建发布 / 后端测试 + 主题与图标校验
 ├── frontend/                     # 前端工程(Vue3 + TS + Vite)
-│   ├── scripts/copy-vditor-assets.mjs   # 把 vditor 静态资源复制到 public/vditor
-│   ├── vite.config.ts            # 别名 @ -> src, 开发代理(/api /assets /docs ...)
+│   ├── public/fonts/             # 自托管 Cascadia Code(latin 子集)与 OFL 许可
+│   ├── scripts/
+│   │   ├── copy-vditor-assets.mjs  # 把 vditor 静态资源复制到 public/vditor
+│   │   ├── check-icons.mjs         # 校验 MetaIcon 的 SVG path(npm run check:icons)
+│   │   └── measure-first-paint.mjs # 量首屏/整包体积(npm run check:size)
+│   ├── vitest.config.ts          # 单测配置(与 vite.config.ts 分开, 见 frontend/README.md)
 │   └── src/
-│       ├── api/                  # http.ts(Axios 实例与拦截器) + index.ts(按模块的接口封装)
-│       ├── components/           # 通用组件(MarkdownView / PostCard / 图表 / 评论等)
+│       ├── api/                  # http.ts(Axios 实例、拦截器与 401 静默刷新) + index.ts(按模块的接口封装)
+│       ├── components/           # 通用组件(MarkdownView / PostCard / MetaIcon / 图表 / 评论等)
+│       ├── composables/          # 跨视图复用逻辑(usePostEditor / useImportExport)
 │       ├── layouts/              # 前台布局(顶栏 + 页脚)
 │       ├── router/               # 路由表与登录守卫
-│       ├── stores/               # Pinia: auth(登录态) / theme(深浅色)
-│       ├── styles/theme.css      # 全局样式与深浅色 CSS 变量
+│       ├── stores/               # Pinia: auth(登录态) / theme(深浅色 + 12 套配色主题)
+│       ├── styles/
+│       │   ├── theme.css         # 结构样式与基础令牌
+│       │   ├── theme-green.css   # 主题入口(汇总各主题 CSS)
+│       │   ├── admin.css         # 后台主题层(Element Plus 主色 -> 主题令牌)
+│       │   ├── fonts.css         # 自托管 Cascadia Code 的 @font-face
+│       │   └── themes/           # 12 套主题令牌(生成物) + registry.ts + _source/(源与脚本)
 │       ├── types/index.ts        # 与后端对齐的 TypeScript 类型
-│       ├── utils/                # 文档 cookie、标签配色、文本统计等工具
+│       ├── utils/                # 令牌存储、文档 cookie、标签配色、文本统计等工具
 │       └── views/                # 页面(前台 views/ + 后台 views/admin/)
 └── backend/                      # 后端工程(FastAPI)
     ├── app/
     │   ├── main.py               # 应用入口: 中间件、异常处理、路由与静态目录挂载
     │   ├── seed.py               # 初始化: 权限/角色/管理员/默认设置/默认分类标签
     │   ├── api/v1/               # 路由层(按业务模块拆分)
-    │   ├── core/                 # config / database / security / deps / permissions / middleware / response
+    │   ├── core/                 # config / database / security / deps / permissions / pagination / ratelimit / middleware / response
     │   ├── models/               # ORM 模型
     │   ├── schemas/              # Pydantic 请求与响应模型
-    │   └── services/             # 业务服务(markdown / upload / stats / geo / ua / log / text / link_preview / archive)
-    ├── scripts/                  # init_db.sql、migration_*.sql、WordPress 导入、IP 库下载等
-    └── requirements.txt
+    │   └── services/             # 业务服务(markdown / upload / stats / geo / ua / log / text / link_preview / archive / post_write / ip2region)
+    ├── tests/                    # pytest 用例(内存 SQLite, 不碰开发库)
+    ├── scripts/                  # init_db.sql、migration_*.sql、WordPress 导入、IP 库下载、接口文档生成等
+    ├── requirements.txt          # 运行依赖
+    └── requirements-dev.txt       # 测试依赖(pytest / httpx)
 ```
 
 ## 5. 后端实现
@@ -107,7 +125,9 @@ phxxblog/
 
 - 创建 `FastAPI` 实例(标题/描述/版本即 `/docs` 上展示的内容)并注册 CORS 中间件(来源取 `PHXXBLOG_CORS_ORIGINS`, 默认 5173)。
 - 注册自定义 HTTP 中间件 `restrict_docs_to_admin` 保护文档路径(见 7.21)。
-- `startup` 钩子执行 `Base.metadata.create_all()` 自动建表(幂等), 并调用 `ensure_columns()` 为老库补齐新增列; 失败时只打印警告, 提示手工执行迁移 SQL。
+- `startup` 钩子执行 `Base.metadata.create_all()` 自动建表(幂等), 再建 `schema_version` 表,
+  最后调用 `check_schema()` **校验模型与库结构是否一致**: 缺列时 `debug=true` 只告警并打印 `ALTER` 语句,
+  否则拒绝启动。取代了旧的 `ensure_columns()` 静默补列(只认两列, 其余加列不报错, 直到查询才炸)。
 - 统一异常处理: 业务异常 `HTTPException` → `{code, message, data}`; 参数校验失败 `RequestValidationError` → 422 + 第一条错误信息; 兜底 `Exception` 在调试模式下直接抛出便于排查。
 - 挂载 `/api/v1` 汇总路由与 RSS/sitemap 路由, 并把 `assets/` 目录挂载为 `/assets` 静态资源。
 
@@ -132,9 +152,20 @@ phxxblog/
 ### 5.3 数据层
 
 - `core/database.py`: 以 `DeclarativeBase` 定义 `Base`; `engine` 开启 `pool_pre_ping` 与 `pool_recycle=3600`; `SessionLocal` 使用 `autoflush=False, expire_on_commit=False`; `get_db()` 作为请求级会话依赖。
-- `ensure_columns()`: 用 SQLAlchemy 反射检查表结构, 对缺失的新增列执行幂等 `ALTER TABLE`(当前为 `categories.color`、`tags.color`)。
-- 模型层 `models/*.py`: 使用 SQLAlchemy 2.0 的 `Mapped / mapped_column` 声明; `posts` 建有 `(status, published_at)`、`category_id`、`author_id` 索引与 ngram 全文索引; 关联对象用 `lazy="selectin"` 预加载避免 N+1。
-- `seed.py`: 初始化权限码、三种角色(admin/editor/author)、管理员账号(仅当库中无用户时创建)、默认系统设置与默认分类/标签。
+- 表结构校验: `check_schema()` 反射实际表结构并与模型比对, 缺列时报错(或按 `debug` 只告警)并打印 `ALTER` 语句;
+  `ensure_schema_version_table()` / `record_version()` 维护 `schema_version` 表记录已应用的迁移。
+  详见 `docs/mysql.md` 的「表结构演进」。
+- 模型层 `models/*.py`: 使用 SQLAlchemy 2.0 的 `Mapped / mapped_column` 声明; `posts` 建有 `(status, published_at)`、`category_id`、`author_id` 索引与 ngram 全文索引。
+  **关联加载策略按"是否真的要用"逐个指定**(改动前请先读模型里的注释):
+  `Post.author/category` 用 `joined`、`Post.tags` 用 `selectin`(列表要序列化标签)、
+  `Post.comments/likes` 用 `raise`(列表与详情都不使用这两个关系, 误用会立刻报错而不是退化成 N+1)、
+  `User.roles` 用 `selectin`(每次请求都要权限码)、`User.posts` 与 `Role.users` 用 `select`
+  (以前是 `selectin`, 导致每个需要登录的接口都顺带全量拉取该用户的文章)。
+- `core/pagination.py`: `paginate(query, page, page_size, schema)` 统一分页取数与返回结构。
+- `core/ratelimit.py`: 进程内滑动窗口限流器, 目前用于登录失败(同 IP+账号 5 分钟 10 次即 429)。
+  局限已写在文件里: 多 worker/多实例部署时各自计数, 需要跨实例限流请换 Redis 或交给反代。
+- `seed.py`: 初始化权限码、三种角色(admin/editor/author)、管理员账号(仅当库中无用户时创建, 初始密码取
+  `PHXXBLOG_ADMIN_PASSWORD` 或随机生成并打印一次, 不再硬编码默认口令)、默认系统设置与默认分类/标签。
 
 ### 5.4 认证与授权
 
@@ -193,46 +224,84 @@ phxxblog/
 ### 6.1 入口与主题 `frontend/src/main.ts`
 
 - 创建应用并注册 Pinia、Vue Router、Element Plus(中文语言包 `zh-cn`, 全局 Message 可手动关闭)。
-- 引入样式: `element-plus/dist/index.css`、`element-plus/theme-chalk/dark/css-vars.css`、`vditor/dist/index.css` 与项目自己的 `styles/theme.css`。
-- 应用挂载前先读取 localStorage 中的主题并给 `html` 加上 `dark` 类, 避免首屏闪白。
-- `frontend/scripts/copy-vditor-assets.mjs` 在 `predev / prebuild` 阶段把 `node_modules/vditor/dist` 复制到 `public/vditor/dist`, 使 Vditor 的 Lute、图标、高亮资源全部走本地, 不依赖 CDN。
+- 引入样式顺序: `element-plus/dist/index.css` → `element-plus/theme-chalk/dark/css-vars.css` →
+  `vditor/dist/index.css` → `styles/fonts.css`(自托管字体) → `styles/theme-green.css`(主题入口)。
+  **顺序有意义**: 主题令牌必须晚于 Element Plus 与 Vditor 才能覆盖它们(见 6.6)。
+- 应用挂载前读取 localStorage 中的深浅色与配色主题, 给 `html` 打上 `.dark` 类与 `data-theme` 属性, 避免首屏闪白。
+- `frontend/scripts/copy-vditor-assets.mjs` 在 `predev / prebuild` 阶段把 `node_modules/vditor/dist` 复制到 `public/vditor/dist`, 使 Vditor 的 Lute、图标、高亮资源全部走本地, 不依赖 CDN(代价是 dist 里多约 21 MB 静态资源)。
 
 ### 6.2 路由与布局
 
 - 使用 hash 模式(`createWebHashHistory`), 便于静态托管: 前台 `/`、`/post/:id`、`/archive`、`/posts`、`/search`、`/write(/:id)`、`/changelog`、`/diary`; 后台 `/admin/**`(仪表盘/文章/分类标签/评论/媒体/用户/设置/日志/资料)。
 - 全局前置守卫: 路由标记 `meta.requiresAuth` 且本地无令牌时跳转登录页并带上 `redirect`。
-- 前台布局 `layouts/SiteLayout.vue`: 顶栏(站点名 + 终端风格提示符 + 导航 + 主题开关) + 内容区 + 页脚; 布局层负责加载公开配置(站点名/标签页标题/图标)与访问埋点。
-- 后台布局 `views/admin/AdminLayout.vue`: 侧边菜单 + 顶栏(API 文档入口、主题开关、退出登录)。
-- 前台部分页面使用 `keep-alive` 缓存(首页、全部文章、归档、搜索), 并用 `onActivated` 在返回时刷新数据。
+- 前台布局 `layouts/SiteLayout.vue`: 顶栏(站点名 + 终端风格提示符 + 导航 + 主题按钮) + 内容区 + 页脚; 布局层负责加载公开配置(站点名/标签页标题/图标)与访问埋点。
+- 后台布局 `views/admin/AdminLayout.vue`: 侧边菜单 + 顶栏(API 文档入口、主题按钮、退出登录)。
+- 前台部分页面使用 `keep-alive` 缓存(首页、全部文章、归档、搜索)。
+  **注意**: 被缓存的组件不会重新走 setup / onMounted, 因此 URL 查询参数变化必须用 `watch(route)` 自行响应
+  (见 `SearchView.vue` 的 `syncFromQuery`), 返回时的数据刷新用 `onActivated`(见 `HomeView.vue`)。
 
 ### 6.3 状态管理 `stores/`
 
 - `auth.ts`: `accessToken / refreshToken / user` 三份状态与 localStorage 同步; 登录成功后写入会话, 同时把 access token 同步到 API 文档鉴权 cookie; 登出时清理令牌、cookie 并跳转登录页。
-- `theme.ts`: 深浅色开关, 通过 `html.dark` 与 `data-theme` 属性切换 CSS 变量并持久化。
+  `accessToken / refreshToken` 是 **computed**(读 `utils/tokenStorage.ts`)而不是 ref —— 静默刷新会直接改写 localStorage(见 6.4),
+  只有每次都从存储读, UI 才能看到最新令牌。
+- `theme.ts`: 外观设置分两个独立维度 —— `isDark`(深浅色)与 `themeId`(12 套配色主题, 见 `styles/themes/registry.ts`),
+  共同决定 `html` 上的 `.dark` 类与 `data-theme` 属性并持久化; 切换时临时加 `theme-transition` 类做颜色过渡。
 
 ### 6.4 请求层 `api/`
 
-- `http.ts`: `axios.create({ baseURL: '/api/v1' })`; 请求拦截器附加 Bearer 令牌; 响应拦截器解包 `data` 字段(blob 下载除外), 统一弹出错误提示, 401 时清理本地会话与文档 cookie 并跳转登录页。
+- `http.ts`: `axios.create({ baseURL: '/api/v1' })`; 请求拦截器附加 Bearer 令牌; 响应拦截器解包 `data` 字段(blob 下载除外), 统一打一条 `[api] METHOD url -> status message` 的 `console.warn`(便于定位是哪个请求失败), 统一弹出错误提示。
+- **401 静默刷新**: access token 过期(默认 30 分钟)时不再直接把用户踢到登录页, 而是用 refresh token 换一对新令牌并**重放原请求**。
+  三个必须遵守的约束(都有单测覆盖):
+  1. **单飞**: 页面同时发出的多个请求几乎必然同时 401, 而 refresh token 是一次性轮换的 —— 并发刷新会让后到的那次拿到已失效的令牌,
+     于是整页掉线。因此所有并发 401 共用同一个刷新 Promise(`refreshOnce()`)。
+  2. **不循环**: 重放过的请求打上 `_retried` 标记, 再 401 就走正常的未登录处理; 登录/刷新接口自身的 401 也一律不触发刷新。
+  3. **刷新失败才算掉线**: 只有"换令牌失败"才清理会话并跳登录页; 重放失败按普通错误处理。
+  刷新请求走独立的 `refreshClient` 实例(不带拦截器), 否则刷新失败的响应会再次进入本拦截器形成递归。
+  受保护前缀见 `PROTECTED_PREFIXES`(含 `/write`、`/diary`、`/changelog`, 不只是 `/admin`)。
+- `utils/tokenStorage.ts`: 令牌与用户信息的唯一读写入口(`ACCESS_TOKEN_KEY` 等)。此前 key 字面量散落在 store、`http.ts`、
+  下载导出、路由守卫、编辑器上传共 6 处, 改一处名字就会让其它几处静默失效(症状是"登录成功但立刻 401")。
 - `index.ts`: 按业务域封装接口(authApi、postApi、categoryApi、tagApi、commentApi、mediaApi、statsApi、diaryApi、miscApi、logApi、settingsApi、searchApi、linkApi、userApi), 并导出与后端对齐的请求/响应类型。
-- 刷新令牌接口已封装(`authApi.refresh`), 当前拦截器策略为 401 直接清理会话(未做自动续期), 需要时可在此处扩展静默刷新。
 
-### 6.5 组件 `components/`
+### 6.5 组件 `components/` 与组合式函数 `composables/`
 
 | 组件 | 职责 |
 | --- | --- |
 | `MarkdownView.vue` | 文章正文渲染: Vditor 预览 + 代码高亮/折叠 + 图片点击预览 |
 | `VditorEditor.vue` | 写作页编辑器(即时渲染模式、工具栏、图片上传、深浅色联动) |
-| `PostCard.vue` | 文章卡片: 标题、摘要、分类/标签彩色标签、字数与阅读时间、views/likes、状态标签 |
+| `PostFormFields.vue` | 文章表单字段(标题/别名/摘要/分类/标签/可见性/封面/正文), 写作页与后台编辑器共用 |
+| `ImportExportDialogs.vue` | 导入 / 查重 / 导出三个弹窗, 文章管理与日记页共用 |
+| `PostCard.vue` | 文章卡片: 标题、摘要、分类/标签彩色标签、字数与阅读时间、views/likes、状态标签(均带图标) |
+| `MetaIcon.vue` | 元信息小图标(日历/眼睛/标签/hash 等): 内联 SVG + `currentColor`, 自动跟随主题; 路径由 `npm run check:icons` 校验 |
 | `ContributionsChart.vue` | GitHub 风格贡献热力图(纯 SVG/CSS 实现, 支持按年切换) |
 | `TrendChart.vue` | 访问趋势折线/柱状图(纯 SVG 实现, 无第三方图表库) |
 | `CommentSection.vue / CommentNode.vue` | 评论区与递归渲染的多层回复 |
 | `LinkCard.vue` | 链接预览卡片 |
-| `ThemeToggle.vue` | 深浅色切换按钮 |
+| `ThemeSwitcher.vue` | 主题下拉(色点 + 主题名)与深浅色切换按钮, 前台后台共用 |
+| `ThemeToggle.vue` | 仅浅色/深色切换的圆形按钮(登录页使用) |
+
+| 组合式函数 | 职责 |
+| --- | --- |
+| `usePostEditor.ts` | 文章编辑的全部状态与流程(加载选项/详情、分类标签就地新建、封面上传、保存、删除) |
+| `useImportExport.ts` | 导入(查重 -> 选择策略 -> 写入)、导出下载与三个弹窗的状态 |
+
+两个 composable 都返回 `reactive` 对象(内部不使用 ref), 调用方直接写 `editor.form.title` / `io.importDialog`, 无需 `.value`。
+视图之间的差异(取消的去向、数量单位、文案)通过 options 注入 —— 这是把原先 4 个视图里约 400 行重复逻辑收敛成两份的原因。
 
 ### 6.6 样式与主题
 
-- `styles/theme.css` 用 CSS 变量定义配色(`:root` 浅色、`html.dark` 深色), 页面与组件只引用变量, 因此切换主题无需改动组件样式。
+- 配色采用**令牌 + 生成**的方式: 源数据在 `styles/themes/_source/tokens.mjs`, 由
+  `npm run themes:generate` 生成 12 套 `theme-<id>.css`(各含深浅两套令牌)与 `registry.ts`。
+  改配色只改数据源, 不要手改生成物。
+- 每个主题文件里的令牌选择器是 `html[data-theme='<id>']` 与 `html[data-theme='<id>'].dark`;
+  只有 `theme-default.css` 写裸 `:root`(承载"新访客未选主题"时的默认配色), 否则多套主题会互相覆盖。
+- **后台跟随主题**靠 `styles/admin.css`: 它把 Element Plus 的 `--el-color-primary` 等令牌指向主题令牌。
+  该文件必须排在所有主题之后(`theme-green.css` 的 `@import` 顺序), 且以同特异性后写入才能覆盖成功。
 - 代码块背景与高亮风格对齐 VSCode 默认主题: 浅色用 `vs`、深色用 `vs2015`, 并统一注释为斜体、字号与正文字号联动。
+  注意 Vditor 自带的 `.vditor-reset` 写死了字体栈且不引用 `var(--font-sans)`, 正文的字体由 `theme.css` 里
+  同特异性的 `.markdown-body, .vditor-reset` 规则覆盖, **那条规则不要删**。
+- 字体: 字母/数字/符号统一 Cascadia Code(自托管 latin 子集, `public/fonts/`); 该字体不含中文字形,
+  中文自动回退到 PingFang SC / 微软雅黑。
 - 分类/标签与 views/likes 的彩色标签由 `utils/chipColor.ts` 计算: 后台配置了颜色则使用该颜色, 否则按名称哈希生成稳定色相, 再用 `color-mix` 生成背景、边框与文字色, 深浅色下均自动适配。
 
 ## 7. 关键功能实现
@@ -390,15 +459,83 @@ npm run dev
 ### 9.2 生产部署要点
 
 1. 前端执行 `npm run build`(内部先跑 `vue-tsc` 类型检查), 产物在 `frontend/dist`, 交给静态服务器托管。
-2. 后端以 `uvicorn app.main:app --host 0.0.0.0 --port 8000` 或 gunicorn + uvicorn worker 运行, 建议关闭 `PHXXBLOG_DEBUG`。
-3. 反向代理需要转发 `/api`、`/assets`, 如需在线文档再转发 `/docs`、`/redoc`、`/openapi.json`; 若前端与后端不同域, 还要把前端域名加入 `PHXXBLOG_CORS_ORIGINS`。
-4. 生产环境务必替换 `PHXXBLOG_SECRET_KEY`, 并保证 `backend/data/ip2region_v4.xdb` 已下载(否则评论归属地显示为空)。
+   注意 `dist` 里含 `vditor/`(约 21 MB) 与 `fonts/`(约 58 KB), 两者都是运行时按需加载的资源, 不要裁剪。
+2. **确认静态服务器开启了 gzip/brotli 压缩**。可用 `npm run check:size`(内部读 `dist/index.html`
+   实际引用的资源, 不是估算)打印当前体积, 当前值:
+
+   | 口径 | 未压缩 | gzip 后 |
+   | --- | --- | --- |
+   | 首屏(渲染首屏前必须下载的 js/css) | 约 254 KB | 约 78 KB |
+   | 按需资源(路由/功能懒加载) | 约 1270 KB | 约 379 KB |
+
+   若托管方未压缩, 首屏传输量会从 78 KB 涨到 254 KB。Nginx 参考:
+   `gzip on; gzip_types text/css application/javascript font/woff2;`
+   改动体积后记得同步更新本节数字(`npm run check:size` 的输出即上表口径)。
+3. 后端以 `uvicorn app.main:app --host 0.0.0.0 --port 8000` 或 gunicorn + uvicorn worker 运行, 建议关闭 `PHXXBLOG_DEBUG`。
+4. 反向代理需要转发 `/api`、`/assets`, 如需在线文档再转发 `/docs`、`/redoc`、`/openapi.json`; 若前端与后端不同域, 还要把前端域名加入 `PHXXBLOG_CORS_ORIGINS`。
+5. 生产环境启动前**必须**设置 `PHXXBLOG_SECRET_KEY`(长度 ≥ 32):
+   应用会拒绝用仓库里的默认占位值启动, 因为那等于任何人都能伪造 admin 令牌。
+   生成方式: `python -c "import secrets; print(secrets.token_urlsafe(48))"`。
+6. 若部署在反向代理之后, 把反代的内网地址填入 `PHXXBLOG_TRUSTED_PROXIES`(逗号分隔)。
+   否则应用不采信 `X-Forwarded-For`, 直接用 TCP 直连地址 —— 这是刻意的:
+   XFF 可被客户端伪造, 无条件采信会导致点赞去重/游客评论归属/UV 统计全部失真。
+7. 保证 `backend/data/ip2region_v4.xdb` 已下载(否则评论归属地显示为空)。
+8. 静态资源建议由反代直出并加长缓存; `/assets/uploads` 目录建议关闭脚本执行权限
+   (上传目录与站点同源, 虽然上传已做扩展名白名单, 仍是纵深防御的一层)。
+
+### 9.3 数据保留与定时清理
+
+`visit_logs`(访问明细)会随时间无限增长, `refresh_tokens`(已吊销/已过期)与 `operation_logs` 同理。
+应用**不会**自动删除这些行 —— 清理是显式的运维动作, 由 `backend/scripts/cleanup_old_data.py` 执行:
+
+```bash
+cd backend
+.venv/Scripts/python.exe scripts/cleanup_old_data.py            # 预览(默认 dry-run)
+.venv/Scripts/python.exe scripts/cleanup_old_data.py --apply    # 实际删除
+```
+
+保留期由 `.env` 控制, 默认 `PHXXBLOG_DATA_RETENTION_DAYS=180`(访问明细)、
+`PHXXBLOG_AUDIT_LOG_RETENTION_DAYS=365`(操作日志); 刷新令牌只按状态/有效期清理, 与保留天数无关。
+
+清理的影响范围:
+
+| 数据 | 清理后是否受影响 |
+| --- | --- |
+| 趋势图 `/stats/trend` | 不受影响(读按日聚合的 `daily_stats`, 永久保留) |
+| 访问明细 `/stats/visits`、来源分布 `/stats/sources` | 只反映保留期内的数据 |
+| 贡献热力图 | 不受影响(同样读 `daily_stats`) |
+
+建议**每月执行一次**。Windows 计划任务(单行, 路径按实际仓库位置替换):
+
+```powershell
+schtasks /create /tn "phxxblog-cleanup" /sc monthly /d 1 /st 04:00 /tr "D:\Projects\phxxblog\backend\.venv\Scripts\python.exe D:\Projects\phxxblog\backend\scripts\cleanup_old_data.py --apply"
+```
+
+Linux cron(注意工作目录要是 `backend`, 脚本按自身位置定位 `PROJECT_ROOT`):
+
+```cron
+0 4 1 * *  cd /path/to/phxxblog/backend && .venv/bin/python scripts/cleanup_old_data.py --apply >> /var/log/phxxblog-cleanup.log 2>&1
+```
+
+首次部署如果已经积攒了大量历史数据, 先跑一次 dry-run 确认删除量, 再 `--apply`。
 
 ## 10. 开发约定
 
 - 代码注释与文档统一使用中文, 注释说明"为什么"而非重复代码本身。
-- 所有接口统一返回 `{code, message, data}`, 列表统一分页结构; 前端只解包一次。
-- 权限校验放在路由层(依赖 `require_permission` 或资源级判断), 业务服务层不感知 HTTP 上下文。
-- 新增数据库列时, 除修改模型外要同步 `backend/scripts/migration_*.sql`, 并在 `ensure_columns()` 中登记, 保证老库能自动补齐。
+- 所有接口统一返回 `{code, message, data}`, 列表统一分页结构(后端用 `core/pagination.py` 的 `paginate()`); 前端只解包一次。
+- 权限校验放在路由层, 一律用**权限码**(`Depends(require_permission(Perm.X))` 或 `user.permission_codes`),
+  **不要判断角色名**(`"admin" in role_codes`) —— 角色 code 可被后台修改, 角色名判断会静默失效。
+- 新增数据库列时: 修改模型后手工写迁移 SQL 到 `backend/scripts/` 并在自己的库执行, 同时往 `schema_version` 登记。
+  应用启动会校验模型与库结构, 缺列会拒绝启动(而不是等到查询才炸 `Unknown column`)。
+- 改动主题令牌: 改 `frontend/src/styles/themes/_source/tokens.mjs`, 然后
+  `npm run themes:generate`(生成)与 `npm run themes:audit`(校验), 不要手改生成的 CSS。
+- 新增图标: 加到 `components/MetaIcon.vue` 的 `PATHS`, 然后 `npm run check:icons`
+  (能抓到 `7.5.5` 这类不会报错但会让笔画丢失的手误)。
+- 后端改动后跑测试: `cd backend && .venv/Scripts/python.exe -m pytest tests -q`。
+  测试用内存 SQLite, 不会碰开发库; CI 见 `.github/workflows/backend-tests.yml`。
 - 前端提交前建议执行类型检查与构建: `cd frontend && npm run build`。
+- 关注体积变化时跑 `cd frontend && npm run build && npm run check:size`(先量再改, 避免"感觉变快了")。
+- 前端单测: `cd frontend && npm run test`(Vitest + jsdom)。视图里重复的流程逻辑不要复制第二份,
+  抽到 `src/composables/`; 视图之间的差异用 options 注入(参见 `usePostEditor` / `useImportExport`)。
+- 前端任何地方都不要直接写 `blog_access_token` 这类 key 字面量, 统一走 `utils/tokenStorage.ts`。
 - 功能变更同步更新根目录 `CHANGELOG.md`(前台可展示给访客)。

@@ -35,7 +35,7 @@
    * 字母 / 数字 / 符号统一用 Cascadia Code。
    * Cascadia Code 不含中文字形, 中文会自动回退到后面的系统字体
    * (PingFang SC / 微软雅黑), 所以中文排版不受影响。
-   * 注意: 这两项与 design/themes/template.css 里的同名令牌保持一致,
+   * 注意: 这两项与 src/styles/themes/_source/template.css 里的同名令牌保持一致,
    * 主题 CSS 是按主题分文件生成的, 每个文件都会写入这份定义。
    */
   --font-sans: 'Cascadia Code', 'Cascadia Mono', ui-monospace, 'PingFang SC', 'Microsoft YaHei',

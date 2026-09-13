@@ -1,10 +1,7 @@
 """媒体接口: 上传/列表/删除。"""
-from pathlib import Path
-
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile
 from sqlalchemy.orm import Session
 
-from app.core.config import settings
 from app.core.database import get_db
 from app.core.deps import get_current_user, require_permission
 from app.core.permissions import Perm
@@ -14,7 +11,7 @@ from app.models.user import User
 from app.schemas.common import Page
 from app.schemas.media import MediaOut
 from app.services.log import write_operation_log
-from app.services.upload import save_upload
+from app.services.upload import resolve_upload_file, save_upload
 
 router = APIRouter(prefix="/media", tags=["媒体"])
 
@@ -80,9 +77,9 @@ def delete_media(
         raise HTTPException(status_code=404, detail="媒体不存在")
 
     # 安全删除: 解析目标路径并确认位于上传目录内
-    upload_root = Path(settings.upload_dir).resolve()
-    target = (Path.cwd() / media.path).resolve()
-    if str(target).startswith(str(upload_root)):
+    # (用共享的 resolve_upload_file: 按路径段比较而非字符串前缀, 且不依赖 cwd)
+    target = resolve_upload_file(media.path)
+    if target is not None:
         target.unlink(missing_ok=True)
 
     db.delete(media)

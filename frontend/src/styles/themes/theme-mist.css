@@ -2,9 +2,9 @@
  * 主题: 晨雾青 (Morning Mist)
  * 冷调青绿 + 灰绿底色，低饱和、干净克制，像清晨的薄雾。
  * ------------------------------------------------------------
- * 本文件由 design/themes/generate-themes.mjs 生成, 请勿手改。
- * 改配色/圆角请改 design/themes/tokens.mjs, 然后重新运行:
- *   node design/themes/generate-themes.mjs
+ * 本文件由 src/styles/themes/_source/generate-themes.mjs 生成, 请勿手改。
+ * 改配色/圆角请改 _source/tokens.mjs, 然后重新运行:
+ *   npm run themes:generate
  *
  * 切换方式: html[data-theme='mist'] (见 stores/theme.ts), 深色再加 .dark
  * ============================================================ */
@@ -170,7 +170,7 @@ html[data-theme='mist'].dark {
 /* ============================================================
  * 增强层: 柔和抬升族 (soft)
  * 大圆角、渐变主色、多层柔和阴影。悬停是「轻轻抬起来」。
- * 占位符由 design/themes/generate-themes.mjs 替换。
+ * 占位符由 _source/generate-themes.mjs 替换。
  * ============================================================ */
 
 /* ---------- 链接/强调文字统一走 --link, 保证对比度 ---------- */

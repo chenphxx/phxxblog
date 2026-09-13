@@ -5,7 +5,12 @@ import { mediaApi } from '@/api'
 import type { MediaItem } from '@/types'
 
 const items = ref<MediaItem[]>([])
-const selected = ref<MediaItem[]>([])
+/**
+ * 选中项存 id 而不是对象。
+ * el-checkbox 的值类型是标量(string | number | boolean), 传对象会被类型拒绝
+ * (且运行时的勾选态比较也不可靠); 用 id 数组既符合它的设计, 也避免重复持有对象。
+ */
+const selected = ref<number[]>([])
 const total = ref(0)
 const page = ref(1)
 const pageSize = 12
@@ -55,20 +60,23 @@ function downloadMedia(media: MediaItem) {
 }
 
 function downloadSelected() {
-  selected.value.forEach((media) => downloadMedia(media))
+  // 选中态存的是 id, 下载前映射回对象
+  items.value.filter((m) => selected.value.includes(m.id)).forEach((media) => downloadMedia(media))
 }
 
 /** 全选当前页 */
 function selectAll() {
-  selected.value = [...items.value]
+  selected.value = items.value.map((m) => m.id)
 }
 
 /** 反选当前页 */
 function invertSelect() {
-  const itemIds = new Set(items.value.map((m) => m.id))
-  const others = items.value.filter((m) => !selected.value.some((s) => s.id === m.id))
-  // 保留其他页已选中的, 当前页未选中的加入, 当前页已选中的移除
-  selected.value = [...selected.value.filter((m) => !itemIds.has(m.id)), ...others]
+  const pageIds = items.value.map((m) => m.id)
+  const current = new Set(selected.value)
+  // 保留其他页已选中的; 当前页做取反
+  const kept = selected.value.filter((id) => !pageIds.includes(id))
+  const flipped = pageIds.filter((id) => !current.has(id))
+  selected.value = [...kept, ...flipped]
 }
 
 function copyUrl(media: MediaItem) {
@@ -89,8 +97,8 @@ async function removeSelected() {
     return
   }
   await ElMessageBox.confirm(`确定删除选中的 ${selected.value.length} 个文件吗? 磁盘文件将一并删除。`, '确认', { type: 'warning' })
-  for (const media of selected.value) {
-    await mediaApi.remove(media.id)
+  for (const id of selected.value) {
+    await mediaApi.remove(id)
   }
   ElMessage.success('批量删除完成')
   selected.value = []
@@ -124,7 +132,13 @@ onMounted(load)
 
     <div class="media-grid" v-loading="loading">
       <div v-for="media in items" :key="media.id" class="card media-item">
-        <el-checkbox v-model="selected" :value="media" class="media-check" />
+        <!--
+          选中态存 id(:value 绑 id, 与 el-checkbox 的值类型一致)。
+          这里对 v-model 做一次断言: Element Plus 运行时的 isChecked 明确支持
+          "modelValue 是数组" 的用法(见 use-checkbox-status.mjs), 但发布的 .d.ts 把
+          modelValue 收窄成了标量, 因此类型上必须放行 —— 断言只影响这一处。
+        -->
+        <el-checkbox v-model="(selected as never)" :value="media.id" class="media-check" />
         <div class="media-preview">
           <img v-if="media.type === 'image'" :src="media.url" :alt="media.original_name" />
           <video v-else-if="media.type === 'video'" :src="media.url" controls />

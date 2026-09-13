@@ -82,9 +82,13 @@ function color(count: number): string {
         size="small"
         style="width: 130px"
         placeholder="筛选年份"
-        @update:model-value="emit('update:year', ($event as number) || null)"
-      >
-        <el-option label="近一年" :value="null" />
+        @update:model-value="emit('update:year', ($event as number) || null)"      >
+        <!--
+          "近一年"用 0 作为哨兵值: el-option 的 value 类型是
+          string | number | boolean | object, 传 null 或 undefined 都会被类型拒绝。
+          年份本身不会是 0, 所以在 update 时把 0 转回 null(表示不筛选)。
+        -->
+        <el-option label="近一年" :value="0" />
         <el-option v-for="y in years" :key="y" :label="`${y} 年`" :value="y" />
       </el-select>
     </div>

@@ -1,4 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
+import { getAccessToken } from '@/utils/tokenStorage'
 
 // 记录离开页面时的滚动位置, 返回时恢复
 const savedScrollPositions = new Map<string, number>()
@@ -63,8 +64,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
-  const token = localStorage.getItem('blog_access_token')
-  if (to.meta.requiresAuth && !token) {
+  if (to.meta.requiresAuth && !getAccessToken()) {
     return { name: 'admin-login', query: { redirect: to.fullPath } }
   }
   return true

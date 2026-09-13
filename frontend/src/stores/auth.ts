@@ -1,54 +1,45 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import type { User } from '@/types'
-import { clearDocTokenCookie, setDocTokenCookie } from '@/utils/docToken'
+import {
+  clearSession,
+  getAccessToken,
+  getRefreshToken,
+  readStoredUser,
+  saveStoredUser,
+  saveTokens,
+} from '@/utils/tokenStorage'
 
-const ACCESS_KEY = 'blog_access_token'
-const REFRESH_KEY = 'blog_refresh_token'
-const USER_KEY = 'blog_user'
-
-/** 登录状态: 令牌与用户信息, 与 localStorage 同步 */
+/**
+ * 登录状态: 令牌与用户信息, 与 localStorage 同步(key 与读写见 utils/tokenStorage)。
+ *
+ * accessToken / refreshToken 是 computed 而不是 ref: 静默刷新会直接改写 localStorage,
+ * 只有从存储读取才能保证 UI 看到的是最新令牌(见 tokenStorage 的 tokenRevision)。
+ */
 export const useAuthStore = defineStore('auth', () => {
-  const accessToken = ref(localStorage.getItem(ACCESS_KEY) || '')
-  const refreshToken = ref(localStorage.getItem(REFRESH_KEY) || '')
-  const user = ref<User | null>(readUser())
+  const accessToken = computed(() => getAccessToken())
+  const refreshToken = computed(() => getRefreshToken())
+  const user = ref<User | null>(readStoredUser())
 
   // 会话恢复: 用本地已有的 access token 同步 API 文档鉴权 cookie
   if (accessToken.value) {
-    setDocTokenCookie(accessToken.value)
-  }
-
-  function readUser(): User | null {
-    try {
-      return JSON.parse(localStorage.getItem(USER_KEY) || 'null')
-    } catch {
-      return null
-    }
+    saveTokens(accessToken.value, refreshToken.value)
   }
 
   function setSession(access: string, refresh: string, userData: User) {
-    accessToken.value = access
-    refreshToken.value = refresh
     user.value = userData
-    localStorage.setItem(ACCESS_KEY, access)
-    localStorage.setItem(REFRESH_KEY, refresh)
-    localStorage.setItem(USER_KEY, JSON.stringify(userData))
-    setDocTokenCookie(access)
+    saveTokens(access, refresh)
+    saveStoredUser(userData)
   }
 
   function setUser(userData: User) {
     user.value = userData
-    localStorage.setItem(USER_KEY, JSON.stringify(userData))
+    saveStoredUser(userData)
   }
 
   function logout() {
-    accessToken.value = ''
-    refreshToken.value = ''
     user.value = null
-    localStorage.removeItem(ACCESS_KEY)
-    localStorage.removeItem(REFRESH_KEY)
-    localStorage.removeItem(USER_KEY)
-    clearDocTokenCookie()
+    clearSession()
     if (location.hash.includes('/admin')) {
       location.hash = '#/admin/login'
     }
@@ -59,7 +50,7 @@ export const useAuthStore = defineStore('auth', () => {
     const data = await authApi.me()
     setUser(data as User)
     if (accessToken.value) {
-      setDocTokenCookie(accessToken.value)
+      saveTokens(accessToken.value, refreshToken.value)
     }
     return data as User
   }

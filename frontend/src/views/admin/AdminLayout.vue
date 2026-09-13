@@ -5,14 +5,14 @@ import { ElMessageBox } from 'element-plus'
 import {
   Avatar,
   ChatDotRound,
+  Collection,
   DataAnalysis,
   Document,
-  Folder,
   HomeFilled,
   Notebook,
-  Operation,
   Picture,
   Setting,
+  Tickets,
   User,
 } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
@@ -73,7 +73,7 @@ onMounted(() => {
           <el-icon><Document /></el-icon><span>文章管理</span>
         </el-menu-item>
         <el-menu-item index="/admin/categories">
-          <el-icon><Folder /></el-icon><span>分类标签</span>
+          <el-icon><Collection /></el-icon><span>分类标签</span>
         </el-menu-item>
         <el-menu-item index="/admin/comments">
           <el-icon><ChatDotRound /></el-icon><span>评论管理</span>
@@ -88,7 +88,7 @@ onMounted(() => {
           <el-icon><Setting /></el-icon><span>系统设置</span>
         </el-menu-item>
         <el-menu-item v-if="isAdmin" index="/admin/logs">
-          <el-icon><Operation /></el-icon><span>操作日志</span>
+          <el-icon><Tickets /></el-icon><span>操作日志</span>
         </el-menu-item>
         <el-menu-item index="/admin/profile">
           <el-icon><Avatar /></el-icon><span>个人资料</span>
@@ -138,13 +138,14 @@ onMounted(() => {
   border-right: 1px solid var(--border);
   overflow-y: auto;
 }
+/* 品牌区其余样式(主题色方块、字重、间距)在全局 admin.css 里, 便于与前台统一 */
 .admin-brand {
   height: 60px;
   display: flex;
   align-items: center;
-  padding: 0 20px;
+  padding: 0 18px;
   font-weight: 700;
-  font-size: 18px;
+  font-size: 17px;
   font-family: var(--font-mono);
   border-bottom: 1px solid var(--border);
   color: var(--text);
@@ -153,19 +154,28 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--card-bg);
   border-bottom: 1px solid var(--border);
 }
 .header-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 .user-chip {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  padding: 4px 10px 4px 4px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
   cursor: pointer;
+  font-size: 13px;
+  color: var(--muted);
+  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.user-chip:hover {
+  border-color: var(--primary);
+  color: var(--text);
 }
 .docs-btn {
   display: inline-flex;

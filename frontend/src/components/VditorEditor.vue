@@ -3,6 +3,7 @@ import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import Vditor from 'vditor'
 import { ElMessage } from 'element-plus'
 import { useThemeStore } from '@/stores/theme'
+import { getAccessToken } from '@/utils/tokenStorage'
 
 const props = withDefaults(defineProps<{ modelValue: string; height?: number }>(), {
   height: 520,
@@ -66,7 +67,7 @@ onMounted(() => {
       fieldName: 'file',
       max: 100 * 1024 * 1024,
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('blog_access_token') || ''}`,
+        Authorization: `Bearer ${getAccessToken()}`,
       },
       // 注意: Vditor 传给 success 的是 responseText 字符串, 需要自行 JSON.parse
       success: (_editor, responseText) => {

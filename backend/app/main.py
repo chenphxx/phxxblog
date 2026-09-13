@@ -11,7 +11,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.api.v1 import api_router
 from app.api.v1.rss import router as rss_router
 from app.core.config import settings
-from app.core.database import Base, engine, ensure_columns
+from app.core.database import Base, check_schema, engine, ensure_schema_version_table
 from app.core.middleware import restrict_docs_to_admin
 
 # 项目根目录(backend/app/main.py -> 上两级为仓库根目录)
@@ -38,15 +38,17 @@ app.middleware("http")(restrict_docs_to_admin)
 
 @app.on_event("startup")
 def on_startup() -> None:
-    """启动时自动建表(幂等)并补齐新增列, 正式环境可改用 Alembic 迁移。"""
+    """启动时建表(幂等)并校验表结构。
+
+    不再静默"补列": create_all 只建缺失的表, 不会改已有表结构。以前 ensure_columns
+    只认 categories/tags 两列, 以后任何模型加列都不会补、也不报错, 直到某个查询
+    才炸 "Unknown column" —— 排查成本高。现在改为启动即校验:
+      - debug=True 时只告警(本地开发方便)
+      - 否则直接拒绝启动, 并打印出需要执行的 ALTER 语句
+    """
     Base.metadata.create_all(bind=engine)
-    try:
-        ensure_columns()
-    except Exception as exc:  # noqa: BLE001
-        print(
-            f"[warn] 自动补齐数据库列失败: {exc}; "
-            "请手动执行 backend/scripts/migration_20260912.sql"
-        )
+    ensure_schema_version_table()
+    check_schema(strict=not settings.debug)
 
 
 # ---------- 统一异常处理 ----------

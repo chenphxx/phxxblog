@@ -1,0 +1,82 @@
+name: Backend Tests
+
+# 本工作流含两个 job: 后端 pytest(test)与前端校验(theme-check)。
+# 因此路径过滤必须同时包含 backend/** 与 frontend/** —— 只写 backend/** 时,
+# 前端改动不会触发前端校验(这是先前的漏洞: 单独改前端时 CI 全绿但什么都没检查)。
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - '.github/workflows/backend-tests.yml'
+  pull_request:
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      # 测试用内存 SQLite, 不需要 MySQL 服务, 也不会碰到开发库
+      - name: Run tests
+        env:
+          PHXXBLOG_SECRET_KEY: test-secret-key-0123456789abcdefghijklmnop
+        run: python -m pytest tests -q
+
+  theme-check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # 主题令牌是生成物: 改了 tokens.mjs 却忘记重新生成, 这里会失败
+      - name: Verify generated themes are in sync
+        run: npm run themes:audit
+
+      - name: Verify icon paths
+        run: npm run check:icons
+
+      - name: Type check & unit tests
+        run: |
+          npx vue-tsc -b --force
+          npm run test
+
+      # 构建一次, 顺带打印首屏/整包体积(防止悄悄回退到"打开首页要下 1MB")
+      - name: Build & report bundle size
+        run: |
+          npm run build
+          npm run check:size

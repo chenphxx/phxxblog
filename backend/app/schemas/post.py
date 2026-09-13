@@ -109,10 +109,24 @@ PostListItem.model_rebuild()
 
 
 class PostDetail(PostListItem):
-    """文章详情。"""
+    """文章详情(公开可读)。
+
+    刻意不含 ip / location: 这两个字段记录的是**保存文章时作者的 IP 与归属地**
+    (见 posts.py 的 _apply_payload), 而本接口是匿名可访问的。
+    带上它们等于把站长的真实出口 IP 公开出去。
+    需要这两个字段的管理端请用 PostDetailAdmin。
+    """
 
     content_md: str
     content_html: str | None = None
+
+
+class PostDetailAdmin(PostDetail):
+    """管理端文章详情: 在公开字段之外附带作者 IP 与归属地。
+
+    仅用于已鉴权的写入接口(新增/修改)的响应。
+    """
+
     ip: str | None = None
     location: str | None = None
 

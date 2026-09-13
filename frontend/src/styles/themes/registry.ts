@@ -1,6 +1,6 @@
 /**
- * 主题清单 —— 由 design/themes/generate-themes.mjs 生成, 请勿手改。
- * 改主题请改 design/themes/tokens.mjs 后重新生成。
+ * 主题清单 —— 由 src/styles/themes/_source/generate-themes.mjs 生成, 请勿手改。
+ * 改主题请改 _source/tokens.mjs 后运行 npm run themes:generate。
  */
 
 export type ThemeId =

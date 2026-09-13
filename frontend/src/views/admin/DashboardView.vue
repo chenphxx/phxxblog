@@ -5,6 +5,7 @@ import { ArrowDown } from '@element-plus/icons-vue'
 import { statsApi } from '@/api'
 import type { CommentItem, PostItem, TrendPoint, VisitItem } from '@/types'
 import TrendChart from '@/components/TrendChart.vue'
+import MetaIcon, { type IconName } from '@/components/MetaIcon.vue'
 
 const overview = ref<Record<string, number>>({})
 const trend = ref<TrendPoint[]>([])
@@ -25,11 +26,15 @@ const chartType = ref<'line' | 'bar'>('line')
 const dateRange = ref<[string, string] | null>(null)
 const router = useRouter()
 
+/*
+ * 数据卡片: 强调色不再写死十六进制, 而是引用主题令牌。
+ * 这样换主题时后台的强调色会跟着变(旧代码写死 GitHub 蓝/红/绿/黄, 换主题后很突兀)。
+ */
 const cards = [
-  { key: 'posts', label: '文章数', color: '#0969da', to: '/admin/posts' },
-  { key: 'views', label: '总访问量', color: '#cf222e', scroll: 'visits-section' },
-  { key: 'comments', label: '评论数', color: '#1a7f37', to: '/admin/comments' },
-  { key: 'users', label: '用户数', color: '#9a6700', to: '/admin/users' },
+  { key: 'posts', label: '文章数', icon: 'file' as IconName, color: 'var(--primary)', to: '/admin/posts' },
+  { key: 'views', label: '总访问量', icon: 'eye' as IconName, color: 'var(--grad-to)', scroll: 'visits-section' },
+  { key: 'comments', label: '评论数', icon: 'hash' as IconName, color: 'var(--ok)', to: '/admin/comments' },
+  { key: 'users', label: '用户数', icon: 'user' as IconName, color: 'var(--warn)', to: '/admin/users' },
 ]
 
 const QUICK_RANGES = [
@@ -116,10 +121,11 @@ watch(visitsPage, loadVisits)
 
 onMounted(async () => {
   try {
+    // 返回类型由 statsApi.dashboard() 的 DashboardData 保证, 不再需要 as 断言
     const data = await statsApi.dashboard()
-    overview.value = data.overview as Record<string, number>
-    recentPosts.value = data.recent_posts as PostItem[]
-    recentComments.value = data.recent_comments as CommentItem[]
+    overview.value = data.overview
+    recentPosts.value = data.recent_posts
+    recentComments.value = data.recent_comments
     await Promise.all([loadTrend(), loadVisits()])
   } finally {
     loading.value = false
@@ -134,9 +140,16 @@ onMounted(async () => {
     <!-- 数据卡片 -->
     <el-row :gutter="16">
       <el-col v-for="card in cards" :key="card.key" :xs="12" :sm="6">
-        <div class="card stat-card clickable" @click="onCardClick(card)">
-          <div class="stat-label muted">{{ card.label }}</div>
-          <div class="stat-value" :style="{ color: card.color }">{{ overview[card.key] ?? 0 }}</div>
+        <div
+          class="card stat-card clickable"
+          :style="{ '--stat-color': card.color }"
+          @click="onCardClick(card)"
+        >
+          <div class="stat-head">
+            <span class="stat-label muted">{{ card.label }}</span>
+            <span class="stat-icon"><MetaIcon :name="card.icon" size="16" /></span>
+          </div>
+          <div class="stat-value">{{ overview[card.key] ?? 0 }}</div>
         </div>
       </el-col>
     </el-row>
@@ -259,55 +272,77 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.stat-card {
-  margin-bottom: 16px;
-}
-.clickable {
-  cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-.clickable:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow);
-}
-.stat-label {
-  font-size: 13px;
-}
-.stat-value {
-  font-size: 32px;
-  font-weight: 700;
-  margin-top: 4px;
-}
-.trend-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-.trend-controls {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.legend {
-  display: flex;
-  gap: 16px;
-  margin-top: 8px;
-  font-size: 12px;
-}
-.dot {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-  margin-right: 4px;
-}
-.dot-pv {
-  background: #0969da;
-}
-.dot-uv {
-  background: #54aeff;
-}
+  /* 数据卡片: 用主题强调色做淡底图标, 数字用正文色, 不再写死颜色 */
+  .stat-card {
+    margin-bottom: 16px;
+    padding: 14px 16px;
+  }
+  .clickable {
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  }
+  .clickable:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-hover);
+  }
+  .stat-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .stat-label {
+    font-size: 13px;
+  }
+  .stat-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    color: var(--stat-color, var(--primary));
+    background: color-mix(in srgb, var(--stat-color, var(--primary)) 14%, transparent);
+  }
+  .stat-value {
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-top: 8px;
+    color: var(--text);
+  }
+  .trend-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .trend-controls {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .legend {
+    display: flex;
+    gap: 16px;
+    margin-top: 8px;
+    font-size: 12px;
+  }
+  .dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    margin-right: 4px;
+  }
+  /* 与趋势图线条同色, 跟随主题 */
+  .dot-pv {
+    background: var(--primary);
+  }
+  .dot-uv {
+    background: var(--grad-to);
+  }
 </style>

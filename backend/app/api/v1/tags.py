@@ -15,16 +15,23 @@ from app.services.log import write_operation_log
 router = APIRouter(prefix="/tags", tags=["标签"])
 
 
-def _tag_out(db: Session, tag: Tag) -> TagOut:
-    """组装标签输出(含文章数)。"""
-    count = (
-        db.query(func.count(Post.id))
+def _post_counts(db: Session) -> dict[int, int]:
+    """一次 GROUP BY 取回所有标签的已发布文章数, 避免逐个 COUNT(n+1)。"""
+    rows = (
+        db.query(post_tags.c.tag_id, func.count(Post.id))
         .join(post_tags, post_tags.c.post_id == Post.id)
-        .filter(post_tags.c.tag_id == tag.id, Post.status == 2)
-        .scalar()
+        .filter(Post.status == 2)
+        .group_by(post_tags.c.tag_id)
+        .all()
     )
+    return {tag_id: count for tag_id, count in rows}
+
+
+def _tag_out(tag: Tag, counts: dict[int, int]) -> TagOut:
+    """组装标签输出(含文章数)。"""
     return TagOut(
-        id=tag.id, name=tag.name, slug=tag.slug, color=tag.color, post_count=count
+        id=tag.id, name=tag.name, slug=tag.slug, color=tag.color,
+        post_count=counts.get(tag.id, 0),
     )
 
 
@@ -32,7 +39,8 @@ def _tag_out(db: Session, tag: Tag) -> TagOut:
 def list_tags(db: Session = Depends(get_db)):
     """标签列表(公开)。"""
     tags = db.query(Tag).order_by(Tag.id).all()
-    return ok([_tag_out(db, t) for t in tags])
+    counts = _post_counts(db)
+    return ok([_tag_out(t, counts) for t in tags])
 
 
 @router.post("", response_model=dict)
@@ -52,7 +60,7 @@ def create_tag(
         db, request=request, user=_, module="tag", action="create",
         target_type="tag", target_id=tag.id, detail={"name": tag.name},
     )
-    return ok(_tag_out(db, tag), "创建成功")
+    return ok(_tag_out(tag, _post_counts(db)), "创建成功")
 
 
 @router.put("/{tag_id}", response_model=dict)
@@ -74,7 +82,7 @@ def update_tag(
         db, request=request, user=_, module="tag", action="update",
         target_type="tag", target_id=tag_id,
     )
-    return ok(_tag_out(db, tag), "保存成功")
+    return ok(_tag_out(tag, _post_counts(db)), "保存成功")
 
 
 @router.delete("/{tag_id}", response_model=dict)

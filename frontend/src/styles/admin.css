@@ -1,0 +1,193 @@
+/* ============================================================
+ * 管理后台主题层
+ * ------------------------------------------------------------
+ * 后台原本大量依赖 Element Plus 的默认蓝色(--el-color-primary),
+ * 与前台的主题令牌是两套体系, 换主题时后台跟不上。
+ * 这个文件做两件事:
+ *   1. 把 Element Plus 的主色令牌指向主题令牌, 全后台自动跟随
+ *   2. 统一后台外壳(侧边栏/顶栏/菜单/卡片)的观感, 与前台一致
+ *
+ * 依赖顺序: 必须在主题令牌(theme-default.css / theme-*.css)之后加载,
+ * 见 styles/theme-green.css 的 @import 顺序。
+ * ============================================================ */
+
+/* ---------- 1. Element Plus 主色跟随主题 ---------- */
+:root {
+  --el-color-primary: var(--primary);
+  --el-color-primary-light-3: color-mix(in srgb, var(--primary) 70%, var(--card-bg));
+  --el-color-primary-light-5: color-mix(in srgb, var(--primary) 50%, var(--card-bg));
+  --el-color-primary-light-7: color-mix(in srgb, var(--primary) 30%, var(--card-bg));
+  --el-color-primary-light-8: color-mix(in srgb, var(--primary) 20%, var(--card-bg));
+  --el-color-primary-light-9: color-mix(in srgb, var(--primary) 10%, var(--card-bg));
+  --el-color-primary-dark-2: var(--primary-strong);
+
+  --el-border-radius-base: var(--radius-sm);
+  --el-border-radius-small: calc(var(--radius-sm) - 2px);
+  --el-border-radius-round: 999px;
+
+  --el-bg-color: var(--card-bg);
+  --el-bg-color-overlay: var(--card-bg);
+  --el-bg-color-page: var(--bg);
+  --el-text-color-primary: var(--text);
+  --el-text-color-regular: color-mix(in srgb, var(--text) 80%, var(--muted));
+  --el-text-color-secondary: var(--muted);
+  --el-text-color-placeholder: var(--muted);
+  --el-border-color: var(--border-strong);
+  --el-border-color-light: var(--border);
+  --el-border-color-lighter: var(--border);
+  --el-fill-color: var(--code-bg);
+  --el-fill-color-light: color-mix(in srgb, var(--code-bg) 60%, var(--card-bg));
+  --el-fill-color-lighter: color-mix(in srgb, var(--code-bg) 30%, var(--card-bg));
+  --el-fill-color-blank: var(--card-bg);
+  --el-mask-color: color-mix(in srgb, var(--text) 45%, transparent);
+}
+
+/* ---------- 2. 后台外壳 ---------- */
+
+/* 侧边栏顶部的品牌区: 与前台站名一致的等宽排版 + 主题色圆点 */
+.admin-brand {
+  gap: 10px;
+  letter-spacing: -0.01em;
+}
+
+.admin-brand::before {
+  content: '';
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(140deg, var(--grad-from), var(--grad-to));
+}
+
+/* 侧边栏菜单: 选中态用主题色淡底 + 主题色文字, 悬停用代码底色 */
+.admin-aside .el-menu {
+  border-right: 0;
+  padding: 8px;
+}
+
+.admin-aside .el-menu-item {
+  height: 42px;
+  line-height: 42px;
+  margin-bottom: 2px;
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.admin-aside .el-menu-item:hover {
+  background: var(--code-bg);
+  color: var(--text);
+}
+
+.admin-aside .el-menu-item.is-active {
+  background: var(--primary-weak);
+  color: var(--link);
+  font-weight: 600;
+}
+
+.admin-aside .el-menu-item.is-active .el-icon {
+  color: var(--primary);
+}
+
+/* 顶栏: 与前台 sticky header 同样的毛玻璃与细分割线 */
+.admin-header {
+  height: 60px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: color-mix(in srgb, var(--card-bg) 86%, transparent);
+}
+
+/* 主内容区留白与标题节奏, 与前台 .page-container 对齐 */
+.admin-main {
+  padding: 20px 24px 32px;
+}
+
+.admin-main > div > h2:first-child,
+.admin-main > h2:first-child {
+  margin: 0 0 16px;
+  font-size: 20px;
+  letter-spacing: -0.01em;
+}
+
+/* ---------- 3. 后台卡片与表格 ---------- */
+
+/* 后台的表单/表格密集, 半径收小一档, 避免过于圆润 */
+.admin-main .card {
+  border-radius: var(--radius-sm);
+}
+
+.admin-main .el-table {
+  --el-table-border-color: var(--border);
+  --el-table-header-bg-color: var(--code-bg);
+  --el-table-header-text-color: var(--muted);
+  --el-table-row-hover-bg-color: var(--primary-weak);
+  --el-table-bg-color: var(--card-bg);
+  --el-table-tr-bg-color: var(--card-bg);
+  font-size: 13.5px;
+}
+
+.admin-main .el-table th.el-table__cell {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.admin-main .el-table td.el-table__cell,
+.admin-main .el-table th.el-table__cell {
+  padding: 9px 0;
+}
+
+/* 表格外的操作按钮间距 */
+.admin-main .el-table .el-button + .el-button {
+  margin-left: 4px;
+}
+
+/* 后台页签 */
+.admin-main .el-tabs__item.is-active {
+  color: var(--link);
+}
+
+.admin-main .el-tabs__active-bar {
+  background-color: var(--primary);
+}
+
+/* 描述列表 / 空状态等统一到次要文字色 */
+.admin-main .el-descriptions__label {
+  color: var(--muted);
+}
+
+/* 顶栏左侧的「返回前台」入口 */
+.back-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--muted);
+  text-decoration: none;
+  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.back-home:hover {
+  border-color: var(--primary);
+  color: var(--link);
+}
+
+/* ---------- 4. 后台登录页 ---------- */.login-page {
+  background:
+    radial-gradient(760px 420px at 12% -8%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 62%),
+    radial-gradient(620px 380px at 92% 6%, color-mix(in srgb, var(--grad-to) 12%, transparent), transparent 58%),
+    var(--bg);
+}
+
+.login-card {
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-hover);
+}
+
+.login-header h2 {
+  font-size: 19px;
+  letter-spacing: -0.01em;
+}

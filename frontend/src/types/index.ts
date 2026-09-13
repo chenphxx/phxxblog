@@ -78,6 +78,13 @@ export interface PostItem {
 export interface PostDetail extends PostItem {
   content_md: string
   content_html?: string | null
+}
+
+/**
+ * 后台可见的文章详情(创建/更新接口返回)。
+ * 公开详情接口不再返回 ip / location —— 那是作者本人才可见的信息, 不应随文章公开。
+ */
+export interface PostDetailAdmin extends PostDetail {
   ip?: string | null
   location?: string | null
 }
@@ -208,6 +215,26 @@ export interface TrendPoint {
   pv: number
   uv: number
   post_views: number
+}
+
+/**
+ * 后台仪表盘聚合数据(GET /dashboard)。
+ *
+ * 注意 trend 字段: 后端返回的是 `{date, pv, uv}`(见 api/v1/dashboard.py),
+ * 与 /stats/trend 的 TrendPoint 字段名不同, 所以这里单独定义, 不能复用 TrendPoint。
+ * 以前 DashboardView 用 `as` 断言绕过类型, 字段改名不会报错, 只会运行时出问题。
+ */
+export interface DashboardTrendPoint {
+  date: string
+  pv: number
+  uv: number
+}
+
+export interface DashboardData {
+  overview: Record<string, number>
+  trend: DashboardTrendPoint[]
+  recent_posts: PostItem[]
+  recent_comments: CommentItem[]
 }
 
 /** 导入查重结果(mode=check) */

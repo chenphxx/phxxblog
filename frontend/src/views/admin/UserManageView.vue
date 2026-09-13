@@ -147,10 +147,11 @@ onMounted(load)
         </el-table-column>
         <el-table-column label="操作" width="250">
           <template #default="{ row }">
+            <!-- el-table 插槽的 row 是 DefaultRow, 显式断言成实际行类型 -->
             <div class="op-row">
-              <el-button size="small" @click="openDialog(row)">编辑</el-button>
-              <el-button size="small" type="warning" @click="openReset(row)">重置密码</el-button>
-              <el-button size="small" type="danger" @click="remove(row)">删除</el-button>
+              <el-button size="small" @click="openDialog(row as User)">编辑</el-button>
+              <el-button size="small" type="warning" @click="openReset(row as User)">重置密码</el-button>
+              <el-button size="small" type="danger" @click="remove(row as User)">删除</el-button>
             </div>
           </template>
         </el-table-column>

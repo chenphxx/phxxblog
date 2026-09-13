@@ -19,6 +19,33 @@ const pageSize = 10
 const loading = ref(false)
 const dateRange = ref<[string, string] | null>(null)
 
+/**
+ * 从 URL 查询参数回填筛选条件并重新检索。
+ *
+ * 为什么必须有这个 watch:
+ *   本组件被 SiteLayout 的 <keep-alive include="...SearchView"> 缓存, 因此
+ *   在搜索页内点击另一个分类/标签链接时,**组件实例不会重新创建**, setup 与
+ *   onMounted 都不会再跑。以前只在 setup 里读一次 route.query, 结果就是
+ *   URL 变了、列表还是上一个分类的内容。
+ */
+function syncFromQuery() {
+  const q = route.query
+  keyword.value = (q.q as string) || ''
+  categoryId.value = q.category ? Number(q.category) : null
+  tagId.value = q.tag ? Number(q.tag) : null
+  page.value = 1
+}
+
+watch(
+  () => route.fullPath,
+  () => {
+    // 仅在本路由内处理; 离开该页时不必发请求
+    if (route.name !== 'search') return
+    syncFromQuery()
+    search()
+  }
+)
+
 async function search() {
   loading.value = true
   const start_date = dateRange.value?.[0] || undefined

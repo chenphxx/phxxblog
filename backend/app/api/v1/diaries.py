@@ -8,7 +8,9 @@ from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, Res
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.deps import get_current_user
+from app.core.deps import require_permission
+from app.core.permissions import Perm
+from app.core.pagination import paginate
 from app.core.response import ok
 from app.models.diary import DiaryEntry
 from app.models.user import User
@@ -30,11 +32,6 @@ router = APIRouter(prefix="/diaries", tags=["日记"])
 # 文件名中的日期前缀(导出后可直接再导入)
 _DATE_PREFIX_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})")
 
-
-def _require_admin(user: User) -> None:
-    """仅管理员可访问日记功能。"""
-    if "admin" not in user.role_codes:
-        raise HTTPException(status_code=403, detail="仅管理员可访问")
 
 
 def _diary_to_markdown(entry: DiaryEntry) -> str:
@@ -131,36 +128,24 @@ def _diary_import_label(plan: dict) -> str:
 def list_diaries(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_permission(Perm.DIARY_MANAGE)),
     db: Session = Depends(get_db),
 ):
     """日记列表(按日期倒序)。"""
-    _require_admin(user)
-    query = db.query(DiaryEntry)
-    total = query.count()
-    items = (
-        query.order_by(DiaryEntry.entry_date.desc(), DiaryEntry.created_at.desc())
-        .offset((page - 1) * page_size)
-        .limit(page_size)
-        .all()
+    query = db.query(DiaryEntry).order_by(
+        DiaryEntry.entry_date.desc(), DiaryEntry.created_at.desc()
     )
-    return ok({
-        "items": [DiaryOut.model_validate(item) for item in items],
-        "total": total,
-        "page": page,
-        "page_size": page_size,
-    })
+    return ok(paginate(query, page, page_size, DiaryOut))
 
 
 @router.get("/export", response_model=None)
 def export_diaries(
     ids: str | None = Query(None, description="逗号分隔的日记ID, 不传则导出全部"),
     fmt: str = Query("markdown", pattern="^(markdown|html)$", description="导出格式: markdown / html"),
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_permission(Perm.DIARY_MANAGE)),
     db: Session = Depends(get_db),
 ):
     """导出日记压缩包(markdown/html, 正文引用的图片一并打包; 仅管理员)。"""
-    _require_admin(user)
     query = db.query(DiaryEntry)
     if ids:
         id_list = [int(i) for i in ids.split(",") if i.strip().isdigit()]
@@ -203,11 +188,10 @@ def import_diaries(
     files: list[UploadFile] = File(...),
     mode: str = Query("import", pattern="^(check|import)$", description="check=只查重不写入, import=执行导入"),
     on_duplicate: str = Query("skip", pattern="^(skip|all)$", description="重复时: skip=仅导入不重复, all=一并导入"),
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_permission(Perm.DIARY_MANAGE)),
     db: Session = Depends(get_db),
 ):
     """导入日记: 支持 .md 文件或包含 .md 的 zip 压缩包; mode=check 只返回查重结果。"""
-    _require_admin(user)
     errors: list[str] = []
     # 每个上传文件拆成 (压缩包内的原始条目, 其中的 md 文件), 便于后续按包共用图片落盘结果
     groups: list[tuple[list[tuple[str, bytes]], list[tuple[str, str]]]] = []
@@ -282,11 +266,10 @@ def import_diaries(
 def create_diary(
     data: DiaryIn,
     request: Request,
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_permission(Perm.DIARY_MANAGE)),
     db: Session = Depends(get_db),
 ):
     """新增日记。"""
-    _require_admin(user)
     entry = DiaryEntry(
         user_id=user.id,
         content_md=data.content_md,
@@ -307,11 +290,10 @@ def update_diary(
     diary_id: int,
     data: DiaryIn,
     request: Request,
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_permission(Perm.DIARY_MANAGE)),
     db: Session = Depends(get_db),
 ):
     """编辑日记。"""
-    _require_admin(user)
     entry = db.get(DiaryEntry, diary_id)
     if entry is None:
         raise HTTPException(status_code=404, detail="日记不存在")
@@ -331,11 +313,10 @@ def update_diary(
 def delete_diary(
     diary_id: int,
     request: Request,
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_permission(Perm.DIARY_MANAGE)),
     db: Session = Depends(get_db),
 ):
     """删除日记。"""
-    _require_admin(user)
     entry = db.get(DiaryEntry, diary_id)
     if entry is None:
         raise HTTPException(status_code=404, detail="日记不存在")

@@ -10,8 +10,8 @@
  * 全部引入的代价很小: 令牌都是普通 CSS 变量, 12 套 gzip 后约 17 KB。
  * 如果只想固定用一套, 注释掉其它 @import, 再删掉 ThemeSwitcher 即可。
  *
- * 主题的配色请改 design/themes/tokens.mjs, 然后运行:
- *   node design/themes/generate-themes.mjs
+ * 主题的配色请改 src/styles/themes/_source/tokens.mjs, 然后运行:
+ *   npm run themes:generate
  * ============================================================ */
 
 /* 原有结构样式(卡片、正文、终端、时间轴、代码块等) */
@@ -33,3 +33,8 @@
 @import './themes/theme-sage.css'; /* 鼠尾草灰绿 中性灰绿, 最耐看 */
 @import './themes/theme-aurora.css'; /* 极光青绿  青绿到紫的极光 */
 @import './themes/theme-ink.css'; /* 青墨      近黑墨底 + 一点青 */
+
+/* ---------- 管理后台主题层 ----------
+ * 必须放在所有主题之后: 它把 Element Plus 的 --el-color-primary 指向主题令牌,
+ * 并统一后台外壳观感, 让后台跟随同一套主题。 */
+@import './admin.css';

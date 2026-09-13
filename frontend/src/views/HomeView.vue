@@ -157,10 +157,29 @@ async function loadHistory() {
 
 watch(contributionYear, loadContributions)
 
-// keep-alive 缓存下, 从后台修改设置返回后刷新首页信息(头像/简介/链接等)
+// keep-alive 缓存下, 从后台修改设置/发布文章后返回首页要刷新。
+// 注意: 以前这里只重取 settings, 文章列表/totalPosts/latestPost 仍是旧数据 ——
+// 而终端卡片里的 `ls posts | wc -l` 与"最新一篇"恰恰是首页最显眼的模块。
+let firstActivate = true
 onActivated(async () => {
+  // onMounted 会先跑一次, 首次激活不必重复请求
+  if (firstActivate) {
+    firstActivate = false
+    return
+  }
   try {
-    settings.value = await settingsApi.public()
+    const [settingData, categoryData] = await Promise.all([
+      settingsApi.public(),
+      categoryApi.list(),
+    ])
+    settings.value = settingData
+    categories.value = categoryData
+    // 回到第 1 页, 保证能看到最新文章
+    if (page.value !== 1) {
+      page.value = 1 // watch(page) 会触发 loadPosts
+    } else {
+      await loadPosts()
+    }
   } catch {
     // 忽略刷新失败
   }
@@ -189,7 +208,19 @@ onMounted(async () => {
       <!-- 左侧: 个人资料 + 常用网站 -->
       <div class="home-left">
         <aside class="profile-card card">
-          <el-avatar :size="96" :src="settings?.site_avatar || undefined" class="profile-avatar clickable-avatar" @click="openAvatar">
+          <!-- 头像可点击查看大图: el-avatar 渲染成 span, 不加 role/tabindex 的话
+               键盘用户无法触发, 屏幕阅读器也不知道它是个按钮 -->
+          <el-avatar
+            :size="96"
+            :src="settings?.site_avatar || undefined"
+            class="profile-avatar clickable-avatar"
+            role="button"
+            tabindex="0"
+            aria-label="查看或更换头像"
+            @click="openAvatar"
+            @keydown.enter.prevent="openAvatar"
+            @keydown.space.prevent="openAvatar"
+          >
             {{ (settings?.site_name || 'B')[0] }}
           </el-avatar>
           <h1 class="profile-name">{{ settings?.site_name || 'chenphxx' }}</h1>
@@ -406,6 +437,12 @@ onMounted(async () => {
 }
 .clickable-avatar {
   cursor: pointer;
+}
+/* 键盘用户也需要看到焦点位置(头像已加 tabindex="0") */
+.clickable-avatar:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+  border-radius: 50%;
 }
 .profile-name {
   margin: 0 0 6px;

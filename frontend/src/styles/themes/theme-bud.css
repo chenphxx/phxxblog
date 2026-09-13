@@ -2,9 +2,9 @@
  * 主题: 春芽黄绿 (Lime Bud)
  * 明亮嫩芽黄绿，年轻、有冲劲，适合想要一点活泼感的博客。
  * ------------------------------------------------------------
- * 本文件由 design/themes/generate-themes.mjs 生成, 请勿手改。
- * 改配色/圆角请改 design/themes/tokens.mjs, 然后重新运行:
- *   node design/themes/generate-themes.mjs
+ * 本文件由 src/styles/themes/_source/generate-themes.mjs 生成, 请勿手改。
+ * 改配色/圆角请改 _source/tokens.mjs, 然后重新运行:
+ *   npm run themes:generate
  *
  * 切换方式: html[data-theme='bud'] (见 stores/theme.ts), 深色再加 .dark
  * ============================================================ */
@@ -170,7 +170,7 @@ html[data-theme='bud'].dark {
 /* ============================================================
  * 增强层: 硬朗位移族 (hard)
  * 方正小圆角、偏移硬阴影、位移式反馈。悬停是「按住往右上顶一格」。
- * 占位符由 design/themes/generate-themes.mjs 替换。
+ * 占位符由 _source/generate-themes.mjs 替换。
  * ============================================================ */
 
 /* ---------- 链接/强调文字统一走 --link, 保证对比度 ---------- */

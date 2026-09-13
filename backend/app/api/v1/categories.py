@@ -15,17 +15,24 @@ from app.services.log import write_operation_log
 router = APIRouter(prefix="/categories", tags=["分类"])
 
 
-def _category_out(db: Session, category: Category) -> CategoryOut:
-    """组装分类输出(含文章数)。"""
-    count = (
-        db.query(func.count(Post.id))
-        .filter(Post.category_id == category.id, Post.status == 2)
-        .scalar()
+def _post_counts(db: Session) -> dict[int, int]:
+    """一次 GROUP BY 取回所有分类的已发布文章数, 避免逐个 COUNT(n+1)。"""
+    rows = (
+        db.query(Post.category_id, func.count(Post.id))
+        .filter(Post.status == 2, Post.category_id.isnot(None))
+        .group_by(Post.category_id)
+        .all()
     )
+    return {category_id: count for category_id, count in rows}
+
+
+def _category_out(category: Category, counts: dict[int, int]) -> CategoryOut:
+    """组装分类输出(含文章数)。"""
     return CategoryOut(
         id=category.id, name=category.name, slug=category.slug,
         parent_id=category.parent_id, description=category.description,
-        color=category.color, sort_order=category.sort_order, post_count=count,
+        color=category.color, sort_order=category.sort_order,
+        post_count=counts.get(category.id, 0),
     )
 
 
@@ -33,14 +40,15 @@ def _category_out(db: Session, category: Category) -> CategoryOut:
 def list_categories(db: Session = Depends(get_db)):
     """分类列表(公开)。"""
     categories = db.query(Category).order_by(Category.sort_order, Category.id).all()
-    return ok([_category_out(db, c) for c in categories])
+    counts = _post_counts(db)
+    return ok([_category_out(c, counts) for c in categories])
 
 
 @router.post("", response_model=dict)
 def create_category(
     data: CategoryIn,
     request: Request,
-    _: User = Depends(get_current_user),
+    _: User = Depends(require_permission(Perm.POST_MANAGE)),
     db: Session = Depends(get_db),
 ):
     """新增分类。"""
@@ -53,7 +61,7 @@ def create_category(
         db, request=request, user=_, module="category", action="create",
         target_type="category", target_id=category.id, detail={"name": category.name},
     )
-    return ok(_category_out(db, category), "创建成功")
+    return ok(_category_out(category, _post_counts(db)), "创建成功")
 
 
 @router.put("/{category_id}", response_model=dict)
@@ -75,7 +83,7 @@ def update_category(
         db, request=request, user=_, module="category", action="update",
         target_type="category", target_id=category_id,
     )
-    return ok(_category_out(db, category), "保存成功")
+    return ok(_category_out(category, _post_counts(db)), "保存成功")
 
 
 @router.delete("/{category_id}", response_model=dict)

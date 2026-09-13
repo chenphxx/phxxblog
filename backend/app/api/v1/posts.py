@@ -27,6 +27,7 @@ from app.schemas.post import (
     LikeResult,
     PostCreate,
     PostDetail,
+    PostDetailAdmin,
     PostListItem,
     PostStatusIn,
     PostUpdate,
@@ -47,13 +48,15 @@ from app.services.log import write_operation_log
 from app.services.markdown import render_markdown
 from app.services.geo import resolve_location
 from app.services.stats import record_visit
+from app.services.post_write import (
+    STATUS_NAMES,
+    STATUS_PUBLISHED,
+    can_manage as _can_manage,
+    require_status_transition,
+    resolve_submitted_status,
+)
 
 router = APIRouter(prefix="/posts", tags=["文章"])
-
-
-def _can_manage(user: User, post: Post) -> bool:
-    """作者本人或拥有 post:manage 权限可管理该文章。"""
-    return user.id == post.author_id or Perm.POST_MANAGE in user.permission_codes
 
 
 def _auto_slug(data_slug: str, title: str) -> str:
@@ -70,13 +73,11 @@ def _apply_payload(
     user: User,
     request: Request,
 ) -> None:
-    """将请求字段应用到文章(含状态规则、标签、HTML 渲染)。"""
-    target_status = data.status
-    # 非管理员不能直接发布/置私密, 降级为审核中
-    if target_status in (2, 3) and Perm.POST_PUBLISH not in user.permission_codes:
-        target_status = 1
-    if target_status == 4 and Perm.POST_MANAGE not in user.permission_codes:
-        target_status = 1
+    """将请求字段应用到文章(含状态规则、标签、HTML 渲染)。
+
+    状态规则统一走 services/post_write.resolve_submitted_status, 不再就地判断权限码。
+    """
+    target_status = resolve_submitted_status(data.status, user)
 
     post.title = data.title
     post.slug = _auto_slug(data.slug, data.title)
@@ -89,7 +90,7 @@ def _apply_payload(
     post.ip = get_client_ip(request)
     post.location = resolve_location(post.ip)
 
-    if target_status == 2 and post.published_at is None:
+    if target_status == STATUS_PUBLISHED and post.published_at is None:
         post.published_at = datetime.now()
 
     # 标签
@@ -271,12 +272,16 @@ def _import_markdown(
         raw_status = int(str(meta.get("status") or "0"))
     except (TypeError, ValueError):
         raw_status = 0
-    if raw_status == 2 and Perm.POST_PUBLISH in user.permission_codes:
-        status = 2
-    elif raw_status == 3 and Perm.POST_MANAGE in user.permission_codes:
-        status = 3
-    elif raw_status in (0, 1):
+    # 与新增/修改共用同一条状态规则(见 services/post_write), 差别只在
+    # 越权时的降级目标: 批量导入落"草稿"而不是"审核中"(不宜把导入内容塞进审核队列)。
+    resolved = resolve_submitted_status(raw_status, user)
+    if raw_status in (0, 1):
+        # 草稿/审核中不需要任何权限, 原样保留
         status = raw_status
+    elif resolved != raw_status:
+        status = 0
+    else:
+        status = resolved
 
     category = None
     category_name = str(meta.get("category") or "").strip()
@@ -391,13 +396,10 @@ def import_posts(
     files: list[UploadFile] = File(...),
     mode: str = Query("import", pattern="^(check|import)$", description="check=只查重不写入, import=执行导入"),
     on_duplicate: str = Query("skip", pattern="^(skip|all)$", description="重复时: skip=仅导入不重复, all=一并导入"),
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_permission(Perm.POST_CREATE)),
     db: Session = Depends(get_db),
 ):
     """导入文章: 支持 .md 文件或包含 .md 的 zip 压缩包; mode=check 只返回查重结果。"""
-    if Perm.POST_CREATE not in user.permission_codes:
-        raise HTTPException(status_code=403, detail="缺少权限: post:create")
-
     errors: list[str] = []
     # 每个上传文件拆成 (压缩包内的原始条目, 其中的 md 文件), 便于后续按包共用图片落盘结果
     groups: list[tuple[list[tuple[str, bytes]], list[tuple[str, str]]]] = []
@@ -500,12 +502,10 @@ def get_post(
 def create_post(
     data: PostCreate,
     request: Request,
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_permission(Perm.POST_CREATE)),
     db: Session = Depends(get_db),
 ):
     """新增文章(默认草稿, 可提交审核)。"""
-    if Perm.POST_CREATE not in user.permission_codes:
-        raise HTTPException(status_code=403, detail="缺少权限: post:create")
     post = Post(author_id=user.id)
     _apply_payload(db, post, data, user, request)
     db.add(post)
@@ -514,20 +514,17 @@ def create_post(
         db, request=request, user=user, module="post", action="create",
         target_type="post", target_id=post.id, detail={"title": post.title},
     )
-    return ok(PostDetail.model_validate(post), "已保存")
-
+    return ok(PostDetailAdmin.model_validate(post), "已保存")
 
 @router.put("/{post_id}", response_model=dict)
 def update_post(
     post_id: int,
     data: PostUpdate,
     request: Request,
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_permission(Perm.POST_EDIT)),
     db: Session = Depends(get_db),
 ):
     """编辑文章。"""
-    if Perm.POST_EDIT not in user.permission_codes:
-        raise HTTPException(status_code=403, detail="缺少权限: post:edit")
     post = db.get(Post, post_id)
     if post is None:
         raise HTTPException(status_code=404, detail="文章不存在")
@@ -539,19 +536,17 @@ def update_post(
         db, request=request, user=user, module="post", action="update",
         target_type="post", target_id=post.id, detail={"title": post.title},
     )
-    return ok(PostDetail.model_validate(post), "保存成功")
+    return ok(PostDetailAdmin.model_validate(post), "保存成功")
 
 
 @router.delete("/{post_id}", response_model=dict)
 def trash_post(
     post_id: int,
     request: Request,
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_permission(Perm.POST_DELETE)),
     db: Session = Depends(get_db),
 ):
     """删除文章(移入回收站)。"""
-    if Perm.POST_DELETE not in user.permission_codes:
-        raise HTTPException(status_code=403, detail="缺少权限: post:delete")
     post = db.get(Post, post_id)
     if post is None:
         raise HTTPException(status_code=404, detail="文章不存在")
@@ -625,20 +620,17 @@ def change_post_status(
         raise HTTPException(status_code=403, detail="只能操作自己的文章")
 
     target = data.status
-    if target == 2:
-        if Perm.POST_PUBLISH not in user.permission_codes:
-            raise HTTPException(status_code=403, detail="缺少权限: post:publish")
+    # 规则与新增/修改共用(见 services/post_write); 这里越权**报错**而不是降级
+    require_status_transition(target, user)
+    if target == STATUS_PUBLISHED:
         post.published_at = datetime.now()
-    elif target == 3 and Perm.POST_MANAGE not in user.permission_codes:
-        raise HTTPException(status_code=403, detail="缺少权限: post:manage")
     post.status = target
     db.commit()
     write_operation_log(
         db, request=request, user=user, module="post", action=f"status:{target}",
         target_type="post", target_id=post_id,
     )
-    status_names = {0: "草稿", 1: "审核中", 2: "已发布", 3: "私密", 4: "回收站"}
-    return ok(message=f"已切换为{status_names.get(target, target)}")
+    return ok(message=f"已切换为{STATUS_NAMES.get(target, target)}")
 
 
 @router.post("/{post_id}/like", response_model=dict)

@@ -1,0 +1,45 @@
+/* ============================================================
+ * 增强层: 文档/极简族 (minimal)
+ * 文档站风格(VitePress + Teek 预设): 中性灰阶、细边框、
+ * 克制的阴影与过渡, 不做花哨的位移和渐变。
+ * 占位符由 _source/generate-themes.mjs 替换。
+ * ============================================================ */
+
+@@BASE@@
+
+/* ---------- 极简族: 悬停只做极轻的抬升与边框加深 ---------- */
+.post-card:hover {
+  transform: translateY(-2px);
+}
+
+.post-card::before {
+  transform: scaleY(0);
+}
+
+.post-card:hover::before {
+  transform: scaleY(1);
+}
+
+/* ---------- 站点头部: 只保留一条细分割线 ---------- */
+.site-header::after {
+  display: none;
+}
+
+/* ---------- 终端卡片: 细边框 + 一枚强调色光标 ---------- */
+.term-card {
+  box-shadow: none;
+}
+
+.term-cursor {
+  box-shadow: 0 0 12px -2px var(--primary);
+}
+
+/* ---------- 正文: 与文档站一致的松弛行距 ---------- */
+.markdown-body {
+  line-height: 1.85;
+}
+
+.markdown-body blockquote {
+  border-left-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 6%, transparent);
+}

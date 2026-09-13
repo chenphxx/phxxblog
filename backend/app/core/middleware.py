@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from starlette.responses import Response
 
 from app.core.database import SessionLocal
+from app.core.permissions import Perm
 from app.core.security import decode_token
 from app.models.user import User
 
@@ -36,10 +37,13 @@ def _error_response(status_code: int, message: str) -> JSONResponse:
 async def restrict_docs_to_admin(
     request: Request, call_next: Callable[[Request], Awaitable[Response]]
 ) -> Response:
-    """仅允许 admin 角色访问 /docs、/redoc、/openapi.json。
+    """仅允许拥有 SETTING_MANAGE 权限的用户访问 /docs、/redoc、/openapi.json。
 
     令牌来源: `Authorization: Bearer <access_token>` 或 cookie `phxxblog_doc_token`。
-    未登录返回 401, 已登录但非管理员返回 403。
+    未登录返回 401, 已登录但无权限返回 403。
+
+    权限判断用权限码而非角色名: 角色 code 可被后台修改, 用 `"admin" in role_codes`
+    会在改名后静默放行或误拦。
     """
     # 归一化结尾斜杠(/docs/ 与 /docs 等价)
     path = request.url.path
@@ -67,8 +71,8 @@ async def restrict_docs_to_admin(
             return _error_response(status.HTTP_401_UNAUTHORIZED, "用户不存在")
         if user.status == 0:
             return _error_response(status.HTTP_403_FORBIDDEN, "账号已被禁用")
-        if "admin" not in user.role_codes:
-            return _error_response(status.HTTP_403_FORBIDDEN, "仅管理员可访问")
+        if Perm.SETTING_MANAGE not in user.permission_codes:
+            return _error_response(status.HTTP_403_FORBIDDEN, "无访问 API 文档的权限")
     finally:
         db.close()
 

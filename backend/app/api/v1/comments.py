@@ -42,9 +42,13 @@ def _build_tree(items: list[Comment]) -> list[CommentOut]:
 
 
 def _can_manage_comment(comment: Comment, user: User | None, ip: str) -> tuple[bool, bool]:
-    """判断当前请求能否编辑/删除评论(管理员/作者本人/同 IP 游客)。"""
+    """判断当前请求能否编辑/删除评论(有管理权限/作者本人/同 IP 游客)。
+
+    管理能力用权限码 comment:manage 判断, 而不是角色名 —— 角色 code 可被后台修改,
+    用 `"admin" in role_codes` 会在改名后静默失效。
+    """
     if user is not None:
-        if "admin" in user.role_codes or user.id == comment.user_id:
+        if Perm.COMMENT_MANAGE in user.permission_codes or user.id == comment.user_id:
             return True, True
         return False, False
     # 游客: 同 IP 且为游客评论

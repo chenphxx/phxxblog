@@ -37,13 +37,7 @@ function pick(id: ThemeId) {
               <span class="opt-dots" aria-hidden="true">
                 <i v-for="c in item.swatch" :key="c" :style="{ background: c }" />
               </span>
-              <span class="opt-text">
-                <span class="opt-name">
-                  {{ item.name }}
-                  <em>{{ item.en }}</em>
-                </span>
-                <span class="opt-desc">{{ item.desc }}</span>
-              </span>
+              <span class="opt-name">{{ item.name }}</span>
               <el-icon v-if="item.id === theme.themeId" class="opt-check"><Check /></el-icon>
             </div>
           </el-dropdown-item>
@@ -53,7 +47,14 @@ function pick(id: ThemeId) {
 
     <!-- 深色 / 浅色 -->
     <el-tooltip :content="theme.isDark ? '切换到浅色模式' : '切换到深色模式'">
-      <el-button circle :icon="theme.isDark ? Sunny : Moon" @click="theme.toggle()" />
+      <!-- el-tooltip 不会给触发器加 aria-label(只加在提示内容上), 这里显式补上:
+           否则纯图标按钮在屏幕阅读器里是一个"没有名字的按钮" -->
+      <el-button
+        circle
+        :icon="theme.isDark ? Sunny : Moon"
+        :aria-label="theme.isDark ? '切换到浅色模式' : '切换到深色模式'"
+        @click="theme.toggle()"
+      />
     </el-tooltip>
   </div>
 </template>
@@ -141,7 +142,8 @@ html.dark .theme-picker:hover {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-width: 250px;
+  /* 只显示「色点 + 主题名」, 因此比原来(带描述时 250px)窄很多 */
+  min-width: 160px;
 }
 
 .opt-dots i {
@@ -151,33 +153,11 @@ html.dark .theme-picker:hover {
   border: 1px solid color-mix(in srgb, var(--border-strong) 70%, transparent);
 }
 
-.opt-text {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
 .opt-name {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
   font-size: 13.5px;
   font-weight: 600;
   color: var(--text);
-}
-
-.opt-name em {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  font-style: normal;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-}
-
-.opt-desc {
-  font-size: 11.5px;
-  color: var(--muted);
-  line-height: 1.5;
+  white-space: nowrap;
 }
 
 .opt-check {

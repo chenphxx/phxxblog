@@ -1,13 +1,13 @@
 # 主题系统（12 套 · 均含深色 / 浅色）
 
-针对 `frontend/`（Vue 3 + Element Plus）的整套换肤方案。**不改任何 `.vue` 组件的结构**，靠 CSS 令牌 + 一层增强样式覆盖现有类名实现。
+针对 `frontend/`（Vue 3 + Element Plus）的整套换肤方案。**不改任何 `.vue` 组件的结构**，靠 CSS 令牌 + 一层增强样式覆盖现有类名实现。前台与后台共用同一套主题。
 
 - **默认主题：预设**（`cuanmu`）—— 中性灰阶 + 静蓝主色，令牌取自 VitePress + Teek 预设
 - 另含 11 套绿色系主题，可在顶栏随时切换
 
 ## 字体
 
-字母 / 数字 / 符号统一使用 **Cascadia Code**：
+字母 / 数字 / 符号统一使用 **Cascadia Code**（自托管 latin 子集，见 `src/styles/fonts.css`）：
 
 ```css
 --font-sans: 'Cascadia Code', 'Cascadia Mono', ui-monospace, 'PingFang SC', 'Microsoft YaHei', …;
@@ -16,13 +16,17 @@
 
 Cascadia Code 不含中文字形，因此中文会自动回退到后面的系统字体（PingFang SC / 微软雅黑），中文排版质量不受影响——得到的效果是「西文数字符号等宽、中文标准无衬线」。
 
-如果访问者的系统未安装 Cascadia Code，会依次回退到 Cascadia Mono / 系统等宽字体。想保证所有人看到一致效果，需要自托管字体文件（Cascadia Code 采用 SIL OFL 许可，可随站点分发）。
+> 注意：Vditor 自带的 `.vditor-reset` 写死了字体栈且不引用 `var(--font-sans)`，正文的字体由 `theme.css` 里同特异性的 `.markdown-body, .vditor-reset` 规则覆盖，那条规则不要删。
 
 ## 先看效果
 
-打开 `design/previews/index.html`：左侧 12 套主题列表，右侧实时预览，右上角切换深色/浅色（也支持 ↑↓ 键换主题）。
+```powershell
+npm run themes:preview     # 生成到 src/styles/themes/_preview/
+```
 
-预览页的样式是从 `frontend/src/styles/themes/*.css` **原样抽取**生成的，所以预览效果 = 实际效果。
+打开 `_preview/index.html`：左侧 12 套主题列表，右侧实时预览，右上角切换深色/浅色（也支持 ↑↓ 键换主题）。
+
+预览页的样式是从 `theme-*.css` **原样抽取**生成的，所以预览效果 = 实际效果。`_preview/` 是产物，已加入 `.gitignore`，可随时重建。
 
 ## 默认主题：预设 (cuanmu)
 
@@ -67,13 +71,13 @@ Cascadia Code 不含中文字形，因此中文会自动回退到后面的系统
 
 `<html>` 上的 `data-theme` 由 `stores/theme.ts` 维护。**未选过主题的新访客**拿不到任何 `html[data-theme=...]` 匹配，靠的是 `theme-default.css` 里的裸 `:root` 浅色令牌。
 
-因此有一条硬约定：**只有 `theme-default.css` 能写颜色级裸 `:root`**，其余主题一律只写 `html[data-theme='<id>']` —— 否则后加载的那套会覆盖默认主题。`audit.mjs` 会检查这一点，也会核对 `theme-default.css` 与 `registry.ts` 的 `DEFAULT_THEME` 是否一致。
+因此有一条硬约定：**只有 `theme-default.css` 能写颜色级裸 `:root`**，其余主题一律只写 `html[data-theme='<id>']` —— 否则后加载的那套会覆盖默认主题。`npm run themes:audit` 会检查这一点，也会核对 `theme-default.css` 与 `registry.ts` 的 `DEFAULT_THEME` 是否一致。
 
-想换默认主题：把 `design/themes/tokens.mjs` 里想用的那套挪到 `THEMES` 数组第一位，重新生成即可。
+想换默认主题：把 `_source/tokens.mjs` 里想用的那套挪到 `THEMES` 数组第一位，重新生成即可。
 
 ## 运行时切换（已接入）
 
-顶栏的主题按钮（`components/ThemeSwitcher.vue`）下拉里就是这 12 套，选中即生效并记入 `localStorage`；旁边的圆形按钮单独切换深色/浅色。两者互相独立。
+顶栏的主题按钮（`components/ThemeSwitcher.vue`）下拉里就是这 12 套，只显示「色点 + 主题名」，选中即生效并记入 `localStorage`；旁边的圆形按钮单独切换深色/浅色。两者互相独立，前台与后台共用。
 
 ```
 stores/theme.ts
@@ -85,24 +89,41 @@ stores/theme.ts
 
 切换时会临时给 `<html>` 加 `theme-transition` 类，让颜色平滑过渡。首屏不闪的保证在 `main.ts` 顶部：挂载前就读 `localStorage` 并写入 `data-theme` 与 `.dark`。
 
+## 后台如何跟随主题
+
+后台原本依赖 Element Plus 默认蓝，与前台是两套体系。`src/styles/admin.css` 负责打通：
+
+```css
+:root {
+  --el-color-primary: var(--primary);
+  --el-color-primary-light-3: color-mix(in srgb, var(--primary) 70%, var(--card-bg));
+  /* …以及边框/文字/填充色全套 */
+}
+```
+
+它必须在所有主题之后加载（见 `theme-green.css` 的 `@import` 顺序），且在 `:root` 上以同特异性后写入，才能覆盖 Element Plus 与各主题自带的 `--el-color-primary`。
+
 ## 改配色
 
 12 套主题**全部由一份数据生成**，不要手改生成的 CSS：
 
 ```
-design/themes/tokens.mjs                         ← 唯一事实来源（每套的浅色/深色令牌）
-design/themes/template.css                       ← 令牌文件骨架
-design/themes/enhance.base.css                   ← 增强层公共部分
-design/themes/enhance-{soft,hard,editorial,minimal}.css  ← 四族的差异部分
+src/styles/themes/_source/
+  tokens.mjs                                        ← 唯一事实来源（每套的浅色/深色令牌）
+  template.css                                      ← 令牌文件骨架
+  enhance.base.css                                  ← 增强层公共部分
+  enhance-{soft,hard,editorial,minimal}.css         ← 四族的差异部分
+  generate-themes.mjs  audit.mjs  build-previews.mjs
+  _gallery-template.html                            ← 预览总览页模板
 ```
 
 ```powershell
-node design/themes/generate-themes.mjs   # 生成 12 个 theme-*.css + theme-default.css + registry.ts
-node design/themes/audit.mjs             # 校验
-node design/previews/build-previews.mjs  # 重新生成 24 个预览页 + 总览
+npm run themes:generate   # 生成 13 个 CSS(12 套 + theme-default) + registry.ts
+npm run themes:audit      # 校验
+npm run themes:preview    # 生成 24 个预览页 + 总览
 ```
 
-`audit.mjs` 会检查：
+`themes:audit` 会检查：
 
 1. 每套主题深浅两模式的令牌是否齐全、颜色格式是否正确
 2. 生成的 `theme-*.css` 是否与 `tokens.mjs` 一致（防止忘了重新生成）
@@ -128,30 +149,28 @@ node design/previews/build-previews.mjs  # 重新生成 24 个预览页 + 总览
 ## 目录
 
 ```
-frontend/src/styles/
-  theme.css                    原有结构样式（未改动）
-  theme-green.css              主题入口：theme.css + theme-default.css + 12 套主题
+src/styles/
+  theme.css                    原有结构样式（卡片、正文、终端、时间轴、代码块）
+  theme-green.css              主题入口：theme.css + theme-default.css + 12 套主题 + admin.css
+  admin.css                    后台主题层（Element Plus 主色 → 主题令牌）
+  fonts.css                    自托管 Cascadia Code
   themes/
     theme-default.css          默认主题的裸 :root 令牌（生成物）
     theme-<id>.css             ×12，生成物，勿手改
     registry.ts                主题清单（生成物），供下拉菜单与类型使用
-design/themes/
-  tokens.mjs  template.css  enhance*.css   源
-  generate-themes.mjs  audit.mjs           生成与校验
-design/previews/
-  _gallery-template.html     总览页模板（手写）
-  index.html                 总览（由模板生成，打开这个）
-  <id>-light.html / <id>-dark.html  ×24，生成物
-  build-previews.mjs
+    _source/                   主题源与脚本（见上）
+    _preview/                  预览产物（不入库，可重建）
 ```
 
 ## 与项目原有实现的改动点
 
-除了新增主题文件，为了让运行时切换成立，改了四处既有文件：
+除了新增主题文件，为了让运行时切换成立，改了若干既有文件：
 
-1. `main.ts`：挂载前同时恢复深浅色与主题（`data-theme`），未选过时回退 `cuanmu`
+1. `main.ts`：挂载前同时恢复深浅色与主题（`data-theme`），未选过时回退 `cuanmu`；并引入自托管字体
 2. `stores/theme.ts`：新增 `themeId` 与 `setTheme()`，与 `isDark` 共同决定 DOM 状态
-3. `layouts/SiteLayout.vue` 与 `views/admin/AdminLayout.vue`：把原来的 `<ThemeToggle />` 换成 `<ThemeSwitcher />`（后台也能换主题）
-4. `views/HomeView.vue`：终端会话按钮的悬停底色原本写死 `#16222b`（偏蓝），改为由 `--term-*` 令牌推导，跟随主题
+3. `layouts/SiteLayout.vue` 与 `views/admin/AdminLayout.vue`：把原来的 `<ThemeToggle />` 换成 `<ThemeSwitcher />`
+4. `views/HomeView.vue`：终端会话按钮的悬停底色原本写死 `#16222b`（偏蓝），改为由 `--term-*` 令牌推导
+5. `views/admin/DashboardView.vue`：数据卡片与图例的写死颜色改为主题令牌
+6. `components/MetaIcon.vue`：新增元信息图标组件（日历/眼睛/标签等），跟随主题文字色
 
 `components/ThemeToggle.vue` 仍被登录页 `views/admin/LoginView.vue` 使用（那里只放一个圆形按钮更合适），因此保留。

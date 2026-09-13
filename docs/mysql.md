@@ -31,7 +31,9 @@
 | visit_logs | 访问明细(PV/UV/来源/浏览器/IP) |
 | daily_stats | 按日聚合统计数据 |
 | operation_logs | 操作日志 |
+| diaries | 日记(仅管理员可见/可写) |
 | settings | 系统设置(站点信息/SEO/社交链接等) |
+| schema_version | 已应用的迁移文件名记录(见文末「表结构演进」) |
 
 ## 表结构说明
 
@@ -232,6 +234,29 @@
 | detail | JSON | 变更详情 |
 | ip | VARCHAR(45) | 操作IP |
 | created_at | DATETIME | 操作时间 |
+
+### diaries 日记表
+
+仅管理员可读写（接口需 `diary:manage` 权限）。一条日记 = 一段 Markdown 内容 + 一个归属日期。
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| id | BIGINT UNSIGNED PK | 主键 |
+| user_id | BIGINT UNSIGNED FK | 作者，关联 `users.id`（`ON DELETE CASCADE`） |
+| content_md | TEXT | Markdown 原文 |
+| content_html | TEXT | 渲染后的 HTML（导入时可附带） |
+| entry_date | DATE | 日记归属日期（索引/排序依据，默认当天） |
+| created_at | DATETIME | 创建时间 |
+| updated_at | DATETIME | 更新时间 |
+
+### schema_version 迁移记录表
+
+记录已应用的迁移文件名，用于判断某个库停在哪个版本（见文末「表结构演进」）。
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| version | VARCHAR(120) PK | 迁移文件名，如 `migration_20260912.sql` |
+| applied_at | DATETIME | 应用时间 |
 
 ### settings 系统设置表
 
@@ -458,4 +483,42 @@ CREATE TABLE settings (
   description VARCHAR(255) DEFAULT NULL,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='系统设置表';
+
+CREATE TABLE diaries (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT UNSIGNED NOT NULL,
+  content_md TEXT NOT NULL,
+  content_html TEXT DEFAULT NULL,
+  entry_date DATE NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_diary_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX idx_entry_date (entry_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='日记表';
+
+CREATE TABLE schema_version (
+  version VARCHAR(120) NOT NULL PRIMARY KEY,
+  applied_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='迁移版本记录';
 ```
+
+## 表结构演进
+
+本项目**没有引入 Alembic** —— 对单实例个人博客是过度设计。约定如下：
+
+1. **新表**：由 `Base.metadata.create_all()` 在应用启动时自动创建，无需手工干预。
+2. **已有表加列**：**不会自动补**。必须手工编写迁移 SQL 放到 `backend/scripts/`，
+   按日期命名（如 `migration_20260912.sql`），并在自己的环境执行。
+3. **启动校验**：`app/core/database.py` 的 `check_schema()` 会对比模型与实际表结构。
+   缺列时：
+   - `PHXXBLOG_DEBUG=true`：只打印告警与需要执行的 `ALTER` 语句；
+   - 否则：**直接拒绝启动**。
+
+   这样问题在启动时暴露，而不是等到某个查询才报 `Unknown column`。
+4. **版本记录**：执行完迁移后，往 `schema_version` 表插一行对应文件名。
+
+> 历史遗留：早期版本用 `ensure_columns()` 自动补过 `categories.color` 与 `tags.color`
+> 两列。该函数已被启动校验取代 —— 静默补列会让"模型与库里不一致"长期隐藏。
+
+将来若需要多环境部署（本地 + 服务器 + CI），再迁移到 Alembic；
+`docs/architecture.md` 的「技术栈」一节也标了这一点。

@@ -231,7 +231,7 @@ onMounted(load)
   gap: 8px;
   cursor: pointer;
   font-size: 14px;
-  color: var(--el-text-color-regular, #3d4a5c);
+  color: var(--el-text-color-regular, var(--text));
 }
 .link-row {
   display: flex;

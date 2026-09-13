@@ -1,10 +1,31 @@
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import Components from 'unplugin-vue-components/vite'
+import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    /*
+     * Element Plus 按需引入。
+     *
+     * 以前是 main.ts 里 `app.use(ElementPlus)` 全量注册: 产物里出现了 100 多个
+     * 组件(ElWatermark / ElCarousel / ElCalendar / ElTour / ElTransfer ...),
+     * 而源码实际只用到 43 个, 主 chunk 因此多出 300~400 KB。
+     *
+     * importStyle: 'css' 让每个被用到的组件顺带引入自己的样式文件,
+     * 于是可以把 `element-plus/dist/index.css`(349 KB)整包去掉。
+     * 程序式 API(ElMessage / ElMessageBox / ElLoading)仍用显式 import,
+     * 由这里的 sideEffects 补上样式 —— 保留显式 import 是为了不改变代码可读性,
+     * 也避免 auto-import 生成一堆"看不见的"全局函数。
+     */
+    Components({
+      dts: 'src/components.d.ts',
+      resolvers: [ElementPlusResolver({ importStyle: 'css' })],
+    }),
+  ],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

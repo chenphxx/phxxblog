@@ -15,6 +15,12 @@ dist-ssr
 # Vditor 本地静态资源(由 predev/prebuild 自动从 node_modules 复制)
 public/vditor/
 
+# 主题预览产物(由 npm run themes:preview 生成, 可随时重建, 不入库)
+src/styles/themes/_preview/
+
+# 测试覆盖率报告(由 npm run test:coverage 生成)
+coverage/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

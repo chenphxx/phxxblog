@@ -76,11 +76,22 @@ class Post(Base):
         Index("idx_status_published", "status", "published_at"),
         Index("idx_category", "category_id"),
         Index("idx_author", "author_id"),
-        # 全文索引(ngram 分词器, 支持中文搜索)
-        Index(
-            "ft_post", "title", "summary", "content_md",
-            mysql_prefix="FULLTEXT", mysql_with_parser="ngram",
-        ),
+        # 这里原先还有一个 FULLTEXT + ngram 的 ft_post 索引, 已移除。
+        #
+        # 移除原因(实测, 不是推测):
+        #   搜索实现走的是 `LIKE '%kw%'`(见 api/v1/posts.py 与 search.py), 前导 % 使
+        #   B-Tree/FULLTEXT 索引都无法命中, 所以这个索引一直只是写入开销。
+        #   那为什么不用 MATCH ... AGAINST 把它利用起来? 因为实测 ngram 分词器在
+        #   本项目的关键词上表现更差:
+        #       "网盘"  LIKE 2 命中 / MATCH 2 命中
+        #       "Git"   LIKE 4 命中 / MATCH 0 命中   ← 短英文词不在 ngram 词表里
+        #       "的"     LIKE 14 命中 / MATCH 0 命中  ← 单字不满足 ngram 最小词长
+        #   改为 MATCH 反而会让搜索退化, 因此保留 LIKE, 删掉索引。
+        #
+        # 如何恢复: 如果将来文章量很大且需要全文检索, 删掉上面这条注释并执行
+        #   ALTER TABLE posts ADD FULLTEXT INDEX ft_post (title, summary, content_md) WITH PARSER ngram;
+        # 同时把查询改成 MATCH(...) AGAINST(... IN BOOLEAN MODE), 并接受短词/单字
+        # 无法命中的限制(或改用专门的中文分词方案)。
     )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -108,14 +119,24 @@ class Post(Base):
     )
 
     # 关系
+    #
+    # lazy 策略说明(改动前请先读):
+    #   author / category -> joined:  列表与详情都要显示, 一次 JOIN 取回最省。
+    #   tags              -> selectin: PostListItem 要序列化标签, 必须预加载。
+    #   comments / likes  -> raise:   列表与详情接口都**不**使用这两个关系
+    #                     (评论走 Comment 表独立查询, 点赞数读 Post.likes_count 字段),
+    #                     以前是 selectin, 导致每列 10 篇文章都要多查一次
+    #                     全量评论行与点赞行 —— 纯浪费。
+    #                     用 raise 而不是 select: 一旦有人真的误用会立刻报错,
+    #                     而不是悄悄退化成 N+1。真需要时用 selectinload() 显式加载。
     author: Mapped["User"] = relationship("User", back_populates="posts", lazy="joined")
     category: Mapped[Category | None] = relationship(lazy="joined")
     tags: Mapped[list[Tag]] = relationship(secondary=post_tags, lazy="selectin")
     comments: Mapped[list["Comment"]] = relationship(
-        back_populates="post", lazy="selectin"
+        back_populates="post", lazy="raise"
     )
     likes: Mapped[list["PostLike"]] = relationship(
-        back_populates="post", lazy="selectin"
+        back_populates="post", lazy="raise"
     )
 
     @property

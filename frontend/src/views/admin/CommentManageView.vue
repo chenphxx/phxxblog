@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { commentApi } from '@/api'
 import type { CommentItem } from '@/types'
 
-const router = useRouter()
 const statusFilter = ref<number | undefined>(undefined)
 const comments = ref<CommentItem[]>([])
 const total = ref(0)
@@ -14,7 +12,14 @@ const pageSize = 10
 const loading = ref(false)
 
 const STATUS_TEXT: Record<number, string> = { 1: '正常', 0: '隐藏', 2: '回收站' }
-const STATUS_TYPE: Record<number, string> = { 1: 'success', 0: 'warning', 2: 'info' }
+/**
+ * 状态 -> el-tag 的 type。
+ * 用字面量联合而不是 `Record<number, string>`: el-tag 的 type 只接受
+ * 'primary' | 'success' | 'warning' | 'info' | 'danger', 宽泛的 string 会在
+ * 模板类型检查时报错(按需引入后组件有了精确类型, 这类问题会暴露出来)。
+ */
+type TagType = 'primary' | 'success' | 'warning' | 'info' | 'danger'
+const STATUS_TYPE: Record<number, TagType> = { 1: 'success', 0: 'warning', 2: 'info' }
 
 async function load() {
   loading.value = true
@@ -75,20 +80,22 @@ onMounted(load)
         </el-table-column>
         <el-table-column prop="content" label="内容" min-width="220">
           <template #default="{ row }">
-            <a
+            <!-- 用 router-link 而不是裸 <a> + click: 前者可 Tab 聚焦、可回车触发,
+                 并且语义上就是"链接"(屏幕阅读器不会把它当普通文本) -->
+            <router-link
               class="comment-link"
+              :to="`/post/${row.post_id}`"
               :title="`查看文章 #${row.post_id}`"
-              @click="router.push(`/post/${row.post_id}`)"
             >
               {{ row.content }}
-            </a>
+            </router-link>
           </template>
         </el-table-column>
         <el-table-column prop="post_id" label="文章ID" width="90">
           <template #default="{ row }">
-            <a class="comment-link" :title="`查看文章 #${row.post_id}`" @click="router.push(`/post/${row.post_id}`)">
+            <router-link class="comment-link" :to="`/post/${row.post_id}`" :title="`查看文章 #${row.post_id}`">
               #{{ row.post_id }}
-            </a>
+            </router-link>
           </template>
         </el-table-column>
         <el-table-column label="状态" width="90">
@@ -102,10 +109,11 @@ onMounted(load)
         <el-table-column label="操作" width="300">
           <template #default="{ row }">
             <div class="op-row">
-              <el-button v-if="row.status !== 1" size="small" type="success" @click="setStatus(row, 1)">显示</el-button>
-              <el-button v-if="row.status === 1" size="small" type="warning" @click="setStatus(row, 0)">隐藏</el-button>
-              <el-button v-if="row.status !== 2" size="small" type="info" @click="setStatus(row, 2)">回收站</el-button>
-              <el-button size="small" type="danger" @click="remove(row)">删除</el-button>
+              <!-- el-table 插槽的 row 是 DefaultRow, 显式断言成实际行类型 -->
+              <el-button v-if="row.status !== 1" size="small" type="success" @click="setStatus(row as CommentItem, 1)">显示</el-button>
+              <el-button v-if="row.status === 1" size="small" type="warning" @click="setStatus(row as CommentItem, 0)">隐藏</el-button>
+              <el-button v-if="row.status !== 2" size="small" type="info" @click="setStatus(row as CommentItem, 2)">回收站</el-button>
+              <el-button size="small" type="danger" @click="remove(row as CommentItem)">删除</el-button>
             </div>
           </template>
         </el-table-column>
