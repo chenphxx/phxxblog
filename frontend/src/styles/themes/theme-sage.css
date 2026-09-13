@@ -416,8 +416,16 @@ a {
   }
 }
 
+/*
+ * 填充模式用 backwards 而不是 both。
+ * both/forwards 会让动画结束后仍把 transform 留在效果栈里(计算值是一单位矩阵而不是 none),
+ * 于是 .site-main 的直接子元素(.page-container)就成了 position: fixed 的定位基准:
+ * 容器内的弹窗会相对整页高的容器居中, 而不是相对视口居中 ——
+ * 首页点头像弹出的头像弹窗曾因此落在页面下方。
+ * to 帧的 opacity/transform 就是元素的自然值, 所以 backwards 的视觉效果与 both 一致。
+ */
 .site-main > * {
-  animation: fade-up 460ms var(--ease) both;
+  animation: fade-up 460ms var(--ease) backwards;
 }
 
 /* 切换主题/深浅色时让颜色平滑过渡, 不闪白 */

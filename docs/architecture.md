@@ -338,6 +338,10 @@ phxxblog/
   行首序号、名称列 `flex: 0 0 200px` 定宽(内联 `width` 会被同一行 `.el-input` 的 flex 覆盖, 必须用 flex-basis 表达)、
   备案多一列图标, 删除按钮改成默认灰、悬停变红的图标按钮, 避免整屏红色文字;
   「添加」按钮按"序号列宽 + 行间距"缩进(两者抽成 `.link-list` 上的 `--link-index-width` / `--link-row-gap`), 与上方名称输入框左对齐。
+- **入场动画**统一由各主题文件里的 `@keyframes rise-in / snap-in / fade-up / fade-in` + `.site-main > *` 提供(源在 `_source/enhance.base.css`),
+  填充模式必须写 `backwards` 而不是 `both`: `both` 会让动画结束后仍把 transform 留在效果栈里(计算值是一单位矩阵而非 `none`),
+  于是 `.site-main` 的直接子元素(`.page-container`)就成了 `position: fixed` 的定位基准 —— 容器里的弹窗会相对"整页高"的容器居中,
+  曾表现为"点开首页头像后弹窗跑到页面下方"。改这里后 12 套主题都要 `npm run themes:generate` 重新生成。
 
 ## 7. 关键功能实现
 
