@@ -119,4 +119,23 @@ defineExpose({ syncContent })
   gap: 12px;
   width: 100%;
 }
+
+/*
+ * 表单本身参与"铺满高度": 写作页会把卡片拉满视口(见 WriteView), 这里让表单纵向铺开、
+ * 由正文(最后一个表单项)吃掉剩余高度, 多出来的高度归编辑器而不是变成卡片里的一块空白。
+ * 外层不是 flex 容器时(如后台文章编辑页)这些声明不生效, 表单项仍按内容排布。
+ * el-form-item 内部的 .el-form-item__content 属于 Element Plus 自己的模板, 必须用 :deep。
+ */
+.el-form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.el-form-item:last-child,
+.el-form-item:last-child :deep(.el-form-item__content) {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
 </style>

@@ -235,6 +235,8 @@ phxxblog/
 - 使用 hash 模式(`createWebHashHistory`), 便于静态托管: 前台 `/`、`/post/:id`、`/archive`、`/posts`、`/search`、`/write(/:id)`、`/changelog`、`/diary`; 后台 `/admin/**`(仪表盘/文章/分类标签/评论/媒体/用户/设置/日志/资料)。
 - 全局前置守卫: 路由标记 `meta.requiresAuth` 且本地无令牌时跳转登录页并带上 `redirect`。
 - 前台布局 `layouts/SiteLayout.vue`: 顶栏(站点名 + 终端风格提示符 + 导航 + 主题按钮) + 内容区 + 页脚; 布局层负责加载公开配置(站点名/标签页标题/图标)与访问埋点。
+  高度链: `.site-layout` 是 `min-height: 100vh` 的纵向 flex, `.site-body` 用 `flex: 1` 加 `grid-auto-rows: minmax(0, 1fr)`
+  撑满页头与页脚之间的空间(页脚另有 `margin-top: auto`), 内容少的页面也不会在页脚上方留出空白。
 - 后台布局 `views/admin/AdminLayout.vue`: 侧边菜单 + 顶栏(API 文档入口、主题按钮、退出登录)。
 - 前台部分页面使用 `keep-alive` 缓存(首页、全部文章、归档、搜索)。
   **注意**: 被缓存的组件不会重新走 setup / onMounted, 因此 URL 查询参数变化必须用 `watch(route)` 自行响应
@@ -311,6 +313,31 @@ phxxblog/
 - 代码块背景与高亮风格对齐 VSCode 默认主题: 浅色用 `vs`、深色用 `vs2015`, 并统一注释为斜体、字号与正文字号联动。
   注意 Vditor 自带的 `.vditor-reset` 写死了字体栈且不引用 `var(--font-sans)`, 正文的字体由 `theme.css` 里
   同特异性的 `.markdown-body, .vditor-reset` 规则覆盖, **那条规则不要删**。
+- 编辑器(Vditor IR 模式)里的代码块与正文用同一套外观: 预览用的 `.vditor-ir__preview code` 复用
+  `--code-block-bg` / `--border` / `--radius` 变成一张卡片, 字号与正文的代码块取平(`--font-mono`, 15px)。
+  光标进入代码块时 Vditor 会把原文展开、并在下面重复渲染一份预览, 因此 `theme.css` 里
+  `.vditor-ir__node--expand[data-type='code-block'] .vditor-ir__preview` 把它收掉, 同时给外层节点套同一张卡片,
+  卡片内的原文再去掉 Vditor 的行内代码底色。两个坑: 不要覆盖 `.vditor-linenumber` 的 `padding-left`(4em, 带
+  `!important`, 那是行号槽), 也不要改 `.vditor-ir__marker--pre` 的 display —— 展开/收起与光标定位都依赖它,
+  改成 block 会让编辑态的排版散开。
+- 编辑区的左右留白来自 Vditor: 它的"居中"不是 CSS, 而是 JS 按 `(容器宽 - preview.maxWidth) / 2` 写行内左右
+  padding(下限 35px)。默认 `maxWidth` 只有 800, 在后台这张约 1300px 宽的卡片里会左右各留 250px 空白,
+  所以 `VditorEditor` 把 `maxWidth` 设为 1100。
+- 编辑区高度: `VditorEditor` 的 `height` 默认 `'auto'` 且不设最小高度 —— 内容变长时 `pre.vditor-reset` 跟着变高、滚动交给页面,
+  编辑器内部不会出现滚动条; 确需固定高度(内部滚动, 如后台的版本日志编辑器)时给 `height` 传数字。
+  写作页在这个基础上还要求"内容少时也要铺满可用高度": `WriteView` 的页面容器与卡片、`PostFormFields` 的正文表单项、
+  `VditorEditor` 逐层 `flex: 1`, 把 `.site-main` 撑出来的高度一直传到编辑器, 因此空文档下卡片也会铺到页脚上方,
+  不会在下方露出一块页面底色。这几条 `flex` 声明在外层不是 flex 容器时(如日记对话框、后台文章编辑页)不生效, 高度仍只由内容决定。
+- 编辑区外观由 `theme.css` 统一: 去掉 Vditor 自带的 1px 边框与工具栏的 `border-bottom`, 编辑区、预览区与工具栏的背景一律改为
+  `transparent`, 文字色用 `var(--text)`。Vditor 自带的底色变量(`--panel-background-color` / `--textarea-background-color` /
+  `--toolbar-background-color`, 深色下是 `#24292e` / `#2f363d` / `#1d2125`)与本站卡片底色不一致: 深色下编辑区会明显比周围亮一块,
+  浅色下则在编辑区上方压出一条灰带与一条分割线。编辑区透明后全屏还需要给 `.vditor--fullscreen` 补一层实底(`--card-bg`),
+  否则整屏编辑器会透出下层页面。
+- 编辑器全屏的层级用 `fullscreen.index` 提到 1000: 站点头部 `.site-header` 的 `z-index` 是 100, 用 Vditor 默认的 90
+  时全屏后工具栏会被头部盖住, 既看不见也点不到(无法退出全屏)。
+- 深浅色切换要同步给编辑器: Vditor 的深色是 `vditor--dark` 类加一组 CSS 变量, 代码高亮主题(vs / vs2015)也是按主题名
+  另载的样式表, 所以 `VditorEditor` 除了初始化读 `theme.isDark`, 还 watch 它并调用 `setTheme`; 只在初始化时读一次的话,
+  运行中切到深色时编辑区会一直是白底。
 - 字体: 字母/数字/符号统一 Cascadia Code(自托管 latin 子集, `public/fonts/`); 该字体不含中文字形,
   中文自动回退到 PingFang SC / 微软雅黑。
 - 分类/标签与 views/likes 的彩色标签由 `utils/chipColor.ts` 计算: 后台配置了颜色则使用该颜色, 否则按名称哈希生成稳定色相, 再用 `color-mix` 生成背景、边框与文字色, 深浅色下均自动适配。

@@ -20,7 +20,7 @@ function save(targetStatus?: number) {
 </script>
 
 <template>
-  <div class="page-container">
+  <div class="page-container write-page">
     <div class="write-header">
       <div>
         <p class="eyebrow" style="margin: 0 0 4px">editor — {{ editor.isEdit ? '编辑文章' : '写文章' }}</p>
@@ -37,7 +37,7 @@ function save(targetStatus?: number) {
       </div>
     </div>
 
-    <div class="card" style="margin-top: 16px">
+    <div class="card write-card" style="margin-top: 16px">
       <PostFormFields ref="formRef" :editor="editor" />
     </div>
   </div>
@@ -50,5 +50,21 @@ function save(targetStatus?: number) {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
+}
+
+/*
+ * 写作页默认铺满可用高度: 卡片吃掉页面剩下的高度(编辑器再吃掉卡片里的剩余高度, 见 PostFormFields),
+ * 内容少时下方也不会露出一块页面底色; 内容变长时按内容继续变高(见 VditorEditor 的自适应高度)。
+ */
+.write-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.write-card {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 </style>

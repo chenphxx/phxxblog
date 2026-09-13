@@ -102,13 +102,16 @@ onMounted(async () => {
   flex-direction: column;
   min-height: 100vh;
 }
+/* 内容区吃掉页头与页脚之外的高度: 页脚已有 margin-top: auto, 这里让页面本身也能铺满(如写作页) */
 .site-body {
   max-width: 1400px;
   width: 100%;
   margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr;
-  align-items: start;
+  align-items: stretch;
+  grid-auto-rows: minmax(0, 1fr);
+  flex: 1;
 }
 .site-main {
   min-width: 0;

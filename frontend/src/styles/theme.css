@@ -373,6 +373,97 @@ a:hover {
   font-style: italic;
 }
 
+/*
+ * 编辑器(IR 模式)里的代码块与正文对齐成同一张卡片。
+ *
+ * 光标不在代码块内时, Vditor 只渲染这份高亮预览(.vditor-ir__preview), 里面的 <code>
+ * 除了 hljs 主题给的纯色背景外没有任何装饰 —— 没有边框、圆角与内边距, 字号也停在
+ * Vditor 的 85%, 于是写作页的代码块看起来像一条扁平的灰底纹, 与文章正文里的代码块
+ * 完全两个样。这里复用正文用的令牌(--code-block-bg 与 hljs 的 vs/vs2015 背景同色、
+ * --border、--radius), 让"写作时看到的"与"发布后看到的"一致。
+ *
+ * 两点约束:
+ *   1. 不要覆盖 .vditor-linenumber 的 padding-left(4em, 带 !important): 那是行号槽,
+ *      覆盖后行号会和代码叠在一起; 它按 em 计算, 会跟着这里的字号一起变化。
+ *   2. 只改这一处, 不要去动原文容器(.vditor-ir__marker--pre)的 display:
+ *      Vditor 的展开/收起与光标定位都依赖它自己的 inline/inline-block 切换,
+ *      改成 block 会让编辑态的排版散掉。
+ */
+.vditor-ir .vditor-ir__preview code {
+  background: var(--code-block-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  line-height: 1.65;
+  padding: 14px 16px;
+}
+
+/*
+ * 编辑区外观: 去掉 Vditor 自带的 1px 边框, 背景透出下层(写作页里就是卡片底色)。
+ *
+ * Vditor 给编辑区(IR 模式的 pre.vditor-reset)、预览区与工具栏都带了底色变量
+ * (--panel-background-color / --textarea-background-color / --toolbar-background-color,
+ * 深色下是 #24292e / #2f363d / #1d2125), 工具栏还额外有一条 border-bottom。
+ * 这几处与本站主题的卡片底色都不一致: 深色下编辑区会明显比周围亮一块,
+ * 浅色下则在编辑区上方压出一条灰带与一条分割线, 看起来像"编辑框外面还套了个框"。
+ * 这里把背景一律改为 transparent、文字颜色交给主题令牌 --text, 与所在的卡片同色。
+ * :focus 态必须一并覆盖: Vditor 在编辑区获得焦点时会把背景换成 --textarea-background-color。
+ */
+.vditor {
+  border: none;
+}
+
+.vditor-toolbar {
+  background-color: transparent;
+  border-bottom: none;
+}
+
+.vditor-ir pre.vditor-reset,
+.vditor-ir pre.vditor-reset:focus,
+.vditor-preview {
+  background-color: transparent;
+  color: var(--text);
+}
+
+/*
+ * 全屏时编辑器要盖住整屏, .vditor 必须自带底色:
+ * 编辑区背景是透明的, 只加 vditor--fullscreen 的话下层页面(表单)会直接透出来。
+ */
+.vditor.vditor--fullscreen {
+  background-color: var(--card-bg);
+}
+
+/* 光标进入代码块时 Vditor 会展开原文, 预览仍在下面重复渲染一份, 这里把它收起来 */
+.vditor-ir .vditor-ir__node--expand[data-type='code-block'] .vditor-ir__preview {
+  display: none;
+}
+
+/*
+ * 编辑态(原文展开)的代码块也套同一张卡片, 免得"写的时候一条灰底纹、发出去一张卡片"。
+ * 挂在外层节点上而不是原文容器上: 原文容器的 display 由 Vditor 自己切换, 动它会散架。
+ * 左侧内边距对齐预览态的行号槽(4em + 1px 边框), 光标进出代码块时文字不会左右跳。
+ */
+.vditor-ir .vditor-ir__node--expand[data-type='code-block'] {
+  background: var(--code-block-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px 14px 61px;
+}
+
+/*
+ * 卡片里的原文不要再叠一层 Vditor 的"行内代码"底色与内边距, 否则卡片里像又嵌了一块灰条。
+ * 那层样式来自 .vditor-reset code:not(.hljs):not(.highlight-chroma)(编辑器里所有行内代码共用),
+ * 所以这里必须带上同样的 :not() 才压得住它。字号与预览态取平, 光标进出时文字不会跳。
+ */
+.vditor-ir .vditor-ir__node--expand .vditor-ir__marker--pre code:not(.hljs):not(.highlight-chroma) {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
 .markdown-body table {
   border-collapse: collapse;
   width: 100%;
