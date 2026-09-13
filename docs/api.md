@@ -1,7 +1,10 @@
 # 接口文档
 
 后端为 FastAPI 应用，统一前缀 `/api/v1`。也可用 Swagger 交互式调试：
-`http://localhost:8000/docs`（仅具备 `setting:manage` 权限的账号可访问）。
+`http://localhost:8000/docs`（需要 `setting:manage` 权限，内置角色中只有管理员具备）。
+`/docs`、`/redoc`、`/openapi.json` 与 `/docs/oauth2-redirect` 走同一道鉴权：令牌取自
+`Authorization: Bearer <access_token>` 或 cookie `phxxblog_doc_token`，未登录返回 401，
+已登录但没有该权限返回 403。
 
 ## 统一约定
 

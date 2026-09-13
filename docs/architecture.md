@@ -483,7 +483,8 @@ phxxblog/
 
 1. 从 `Authorization: Bearer <token>` 或 cookie `phxxblog_doc_token` 取访问令牌, 两者都没有返回 401。
 2. 校验 JWT(必须是 access 类型)并查询用户; 令牌非法/过期或用户不存在返回 401。
-3. 用户被禁用或角色中不含 `admin` 返回 403。
+3. 用户被禁用或没有 `setting:manage` 权限码返回 403(判断权限码而不是角色名 —— 角色 code 可被后台修改,
+   用 `"admin" in role_codes` 判断会在角色改名后静默放行或误拦)。
 4. 通过后放行到 FastAPI 自带的文档页面。
 
 令牌来源的配合: 前端登录或恢复会话时把 access token 写入 `phxxblog_doc_token` cookie(SameSite=Lax, https 下附带 Secure), 登出或令牌失效时清除; 因此后台顶栏的"API 文档"按钮可以直接新窗口打开 `/docs`, 无需在 URL 上携带令牌。
