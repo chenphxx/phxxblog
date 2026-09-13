@@ -166,6 +166,75 @@ def test_public_post_detail_has_no_author_ip(db_session, seeded):
     assert admin_view["ip"] == "203.0.113.9"
 
 
+def test_record_visit_keeps_post_updated_at(db_session, seeded):
+    """记录阅读量不得改动 Post.updated_at。
+
+    直接给 ORM 属性自增会触发 updated_at 的 onupdate, 把"最后更新时间"顶成
+    "最后一次访问时间" —— 文章详情页的"最后更新于"于是永远显示当前时间。
+    这类回归肉眼很难发现(时间看起来总是合理的), 所以固定下来。
+    """
+    from datetime import datetime
+
+    from app.models.post import Post
+    from app.services.stats import record_visit
+
+    admin, _author, _pw = seeded
+    edited_at = datetime(2026, 1, 2, 3, 4, 5)
+    post = Post(
+        author_id=admin.id, title="文章", slug="visit-1", content_md="内容",
+        status=2, published_at=edited_at, updated_at=edited_at,
+    )
+    db_session.add(post)
+    db_session.commit()
+
+    class _Req:
+        """最小 Request 替身: record_visit 只用到 client / headers / url。"""
+
+        headers = {"user-agent": "pytest", "referer": ""}
+        client = type("C", (), {"host": "127.0.0.1"})()
+        url = type("U", (), {"path": "/api/v1/posts/visit-1"})()
+
+    views_before = post.views
+    record_visit(db_session, request=_Req(), post=post)
+    # 必须从库里重读: onupdate 是写库时才生效的, 内存里的 updated_at 不会跟着变,
+    # 只看内存对象的话这个测试根本抓不到上面那个回归。
+    db_session.expire(post)
+
+    assert post.views == views_before + 1
+    assert post.updated_at == edited_at, "记录阅读量改动了文章的更新时间"
+
+
+def test_post_neighbors_and_hot_ranking(db_session, seeded):
+    """详情接口的上一篇/下一篇按发布时间相邻; 热门列表按阅读量倒序。"""
+    from datetime import datetime, timedelta
+
+    from app.api.v1.posts import _post_neighbors, hot_posts
+    from app.models.post import Post
+
+    admin, _author, _pw = seeded
+    base = datetime(2026, 1, 1, 12, 0, 0)
+    posts = [
+        Post(
+            author_id=admin.id, title=f"文章{index}", slug=f"neighbor-{index}",
+            content_md="内容", status=2, published_at=base + timedelta(days=index),
+            views=index,
+        )
+        for index in range(3)
+    ]
+    db_session.add_all(posts)
+    db_session.commit()
+
+    oldest, middle, newest = posts
+    assert _post_neighbors(db_session, oldest) == (None, middle)
+    prev_post, next_post = _post_neighbors(db_session, middle)
+    assert prev_post.id == oldest.id and next_post.id == newest.id
+    assert _post_neighbors(db_session, newest) == (middle, None)
+
+    # 热门: 按阅读量倒序(倒着建库故意与发布时间相反, 避免两种排序碰巧一致)
+    hot = hot_posts(limit=7, db=db_session)["data"]
+    assert [item.id for item in hot] == [newest.id, middle.id, oldest.id]
+
+
 def test_login_rate_limiter_blocks_after_threshold():
     """连续失败达到阈值后必须拦截并返回 429。"""
     from fastapi import HTTPException

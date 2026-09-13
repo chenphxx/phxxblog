@@ -2,6 +2,7 @@
 from datetime import date, datetime
 
 from fastapi import Request
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_client_ip
@@ -41,7 +42,15 @@ def record_visit(
     db.add(visit)
 
     if post:
-        post.views += 1
+        # 阅读量是高频写入, 但它不该改变文章的"最后更新时间": 直接给 ORM 属性自增会触发
+        # Post.updated_at 的 onupdate, 把更新时间顶成当前时间(详情页的"最后更新于"
+        # 于是永远显示现在)。改用显式 UPDATE 并带上原值, 覆盖 onupdate 要写入的当前时间;
+        # 会话是 expire_on_commit=False, 所以靠这条 UPDATE 同步内存中的 views。
+        db.execute(
+            update(Post)
+            .where(Post.id == post.id)
+            .values(views=Post.views + 1, updated_at=post.updated_at)
+        )
 
     # 聚合到当日统计
     stat = db.query(DailyStat).filter(DailyStat.stat_date == today).first()
