@@ -85,9 +85,11 @@ onMounted(load)
     <el-tabs v-model="tab">
       <el-tab-pane label="分类" name="category">
         <div class="card">
-          <div class="toolbar">
+          <div class="admin-toolbar">
             <span class="muted">共 {{ categories.length }} 个分类</span>
-            <el-button type="primary" @click="openCategoryDialog()">新增分类</el-button>
+            <div class="admin-toolbar-actions">
+              <el-button type="primary" @click="openCategoryDialog()">新增分类</el-button>
+            </div>
           </div>
           <el-table :data="categories">
             <el-table-column prop="name" label="名称" />
@@ -114,9 +116,11 @@ onMounted(load)
 
       <el-tab-pane label="标签" name="tag">
         <div class="card">
-          <div class="toolbar">
+          <div class="admin-toolbar">
             <span class="muted">共 {{ tags.length }} 个标签</span>
-            <el-button type="primary" @click="openTagDialog()">新增标签</el-button>
+            <div class="admin-toolbar-actions">
+              <el-button type="primary" @click="openTagDialog()">新增标签</el-button>
+            </div>
           </div>
           <el-table :data="tags">
             <el-table-column prop="name" label="名称" />
@@ -179,12 +183,3 @@ onMounted(load)
     </el-dialog>
   </div>
 </template>
-
-<style scoped>
-.toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-</style>

@@ -152,24 +152,30 @@ onMounted(load)
 
 <template>
   <div>
-    <div class="toolbar">
-      <h2 style="margin: 0">文章管理</h2>
-      <div class="toolbar-actions">
+    <h2>文章管理</h2>
+
+    <div class="admin-toolbar">
+      <div class="admin-toolbar-filters">
+        <el-radio-group v-model="statusFilter" @change="page = 1; load()">
+          <el-radio-button :value="undefined">全部</el-radio-button>
+          <el-radio-button v-for="(text, index) in STATUS_TEXT" :key="index" :value="index">{{ text }}</el-radio-button>
+        </el-radio-group>
+      </div>
+      <div class="admin-toolbar-actions">
+        <el-input
+          v-model="keyword"
+          placeholder="搜索标题"
+          clearable
+          @keyup.enter="page = 1; load()"
+          @clear="page = 1; load()"
+        />
+        <el-button @click="page = 1; load()">搜索</el-button>
         <el-button @click="io.importDialog = true">导入文章</el-button>
         <el-button type="primary" @click="router.push('/admin/posts/new')">新建文章</el-button>
       </div>
     </div>
 
-    <div class="toolbar" style="margin-top: 12px">
-      <el-radio-group v-model="statusFilter" @change="page = 1; load()">
-        <el-radio-button :value="undefined">全部</el-radio-button>
-        <el-radio-button v-for="(text, index) in STATUS_TEXT" :key="index" :value="index">{{ text }}</el-radio-button>
-      </el-radio-group>
-      <el-input v-model="keyword" placeholder="搜索标题" style="max-width: 220px" clearable @keyup.enter="page = 1; load()" @clear="page = 1; load()" />
-      <el-button @click="page = 1; load()">搜索</el-button>
-    </div>
-
-    <div class="card" style="margin-top: 16px">
+    <div class="card">
       <div v-if="selected.length" class="batch-bar">
         <span class="muted">已选 {{ selected.length }} 篇</span>
         <el-button size="small" type="warning" @click="batchSetPrivate">设为私密</el-button>
@@ -262,18 +268,6 @@ onMounted(load)
 }
 .th-icon .meta-icon {
   opacity: 0.7;
-}
-.toolbar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  justify-content: space-between;
-  flex-wrap: wrap;
-}
-.toolbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
 }
 .batch-bar {
   display: flex;

@@ -30,12 +30,21 @@ onMounted(load)
 
 <template>
   <div>
-    <div class="toolbar">
-      <h2 style="margin: 0">操作日志</h2>
-      <el-input v-model="moduleFilter" placeholder="按模块筛选(post/user/comment...)" style="max-width: 240px" clearable @keyup.enter="page = 1; load()" @clear="page = 1; load()" />
+    <h2>操作日志</h2>
+
+    <div class="admin-toolbar">
+      <div class="admin-toolbar-filters">
+        <el-input
+          v-model="moduleFilter"
+          placeholder="按模块筛选(post/user/comment...)"
+          clearable
+          @keyup.enter="page = 1; load()"
+          @clear="page = 1; load()"
+        />
+      </div>
     </div>
 
-    <div class="card" style="margin-top: 16px">
+    <div class="card">
       <el-table :data="logs" v-loading="loading">
         <el-table-column prop="id" label="ID" width="70" />
         <el-table-column prop="username" label="操作人" width="120">
@@ -72,13 +81,3 @@ onMounted(load)
     </div>
   </div>
 </template>
-
-<style scoped>
-.toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-</style>

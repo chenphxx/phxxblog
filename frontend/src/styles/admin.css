@@ -191,3 +191,51 @@
   font-size: 19px;
   letter-spacing: -0.01em;
 }
+
+/* ---------- 5. 页内工具条 ---------- */
+/*
+ * 后台所有列表页共用同一套工具条规则(不要再在各视图里各写一份 .toolbar):
+ *
+ *   h2(独占一行) → .admin-toolbar [ 左 .admin-toolbar-filters | 右 .admin-toolbar-actions ]
+ *
+ * 三条硬性约束:
+ *   1. 标题永远单独一行, 操作按钮不进标题行 —— 否则标题行的按钮与下一行的按钮
+ *      会被看成一列, 而且 space-between 会把搜索框和自己的按钮推开;
+ *   2. 右组用 margin-left: auto 靠右, 因此页面上没有筛选控件时按钮也不会跑到左边;
+ *   3. 右组内顺序固定为「搜索框 + 搜索按钮 → 普通操作 → 主操作(primary) → 危险操作(danger)」。
+ *
+ * 标题的间距由本文件顶部的 `.admin-main > div > h2:first-child` 统一提供,
+ * 所以视图里不要再给 h2 写 margin。
+ */
+.admin-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+/* 筛选/范围类控件(状态页签、关键字输入…) */
+.admin-toolbar-filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* 操作类控件, 始终靠右且不换行; 整组放不下时由外层 .admin-toolbar 整组换行 */
+.admin-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  margin-left: auto;
+}
+
+/*
+ * 工具条里的输入框固定宽度: el-input 自身是 width: 100%, 在 flex 行里会撑满剩余空间,
+ * 把"搜索"按钮推到很远的地方(这正是文章管理页按钮错位的成因)。
+ */
+.admin-toolbar .el-input {
+  width: 220px;
+}

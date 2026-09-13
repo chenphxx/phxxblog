@@ -20,9 +20,10 @@ function save(targetStatus?: number) {
 
 <template>
   <div>
-    <div class="toolbar">
-      <h2 style="margin: 0">{{ editor.isEdit ? '编辑文章' : '新建文章' }}</h2>
-      <div>
+    <h2>{{ editor.isEdit ? '编辑文章' : '新建文章' }}</h2>
+
+    <div class="admin-toolbar">
+      <div class="admin-toolbar-actions">
         <el-button @click="editor.cancel">取消</el-button>
         <el-button :loading="editor.saving" @click="save(0)">存草稿</el-button>
         <el-button type="primary" :loading="editor.saving" @click="save()">保存</el-button>
@@ -30,18 +31,8 @@ function save(targetStatus?: number) {
       </div>
     </div>
 
-    <div class="card" style="margin-top: 16px">
+    <div class="card">
       <PostFormFields ref="formRef" :editor="editor" />
     </div>
   </div>
 </template>
-
-<style scoped>
-.toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-</style>

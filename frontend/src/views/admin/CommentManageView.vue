@@ -54,17 +54,20 @@ onMounted(load)
 
 <template>
   <div>
-    <div class="toolbar">
-      <h2 style="margin: 0">评论管理</h2>
-      <el-radio-group v-model="statusFilter" @change="page = 1; load()">
-        <el-radio-button :value="undefined">全部</el-radio-button>
-        <el-radio-button :value="1">正常</el-radio-button>
-        <el-radio-button :value="0">隐藏</el-radio-button>
-        <el-radio-button :value="2">回收站</el-radio-button>
-      </el-radio-group>
+    <h2>评论管理</h2>
+
+    <div class="admin-toolbar">
+      <div class="admin-toolbar-filters">
+        <el-radio-group v-model="statusFilter" @change="page = 1; load()">
+          <el-radio-button :value="undefined">全部</el-radio-button>
+          <el-radio-button :value="1">正常</el-radio-button>
+          <el-radio-button :value="0">隐藏</el-radio-button>
+          <el-radio-button :value="2">回收站</el-radio-button>
+        </el-radio-group>
+      </div>
     </div>
 
-    <div class="card" style="margin-top: 16px">
+    <div class="card">
       <el-table :data="comments" v-loading="loading">
         <el-table-column prop="id" label="ID" width="70" />
         <el-table-column label="评论人" width="120">
@@ -132,13 +135,6 @@ onMounted(load)
 </template>
 
 <style scoped>
-.toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-}
 .comment-link {
   color: var(--text);
   cursor: pointer;

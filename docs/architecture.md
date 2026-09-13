@@ -309,6 +309,13 @@ phxxblog/
 - 字体: 字母/数字/符号统一 Cascadia Code(自托管 latin 子集, `public/fonts/`); 该字体不含中文字形,
   中文自动回退到 PingFang SC / 微软雅黑。
 - 分类/标签与 views/likes 的彩色标签由 `utils/chipColor.ts` 计算: 后台配置了颜色则使用该颜色, 否则按名称哈希生成稳定色相, 再用 `color-mix` 生成背景、边框与文字色, 深浅色下均自动适配。
+- **后台页内工具条**统一走 `styles/admin.css` 的 `.admin-toolbar` 一族类, 视图里不要再各写一份 scoped `.toolbar`:
+  标题 `h2` 独占一行(间距由 `.admin-main > div > h2:first-child` 提供), 下面是一个工具条行 ——
+  左侧 `.admin-toolbar-filters` 放筛选/范围控件, 右侧 `.admin-toolbar-actions` 放操作控件并靠 `margin-left: auto` 靠右,
+  组内顺序为「搜索框 + 搜索按钮 → 普通操作 → 主操作(primary) → 危险操作(danger)」。
+  `.admin-toolbar .el-input` 固定 220px 宽: `el-input` 自身是 `width: 100%`, 在 flex 行里会撑满剩余空间并把"搜索"按钮推远
+  (曾表现为文章管理页"搜索"按钮被顶到下一行按钮的正下方、像是错位)。
+  卡片内若有批量操作(如文章管理的"设为私密/移入回收站"), 仍留在卡片内的 `.batch-bar`, 不并入页级工具条。
 
 ## 7. 关键功能实现
 

@@ -110,10 +110,10 @@ onMounted(load)
 
 <template>
   <div>
-    <div class="toolbar">
-      <h2 style="margin: 0">用户管理</h2>
-      <div class="toolbar-actions">
-        <el-button type="primary" @click="openDialog()">新增用户</el-button>
+    <h2>用户管理</h2>
+
+    <div class="admin-toolbar">
+      <div class="admin-toolbar-actions">
         <el-input
           v-model="keyword"
           placeholder="搜索用户名/昵称/邮箱"
@@ -122,10 +122,11 @@ onMounted(load)
           @clear="page = 1; load()"
         />
         <el-button @click="page = 1; load()">搜索</el-button>
+        <el-button type="primary" @click="openDialog()">新增用户</el-button>
       </div>
     </div>
 
-    <div class="card" style="margin-top: 16px">
+    <div class="card">
       <el-table :data="users" v-loading="loading">
         <el-table-column prop="id" label="ID" width="70" />
         <el-table-column prop="username" label="用户名" width="120" />
@@ -216,22 +217,6 @@ onMounted(load)
 </template>
 
 <style scoped>
-.toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-.toolbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: nowrap;
-}
-.toolbar-actions .el-input {
-  width: 220px;
-}
 .op-row {
   display: flex;
   align-items: center;
