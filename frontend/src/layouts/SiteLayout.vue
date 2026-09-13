@@ -100,7 +100,7 @@ onMounted(async () => {
 .site-layout {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: var(--vh-full);
 }
 /* 内容区吃掉页头与页脚之外的高度: 页脚已有 margin-top: auto, 这里让页面本身也能铺满(如写作页) */
 .site-body {
