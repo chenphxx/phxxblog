@@ -261,6 +261,8 @@ phxxblog/
   受保护前缀见 `PROTECTED_PREFIXES`(含 `/write`、`/diary`、`/changelog`, 不只是 `/admin`)。
 - `utils/tokenStorage.ts`: 令牌与用户信息的唯一读写入口(`ACCESS_TOKEN_KEY` 等)。此前 key 字面量散落在 store、`http.ts`、
   下载导出、路由守卫、编辑器上传共 6 处, 改一处名字就会让其它几处静默失效(症状是"登录成功但立刻 401")。
+- `utils/trendRange.ts`: 访问趋势看板的区间计算与区间汇总(快捷区间起止日期、上一个等长区间、KPI 汇总、环比)。
+  看板要同时取本期与上期两份数据, 这部分是纯函数且有单测, 视图只负责展示。
 - `index.ts`: 按业务域封装接口(authApi、postApi、categoryApi、tagApi、commentApi、mediaApi、statsApi、diaryApi、miscApi、logApi、settingsApi、searchApi、linkApi、userApi), 并导出与后端对齐的请求/响应类型。
 
 ### 6.5 组件 `components/` 与组合式函数 `composables/`
@@ -274,7 +276,7 @@ phxxblog/
 | `PostCard.vue` | 文章卡片: 标题、摘要、分类/标签彩色标签、字数与阅读时间、views/likes、状态标签(均带图标) |
 | `MetaIcon.vue` | 元信息小图标(日历/眼睛/标签/hash 等): 内联 SVG + `currentColor`, 自动跟随主题; 路径由 `npm run check:icons` 校验 |
 | `ContributionsChart.vue` | GitHub 风格贡献热力图(纯 SVG/CSS 实现, 支持按年切换) |
-| `TrendChart.vue` | 访问趋势折线/柱状图(纯 SVG 实现, 无第三方图表库) |
+| `TrendChart.vue` | 访问趋势折线/柱状图(纯 SVG 实现, 无第三方图表库): 宽度实测容器, PV 面积填充 + UV 虚线, 悬停/方向键十字准线取值 |
 | `CommentSection.vue / CommentNode.vue` | 评论区与递归渲染的多层回复 |
 | `LinkCard.vue` | 链接预览卡片 |
 | `ThemeSwitcher.vue` | 主题下拉(色点 + 主题名)与深浅色切换按钮, 前台后台共用 |

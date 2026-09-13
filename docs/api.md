@@ -116,7 +116,7 @@ python scripts/gen_api_doc.py
 
 ## 看板（1 个接口）
 
-> 后台首页聚合数据；需 `stats:view`。`trend` 为近 14 天 `{date, pv, uv}`（与 `/stats/trend` 字段名不同）。
+> 后台首页聚合数据；需 `stats:view`。`trend` 为近 14 天 `{date, pv, uv}`（与 `/stats/trend` 字段名不同）；`overview` 含今日 `today_pv`/`today_uv`。
 
 | 方法 | 路径 | 鉴权 | 处理函数 |
 | --- | --- | --- | --- |
