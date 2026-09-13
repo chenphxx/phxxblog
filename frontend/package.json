@@ -17,6 +17,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "check:icons": "node scripts/check-icons.mjs",
+    "check:element-styles": "node scripts/check-element-styles.mjs",
     "check:size": "node scripts/measure-first-paint.mjs",
     "themes:generate": "node src/styles/themes/_source/generate-themes.mjs",
     "themes:audit": "node src/styles/themes/_source/audit.mjs",

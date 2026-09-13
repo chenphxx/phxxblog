@@ -78,6 +78,10 @@ jobs:
       - name: Verify icon paths
         run: npm run check:icons
 
+      # 程序式 API(ElMessage / ElMessageBox)的样式不会自动注入, 漏了会让确认框变裸样式
+      - name: Verify Element Plus programmatic styles
+        run: npm run check:element-styles
+
       - name: Type check & unit tests
         run: |
           npx vue-tsc -b --force

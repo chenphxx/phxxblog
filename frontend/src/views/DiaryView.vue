@@ -17,8 +17,10 @@ const loading = ref(true)
 const dialog = ref(false)
 const saving = ref(false)
 const editingId = ref<number | null>(null)
-const form = ref({ content_md: '', entry_date: new Date().toISOString().slice(0, 10) })
+const form = ref({ content_md: '', entry_date: today() })
 const contributionYear = ref<number | null>(null)
+/** 编辑器实例: 保存时直接取编辑器内容, 避免 v-model 尚未同步导致"点两次才保存" */
+const editorRef = ref<InstanceType<typeof VditorEditor> | null>(null)
 
 const io = useImportExport({
   filePrefix: 'phxxblog-diaries',
@@ -48,6 +50,16 @@ const groups = computed(() => {
 })
 
 const groupsList = computed(() => Array.from(groups.value.entries()))
+
+/**
+ * 本地日期(YYYY-MM-DD)。
+ * 不能用 toISOString(): 它按 UTC 取日期, 在东八区 00:00~08:00 之间会得到"昨天"。
+ */
+function today(): string {
+  const now = new Date()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+}
 
 /** 按年份二次分组, 生成侧边栏锚点 */
 const yearGroups = computed(() => {
@@ -88,7 +100,7 @@ watch(contributionYear, loadContributions)
 
 function openCreate() {
   editingId.value = null
-  form.value = { content_md: '', entry_date: new Date().toISOString().slice(0, 10) }
+  form.value = { content_md: '', entry_date: today() }
   dialog.value = true
 }
 
@@ -99,17 +111,22 @@ function openEdit(entry: DiaryEntry) {
 }
 
 async function save() {
-  if (!form.value.content_md.trim()) {
+  // 以编辑器内容为准: 中文输入法组字期间 Vditor 不会回调 input, 此时 v-model 可能还是空的
+  const content = editorRef.value?.getValue() ?? form.value.content_md
+  if (!content.trim()) {
     ElMessage.warning('请输入日记内容')
     return
   }
   saving.value = true
   try {
+    const payload = { ...form.value, content_md: content }
     if (editingId.value) {
-      await diaryApi.update(editingId.value, form.value)
+      await diaryApi.update(editingId.value, payload)
     } else {
-      await diaryApi.create(form.value)
+      await diaryApi.create(payload)
     }
+    // 同步回模型, 避免下次打开时编辑器与表单不一致
+    form.value.content_md = content
     ElMessage.success('日记已保存')
     dialog.value = false
     load()
@@ -213,7 +230,7 @@ onMounted(load)
           <el-date-picker v-model="form.entry_date" type="date" value-format="YYYY-MM-DD" />
         </el-form-item>
         <el-form-item label="内容(Markdown, 支持图片/视频/附件/链接)">
-          <VditorEditor v-model="form.content_md" />
+          <VditorEditor ref="editorRef" v-model="form.content_md" />
         </el-form-item>
       </el-form>
       <template #footer>

@@ -40,6 +40,7 @@ run("前端: 类型检查", [npx, "vue-tsc", "-b", "--force"], FRONTEND)
 run("前端: 单元测试", [npm, "run", "test"], FRONTEND, ok_hint="Tests")
 run("前端: 主题与生成物一致", [npm, "run", "themes:audit"], FRONTEND, ok_hint="ALL OK")
 run("前端: 图标路径", [npm, "run", "check:icons"], FRONTEND, ok_hint="ALL OK")
+run("前端: 程序式组件样式", [npm, "run", "check:element-styles"], FRONTEND, ok_hint="ALL OK")
 
 print("=" * 78)
 print("验证汇总")

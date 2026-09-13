@@ -297,6 +297,10 @@ phxxblog/
   只有 `theme-default.css` 写裸 `:root`(承载"新访客未选主题"时的默认配色), 否则多套主题会互相覆盖。
 - **后台跟随主题**靠 `styles/admin.css`: 它把 Element Plus 的 `--el-color-primary` 等令牌指向主题令牌。
   该文件必须排在所有主题之后(`theme-green.css` 的 `@import` 顺序), 且以同特异性后写入才能覆盖成功。
+- **按需引入的边界**: `vite.config.ts` 的 `ElementPlusResolver({ importStyle: 'css' })` 只能识别**模板里的标签**。
+  `ElMessageBox.confirm()` / `ElMessage.success()` 这类 JS 调用不在模板里, 样式不会自动进来, 必须在 `main.ts` 手动
+  `import 'element-plus/es/components/<name>/style/css'`。漏了不会报错, 只会让确认框变成页面左上角一堆裸按钮、
+  提示条完全不可见(曾因此吞掉"内容为空"的提示, 表现为"点保存没反应")。`npm run check:element-styles` 会把漏掉的拦下来。
 - 代码块背景与高亮风格对齐 VSCode 默认主题: 浅色用 `vs`、深色用 `vs2015`, 并统一注释为斜体、字号与正文字号联动。
   注意 Vditor 自带的 `.vditor-reset` 写死了字体栈且不引用 `var(--font-sans)`, 正文的字体由 `theme.css` 里
   同特异性的 `.markdown-body, .vditor-reset` 规则覆盖, **那条规则不要删**。
@@ -465,10 +469,10 @@ npm run dev
 
    | 口径 | 未压缩 | gzip 后 |
    | --- | --- | --- |
-   | 首屏(渲染首屏前必须下载的 js/css) | 约 254 KB | 约 78 KB |
-   | 按需资源(路由/功能懒加载) | 约 1270 KB | 约 379 KB |
+   | 首屏(渲染首屏前必须下载的 js/css) | 约 295 KB | 约 84 KB |
+   | 按需资源(路由/功能懒加载) | 约 1240 KB | 约 375 KB |
 
-   若托管方未压缩, 首屏传输量会从 78 KB 涨到 254 KB。Nginx 参考:
+   若托管方未压缩, 首屏传输量会从 84 KB 涨到 295 KB。Nginx 参考:
    `gzip on; gzip_types text/css application/javascript font/woff2;`
    改动体积后记得同步更新本节数字(`npm run check:size` 的输出即上表口径)。
 3. 后端以 `uvicorn app.main:app --host 0.0.0.0 --port 8000` 或 gunicorn + uvicorn worker 运行, 建议关闭 `PHXXBLOG_DEBUG`。
@@ -531,6 +535,10 @@ Linux cron(注意工作目录要是 `backend`, 脚本按自身位置定位 `PROJ
   `npm run themes:generate`(生成)与 `npm run themes:audit`(校验), 不要手改生成的 CSS。
 - 新增图标: 加到 `components/MetaIcon.vue` 的 `PATHS`, 然后 `npm run check:icons`
   (能抓到 `7.5.5` 这类不会报错但会让笔画丢失的手误)。
+- 用到 Element Plus 的程序式 API(ElMessage / ElMessageBox / ElNotification / ElLoading)时,
+  必须在 `main.ts` 引入对应样式, 然后 `npm run check:element-styles` 复核(按需引入看不到 JS 调用)。
+- 表单里带 Markdown 编辑器时, 保存前要用编辑器实例的 `getValue()`/`syncContent()` 取内容,
+  不要只读 v-model: 中文输入法组字期间 Vditor 不回调 input, 会丢掉刚输入的内容。
 - 后端改动后跑测试: `cd backend && .venv/Scripts/python.exe -m pytest tests -q`。
   测试用内存 SQLite, 不会碰开发库; CI 见 `.github/workflows/ci.yml`(含前端类型/测试/构建两个 job)。
 - 前端必须用 Node >= 22.19(CI 与 `.nvmrc` 用 24): jsdom 30 依赖 undici 8, 而 undici 8 需要

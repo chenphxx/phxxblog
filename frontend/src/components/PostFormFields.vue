@@ -6,11 +6,29 @@
  * 本组件只负责渲染与事件转发, 不持有任何表单状态。
  * editor 是稳定的 reactive 对象, 因此这里直接引用 props.editor 而不是解构。
  */
+import { ref } from 'vue'
 import type { PostEditorState } from '@/composables/usePostEditor'
 import VditorEditor from '@/components/VditorEditor.vue'
 
 const props = defineProps<{ editor: PostEditorState }>()
 const editor = props.editor
+
+const contentEditor = ref<InstanceType<typeof VditorEditor> | null>(null)
+
+/**
+ * 取正文的"当前真相"并写回表单。
+ *
+ * 保存前必须调用: 中文输入法组字期间 Vditor 不回调 input, v-model 可能落后于编辑器,
+ * 直接用 form.content_md 会丢掉最后输入的内容(见 VditorEditor.getValue 的说明)。
+ */
+function syncContent() {
+  const value = contentEditor.value?.getValue()
+  if (typeof value === 'string') {
+    editor.form.content_md = value
+  }
+}
+
+defineExpose({ syncContent })
 </script>
 
 <template>
@@ -90,7 +108,7 @@ const editor = props.editor
     </el-form-item>
 
     <el-form-item label="正文(Markdown, 支持图片/视频/附件/代码高亮)">
-      <VditorEditor v-model="editor.form.content_md" />
+      <VditorEditor ref="contentEditor" v-model="editor.form.content_md" />
     </el-form-item>
   </el-form>
 </template>

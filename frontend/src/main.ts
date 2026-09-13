@@ -4,16 +4,29 @@ import { messageConfig } from 'element-plus'
 
 /*
  * 样式引入顺序(有意义, 别随手调换):
- *   1. element-plus/theme-chalk/dark/css-vars.css —— 深色模式的 CSS 变量
+ *   1. element-plus 的深色变量 + 程序式组件样式 —— Element Plus 基础样式
  *   2. vditor/dist/index.css                      —— 编辑器与正文预览
  *   3. styles/fonts.css                           —— 自托管 Cascadia Code
  *   4. styles/theme-green.css                     —— 主题令牌 + 后台主题层
  * 主题令牌必须晚于 Element Plus 与 Vditor 才能覆盖它们(见 admin.css 的说明)。
  *
  * 这里**不再**引入 element-plus/dist/index.css(整包 349 KB):
- * 组件与它们的样式改由 vite.config.ts 的 ElementPlusResolver 按需注入。
+ * 模板里用到的组件由 vite.config.ts 的 ElementPlusResolver 按需注入样式。
  */
 import 'element-plus/theme-chalk/dark/css-vars.css'
+/*
+ * 程序式调用的组件必须手动补样式。
+ *
+ * ElementPlusResolver 只能看到**模板里的标签**(<el-button> 等), 看不到
+ * `ElMessageBox.confirm(...)` / `ElMessage.success(...)` 这类 JS 调用, 所以这两处样式
+ * 不会自动进来 —— 后果是确认框变成页面左上角一堆裸按钮, 提示条完全不可见
+ * (曾经因此把"内容为空"的提示吞噬掉, 表现为"点保存没反应, 要点两次")。
+ *
+ * 以后再加 ElNotification / ElLoading 等程序式 API, 在这里补一行对应样式;
+ * npm run check:element-styles 会检查有没有漏。
+ */
+import 'element-plus/es/components/message-box/style/css'
+import 'element-plus/es/components/message/style/css'
 import 'vditor/dist/index.css'
 import './styles/fonts.css'
 import './styles/theme-green.css'

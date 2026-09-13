@@ -15,11 +15,13 @@ export default defineConfig({
      * 组件(ElWatermark / ElCarousel / ElCalendar / ElTour / ElTransfer ...),
      * 而源码实际只用到 43 个, 主 chunk 因此多出 300~400 KB。
      *
-     * importStyle: 'css' 让每个被用到的组件顺带引入自己的样式文件,
+     * importStyle: 'css' 让每个**模板里用到**的组件顺带引入自己的样式文件,
      * 于是可以把 `element-plus/dist/index.css`(349 KB)整包去掉。
-     * 程序式 API(ElMessage / ElMessageBox / ElLoading)仍用显式 import,
-     * 由这里的 sideEffects 补上样式 —— 保留显式 import 是为了不改变代码可读性,
-     * 也避免 auto-import 生成一堆"看不见的"全局函数。
+     *
+     * 注意: 解析器看不到程序式 API(ElMessage / ElMessageBox / ElLoading)的调用,
+     * 它们的样式**不会**自动注入, 必须在 main.ts 里手动 import(那里有清单与说明),
+     * 否则确认框会变成左上角的裸按钮、提示条不可见。
+     * 漏了会被 `npm run check:element-styles` 拦下。
      */
     Components({
       dts: 'src/components.d.ts',

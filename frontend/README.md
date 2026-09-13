@@ -33,6 +33,7 @@ npm run test           # vitest 单次运行
 npm run test:watch     # 监听模式(开发时用)
 npm run test:coverage  # 覆盖率报告 -> coverage/index.html
 npm run check:icons    # 校验 MetaIcon 的 SVG path 是否合法
+npm run check:element-styles  # 校验程序式 Element Plus 组件是否补了样式
 npm run check:size     # 打印首屏/整包体积(先 npm run build)
 ```
 
@@ -55,6 +56,7 @@ npm run check:size     # 打印首屏/整包体积(先 npm run build)
 | `src/composables/usePostEditor.test.ts` | 文章编辑流程：状态推导、分类/标签就地新建、删除取消不误删、封面上传复位 |
 | `src/composables/useImportExport.test.ts` | 导入查重分支、导入后刷新、导出下载与失败回滚 |
 | `src/api/http.test.ts` | 401 静默刷新：重放原请求、并发只刷新一次、防循环、刷新失败才登出 |
+| `src/views/DiaryView.test.ts` | **回归测试**：Vditor 组字期间 v-model 落后时，保存必须取编辑器内容 |
 | `src/views/SearchView.test.ts` | **回归测试**：该组件被 keep-alive 缓存，切换 `route.query` 时必须重新检索 |
 
 `SearchView` 那组用例是针对一个真实 bug 写的（URL 变了但列表不刷新）。它用真实 router
@@ -80,6 +82,41 @@ npm run check:size     # 打印首屏/整包体积(先 npm run build)
 3. 断言渲染结果时优先用子组件的桩标记（如 `.post-stub`）而不是文字匹配，避免被样式或装饰文本干扰。
 
 ## 开发环境注意事项
+
+### 按需引入下，程序式组件的样式要手动加（踩过）
+
+Element Plus 改成按需引入后，`vite.config.ts` 的 `ElementPlusResolver` 只能看到**模板里的标签**。
+`ElMessageBox.confirm()` / `ElMessage.success()` 是 JS 调用，解析器看不到，**样式不会自动进来**：
+
+- 确认框变成页面左上角一堆裸按钮（截图里就是这样），没有遮罩也没有圆角；
+- 提示条（`ElMessage`）完全不可见 —— 界面上看起来"点了没反应"。
+
+这类问题 `vue-tsc` 与单测都发现不了，所以在 `main.ts` 里显式引入，并用脚本兜底：
+
+```ts
+import 'element-plus/es/components/message-box/style/css'
+import 'element-plus/es/components/message/style/css'
+```
+
+```powershell
+npm run check:element-styles   # 扫源码里用到的程序式 API, 核对 main.ts 是否引入对应样式
+```
+
+再加 `ElNotification` / `ElLoading` 之类的程序式 API 时，先跑这个脚本它会直接告诉你缺哪一行。
+
+### 编辑器里的内容以 `getValue()` 为准（踩过）
+
+用 `VditorEditor` 的表单，**保存前必须读编辑器实例的当前值**，不要只信 `v-model`：
+Vditor 在中文输入法组字期间会跳过 `input` 回调（`vditor/src/ts/ir/index.ts` 的 `composingLock`），
+于是存在"编辑器里已经有字、但 model 还是空"的一瞬间。这时候点保存会命中空值判断直接 return，
+表现就是"新增日记要点两次保存"。
+
+```ts
+const editorRef = ref<InstanceType<typeof VditorEditor> | null>(null)
+const content = editorRef.value?.getValue() ?? form.value.content_md
+```
+
+`DiaryView.vue` / `PostFormFields.vue` 都按这个模式处理，回归测试见 `src/views/DiaryView.test.ts`。
 
 ### 改了文件不用重启服务
 

@@ -116,6 +116,21 @@ watch(
     }
   },
 )
+
+/**
+ * 直接读编辑器里的当前内容, 不依赖 v-model 是否已经同步过来。
+ *
+ * 为什么需要: Vditor 的 `input` 回调在中文输入法组字期间会被跳过(见 vditor
+ * src/ts/ir/index.ts 的 composingLock), 也就是说"编辑器里已经有字、但 modelValue
+ * 还是空的"这一瞬间是真实存在的。此时点保存会命中"请输入内容"的空值判断,
+ * 用户看到的现象是"点一次没反应, 再点一次才行"。
+ * 因此保存前应调用本方法取值, 而不是相信 props.modelValue。
+ */
+function getValue(): string {
+  return vditor?.getValue() ?? props.modelValue
+}
+
+defineExpose({ getValue })
 </script>
 
 <template>
