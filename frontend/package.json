@@ -3,6 +3,10 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "//engines": "下限由 jsdom 30 -> undici 8 决定(undici 8 需要 node:worker_threads.markAsUncloneable)。CI 与 .nvmrc 用 Node 24; 详细原因见 README.md 的「Node 版本要求」。",
+  "engines": {
+    "node": ">=22.19.0"
+  },
   "scripts": {
     "predev": "node scripts/copy-vditor-assets.mjs",
     "dev": "vite",

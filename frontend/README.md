@@ -1,5 +1,28 @@
 # 前端 (Vue 3 + TypeScript + Vite + Element Plus)
 
+## Node 版本要求
+
+**必须 Node >= 22.19**，CI 与本地统一用仓库根目录 `.nvmrc` 里的版本（当前 24）。
+`npm ci` 在更低的版本上会打出 `EBADENGINE` 警告，装了 nvm / fnm 的话直接：
+
+```powershell
+nvm use            # 读取根目录 .nvmrc
+```
+
+原因值得记一笔，因为它踩过：测试环境用的 `jsdom@30` 依赖 `undici@8`，而 undici 8 需要
+`node:worker_threads.markAsUncloneable`（Node 22.19 才有）。用 Node 20 跑测试时，jsdom 在**加载阶段**
+就崩，报错是这个，而且**每个测试文件都报同一条**：
+
+```
+TypeError: webidl.util.markAsUncloneable is not a function
+  at new CacheStorage (node_modules/undici/lib/web/cache/cachestorage.js:20:17)
+  at ... jsdom/lib/api.js:12
+```
+
+看着像测试代码有问题，其实是 Node 版本不对。见到这条报错先 `node -v`，不要改测试。
+下限写在 `package.json` 的 `engines.node`，改版本时 `.nvmrc`、`engines` 与两个 workflow 要一起改
+（workflow 用 `node-version-file: '.nvmrc'`，不会再各自写死）。
+
 ## 开发
 
 ```powershell

@@ -532,7 +532,10 @@ Linux cron(注意工作目录要是 `backend`, 脚本按自身位置定位 `PROJ
 - 新增图标: 加到 `components/MetaIcon.vue` 的 `PATHS`, 然后 `npm run check:icons`
   (能抓到 `7.5.5` 这类不会报错但会让笔画丢失的手误)。
 - 后端改动后跑测试: `cd backend && .venv/Scripts/python.exe -m pytest tests -q`。
-  测试用内存 SQLite, 不会碰开发库; CI 见 `.github/workflows/backend-tests.yml`。
+  测试用内存 SQLite, 不会碰开发库; CI 见 `.github/workflows/ci.yml`(含前端类型/测试/构建两个 job)。
+- 前端必须用 Node >= 22.19(CI 与 `.nvmrc` 用 24): jsdom 30 依赖 undici 8, 而 undici 8 需要
+  `node:worker_threads.markAsUncloneable`。低于该版本加载 jsdom 会直接抛
+  `TypeError: webidl.util.markAsUncloneable is not a function`, 所有测试文件都起不来。
 - 前端提交前建议执行类型检查与构建: `cd frontend && npm run build`。
 - 关注体积变化时跑 `cd frontend && npm run build && npm run check:size`(先量再改, 避免"感觉变快了")。
 - 前端单测: `cd frontend && npm run test`(Vitest + jsdom)。视图里重复的流程逻辑不要复制第二份,

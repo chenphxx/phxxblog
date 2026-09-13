@@ -1,15 +1,16 @@
-name: Backend Tests
+name: CI
 
-# 本工作流含两个 job: 后端 pytest(test)与前端校验(theme-check)。
-# 因此路径过滤必须同时包含 backend/** 与 frontend/** —— 只写 backend/** 时,
-# 前端改动不会触发前端校验(这是先前的漏洞: 单独改前端时 CI 全绿但什么都没检查)。
+# 两个 job: 后端 pytest(backend)与前端类型/测试/构建(frontend)。
+#
+# 路径过滤必须同时覆盖 backend/** 与 frontend/** —— 只写 backend/** 时,
+# 单独改前端不会触发任何检查(这是先前的漏洞: 前端改动 CI 全绿, 实际什么都没跑)。
 on:
   push:
     branches: [main]
     paths:
       - 'backend/**'
       - 'frontend/**'
-      - '.github/workflows/backend-tests.yml'
+      - '.github/workflows/ci.yml'
   pull_request:
     paths:
       - 'backend/**'
@@ -17,7 +18,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  backend:
+    name: backend (pytest)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -44,7 +46,8 @@ jobs:
           PHXXBLOG_SECRET_KEY: test-secret-key-0123456789abcdefghijklmnop
         run: python -m pytest tests -q
 
-  theme-check:
+  frontend:
+    name: frontend (types / tests / build)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -53,10 +56,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # 版本取自仓库根的 .nvmrc, 与本地开发保持一致。
+      # 这里曾经写死 node-version: '20', 结果是: jsdom 30 依赖 undici 8, 而 undici 8 需要
+      # node:worker_threads 的 markAsUncloneable(Node >= 22.19), 在 Node 20 上加载 jsdom 直接抛
+      # "TypeError: webidl.util.markAsUncloneable is not a function" —— 5 个测试文件全部起不来。
+      # 改 Node 版本时请同时改 .nvmrc 与 frontend/package.json 的 engines。
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 

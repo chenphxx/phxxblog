@@ -84,7 +84,7 @@ cd backend
 .venv/Scripts/python.exe scripts/verify_all.py
 ```
 
-CI 见 `.github/workflows/backend-tests.yml`；前端构建发布见 `.github/workflows/build-frontend.yml`。
+CI 见 `.github/workflows/ci.yml`（后端 pytest + 前端类型/测试/主题/图标/构建）；前端构建发布见 `.github/workflows/build-frontend.yml`。
 
 ### 访问地址
 
