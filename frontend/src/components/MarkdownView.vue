@@ -2,8 +2,15 @@
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import Vditor from 'vditor'
 import { useThemeStore } from '@/stores/theme'
+import type { MarkdownHeading } from '@/types'
 
 const props = defineProps<{ content: string }>()
+/**
+ * @brief 渲染完成后把正文标题抛给父组件(文章详情页据此生成右侧目录)
+ *
+ * @param headings 按文档顺序排列的标题; 正文没有标题时为空数组
+ */
+const emit = defineEmits<{ headings: [MarkdownHeading[]] }>()
 const el = ref<HTMLDivElement>()
 const theme = useThemeStore()
 
@@ -196,6 +203,43 @@ function applyCodeFold(root: HTMLDivElement) {
   })
 }
 
+/**
+ * 标题文本转锚点片段: 保留中英文与数字, 空格与标点统一压成连字符。
+ *
+ * @param text 标题纯文本
+ * @return 可作为 id 的片段; 全部字符都被过滤掉时返回空串, 由调用方兜底
+ */
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\u4e00-\u9fa5]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+/**
+ * 给正文标题编锚点并收集目录。
+ *
+ * Vditor 渲染出来的标题没有 id, 目录需要的锚点只能自己补。同一篇文章里出现同名标题时
+ * 追加 -2 / -3 保证唯一, 否则后一个同名标题的锚点会失效(点击目录跳到第一个)。
+ *
+ * @param root 正文根节点
+ * @return 按文档顺序排列的标题列表
+ */
+function buildHeadings(root: HTMLDivElement): MarkdownHeading[] {
+  const headings: MarkdownHeading[] = []
+  const used = new Map<string, number>()
+  root.querySelectorAll<HTMLElement>('h1, h2, h3, h4, h5, h6').forEach((node) => {
+    const text = (node.textContent || '').trim()
+    if (!text) return
+    const base = slugify(text) || 'section'
+    const seen = used.get(base) || 0
+    used.set(base, seen + 1)
+    node.id = seen === 0 ? base : `${base}-${seen + 1}`
+    headings.push({ id: node.id, text, level: Number(node.tagName.slice(1)) })
+  })
+  return headings
+}
+
 async function render() {
   if (!el.value) return
   const currentTheme = theme.isDark ? 'dark' : 'light'
@@ -221,6 +265,8 @@ async function render() {
       previewSrc.value = img.src
     })
   })
+  // 标题锚点与目录(必须在 DOM 完整之后, 否则收集不到标题)
+  emit('headings', buildHeadings(el.value))
 }
 
 onMounted(render)

@@ -119,6 +119,9 @@ class PostDetail(PostListItem):
 
     content_md: str
     content_html: str | None = None
+    # 同一发布序列中紧邻的文章(更早 / 更晚); 没有相邻文章时为 None, 由前端决定是否渲染
+    prev_post: "PostListItem | None" = None
+    next_post: "PostListItem | None" = None
 
 
 class PostDetailAdmin(PostDetail):

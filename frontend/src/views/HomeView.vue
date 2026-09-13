@@ -5,6 +5,7 @@ import { CopyDocument, Refresh } from '@element-plus/icons-vue'
 import { categoryApi, mediaApi, miscApi, postApi, settingsApi, statsApi } from '@/api'
 import type { Category, ContributionPoint, HistoryEvent, PostItem, PublicSettings } from '@/types'
 import PostCard from '@/components/PostCard.vue'
+import HotPostsCard from '@/components/HotPostsCard.vue'
 import MarkdownView from '@/components/MarkdownView.vue'
 import ContributionsChart from '@/components/ContributionsChart.vue'
 import MetaIcon from '@/components/MetaIcon.vue'
@@ -20,6 +21,8 @@ const page = ref(1)
 const pageSize = 10
 const postsLoading = ref(false)
 const latestPost = ref<PostItem | null>(null)
+/** 左侧栏热门文章(按浏览量, 取 7 条) */
+const hotPosts = ref<PostItem[]>([])
 const postsAnchor = ref<HTMLElement>()
 const categories = ref<Category[]>([])
 const contributions = ref<ContributionPoint[]>([])
@@ -112,6 +115,18 @@ watch(page, async () => {
   postsAnchor.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 })
 
+/**
+ * 加载左侧栏的热门文章。
+ * 属于辅助模块, 失败时保持空列表即可(请求拦截器已经提示过错误)。
+ */
+async function loadHotPosts() {
+  try {
+    hotPosts.value = await postApi.hot(7)
+  } catch {
+    hotPosts.value = []
+  }
+}
+
 async function loadContributions() {
   contributions.value = await statsApi.contributions({
     source: 'post',
@@ -180,6 +195,8 @@ onActivated(async () => {
     } else {
       await loadPosts()
     }
+    // 阅读量会随访问变化, 一并刷新榜单
+    await loadHotPosts()
   } catch {
     // 忽略刷新失败
   }
@@ -190,7 +207,7 @@ onMounted(async () => {
     const [settingData, categoryData] = await Promise.all([settingsApi.public(), categoryApi.list()])
     settings.value = settingData
     categories.value = categoryData
-    const tasks: Promise<unknown>[] = [loadPosts()]
+    const tasks: Promise<unknown>[] = [loadPosts(), loadHotPosts()]
     // 后台关闭的模块不再请求对应接口
     if (settingData?.show_contributions !== false) tasks.push(loadContributions())
     if (settingData?.show_history !== false) tasks.push(loadHistory())
@@ -257,6 +274,9 @@ onMounted(async () => {
             </router-link>
           </div>
         </aside>
+
+        <!-- 热门文章(位于个人信息与常用网站之间) -->
+        <HotPostsCard :posts="hotPosts" />
 
         <!-- 常用网站(仅管理员可见, 位于个人信息下方) -->
         <aside v-if="isAdmin && settings?.website_links?.length" class="card site-links-card">

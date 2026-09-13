@@ -172,14 +172,17 @@ python scripts/gen_api_doc.py
 | `GET` | `/misc/saying` | 公开 | `saying` |
 | `GET` | `/misc/history/programmer-today` | 公开 | `programmer_history_today` |
 
-## 文章（13 个接口）
+## 文章（14 个接口）
 
 > 列表仅返回已发布文章；状态为 0草稿/1审核中/2已发布/3私密/4回收站。无 `post:publish` 者提交 status=2 会被**静默降级**为审核中（作者提交发布请求不该收到报错），而状态流转接口 `PATCH /posts/{id}/status` 对越权直接返回 403。私密/回收站内容对无权者返回 404 而非 403，不暴露存在性。
+>
+> `/posts/hot` 按阅读量倒序返回已发布文章（前台首页与文章详情页侧栏的「热门文章」）；详情接口额外返回 `prev_post` / `next_post`，为按发布时间相邻的上一篇/下一篇，首尾文章对应项为 `null`。
 
 | 方法 | 路径 | 鉴权 | 处理函数 |
 | --- | --- | --- | --- |
 | `GET` | `/posts` | 公开 | `list_posts` |
 | `GET` | `/posts/archive` | 公开 | `archive` |
+| `GET` | `/posts/hot` | 公开 | `hot_posts` |
 | `GET` | `/posts/admin` | 登录 | `admin_list_posts` |
 | `GET` | `/posts/export` | 登录 | `export_posts` |
 | `POST` | `/posts/import` | post:create | `import_posts` |

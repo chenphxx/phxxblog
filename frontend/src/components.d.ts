@@ -58,6 +58,7 @@ declare module 'vue' {
     ElTag: typeof import('element-plus/es')['ElTag']
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
     ElUpload: typeof import('element-plus/es')['ElUpload']
+    HotPostsCard: typeof import('./components/HotPostsCard.vue')['default']
     ImportExportDialogs: typeof import('./components/ImportExportDialogs.vue')['default']
     LinkCard: typeof import('./components/LinkCard.vue')['default']
     MarkdownView: typeof import('./components/MarkdownView.vue')['default']

@@ -205,7 +205,7 @@ phxxblog/
 | --- | --- | --- |
 | auth | /api/v1/auth | 注册、登录、刷新、登出、当前用户、改密码/邮箱/资料 |
 | users | /api/v1/users | 用户与角色权限管理(含重置密码) |
-| posts | /api/v1/posts | 文章: 前台列表、归档、后台列表、详情、增删改、回收站、发布状态、点赞、导入/导出 |
+| posts | /api/v1/posts | 文章: 前台列表、归档、热门榜单、后台列表、详情(含上一篇/下一篇)、增删改、回收站、发布状态、点赞、导入/导出 |
 | categories / tags | /api/v1/categories, /api/v1/tags | 分类与标签(含颜色) |
 | comments | /api/v1/comments, /api/v1/posts/{id}/comments | 评论的读取、发布与后台管理 |
 | media | /api/v1/media | 媒体上传、列表、删除 |
@@ -235,7 +235,7 @@ phxxblog/
 - 使用 hash 模式(`createWebHashHistory`), 便于静态托管: 前台 `/`、`/post/:id`、`/archive`、`/posts`、`/search`、`/write(/:id)`、`/changelog`、`/diary`; 后台 `/admin/**`(仪表盘/文章/分类标签/评论/媒体/用户/设置/日志/资料)。
 - 全局前置守卫: 路由标记 `meta.requiresAuth` 且本地无令牌时跳转登录页并带上 `redirect`。
 - 前台布局 `layouts/SiteLayout.vue`: 顶栏(站点名 + 终端风格提示符 + 导航 + 主题按钮) + 内容区 + 页脚; 布局层负责加载公开配置(站点名/标签页标题/图标)与访问埋点。
-  高度链: `.site-layout` 是 `min-height: 100vh` 的纵向 flex, `.site-body` 用 `flex: 1` 加 `grid-auto-rows: minmax(0, 1fr)`
+  高度链: `.site-layout` 是 `min-height: var(--vh-full)` 的纵向 flex(为什么不是 `100vh` 见 6.6), `.site-body` 用 `flex: 1` 加 `grid-auto-rows: minmax(0, 1fr)`
   撑满页头与页脚之间的空间(页脚另有 `margin-top: auto`), 内容少的页面也不会在页脚上方留出空白。
 - 后台布局 `views/admin/AdminLayout.vue`: 侧边菜单 + 顶栏(API 文档入口、主题按钮、退出登录)。
 - 前台部分页面使用 `keep-alive` 缓存(首页、全部文章、归档、搜索)。
@@ -280,6 +280,7 @@ phxxblog/
 | `PostFormFields.vue` | 文章表单字段(标题/别名/摘要/分类/标签/可见性/封面/正文), 写作页与后台编辑器共用 |
 | `ImportExportDialogs.vue` | 导入 / 查重 / 导出三个弹窗, 文章管理与日记页共用 |
 | `PostCard.vue` | 文章卡片: 标题、摘要、分类/标签彩色标签、字数与阅读时间、views/likes、状态标签(均带图标) |
+| `HotPostsCard.vue` | 热门文章榜单(名次 + 标题 + 彩色阅读量): 首页左侧栏与文章详情页右侧栏共用, 顺序由后端 `/posts/hot` 决定 |
 | `MetaIcon.vue` | 元信息小图标(日历/眼睛/标签/hash 等): 内联 SVG + `currentColor`, 自动跟随主题; 路径由 `npm run check:icons` 校验 |
 | `ContributionsChart.vue` | GitHub 风格贡献热力图(纯 SVG/CSS 实现, 支持按年切换) |
 | `TrendChart.vue` | 访问趋势折线/柱状图(纯 SVG 实现, 无第三方图表库): 宽度实测容器, PV 面积填充 + UV 虚线, 悬停/方向键十字准线取值 |
@@ -310,6 +311,14 @@ phxxblog/
   `ElMessageBox.confirm()` / `ElMessage.success()` 这类 JS 调用不在模板里, 样式不会自动进来, 必须在 `main.ts` 手动
   `import 'element-plus/es/components/<name>/style/css'`。漏了不会报错, 只会让确认框变成页面左上角一堆裸按钮、
   提示条完全不可见(曾因此吞掉"内容为空"的提示, 表现为"点保存没反应")。`npm run check:element-styles` 会把漏掉的拦下来。
+- **全站放大到 110%**: `theme.css` 在 `html` 上写 `zoom: var(--app-zoom)`(`--app-zoom: 1.1`), 效果与用户把浏览器缩放调到 110% 一致。
+  用 `zoom` 而不是 `transform: scale()`, 是因为 zoom 参与布局(元素实际占位变大、文字重新换行), 而 transform 只是把排好版的画面整体拉伸,
+  文字会发虚、点击热区与视觉错位。
+  代价是 root 上的 zoom **不会同步换算视口单位**: `100vh` 取到的仍是未放大的视口高度, 再被放大 10% 就会比可视区高出一截,
+  表现为每页都多出一条纵向滚动条。因此需要"正好铺满一屏"的地方(前台布局、后台布局、登录页、媒体库、归档与日记的侧栏)
+  一律用 `--vh-full: calc(100vh / var(--app-zoom))`, 不要再写 `100vh`。JS 侧同理: 媒体库量栅格尺寸用
+  `clientWidth / clientHeight`(与 CSS 同坐标系的未缩放值), 若用 `getBoundingClientRect()` 会把放大后的视觉尺寸再写回 CSS、
+  算出的行高多出 10%; 只做比例运算的地方(正文代码块行高、趋势图鼠标坐标)不受影响。
 - 代码块背景与高亮风格对齐 VSCode 默认主题: 浅色用 `vs`、深色用 `vs2015`, 并统一注释为斜体、字号与正文字号联动。
   注意 Vditor 自带的 `.vditor-reset` 写死了字体栈且不引用 `var(--font-sans)`, 正文的字体由 `theme.css` 里
   同特异性的 `.markdown-body, .vditor-reset` 规则覆盖, **那条规则不要删**。
@@ -487,6 +496,25 @@ phxxblog/
 - 导入: `POST /api/v1/diaries/import` 支持 .md 或 zip(可多选)。日期优先取 frontmatter 的 `date`, 其次取文件名开头的 `YYYY-MM-DD`, 都取不到则记为今天; `created_at` 有效时一并还原, 用于同一天多条日记的排序。zip 内的图片保存到上传目录并自动改写正文地址, 内容为空的文件会被跳过并在结果中给出提示。
 - 查重: 导入前按正文比对(`normalize_content` 忽略空白差异, 图片地址只比较文件名, 因此"相对路径"与导入后改写出的 `/assets/uploads/...` 地址视为同一张图), 与库中已有日记及本批内容比对; 前端可选择仅导入不重复或全部导入。
 - 前端入口: 日记页右上角的"导入日记 / 导出日记"按钮(导出可选 Markdown 或 HTML 格式)。
+
+### 7.23 文章目录与相邻文章
+
+文章详情页是"正文 + 右侧栏"两栏布局(窄屏 ≤1100px 收成单栏并隐藏右侧栏):
+
+- 目录: `MarkdownView` 渲染完正文后收集 `h1~h6`, 给每个标题补上锚点 id(同名标题追加 `-2`、`-3` 保证唯一), 再通过 `headings`
+  事件交给详情页; 详情页在右侧栏上方的卡片里按层级缩进列出目录, 滚动时高亮"最后一个已滚过顶栏的标题",
+  点击调 `scrollIntoView` 定位 —— 本站是 hash 路由, 不能靠改 `location.hash` 跳锚点。顶栏是 sticky 的,
+  标题的 `scroll-margin-top` 已按顶栏高度留出余量。
+- 相邻文章: 详情接口在 `PostDetail` 上附带 `prev_post` / `next_post`(按 `published_at` 相邻查询, 只在已发布文章之间取, 缺失为 `null`),
+  正文末尾右下角展示"最后更新于"与上一篇/下一篇卡片; 没有相邻文章的一侧不渲染卡片(用 `grid-column` 让"下一篇"始终落在右列)。
+- 注意: 阅读量由访问埋点累加, 为此 `record_visit` 改用显式 `UPDATE` 并带上 `updated_at` 原值, 避免触发 `onupdate`
+  把"最后更新时间"顶成"最后一次访问时间"(详情页的"最后更新于"会因此永远显示当前时间)。
+
+### 7.24 热门文章榜单
+
+`GET /posts/hot?limit=7` 按 `views` 倒序返回已发布文章(浏览量相同时按 id 倒序, 保证顺序稳定)。首页左侧栏
+(个人信息与常用网站之间)与文章详情页右侧栏下方共用 `HotPostsCard.vue`, 展示名次、标题(单行截断)与彩色阅读量标签;
+排序口径完全由后端决定, 两处保持一致。
 
 ## 8. 数据模型概览
 

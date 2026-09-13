@@ -78,6 +78,20 @@ export interface PostItem {
 export interface PostDetail extends PostItem {
   content_md: string
   content_html?: string | null
+  /** 同一发布序列中更早的一篇(没有则为 null) */
+  prev_post?: PostItem | null
+  /** 同一发布序列中更晚的一篇(没有则为 null) */
+  next_post?: PostItem | null
+}
+
+/** Markdown 正文标题(文章详情页的目录用) */
+export interface MarkdownHeading {
+  /** 生成的锚点 id(Vditor 渲染出来的标题本身没有 id) */
+  id: string
+  /** 标题纯文本 */
+  text: string
+  /** 标题层级 1-6 */
+  level: number
 }
 
 /**

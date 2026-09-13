@@ -479,6 +479,47 @@ def import_posts(
     }, "导入完成")
 
 
+@router.get("/hot", response_model=dict)
+def hot_posts(
+    limit: int = Query(7, ge=1, le=20, description="返回条数"),
+    db: Session = Depends(get_db),
+):
+    """热门文章(按浏览量倒序, 仅已发布)。"""
+    items = (
+        db.query(Post)
+        .filter(Post.status == 2)
+        .order_by(Post.views.desc(), Post.id.desc())
+        .limit(limit)
+        .all()
+    )
+    return ok([PostListItem.model_validate(p) for p in items])
+
+
+def _post_neighbors(db: Session, post: Post) -> tuple[Post | None, Post | None]:
+    """查询同一发布序列中紧邻的上一篇(更早)与下一篇(更晚)。
+
+    只在已发布文章之间取邻居, 非已发布文章(草稿预览等)没有"上一篇/下一篇"的语义。
+
+    @param db 数据库会话
+    @param post 当前文章
+    @return (上一篇, 下一篇), 不存在时对应项为 None
+    """
+    if post.status != 2 or post.published_at is None:
+        return None, None
+    published = db.query(Post).filter(Post.status == 2)
+    prev_post = (
+        published.filter(Post.published_at < post.published_at)
+        .order_by(Post.published_at.desc(), Post.id.desc())
+        .first()
+    )
+    next_post = (
+        published.filter(Post.published_at > post.published_at)
+        .order_by(Post.published_at.asc(), Post.id.asc())
+        .first()
+    )
+    return prev_post, next_post
+
+
 @router.get("/{post_id}", response_model=dict)
 def get_post(
     post_id: int,
@@ -495,7 +536,13 @@ def get_post(
             raise HTTPException(status_code=404, detail="文章不存在")
     if post.status == 2:
         record_visit(db, request=request, post=post)
-    return ok(PostDetail.model_validate(post))
+    detail = PostDetail.model_validate(post)
+    prev_post, next_post = _post_neighbors(db, post)
+    if prev_post is not None:
+        detail.prev_post = PostListItem.model_validate(prev_post)
+    if next_post is not None:
+        detail.next_post = PostListItem.model_validate(next_post)
+    return ok(detail)
 
 
 @router.post("", response_model=dict)

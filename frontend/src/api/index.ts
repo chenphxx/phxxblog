@@ -53,6 +53,7 @@ export const authApi = {
 export const postApi = {
   list: (params?: Record<string, unknown>) => http.get<Page<PostItem>>('/posts', { params }),
   archive: () => http.get<ArchiveGroup[]>('/posts/archive'),
+  hot: (limit = 7) => http.get<PostItem[]>('/posts/hot', { params: { limit } }),
   detail: (id: number) => http.get<PostDetail>(`/posts/${id}`),
   adminList: (params?: Record<string, unknown>) => http.get<Page<PostItem>>('/posts/admin', { params }),
   create: (data: Record<string, unknown>) => http.post<PostDetailAdmin>('/posts', data),
