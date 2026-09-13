@@ -263,6 +263,10 @@ phxxblog/
   下载导出、路由守卫、编辑器上传共 6 处, 改一处名字就会让其它几处静默失效(症状是"登录成功但立刻 401")。
 - `utils/trendRange.ts`: 访问趋势看板的区间计算与区间汇总(快捷区间起止日期、上一个等长区间、KPI 汇总、环比)。
   看板要同时取本期与上期两份数据, 这部分是纯函数且有单测, 视图只负责展示。
+- `utils/mediaGrid.ts`: 媒体库栅格的一屏容量与行高计算(列 × 行)。媒体库是铺满一屏的固定高度栅格,
+  每页数量必须等于一屏容量(否则"还有空位却已翻页"), 行高必须由容器高度均分而不能用 `1fr`(否则末页只剩一行时会被拉伸占满整屏); 取整边界有单测。
+- `utils/mediaPreview.ts`: 媒体在线预览方式判定(图片/视频/音频/PDF/文本/不支持), 文档类按扩展名细分。
+- `utils/format.ts`: 文件大小格式化(B / KB / MB), 媒体库列表与预览浮层共用。
 - `index.ts`: 按业务域封装接口(authApi、postApi、categoryApi、tagApi、commentApi、mediaApi、statsApi、diaryApi、miscApi、logApi、settingsApi、searchApi、linkApi、userApi), 并导出与后端对齐的请求/响应类型。
 
 ### 6.5 组件 `components/` 与组合式函数 `composables/`
@@ -277,6 +281,7 @@ phxxblog/
 | `MetaIcon.vue` | 元信息小图标(日历/眼睛/标签/hash 等): 内联 SVG + `currentColor`, 自动跟随主题; 路径由 `npm run check:icons` 校验 |
 | `ContributionsChart.vue` | GitHub 风格贡献热力图(纯 SVG/CSS 实现, 支持按年切换) |
 | `TrendChart.vue` | 访问趋势折线/柱状图(纯 SVG 实现, 无第三方图表库): 宽度实测容器, PV 面积填充 + UV 虚线, 悬停/方向键十字准线取值 |
+| `MediaPreview.vue` | 媒体预览浮层(图片/视频/音频/PDF/文本), 覆盖在当前页面上: 点遮罩或 Esc 关闭, ← → 在当页媒体间切换 |
 | `CommentSection.vue / CommentNode.vue` | 评论区与递归渲染的多层回复 |
 | `LinkCard.vue` | 链接预览卡片 |
 | `ThemeSwitcher.vue` | 主题下拉(色点 + 主题名)与深浅色切换按钮, 前台后台共用 |
@@ -378,6 +383,8 @@ phxxblog/
 ### 7.13 媒体上传
 
 `/media/upload` 接收 `multipart/form-data`, 按扩展名判定类型, 文件名使用 UUID、按 `年/月` 分目录落盘, 返回可直接访问的 `/assets/...` URL; 前端写作页与媒体库共用该接口, Vditor 的上传也指向它(请求头带 Bearer 令牌)。媒体表记录原始名、路径、MIME、大小、类型与关联对象。
+
+媒体库页点击卡片会在当前页面弹出预览浮层(`components/MediaPreview.vue`), 渲染方式由 `utils/mediaPreview.ts` 的 `previewKind()` 判定(有单测): 图片 / 视频 / 音频直接按媒体类型渲染; pdf 交给浏览器内置阅读器(iframe 指向文件本身); `.txt/.md/.csv/.json` 读取内容后用 `<pre>` 展示(内容经模板插值转义, 不会当 HTML 执行, 上限 256 KB); office、压缩包等浏览器无法渲染的只提供下载。浮层支持点遮罩或 Esc 关闭, ← → 在当页媒体之间切换。
 
 ### 7.14 访问统计与贡献热力图
 

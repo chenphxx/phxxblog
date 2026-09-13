@@ -61,6 +61,7 @@ declare module 'vue' {
     ImportExportDialogs: typeof import('./components/ImportExportDialogs.vue')['default']
     LinkCard: typeof import('./components/LinkCard.vue')['default']
     MarkdownView: typeof import('./components/MarkdownView.vue')['default']
+    MediaPreview: typeof import('./components/MediaPreview.vue')['default']
     MetaIcon: typeof import('./components/MetaIcon.vue')['default']
     PostCard: typeof import('./components/PostCard.vue')['default']
     PostFormFields: typeof import('./components/PostFormFields.vue')['default']
