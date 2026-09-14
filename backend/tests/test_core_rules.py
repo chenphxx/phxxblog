@@ -1,11 +1,12 @@
 """核心业务规则与安全断言的回归测试。
 
-只覆盖分支最多、最容易被改坏、且改错会出安全事故的五处:
+只覆盖分支最多、最容易被改坏、且改错会出安全事故的六处:
   1. 越权读取非公开文章必须 404(不能泄漏"存在但私密")
   2. 无发布权限的作者提交 status=2 必须被降级为审核中
   3. 刷新令牌必须一次性(轮换后旧令牌失效)
   4. 上传必须拒绝白名单外的扩展名(存储型 XSS 的那条链)
   5. 公开文章详情不得包含作者 ip / location
+  6. 静态资源 /assets 里非渲染类的文件(迁移导出、附件)必须仅管理员可访问
 跑法: cd backend && .venv/Scripts/python.exe -m pytest tests -q
 """
 import io
@@ -202,6 +203,36 @@ def test_record_visit_keeps_post_updated_at(db_session, seeded):
 
     assert post.views == views_before + 1
     assert post.updated_at == edited_at, "记录阅读量改动了文章的更新时间"
+
+
+def test_assets_access_control_rule():
+    """静态资源: 只有前台会渲染的媒体匿名可访问, 其余文件仅管理员。
+
+    锁多了前台图片全 404(正文配图、站点图标、头像都在 /assets/uploads 下),
+    锁少了等于把 WordPress 导出里的凭据表挂到公网 —— 两个方向都很难在界面上发现,
+    所以把规则固定成断言。注意 /assets/uploads/wordpress 下的图片是文章在用的,
+    不能因为路径里带 wordpress 就整目录锁掉。
+    """
+    from app.core.middleware import asset_requires_admin
+
+    for path in (
+        "/assets/uploads/2026/09/icon.png",
+        "/assets/uploads/2026/09/avatar.jpg",
+        "/assets/uploads/wordpress/2025/04/image.png",
+        "/assets/uploads/2026/09/clip.mp4",
+        "/assets/uploads/2026/09/bgm.flac",
+    ):
+        assert asset_requires_admin(path) is False, f"{path} 不应要求管理员身份"
+
+    for path in (
+        "/assets/wordpress/文章.xml",
+        "/assets/wordpress/wp-personal-data-file-x.zip",
+        "/assets/uploads/wordpress/2025/03/credentials.csv",
+        "/assets/uploads/wordpress/2024/10/AccessKey.csv",
+        "/assets/uploads/2026/08/note.txt",
+        "/assets/uploads/.gitkeep",
+    ):
+        assert asset_requires_admin(path) is True, f"{path} 应要求管理员身份"
 
 
 def test_post_neighbors_and_hot_ranking(db_session, seeded):

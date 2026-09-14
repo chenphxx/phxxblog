@@ -479,6 +479,9 @@ phxxblog/
    用 `"admin" in role_codes` 判断会在角色改名后静默放行或误拦)。
 4. 通过后放行到 FastAPI 自带的文档页面。
 
+令牌校验这段逻辑抽在 `_authorize_admin()` 里, 与 7.25 的静态资源鉴权共用: 两处的令牌来源、
+失败状态码与权限码判断必须一致, 各写一份迟早会漂移。
+
 令牌来源的配合: 前端登录或恢复会话时把 access token 写入 `phxxblog_doc_token` cookie(SameSite=Lax, https 下附带 Secure), 登出或令牌失效时清除; 因此后台顶栏的"API 文档"按钮可以直接新窗口打开 `/docs`, 无需在 URL 上携带令牌。
 
 ### 7.22 日记导入导出
@@ -508,6 +511,25 @@ phxxblog/
 `GET /posts/hot?limit=7` 按 `views` 倒序返回已发布文章(浏览量相同时按 id 倒序, 保证顺序稳定)。首页左侧栏
 (个人信息与常用网站之间)与文章详情页右侧栏下方共用 `HotPostsCard.vue`, 展示名次、标题(单行截断)与彩色阅读量标签;
 排序口径完全由后端决定, 两处保持一致。
+
+### 7.25 静态资源访问控制
+
+`core/middleware.py` 的 `restrict_assets_to_admin` 给 `/assets`(上传目录与迁移数据的静态托管, 见 9.2)加了一层鉴权。
+判断规则在纯函数 `asset_requires_admin(path)` 里, 只放行**浏览器会直接渲染的媒体**:
+
+| 路径 | 是否公开 | 原因 |
+| --- | --- | --- |
+| `/assets/uploads/**` 的图片/音视频(`IMAGE_EXTS / VIDEO_EXTS / AUDIO_EXTS`) | 公开 | 正文配图、站点图标、头像都指向这里, 锁掉等于前台全站图片 404 |
+| `/assets/wordpress/**` | 仅 admin | WordPress 迁移的原始导出(WXR/XML、媒体库导出 zip、个人信息导出), 只是导入来源, 前台从不引用 |
+| `/assets/uploads/**` 的其它扩展名(csv/txt/md/zip 等)与无扩展名文件 | 仅 admin | 附件类文件不参与渲染, 没有匿名下载的必要 |
+
+公开扩展名直接复用 `services/upload.py` 的白名单子集, 不再单独维护一份 —— 上传白名单决定了
+目录里会出现哪些类型, 两处各写一份必然漂移。
+
+注意 `/assets/uploads/wordpress/**` **不能整目录锁掉**: 里面的图片是已发布文章正文在用的
+(导入脚本把旧站链接改写成了这个路径), 只有其中的非媒体文件会被拦下。鉴权走与 /docs 相同的
+令牌来源与权限码, 因此未登录 401、非 admin 403; 后台界面上的图片与下载链接靠 `phxxblog_doc_token`
+cookie 自动通过(同源代理下浏览器会带上, 见 9.2 第 4 条)。
 
 ## 8. 数据模型概览
 
@@ -562,6 +584,7 @@ npm run dev
    改动体积后记得同步更新本节数字(`npm run check:size` 的输出即上表口径)。
 3. 后端以 `uvicorn app.main:app --host 0.0.0.0 --port 8000` 或 gunicorn + uvicorn worker 运行, 建议关闭 `PHXXBLOG_DEBUG`。
 4. 反向代理需要转发 `/api`、`/assets`, 如需在线文档再转发 `/docs`、`/redoc`、`/openapi.json`; 若前端与后端不同域, 还要把前端域名加入 `PHXXBLOG_CORS_ORIGINS`。
+   反代必须**透传 Cookie**(`phxxblog_doc_token`): `/docs` 与 `/assets` 下的非公开文件都靠它鉴权, 丢掉 Cookie 会让管理员自己也打不开。
 5. 生产环境启动前**必须**设置 `PHXXBLOG_SECRET_KEY`(长度 ≥ 32):
    应用会拒绝用仓库里的默认占位值启动, 因为那等于任何人都能伪造 admin 令牌。
    生成方式: `python -c "import secrets; print(secrets.token_urlsafe(48))"`。
