@@ -1,15 +1,15 @@
 # 数据库设计(mysql.md)
 
-> 数据库: MySQL 9, 默认字符集 `utf8mb4`, 排序规则 `utf8mb4_unicode_ci`, 存储引擎 InnoDB。
-> 本文档为表结构设计说明, 文末附完整可执行 DDL。应用启动时也可由 SQLAlchemy 自动建表。
+> 数据库: MySQL 9, 默认字符集 `utf8mb4`, 排序规则 `utf8mb4_unicode_ci`, 存储引擎 InnoDB 
+> 本文档为表结构设计说明, 文末附完整可执行 DDL 应用启动时也可由 SQLAlchemy 自动建表 
 
 ## 命名约定
 
-- 表名、字段名使用小写蛇形命名
-- 主键统一为 `id BIGINT UNSIGNED AUTO_INCREMENT`
-- 创建时间统一为 `created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP`
-- 更新时间统一为 `updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`
-- 外键字段使用 `_id` 后缀
+- 表名, 字段名使用小写蛇形命名 
+- 主键统一为 `id BIGINT UNSIGNED AUTO_INCREMENT` 
+- 创建时间统一为 `created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP` 
+- 更新时间统一为 `updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP` 
+- 外键字段使用 `_id` 后缀 
 
 ## 表清单
 
@@ -26,14 +26,14 @@
 | posts | 文章 |
 | post_tags | 文章-标签关联 |
 | comments | 评论(游客/注册用户, 支持回复) |
-| media | 媒体/附件(图片、视频、文件) |
+| media | 媒体/附件(图片, 视频, 文件) |
 | post_likes | 文章点赞(游客按 IP, 用户按账号) |
 | visit_logs | 访问明细(PV/UV/来源/浏览器/IP) |
 | daily_stats | 按日聚合统计数据 |
 | operation_logs | 操作日志 |
 | diaries | 日记(仅管理员可见/可写) |
 | settings | 系统设置(站点信息/SEO/社交链接等) |
-| schema_version | 已应用的迁移文件名记录(见文末「表结构演进」) |
+| schema_version | 已应用的迁移文件名记录(见文末"表结构演进") |
 
 ## 表结构说明
 
@@ -76,11 +76,11 @@
 
 ### role_permissions 角色权限关联
 
-`(role_id, permission_id)` 联合主键, 分别外键关联 roles、permissions。
+`(role_id, permission_id)` 联合主键, 分别外键关联 roles, permissions 
 
 ### user_roles 用户角色关联
 
-`(user_id, role_id)` 联合主键, 分别外键关联 users、roles。
+`(user_id, role_id)` 联合主键, 分别外键关联 users, roles 
 
 ### refresh_tokens 刷新令牌表
 
@@ -138,11 +138,11 @@
 | published_at | DATETIME NULL | 发布时间 |
 | created_at / updated_at | DATETIME | 创建/更新时间 |
 
-索引: `idx_status_published(status, published_at)`, `idx_category(category_id)`, `idx_author(author_id)`, 全文索引 `ft_post(title, summary, content_md) WITH PARSER ngram`(支持中文搜索)。
+索引: `idx_status_published(status, published_at)`, `idx_category(category_id)`, `idx_author(author_id)`, 全文索引 `ft_post(title, summary, content_md) WITH PARSER ngram`(支持中文搜索) 
 
 ### post_tags 文章标签关联
 
-`(post_id, tag_id)` 联合主键, 分别外键关联 posts、tags。
+`(post_id, tag_id)` 联合主键, 分别外键关联 posts, tags 
 
 ### comments 评论表
 
@@ -159,7 +159,7 @@
 | status | TINYINT | 1正常 0隐藏 2回收站 |
 | created_at | DATETIME | 评论时间 |
 
-索引: `idx_post_status(post_id, status)`, `idx_parent(parent_id)`。
+索引: `idx_post_status(post_id, status)`, `idx_parent(parent_id)` 
 
 ### media 媒体表
 
@@ -188,7 +188,7 @@
 | ip | VARCHAR(45) | 游客IP |
 | created_at | DATETIME | 点赞时间 |
 
-唯一约束: `uk_post_user(post_id, user_id)`, `uk_post_ip(post_id, ip)` —— 同一用户或同一 IP 对同一文章只能点赞一次。
+唯一约束: `uk_post_user(post_id, user_id)`, `uk_post_ip(post_id, ip)` - 同一用户或同一 IP 对同一文章只能点赞一次 
 
 ### visit_logs 访问明细表
 
@@ -205,7 +205,7 @@
 | device | VARCHAR(20) | 设备(desktop/mobile) |
 | visit_time | DATETIME | 访问时间 |
 
-索引: `idx_visit_time(visit_time)`, `idx_post(post_id)`。
+索引: `idx_visit_time(visit_time)`, `idx_post(post_id)` 
 
 ### daily_stats 按日聚合表
 
@@ -237,25 +237,25 @@
 
 ### diaries 日记表
 
-仅管理员可读写（接口需 `diary:manage` 权限）。一条日记 = 一段 Markdown 内容 + 一个归属日期。
+仅管理员可读写(接口需 `diary:manage` 权限) 一条日记 = 一段 Markdown 内容 + 一个归属日期 
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | id | BIGINT UNSIGNED PK | 主键 |
-| user_id | BIGINT UNSIGNED FK | 作者，关联 `users.id`（`ON DELETE CASCADE`） |
+| user_id | BIGINT UNSIGNED FK | 作者, 关联 `users.id`(`ON DELETE CASCADE`) |
 | content_md | TEXT | Markdown 原文 |
-| content_html | TEXT | 渲染后的 HTML（导入时可附带） |
-| entry_date | DATE | 日记归属日期（索引/排序依据，默认当天） |
+| content_html | TEXT | 渲染后的 HTML(导入时可附带) |
+| entry_date | DATE | 日记归属日期(索引/排序依据, 默认当天) |
 | created_at | DATETIME | 创建时间 |
 | updated_at | DATETIME | 更新时间 |
 
 ### schema_version 迁移记录表
 
-记录已应用的迁移文件名，用于判断某个库停在哪个版本（见文末「表结构演进」）。
+记录已应用的迁移文件名, 用于判断某个库停在哪个版本(见文末"表结构演进") 
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| version | VARCHAR(120) PK | 迁移文件名，如 `migration_20260912.sql` |
+| version | VARCHAR(120) PK | 迁移文件名, 如 `migration_20260912.sql` |
 | applied_at | DATETIME | 应用时间 |
 
 ### settings 系统设置表
@@ -269,7 +269,7 @@
 
 ## 完整 DDL
 
-以下 SQL 可直接执行创建全部表(需先创建数据库, 见 `backend/scripts/init_db.sql`):
+以下 SQL 可直接执行创建全部表(需先创建数据库, 见 `backend/scripts/init_db.sql`): 
 
 ```sql
 CREATE TABLE users (
@@ -504,21 +504,21 @@ CREATE TABLE schema_version (
 
 ## 表结构演进
 
-本项目**没有引入 Alembic** —— 对单实例个人博客是过度设计。约定如下：
+本项目**没有引入 Alembic** - 对单实例个人博客是过度设计 约定如下: 
 
-1. **新表**：由 `Base.metadata.create_all()` 在应用启动时自动创建，无需手工干预。
-2. **已有表加列**：**不会自动补**。必须手工编写迁移 SQL 放到 `backend/scripts/`，
-   按日期命名（如 `migration_20260912.sql`），并在自己的环境执行。
-3. **启动校验**：`app/core/database.py` 的 `check_schema()` 会对比模型与实际表结构。
-   缺列时：
-   - `PHXXBLOG_DEBUG=true`：只打印告警与需要执行的 `ALTER` 语句；
-   - 否则：**直接拒绝启动**。
+1. **新表**: 由 `Base.metadata.create_all()` 在应用启动时自动创建, 无需手工干预 
+2. **已有表加列**: **不会自动补** 必须手工编写迁移 SQL 放到 `backend/scripts/`, 
+   按日期命名(如 `migration_20260912.sql`), 并在自己的环境执行 
+3. **启动校验**: `app/core/database.py` 的 `check_schema()` 会对比模型与实际表结构 
+   缺列时: 
+   - `PHXXBLOG_DEBUG=true`: 只打印告警与需要执行的 `ALTER` 语句; 
+   - 否则: **直接拒绝启动** 
 
-   这样问题在启动时暴露，而不是等到某个查询才报 `Unknown column`。
-4. **版本记录**：执行完迁移后，往 `schema_version` 表插一行对应文件名。
+   这样问题在启动时暴露, 而不是等到某个查询才报 `Unknown column` 
+4. **版本记录**: 执行完迁移后, 往 `schema_version` 表插一行对应文件名 
 
-> 历史遗留：早期版本用 `ensure_columns()` 自动补过 `categories.color` 与 `tags.color`
-> 两列。该函数已被启动校验取代 —— 静默补列会让"模型与库里不一致"长期隐藏。
+> 历史遗留: 早期版本用 `ensure_columns()` 自动补过 `categories.color` 与 `tags.color` 
+> 两列 该函数已被启动校验取代 - 静默补列会让"模型与库里不一致"长期隐藏 
 
-将来若需要多环境部署（本地 + 服务器 + CI），再迁移到 Alembic；
-`docs/architecture.md` 的「技术栈」一节也标了这一点。
+将来若需要多环境部署(本地 + 服务器 + CI), 再迁移到 Alembic; 
+`docs/architecture.md` 的"技术栈"一节也标了这一点 
