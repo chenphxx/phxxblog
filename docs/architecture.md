@@ -235,7 +235,7 @@ phxxblog/
 - 使用 hash 模式(`createWebHashHistory`), 便于静态托管: 前台 `/`、`/post/:id`、`/archive`、`/posts`、`/search`、`/write(/:id)`、`/changelog`、`/diary`; 后台 `/admin/**`(仪表盘/文章/分类标签/评论/媒体/用户/设置/日志/资料)。
 - 全局前置守卫: 路由标记 `meta.requiresAuth` 且本地无令牌时跳转登录页并带上 `redirect`。
 - 前台布局 `layouts/SiteLayout.vue`: 顶栏(站点名 + 终端风格提示符 + 导航 + 主题按钮) + 内容区 + 页脚; 布局层负责加载公开配置(站点名/标签页标题/图标)与访问埋点。
-  高度链: `.site-layout` 是 `min-height: var(--vh-full)` 的纵向 flex(为什么不是 `100vh` 见 6.6), `.site-body` 用 `flex: 1` 加 `grid-auto-rows: minmax(0, 1fr)`
+  高度链: `.site-layout` 是 `min-height: 100vh` 的纵向 flex, `.site-body` 用 `flex: 1` 加 `grid-auto-rows: minmax(0, 1fr)`
   撑满页头与页脚之间的空间(页脚另有 `margin-top: auto`), 内容少的页面也不会在页脚上方留出空白。
 - 后台布局 `views/admin/AdminLayout.vue`: 侧边菜单 + 顶栏(API 文档入口、主题按钮、退出登录)。
 - 前台部分页面使用 `keep-alive` 缓存(首页、全部文章、归档、搜索)。
@@ -311,14 +311,6 @@ phxxblog/
   `ElMessageBox.confirm()` / `ElMessage.success()` 这类 JS 调用不在模板里, 样式不会自动进来, 必须在 `main.ts` 手动
   `import 'element-plus/es/components/<name>/style/css'`。漏了不会报错, 只会让确认框变成页面左上角一堆裸按钮、
   提示条完全不可见(曾因此吞掉"内容为空"的提示, 表现为"点保存没反应")。`npm run check:element-styles` 会把漏掉的拦下来。
-- **全站放大到 110%**: `theme.css` 在 `html` 上写 `zoom: var(--app-zoom)`(`--app-zoom: 1.1`), 效果与用户把浏览器缩放调到 110% 一致。
-  用 `zoom` 而不是 `transform: scale()`, 是因为 zoom 参与布局(元素实际占位变大、文字重新换行), 而 transform 只是把排好版的画面整体拉伸,
-  文字会发虚、点击热区与视觉错位。
-  代价是 root 上的 zoom **不会同步换算视口单位**: `100vh` 取到的仍是未放大的视口高度, 再被放大 10% 就会比可视区高出一截,
-  表现为每页都多出一条纵向滚动条。因此需要"正好铺满一屏"的地方(前台布局、后台布局、登录页、媒体库、归档与日记的侧栏)
-  一律用 `--vh-full: calc(100vh / var(--app-zoom))`, 不要再写 `100vh`。JS 侧同理: 媒体库量栅格尺寸用
-  `clientWidth / clientHeight`(与 CSS 同坐标系的未缩放值), 若用 `getBoundingClientRect()` 会把放大后的视觉尺寸再写回 CSS、
-  算出的行高多出 10%; 只做比例运算的地方(正文代码块行高、趋势图鼠标坐标)不受影响。
 - 代码块背景与高亮风格对齐 VSCode 默认主题: 浅色用 `vs`、深色用 `vs2015`, 并统一注释为斜体、字号与正文字号联动。
   注意 Vditor 自带的 `.vditor-reset` 写死了字体栈且不引用 `var(--font-sans)`, 正文的字体由 `theme.css` 里
   同特异性的 `.markdown-body, .vditor-reset` 规则覆盖, **那条规则不要删**。

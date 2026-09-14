@@ -20,7 +20,7 @@ const loading = ref(false)
 const uploading = ref(false)
 
 /*
- * 每页数量不能写死: 媒体库是"铺满一屏"的栅格(height 由 calc(var(--vh-full) - N) 固定),
+ * 每页数量不能写死: 媒体库是"铺满一屏"的栅格(height 由 calc(100vh - N) 固定),
  * 一屏能放下的格子数随窗口宽度/高度变化。写死 12 个时, 一屏能放 40 个却只渲染 12 个,
  * 剩下的位置空着而下一页已经存在 —— 表现为"明明还有很多空位却翻页了"。
  * 所以每页数量跟着栅格容量走(列 × 行), 具体换算见 utils/mediaGrid.ts(有单测)。
@@ -35,18 +35,12 @@ const pageSize = ref(12)
 const rowHeight = ref(210)
 let observer: ResizeObserver | null = null
 
-/**
- * 量一次栅格: 一屏能放下的格子数与每行应有的高度; 量不到尺寸时返回 null。
- *
- * 用 clientWidth / clientHeight 而不是 getBoundingClientRect(): 全站 110% 缩放
- * (html { zoom }) 下 rect 给出的是放大后的视觉尺寸, 而算出的 rowHeight 会作为 CSS 值
- * 再被放大一次, 行高因此多出 10%, 整页就多一条滚动条; clientWidth / clientHeight
- * 是与 CSS 同坐标系的未缩放值, 正好和写回的 rowHeight 对应。
- */
+/** 量一次栅格: 一屏能放下的格子数与每行应有的高度; 量不到尺寸时返回 null */
 function gridMetrics() {
   const el = gridRef.value
   if (!el) return null
-  return mediaGridMetrics(el.clientWidth, el.clientHeight)
+  const { width, height } = el.getBoundingClientRect()
+  return mediaGridMetrics(width, height)
 }
 
 /** 容器尺寸变化: 行高每次都要跟着改, 只有一屏容量变了才需要重新取数据 */
@@ -256,7 +250,7 @@ onBeforeUnmount(() => {
 .media-page {
   display: flex;
   flex-direction: column;
-  min-height: calc(var(--vh-full) - 100px);
+  min-height: calc(100vh - 100px);
 }
 /*
  * 栅格高度按"标题行 + 工具条行"占掉的高度反推:
@@ -268,7 +262,7 @@ onBeforeUnmount(() => {
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   /* 行高由 gridMetrics() 按容器高度均分后写进 CSS 变量(见 <script>) */
   grid-auto-rows: var(--media-grid-row-height, 210px);
-  height: calc(var(--vh-full) - 258px);
+  height: calc(100vh - 258px);
   gap: 16px;
 }
 .media-item {

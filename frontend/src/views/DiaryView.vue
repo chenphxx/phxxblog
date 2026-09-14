@@ -265,7 +265,7 @@ onMounted(load)
 .diary-nav {
   position: sticky;
   top: 76px;
-  max-height: calc(var(--vh-full) - 100px);
+  max-height: calc(100vh - 100px);
   overflow-y: auto;
 }
 .nav-year {

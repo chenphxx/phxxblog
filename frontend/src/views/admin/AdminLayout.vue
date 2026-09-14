@@ -130,7 +130,7 @@ onMounted(() => {
 
 <style scoped>
 .admin-layout {
-  height: var(--vh-full);
+  height: 100vh;
   overflow: hidden;
 }
 .admin-aside {

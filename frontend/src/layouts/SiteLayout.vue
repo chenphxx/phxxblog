@@ -67,7 +67,7 @@ onMounted(async () => {
             </template>
             <router-link to="/admin">管理后台</router-link>
           </template>
-          <router-link v-else to="/admin/login?redirect=/write">登录</router-link>
+          <router-link v-else to="/admin/login">登录</router-link>
         </nav>
         <ThemeSwitcher />
       </div>
@@ -100,7 +100,7 @@ onMounted(async () => {
 .site-layout {
   display: flex;
   flex-direction: column;
-  min-height: var(--vh-full);
+  min-height: 100vh;
 }
 /* 内容区吃掉页头与页脚之外的高度: 页脚已有 margin-top: auto, 这里让页面本身也能铺满(如写作页) */
 .site-body {
