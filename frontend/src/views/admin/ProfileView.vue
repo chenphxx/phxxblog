@@ -59,7 +59,10 @@ async function changeEmail() {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  // 用户管理里可能改过当前账号的资料, store 中的用户信息会过期; 进本页先同步一次,
+  // 否则要退出重新登录才能看到最新值。拉取失败时保持原有缓存值, 不打断页面渲染。
+  await auth.fetchMe().catch(() => {})
   profileForm.value.username = auth.user?.username || ''
   profileForm.value.nickname = auth.user?.nickname || ''
 })

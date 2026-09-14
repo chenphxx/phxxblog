@@ -3,6 +3,9 @@ import { onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { userApi } from '@/api'
 import type { Role, User } from '@/types'
+import { useAuthStore } from '@/stores/auth'
+
+const auth = useAuthStore()
 
 const users = ref<User[]>([])
 const roles = ref<Role[]>([])
@@ -65,6 +68,10 @@ async function save() {
   }
   if (form.value.id) {
     await userApi.update(form.value.id, payload)
+    // 改的可能就是当前登录账号: 同步一次会话里的用户信息, 让个人资料页立刻生效
+    if (form.value.id === auth.user?.id) {
+      await auth.fetchMe().catch(() => {})
+    }
   } else {
     await userApi.create({
       username: form.value.username,
