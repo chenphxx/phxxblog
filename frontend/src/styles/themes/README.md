@@ -1,9 +1,9 @@
-# 主题系统(12 套, 均含深色 / 浅色)
+# 主题系统(9 套, 均含深色 / 浅色)
 
 针对 `frontend/`(Vue 3 + Element Plus)的整套换肤方案 **不改任何 `.vue` 组件的结构**, 靠 CSS 令牌 + 一层增强样式覆盖现有类名实现 前台与后台共用同一套主题 
 
 - **默认主题: 预设**(`cuanmu`) - 中性灰阶 + 静蓝主色, 令牌取自 VitePress + Teek 预设 
-- 另含 11 套可选主题(冷调、暖调、中性色都有), 可在顶栏随时切换 
+- 另含 8 套可选主题(冷调与中性色为主), 可在顶栏随时切换 
 
 ## 字体
 
@@ -24,7 +24,7 @@ Cascadia Code 不含中文字形, 因此中文会自动回退到后面的系统�
 npm run themes:preview     # 生成到 src/styles/themes/_preview/
 ```
 
-打开 `_preview/index.html`: 左侧 12 套主题列表, 右侧实时预览, 右上角切换深色/浅色(也支持 ↑↓ 键换主题) 
+打开 `_preview/index.html`: 左侧 9 套主题列表, 右侧实时预览, 右上角切换深色/浅色(也支持 ↑↓ 键换主题) 
 
 预览页的样式是从 `theme-*.css` **原样抽取**生成的, 所以预览效果 = 实际效果 `_preview/` 是产物, 已加入 `.gitignore`, 可随时重建 
 
@@ -48,16 +48,16 @@ npm run themes:preview     # 生成到 src/styles/themes/_preview/
 
 一处必要的偏离: 浅色主按钮底色用了 `--vp-c-indigo-2`(`#3a5ccc`)而不是 `-3`(`#5672cd`) 后者白字对比度只有 4.48:1, 略低于 WCAG AA 的 4.5; 换成 `-2` 后为 5.86:1, 仍在同一套 VitePress 色板内 
 
-## 12 套主题
+## 9 套主题
 
 按"增强层风格"分四族, 同族共享同一套动效语言, 只有配色与圆角/阴影参数不同: 
 
 | 族 | 视觉语言 | 动效 | 主题 |
 | --- | --- | --- | --- |
 | **minimal** 文档极简 | 中性灰阶, 细边框, 极淡阴影 | 仅颜色/边框过渡, 360ms | **预设 `cuanmu`(默认)**, 雾紫 `lilac`, 黛蓝 `sailblue` |
-| **soft** 柔和抬升 | 渐变主色, 大圆角(10–16px), 多层柔和阴影 | 卡片上浮 + 左侧色条生长, 220ms | 晨雾青 `mist`, 燕麦陶土 `oatclay` |
+| **soft** 柔和抬升 | 渐变主色, 大圆角(10–16px), 多层柔和阴影 | 卡片上浮 + 左侧色条生长, 220ms | 晨雾青 `mist` |
 | **hard** 硬朗位移 | 纯色主色, 方正小圆角(6–12px), 偏移硬阴影, 等宽标题 | 悬停位移 + 终端扫描线, 170ms | 霓虹青柠 `neon`, 极光青绿 `aurora` |
-| **editorial** 编辑细线 | 衬线标题, 极淡阴影, 细线分割 | 标题细线浮现 + 轻微抬升, 280ms | 苔原手记 `moss`, 鼠尾草灰绿 `sage`, 青墨 `ink`, 玫瑰石英 `rosewood`, 石墨 `graphite` |
+| **editorial** 编辑细线 | 衬线标题, 极淡阴影, 细线分割 | 标题细线浮现 + 轻微抬升, 280ms | 苔原手记 `moss`, 鼠尾草灰绿 `sage`, 石墨 `graphite` |
 
 每套都: 
 
@@ -77,7 +77,7 @@ npm run themes:preview     # 生成到 src/styles/themes/_preview/
 
 ## 运行时切换(已接入)
 
-顶栏的主题按钮(`components/ThemeSwitcher.vue`)下拉里就是这 12 套, 只显示"色点 + 主题名", 选中即生效并记入 `localStorage`; 旁边的圆形按钮单独切换深色/浅色 两者互相独立, 前台与后台共用 
+顶栏的主题按钮(`components/ThemeSwitcher.vue`)下拉里就是这 9 套, 只显示"色点 + 主题名", 选中即生效并记入 `localStorage`; 旁边的圆形按钮单独切换深色/浅色 两者互相独立, 前台与后台共用 
 
 ```
 stores/theme.ts
@@ -105,7 +105,7 @@ stores/theme.ts
 
 ## 改配色
 
-12 套主题**全部由一份数据生成**, 不要手改生成的 CSS: 
+9 套主题**全部由一份数据生成**, 不要手改生成的 CSS: 
 
 ```
 src/styles/themes/_source/
@@ -118,9 +118,9 @@ src/styles/themes/_source/
 ```
 
 ```powershell
-npm run themes:generate   # 生成 13 个 CSS(12 套 + theme-default) + registry.ts
+npm run themes:generate   # 生成 10 个 CSS(9 套 + theme-default) + registry.ts
 npm run themes:audit      # 校验
-npm run themes:preview    # 生成 24 个预览页 + 总览
+npm run themes:preview    # 生成 18 个预览页 + 总览
 ```
 
 `themes:audit` 会检查: 
@@ -139,24 +139,24 @@ npm run themes:preview    # 生成 24 个预览页 + 总览
 | 令牌 | 用途 | 例子 |
 | --- | --- | --- |
 | `--on-primary` | 主色**填充**之上的文字色 | 霓虹青柠浅色主按钮用深墨字 `#0A1405`(5.60:1), 而不是白字(3.36:1) |
-| `--link` | 主色当**文字/链接**用时的颜色, 可深于主色 | 燕麦陶土链接用 `#8b5633`(5.99:1), 按钮填充仍是 `#9a5f38` |
+| `--link` | 主色当**文字/链接**用时的颜色, 可深于主色 | 雾紫链接用 `#5c4ac8`(6.42:1), 按钮填充仍是 `#6a5acd` |
 | `--grad-from` / `--grad-to` | 装饰色带两端, 纯装饰, 只需两端可辨 | 苔原手记浅色 `#7FA888 → #3F6B4A` |
 
 ## 只想固定用一套?
 
-把 `styles/theme-green.css` 里多余的 `@import` 注释掉, 并移除 `SiteLayout.vue` / `AdminLayout.vue` 里的 `<ThemeSwitcher />` 即可 全部引入的代价很小: 12 套令牌 gzip 后约 17 KB 
+把 `styles/theme-green.css` 里多余的 `@import` 注释掉, 并移除 `SiteLayout.vue` / `AdminLayout.vue` 里的 `<ThemeSwitcher />` 即可 全部引入的代价很小: 9 套令牌 gzip 后约 13 KB 
 
 ## 目录
 
 ```
 src/styles/
   theme.css                    原有结构样式（卡片、正文、终端、时间轴、代码块）
-  theme-green.css              主题入口：theme.css + theme-default.css + 12 套主题 + admin.css
+  theme-green.css              主题入口：theme.css + theme-default.css + 9 套主题 + admin.css
   admin.css                    后台主题层（Element Plus 主色 → 主题令牌）
   fonts.css                    自托管 Cascadia Code
   themes/
     theme-default.css          默认主题的裸 :root 令牌（生成物）
-    theme-<id>.css             ×12，生成物，勿手改
+    theme-<id>.css             ×9，生成物，勿手改
     registry.ts                主题清单（生成物），供下拉菜单与类型使用
     _source/                   主题源与脚本（见上）
     _preview/                  预览产物（不入库，可重建）

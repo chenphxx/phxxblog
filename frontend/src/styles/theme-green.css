@@ -7,7 +7,7 @@
  * theme-default.css 提供裸 :root 的浅色令牌, 是新访客(还没选过主题)
  * 看到的那一套, 与 registry.ts 里的 DEFAULT_THEME 一致。
  *
- * 全部引入的代价很小: 令牌都是普通 CSS 变量, 12 套 gzip 后约 17 KB。
+ * 全部引入的代价很小: 令牌都是普通 CSS 变量, 9 套 gzip 后约 13 KB。
  * 如果只想固定用一套, 注释掉其它 @import, 再删掉 ThemeSwitcher 即可。
  *
  * 主题的配色请改 src/styles/themes/_source/tokens.mjs, 然后运行:
@@ -20,17 +20,14 @@
 /* ---------- 默认主题的裸 :root 令牌(必须最先加载) ---------- */
 @import './themes/theme-default.css';
 
-/* ---------- 12 套可选主题 ---------- */
+/* ---------- 9 套可选主题 ---------- */
 @import './themes/theme-cuanmu.css'; /* 预设      文档站风格（VitePress + Teek 令牌，默认） */
 @import './themes/theme-neon.css'; /* 霓虹青柠  荧光青柠 + 硬阴影 */
 @import './themes/theme-moss.css'; /* 苔原手记  苔绿 + 陶土 + 衬线 */
 @import './themes/theme-mist.css'; /* 晨雾青    冷调青绿, 低饱和 */
 @import './themes/theme-sage.css'; /* 鼠尾草灰绿 中性灰绿, 最耐看 */
 @import './themes/theme-aurora.css'; /* 极光青绿  青绿到紫的极光 */
-@import './themes/theme-ink.css'; /* 青墨      近黑墨底 + 一点青 */
 @import './themes/theme-lilac.css'; /* 雾紫      低饱和紫罗兰 + 冷白 */
-@import './themes/theme-rosewood.css'; /* 玫瑰石英  藕粉玫瑰 + 暖白 */
-@import './themes/theme-oatclay.css'; /* 燕麦陶土  燕麦底 + 陶土棕, 暖调 */
 @import './themes/theme-sailblue.css'; /* 黛蓝      冷白 + 黛蓝, 极简 */
 @import './themes/theme-graphite.css'; /* 石墨      石墨灰 + 黄铜点缀 */
 

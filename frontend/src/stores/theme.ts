@@ -33,7 +33,7 @@ function readStoredTheme(): ThemeId {
 /**
  * 外观设置:
  *   - isDark   深色 / 浅色
- *   - themeId  配色主题(12 套, 见 styles/themes/registry.ts)
+ *   - themeId  配色主题(9 套, 见 styles/themes/registry.ts)
  * 两者独立, 共同决定 <html> 上的 .dark 类与 data-theme 属性,
  * CSS 里用 html[data-theme='<id>'].dark 选中对应令牌。
  */

@@ -94,13 +94,13 @@ phxxblog/
 │       ├── composables/          # 跨视图复用逻辑(usePostEditor / useImportExport)
 │       ├── layouts/              # 前台布局(顶栏 + 页脚)
 │       ├── router/               # 路由表与登录守卫
-│       ├── stores/               # Pinia: auth(登录态) / theme(深浅色 + 12 套配色主题)
+│       ├── stores/               # Pinia: auth(登录态) / theme(深浅色 + 9 套配色主题)
 │       ├── styles/
 │       │   ├── theme.css         # 结构样式与基础令牌
 │       │   ├── theme-green.css   # 主题入口(汇总各主题 CSS)
 │       │   ├── admin.css         # 后台主题层(Element Plus 主色与语义色 -> 主题令牌)
 │       │   ├── fonts.css         # 自托管 Cascadia Code 的 @font-face
-│       │   └── themes/           # 12 套主题令牌(生成物) + registry.ts + _source/(源与脚本)
+│       │   └── themes/           # 9 套主题令牌(生成物) + registry.ts + _source/(源与脚本)
 │       ├── types/index.ts        # 与后端对齐的 TypeScript 类型
 │       ├── utils/                # 令牌存储、文档 cookie、标签配色、文本统计等工具
 │       └── views/                # 页面(前台 views/ + 后台 views/admin/)
@@ -248,7 +248,7 @@ phxxblog/
 - `auth.ts`: `accessToken / refreshToken / user` 三份状态与 localStorage 同步; 登录成功后写入会话, 同时把 access token 同步到 API 文档鉴权 cookie; 登出时清理令牌与 cookie 并回到前台首页 
   `accessToken / refreshToken` 是 **computed**(读 `utils/tokenStorage.ts`)而不是 ref - 静默刷新会直接改写 localStorage(见 6.4), 
   只有每次都从存储读, UI 才能看到最新令牌 
-- `theme.ts`: 外观设置分两个独立维度 - `isDark`(深浅色)与 `themeId`(12 套配色主题, 见 `styles/themes/registry.ts`), 
+- `theme.ts`: 外观设置分两个独立维度 - `isDark`(深浅色)与 `themeId`(9 套配色主题, 见 `styles/themes/registry.ts`), 
   共同决定 `html` 上的 `.dark` 类与 `data-theme` 属性并持久化; 切换时临时加 `theme-transition` 类做颜色过渡 
 
 ### 6.4 请求层 `api/`
@@ -302,17 +302,17 @@ phxxblog/
 ### 6.6 样式与主题
 
 - 配色采用**令牌 + 生成**的方式: 源数据在 `styles/themes/_source/tokens.mjs`, 由 
-  `npm run themes:generate` 生成 12 套 `theme-<id>.css`(各含深浅两套令牌)与 `registry.ts` 
+  `npm run themes:generate` 生成 9 套 `theme-<id>.css`(各含深浅两套令牌)与 `registry.ts` 
   改配色只改数据源, 不要手改生成物 
 - 每个主题文件里的令牌选择器是 `html[data-theme='<id>']` 与 `html[data-theme='<id>'].dark`; 
   只有 `theme-default.css` 写裸 `:root`(承载"新访客未选主题"时的默认配色), 否则多套主题会互相覆盖 
 - **跟随主题的 Element Plus 令牌**集中在 `styles/admin.css`: `--el-color-primary` 指向主题主色, 
   `--el-color-success` / `warning` / `danger` / `info` 指向主题的 `--ok` / `--warn` / `--danger` / `--muted`(`error` 复用 `danger` 的整套色阶), 
   各自的 `light-3/5/7/8/9` 与 `dark-2` 色阶用 `color-mix` 与 `--card-bg` / `--text` 推导(与 `chipColor.ts` 同一套算法) 
-  语义色不接管的话, "删除 / 警告 / 提示"这类按钮在 12 套主题下都是同一套固定的绿红黄, 换主题时不跟着变 
+  语义色不接管的话, "删除 / 警告 / 提示"这类按钮在 9 套主题下都是同一套固定的绿红黄, 换主题时不跟着变 
 - **按钮类型约定**: 主操作(写文章页的"发布", 后台的"保存")用 `type="primary"`, 由各主题文件里的 
   `.el-button--primary` 规则绑到 `--primary`(主题身份色), 因此预设主题这种"静蓝主色"的主题下也是蓝色, 
-  不会出现绿色按钮配蓝色主题; 12 套主题的主按钮对比度由 `themes:audit` 校验 
+  不会出现绿色按钮配蓝色主题; 9 套主题的主按钮对比度由 `themes:audit` 校验 
   语义操作(删除 / 警告 / 提示)才用 `success` / `warning` / `danger` / `info`, 它们取主题的语义色 
 - 该文件必须排在所有主题之后(`theme-green.css` 的 `@import` 顺序) 主色以同特异性后写入即可覆盖, 
   语义色与色阶写在 `html:root` 里: 它比 Element Plus 浅色的 `:root` 高一级, 与深色的 `html.dark` 同档, 
@@ -384,7 +384,7 @@ phxxblog/
 - **入场动画**统一由各主题文件里的 `@keyframes rise-in / snap-in / fade-up / fade-in` + `.site-main > *` 提供(源在 `_source/enhance.base.css`), 
   填充模式必须写 `backwards` 而不是 `both`: `both` 会让动画结束后仍把 transform 留在效果栈里(计算值是一单位矩阵而非 `none`), 
   于是 `.site-main` 的直接子元素(`.page-container`)就成了 `position: fixed` 的定位基准 - 容器里的弹窗会相对"整页高"的容器居中, 
-  曾表现为"点开首页头像后弹窗跑到页面下方" 改这里后 12 套主题都要 `npm run themes:generate` 重新生成 
+  曾表现为"点开首页头像后弹窗跑到页面下方" 改这里后 9 套主题都要 `npm run themes:generate` 重新生成 
 
 ## 7. 关键功能实现
 

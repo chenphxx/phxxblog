@@ -165,12 +165,12 @@ src/
   stores/theme.ts           深浅色 + 配色主题(持久化到 localStorage)
 ```
 
-主题共 12 套, 每套都有深色与浅色, 生成与改配色的说明见 
+主题共 9 套, 每套都有深色与浅色, 生成与改配色的说明见 
 [`src/styles/themes/README.md`](src/styles/themes/README.md) 
 主题的源数据在 `src/styles/themes/_source/tokens.mjs`: 
 
 ```powershell
-npm run themes:generate   # 由 tokens.mjs 生成 13 个 CSS + registry.ts
+npm run themes:generate   # 由 tokens.mjs 生成 10 个 CSS + registry.ts
 npm run themes:audit      # 校验令牌齐全性、默认主题一致性、WCAG 对比度
-npm run themes:preview    # 生成 24 个预览页到 _preview/
+npm run themes:preview    # 生成 18 个预览页到 _preview/
 ```
