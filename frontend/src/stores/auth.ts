@@ -40,8 +40,9 @@ export const useAuthStore = defineStore('auth', () => {
   function logout() {
     user.value = null
     clearSession()
+    // 退出登录后回前台首页(不再停在登录页): 后台页面在退出后本来也访问不了
     if (location.hash.includes('/admin')) {
-      location.hash = '#/admin/login'
+      location.hash = '#/'
     }
   }
 

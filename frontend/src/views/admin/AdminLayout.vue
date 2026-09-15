@@ -41,7 +41,7 @@ async function logout() {
     authApi.logout(auth.refreshToken).catch(() => {})
   }
   auth.logout()
-  router.push('/admin/login')
+  router.push('/')
 }
 
 onMounted(() => {
