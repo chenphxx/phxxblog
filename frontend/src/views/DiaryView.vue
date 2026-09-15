@@ -224,13 +224,13 @@ onMounted(load)
     />
 
     <!-- 新增/编辑对话框 -->
-    <el-dialog v-model="dialog" :title="editingId ? '编辑日记' : '新增日记'" width="720px" top="5vh">
+    <el-dialog v-model="dialog" :title="editingId ? '编辑日记' : '新增日记'" width="860px" top="5vh">
       <el-form label-position="top">
         <el-form-item label="日期">
           <el-date-picker v-model="form.entry_date" type="date" value-format="YYYY-MM-DD" />
         </el-form-item>
         <el-form-item label="内容(Markdown, 支持图片/视频/附件/链接)">
-          <VditorEditor ref="editorRef" v-model="form.content_md" />
+          <VditorEditor ref="editorRef" v-model="form.content_md" :height="360" />
         </el-form-item>
       </el-form>
       <template #footer>
