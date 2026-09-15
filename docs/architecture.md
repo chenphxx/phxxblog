@@ -98,7 +98,7 @@ phxxblog/
 │       ├── styles/
 │       │   ├── theme.css         # 结构样式与基础令牌
 │       │   ├── theme-green.css   # 主题入口(汇总各主题 CSS)
-│       │   ├── admin.css         # 后台主题层(Element Plus 主色 -> 主题令牌)
+│       │   ├── admin.css         # 后台主题层(Element Plus 主色与语义色 -> 主题令牌)
 │       │   ├── fonts.css         # 自托管 Cascadia Code 的 @font-face
 │       │   └── themes/           # 12 套主题令牌(生成物) + registry.ts + _source/(源与脚本)
 │       ├── types/index.ts        # 与后端对齐的 TypeScript 类型
@@ -284,7 +284,7 @@ phxxblog/
 | `HotPostsCard.vue` | 热门文章榜单(名次 + 标题 + 彩色阅读量): 首页左侧栏与文章详情页右侧栏共用, 顺序由后端 `/posts/hot` 决定 |
 | `MetaIcon.vue` | 元信息小图标(日历/眼睛/标签/hash 等): 内联 SVG + `currentColor`, 自动跟随主题; 路径由 `npm run check:icons` 校验 |
 | `ContributionsChart.vue` | GitHub 风格贡献热力图(纯 SVG/CSS 实现, 支持按年切换) |
-| `TrendChart.vue` | 访问趋势折线/柱状图(纯 SVG 实现, 无第三方图表库): 宽度实测容器, PV 面积填充 + UV 虚线, 悬停/方向键十字准线取值 |
+| `TrendChart.vue` | 访问趋势折线/柱状图(纯 SVG 实现, 无第三方图表库): 宽度实测容器, PV 面积填充 + UV 虚线, 悬停/方向键十字准线取值, 数值浮层默认浮在数据点上方, 上方放不下时翻到数据点下方, 避免贴顶被图表裁切 |
 | `MediaPreview.vue` | 媒体预览浮层(图片/视频/音频/PDF/文本), 覆盖在当前页面上: 点遮罩或 Esc 关闭, ← → 在当页媒体间切换 |
 | `CommentSection.vue / CommentNode.vue` | 评论区与递归渲染的多层回复 |
 | `LinkCard.vue` | 链接预览卡片 |
@@ -306,8 +306,20 @@ phxxblog/
   改配色只改数据源, 不要手改生成物 
 - 每个主题文件里的令牌选择器是 `html[data-theme='<id>']` 与 `html[data-theme='<id>'].dark`; 
   只有 `theme-default.css` 写裸 `:root`(承载"新访客未选主题"时的默认配色), 否则多套主题会互相覆盖 
-- **后台跟随主题**靠 `styles/admin.css`: 它把 Element Plus 的 `--el-color-primary` 等令牌指向主题令牌 
-  该文件必须排在所有主题之后(`theme-green.css` 的 `@import` 顺序), 且以同特异性后写入才能覆盖成功 
+- **跟随主题的 Element Plus 令牌**集中在 `styles/admin.css`: `--el-color-primary` 指向主题主色, 
+  `--el-color-success` / `warning` / `danger` / `info` 指向主题的 `--ok` / `--warn` / `--danger` / `--muted`(`error` 复用 `danger` 的整套色阶), 
+  各自的 `light-3/5/7/8/9` 与 `dark-2` 色阶用 `color-mix` 与 `--card-bg` / `--text` 推导(与 `chipColor.ts` 同一套算法) 
+  语义色不接管的话, "删除 / 警告 / 提示"这类按钮在 12 套主题下都是同一套固定的绿红黄, 换主题时不跟着变 
+- **按钮类型约定**: 主操作(写文章页的"发布", 后台的"保存")用 `type="primary"`, 由各主题文件里的 
+  `.el-button--primary` 规则绑到 `--primary`(主题身份色), 因此预设主题这种"静蓝主色"的主题下也是蓝色, 
+  不会出现绿色按钮配蓝色主题; 12 套主题的主按钮对比度由 `themes:audit` 校验 
+  语义操作(删除 / 警告 / 提示)才用 `success` / `warning` / `danger` / `info`, 它们取主题的语义色 
+- 该文件必须排在所有主题之后(`theme-green.css` 的 `@import` 顺序) 主色以同特异性后写入即可覆盖, 
+  语义色与色阶写在 `html:root` 里: 它比 Element Plus 浅色的 `:root` 高一级, 与深色的 `html.dark` 同档, 
+  否则运行期按需注入的组件样式会把它盖回去 
+- **纯色语义按钮的文字色**改用页面底色 `--bg`: 主题的语义色浅色下是深色, 深色下是亮色, 本身就是正文前景色, 
+  配页面底色对比度才够; Element Plus 固定用白字, 深色主题下亮色按钮上的白字看不清 文字色是按钮自己的变量, 
+  因此覆盖的是 `--el-button-text-color` 一族(hover / active / disabled) 
 - **按需引入的边界**: `vite.config.ts` 的 `ElementPlusResolver({ importStyle: 'css' })` 只能识别**模板里的标签** 
   `ElMessageBox.confirm()` / `ElMessage.success()` 这类 JS 调用不在模板里, 样式不会自动进来, 必须在 `main.ts` 手动 
   `import 'element-plus/es/components/<name>/style/css'` 漏了不会报错, 只会让确认框变成页面左上角一堆裸按钮, 
@@ -329,7 +341,9 @@ phxxblog/
   编辑器内部不会出现滚动条; 确需固定高度(内部滚动, 如后台的版本日志编辑器)时给 `height` 传数字 
   写作页在这个基础上还要求"内容少时也要铺满可用高度": `WriteView` 的页面容器与卡片, `PostFormFields` 的正文表单项, 
   `VditorEditor` 逐层 `flex: 1`, 把 `.site-main` 撑出来的高度一直传到编辑器, 因此空文档下卡片也会铺到页脚上方, 
-  不会在下方露出一块页面底色 这几条 `flex` 声明在外层不是 flex 容器时(如日记对话框, 后台文章编辑页)不生效, 高度仍只由内容决定 
+  不会在下方露出一块页面底色 后台的文章编辑页(`PostEditView`)照这套补了页面容器与卡片, 因此点"新建文章"时正文编辑框默认也是铺满的 
+  日记的编辑对话框是 `el-dialog`, 高度由内容决定, 这套 `flex` 在里面不生效: 对话框宽 860px, 编辑器用 `height` 传 360 固定高度, 
+  这样上方工具栏能排在同一行 
 - 编辑区外观由 `theme.css` 统一: 去掉 Vditor 自带的 1px 边框与工具栏的 `border-bottom`, 编辑区, 预览区与工具栏的背景一律改为 
   `transparent`, 文字色用 `var(--text)` Vditor 自带的底色变量(`--panel-background-color` / `--textarea-background-color` / 
   `--toolbar-background-color`, 深色下是 `#24292e` / `#2f363d` / `#1d2125`)与本站卡片底色不一致: 深色下编辑区会明显比周围亮一块, 
