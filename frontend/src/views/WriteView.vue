@@ -30,7 +30,7 @@ function save(targetStatus?: number) {
         <el-button @click="editor.cancel">取消</el-button>
         <el-button :loading="editor.saving" @click="save(0)">保存草稿</el-button>
         <el-button :loading="editor.saving" @click="save(1)">提交审核</el-button>
-        <el-button type="success" :loading="editor.saving" @click="save()">
+        <el-button type="primary" :loading="editor.saving" @click="save()">
           {{ editor.form.public_visible ? '发布' : '保存为私密' }}
         </el-button>
         <el-button v-if="editor.isEdit" type="danger" plain @click="editor.removePost">删除</el-button>

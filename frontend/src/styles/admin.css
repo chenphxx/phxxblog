@@ -42,6 +42,78 @@
   --el-mask-color: color-mix(in srgb, var(--text) 45%, transparent);
 }
 
+/*
+ * 语义色(成功 / 警告 / 危险 / 信息)同样跟随主题。
+ *
+ * Element Plus 只在 :root 里写死了这四套色板与各自的 light-1..9 色阶, 主题文件只覆盖了主色,
+ * 于是"删除 / 警告 / 提示"这类语义按钮在 12 套主题、深浅两种模式下都是同一套固定的绿红黄 ——
+ * 换主题时它们不跟着变。主操作按钮(写文章页的"发布", 后台的"保存")不用 success, 走 type="primary",
+ * 由各主题文件里的 .el-button--primary 规则取主题主色, 与主题的身份色保持一致。
+ *
+ * 这里把语义色指向主题的 --ok / --warn / --danger / --muted, 色阶用 color-mix 与卡片底色、
+ * 正文色推导, 与上面主色的做法保持一致。
+ * 选择器写 html:root 而不是 :root: 组件样式是运行时按需注入的, 可能晚于本文件, 同特异性下
+ * 后加载的会覆盖先加载的(EP 深色变量用的 html.dark 也是同一档特异性)。
+ */
+html:root {
+  --el-color-success: var(--ok);
+  --el-color-success-light-3: color-mix(in srgb, var(--ok) 70%, var(--card-bg));
+  --el-color-success-light-5: color-mix(in srgb, var(--ok) 50%, var(--card-bg));
+  --el-color-success-light-7: color-mix(in srgb, var(--ok) 30%, var(--card-bg));
+  --el-color-success-light-8: color-mix(in srgb, var(--ok) 20%, var(--card-bg));
+  --el-color-success-light-9: color-mix(in srgb, var(--ok) 10%, var(--card-bg));
+  --el-color-success-dark-2: color-mix(in srgb, var(--ok) 78%, var(--text));
+
+  --el-color-warning: var(--warn);
+  --el-color-warning-light-3: color-mix(in srgb, var(--warn) 70%, var(--card-bg));
+  --el-color-warning-light-5: color-mix(in srgb, var(--warn) 50%, var(--card-bg));
+  --el-color-warning-light-7: color-mix(in srgb, var(--warn) 30%, var(--card-bg));
+  --el-color-warning-light-8: color-mix(in srgb, var(--warn) 20%, var(--card-bg));
+  --el-color-warning-light-9: color-mix(in srgb, var(--warn) 10%, var(--card-bg));
+  --el-color-warning-dark-2: color-mix(in srgb, var(--warn) 78%, var(--text));
+
+  --el-color-danger: var(--danger);
+  --el-color-danger-light-3: color-mix(in srgb, var(--danger) 70%, var(--card-bg));
+  --el-color-danger-light-5: color-mix(in srgb, var(--danger) 50%, var(--card-bg));
+  --el-color-danger-light-7: color-mix(in srgb, var(--danger) 30%, var(--card-bg));
+  --el-color-danger-light-8: color-mix(in srgb, var(--danger) 20%, var(--card-bg));
+  --el-color-danger-light-9: color-mix(in srgb, var(--danger) 10%, var(--card-bg));
+  --el-color-danger-dark-2: color-mix(in srgb, var(--danger) 78%, var(--text));
+  /* error 与 danger 在 Element Plus 里是两套变量(提示条 / 警告块用 error), 这里跟着 danger 走 */
+  --el-color-error: var(--el-color-danger);
+  --el-color-error-light-3: var(--el-color-danger-light-3);
+  --el-color-error-light-5: var(--el-color-danger-light-5);
+  --el-color-error-light-7: var(--el-color-danger-light-7);
+  --el-color-error-light-8: var(--el-color-danger-light-8);
+  --el-color-error-light-9: var(--el-color-danger-light-9);
+  --el-color-error-dark-2: var(--el-color-danger-dark-2);
+
+  --el-color-info: var(--muted);
+  --el-color-info-light-3: color-mix(in srgb, var(--muted) 70%, var(--card-bg));
+  --el-color-info-light-5: color-mix(in srgb, var(--muted) 50%, var(--card-bg));
+  --el-color-info-light-7: color-mix(in srgb, var(--muted) 30%, var(--card-bg));
+  --el-color-info-light-8: color-mix(in srgb, var(--muted) 20%, var(--card-bg));
+  --el-color-info-light-9: color-mix(in srgb, var(--muted) 10%, var(--card-bg));
+  --el-color-info-dark-2: color-mix(in srgb, var(--muted) 78%, var(--text));
+}
+
+/*
+ * 纯色语义按钮的文字色改用页面底色。
+ *
+ * 主题的 --ok / --warn / --danger 在浅色下是深色、深色下是亮色(它们同时是正文用的前景色),
+ * 配上对应的底色文字在两种模式下对比度都够; Element Plus 固定用白字, 深色主题下亮色按钮上
+ * 的白字会看不清。文字色是按钮自己的变量, 一并覆盖 hover / active / disabled 三个状态。
+ */
+html:root .el-button--success:not(.is-plain):not(.is-text):not(.is-link),
+html:root .el-button--warning:not(.is-plain):not(.is-text):not(.is-link),
+html:root .el-button--danger:not(.is-plain):not(.is-text):not(.is-link),
+html:root .el-button--info:not(.is-plain):not(.is-text):not(.is-link) {
+  --el-button-text-color: var(--bg);
+  --el-button-hover-text-color: var(--bg);
+  --el-button-active-text-color: var(--bg);
+  --el-button-disabled-text-color: color-mix(in srgb, var(--bg) 60%, transparent);
+}
+
 /* ---------- 2. 后台外壳 ---------- */
 
 /* 侧边栏顶部的品牌区: 与前台站名一致的等宽排版 + 主题色圆点 */
