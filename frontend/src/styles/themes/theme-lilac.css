@@ -1,12 +1,12 @@
 /* ============================================================
- * 主题: 松涛墨绿 (Pine Night)
- * 深色优先的影院感，墨绿底 + 松针绿高光，对比强、气场足。
+ * 主题: 雾紫 (Lilac Mist)
+ * 雾紫配冷白，低饱和的紫罗兰点缀，安静、通透，接近纸质印刷的克制感。
  * ------------------------------------------------------------
  * 本文件由 src/styles/themes/_source/generate-themes.mjs 生成, 请勿手改。
  * 改配色/圆角请改 _source/tokens.mjs, 然后重新运行:
  *   npm run themes:generate
  *
- * 切换方式: html[data-theme='pine'] (见 stores/theme.ts), 深色再加 .dark
+ * 切换方式: html[data-theme='lilac'] (见 stores/theme.ts), 深色再加 .dark
  * ============================================================ */
 
 /* ---------------- 与主题模式无关的共享令牌 ---------------- */
@@ -30,41 +30,41 @@
 /* ---------------- 浅色 ---------------- */
 /* 这里刻意不写裸 :root —— 12 套主题都写 :root 的话后者会盖掉前者,
    「默认主题」就无法确定。默认主题的浅色令牌由生成器单独写进 :root。 */
-html[data-theme='pine'] {
-  --bg: #f4f7f2;
+html[data-theme='lilac'] {
+  --bg: #f6f5fa;
   --card-bg: #ffffff;
-  --text: #0c1f18;
-  --muted: #54705f;
-  --border: #dde8e0;
-  --border-strong: #bccfc2;
-  --primary: #0d5f45;
-  --primary-strong: #0a4c37;
-  --primary-weak: #e0f0e8;
+  --text: #241f2e;
+  --muted: #6a6478;
+  --border: #e7e4ef;
+  --border-strong: #cbc5dc;
+  --primary: #6a5acd;
+  --primary-strong: #4c3abf;
+  --primary-weak: #f3f2fb;
   --on-primary: #ffffff;
-  --link: #0d5f45;
-  --code-bg: #edf2ee;
+  --link: #5c4ac8;
+  --code-bg: #eeedf2;
   --code-block-bg: #ffffff;
-  --ok: #0d5f45;
-  --warn: #a9741a;
-  --danger: #b93b3b;
-  --ring: rgba(13, 95, 69, 0.26);
-  --grad-from: #2fa87c;
-  --grad-to: #0f7a5a;
-  --term-bg: #08130f;
-  --term-border: #16302a;
-  --term-text: #b8ecd4;
-  --term-dim: #5d8171;
-  --term-accent: #4ade80;
-  --term-prompt: #e2f5ec;
-  --cell-0: #e6efe9;
-  --cell-1: #bfe0cc;
-  --cell-2: #83c4a4;
-  --cell-3: #4b9c77;
-  --cell-4: #0d5f45;
+  --ok: #2f7a55;
+  --warn: #8a5a12;
+  --danger: #b03a52;
+  --ring: rgba(106, 90, 205, 0.26);
+  --grad-from: #9b8cf0;
+  --grad-to: #6a5acd;
+  --term-bg: #16131f;
+  --term-border: #2a2638;
+  --term-text: #ddd8ec;
+  --term-dim: #8b85a0;
+  --term-accent: #b3a6f7;
+  --term-prompt: #f0eefb;
+  --cell-0: #ecebef;
+  --cell-1: #c4c1d7;
+  --cell-2: #9a92c8;
+  --cell-3: #6b5ec0;
+  --cell-4: #4635b0;
 
---radius: 10px;
+--radius: 12px;
 --radius-sm: 8px;
---radius-lg: 10px;
+--radius-lg: 12px;
 --radius-pill: 999px;
 --shadow: 0 1px 2px rgba(16, 45, 32, 0.04), 0 8px 24px -14px rgba(16, 45, 32, 0.18);
 --shadow-hover: 0 4px 10px -4px var(--ring), 0 22px 40px -22px rgba(16, 45, 32, 0.28);
@@ -73,65 +73,65 @@ html[data-theme='pine'] {
 --accent-grad: linear-gradient(135deg, var(--grad-from), var(--grad-to));
 
 /* Element Plus 主色对齐(色阶由主色推导, 保证 EP 组件与主题一致) */
---el-color-primary: #0d5f45;
---el-color-primary-light-3: #568f7d;
---el-color-primary-light-5: #86afa2;
---el-color-primary-light-7: #b6cfc7;
---el-color-primary-light-8: #cfdfda;
---el-color-primary-light-9: #e7efec;
---el-color-primary-dark-2: #0a4c37;
+--el-color-primary: #6a5acd;
+--el-color-primary-light-3: #978cdc;
+--el-color-primary-light-5: #b5ade6;
+--el-color-primary-light-7: #d2cef0;
+--el-color-primary-light-8: #e1def5;
+--el-color-primary-light-9: #f0effa;
+--el-color-primary-dark-2: #5548a4;
 --el-border-radius-base: 10px;
 --el-border-radius-small: 8px;
 --el-border-radius-round: 999px;
 --el-bg-color: #ffffff;
 --el-bg-color-overlay: #ffffff;
---el-fill-color: #f4f7f2;
---el-fill-color-light: color-mix(in srgb, #f4f7f2 60%, #ffffff);
---el-fill-color-lighter: color-mix(in srgb, #f4f7f2 30%, #ffffff);
---el-text-color-primary: #0c1f18;
---el-text-color-regular: color-mix(in srgb, #0c1f18 78%, #54705f);
---el-text-color-secondary: #54705f;
---el-border-color: #bccfc2;
---el-border-color-light: #dde8e0;
---el-border-color-lighter: color-mix(in srgb, #dde8e0 60%, #ffffff);
+--el-fill-color: #f6f5fa;
+--el-fill-color-light: color-mix(in srgb, #f6f5fa 60%, #ffffff);
+--el-fill-color-lighter: color-mix(in srgb, #f6f5fa 30%, #ffffff);
+--el-text-color-primary: #241f2e;
+--el-text-color-regular: color-mix(in srgb, #241f2e 78%, #6a6478);
+--el-text-color-secondary: #6a6478;
+--el-border-color: #cbc5dc;
+--el-border-color-light: #e7e4ef;
+--el-border-color-lighter: color-mix(in srgb, #e7e4ef 60%, #ffffff);
 }
 
 /* ---------------- 深色 ---------------- */
-html[data-theme='pine'].dark {
-  --bg: #07130f;
-  --card-bg: #0d1d18;
-  --text: #e3f1ea;
-  --muted: #8fae9f;
-  --border: #1c3229;
-  --border-strong: #2b4a3c;
-  --primary: #43c98b;
-  --primary-strong: #74e0ad;
-  --primary-weak: #0d2f22;
-  --on-primary: #062015;
-  --link: #43c98b;
-  --code-bg: #0a1813;
-  --code-block-bg: #1e1e1e;
-  --ok: #4ade80;
-  --warn: #fbbf24;
-  --danger: #f87171;
-  --ring: rgba(67, 201, 139, 0.3);
-  --grad-from: #43c98b;
-  --grad-to: #22b8a0;
-  --term-bg: #030f0b;
-  --term-border: #16302a;
-  --term-text: #b8ecd4;
-  --term-dim: #4f7365;
-  --term-accent: #4ade80;
-  --term-prompt: #d8f0e6;
-  --cell-0: #11291f;
-  --cell-1: #184631;
-  --cell-2: #26704f;
-  --cell-3: #39a274;
-  --cell-4: #74e0ad;
+html[data-theme='lilac'].dark {
+  --bg: #131219;
+  --card-bg: #1c1b25;
+  --text: #eae9ec;
+  --muted: #a5a3ae;
+  --border: #2b2938;
+  --border-strong: #3f3c53;
+  --primary: #9388d2;
+  --primary-strong: #b4ade0;
+  --primary-weak: #262432;
+  --on-primary: #100e20;
+  --link: #a097d8;
+  --code-bg: #17151e;
+  --code-block-bg: #1e1d28;
+  --ok: #86cbab;
+  --warn: #d2bc89;
+  --danger: #da958b;
+  --ring: rgba(147, 136, 210, 0.28);
+  --grad-from: #8e92d7;
+  --grad-to: #8d4ac0;
+  --term-bg: #0e0d12;
+  --term-border: #24222f;
+  --term-text: #dad8de;
+  --term-dim: #787396;
+  --term-accent: #9389d2;
+  --term-prompt: #f2f1f3;
+  --cell-0: #211f2d;
+  --cell-1: #3a355a;
+  --cell-2: #504690;
+  --cell-3: #6c5fbe;
+  --cell-4: #9e94dc;
 
---radius: 10px;
+--radius: 12px;
 --radius-sm: 8px;
---radius-lg: 10px;
+--radius-lg: 12px;
 --radius-pill: 999px;
 --shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 12px 32px -20px rgba(0, 0, 0, 0.7);
 --shadow-hover: 0 6px 14px -6px var(--ring), 0 26px 46px -26px rgba(0, 0, 0, 0.8);
@@ -140,27 +140,27 @@ html[data-theme='pine'].dark {
 --accent-grad: linear-gradient(135deg, var(--grad-from), var(--grad-to));
 
 /* Element Plus 主色对齐(色阶由主色推导, 保证 EP 组件与主题一致) */
---el-color-primary: #43c98b;
---el-color-primary-light-3: #7bd9ae;
---el-color-primary-light-5: #a1e4c5;
---el-color-primary-light-7: #c7efdc;
---el-color-primary-light-8: #d9f4e8;
---el-color-primary-light-9: #ecfaf3;
---el-color-primary-dark-2: #36a16f;
+--el-color-primary: #9388d2;
+--el-color-primary-light-3: #b3ace0;
+--el-color-primary-light-5: #c9c4e9;
+--el-color-primary-light-7: #dfdbf2;
+--el-color-primary-light-8: #e9e7f6;
+--el-color-primary-light-9: #f4f3fb;
+--el-color-primary-dark-2: #766da8;
 --el-border-radius-base: 10px;
 --el-border-radius-small: 8px;
 --el-border-radius-round: 999px;
---el-bg-color: #0d1d18;
---el-bg-color-overlay: #0d1d18;
---el-fill-color: #07130f;
---el-fill-color-light: color-mix(in srgb, #07130f 60%, #0d1d18);
---el-fill-color-lighter: color-mix(in srgb, #07130f 30%, #0d1d18);
---el-text-color-primary: #e3f1ea;
---el-text-color-regular: color-mix(in srgb, #e3f1ea 78%, #8fae9f);
---el-text-color-secondary: #8fae9f;
---el-border-color: #2b4a3c;
---el-border-color-light: #1c3229;
---el-border-color-lighter: color-mix(in srgb, #1c3229 60%, #0d1d18);
+--el-bg-color: #1c1b25;
+--el-bg-color-overlay: #1c1b25;
+--el-fill-color: #131219;
+--el-fill-color-light: color-mix(in srgb, #131219 60%, #1c1b25);
+--el-fill-color-lighter: color-mix(in srgb, #131219 30%, #1c1b25);
+--el-text-color-primary: #eae9ec;
+--el-text-color-regular: color-mix(in srgb, #eae9ec 78%, #a5a3ae);
+--el-text-color-secondary: #a5a3ae;
+--el-border-color: #3f3c53;
+--el-border-color-light: #2b2938;
+--el-border-color-lighter: color-mix(in srgb, #2b2938 60%, #1c1b25);
 }
 
 /* ============================================================
@@ -168,8 +168,9 @@ html[data-theme='pine'].dark {
  * ============================================================ */
 
 /* ============================================================
- * 增强层: 柔和抬升族 (soft)
- * 大圆角、渐变主色、多层柔和阴影。悬停是「轻轻抬起来」。
+ * 增强层: 文档/极简族 (minimal)
+ * 文档站风格(VitePress + Teek 预设): 中性灰阶、细边框、
+ * 克制的阴影与过渡, 不做花哨的位移和渐变。
  * 占位符由 _source/generate-themes.mjs 替换。
  * ============================================================ */
 
@@ -204,8 +205,8 @@ a {
   left: 0;
   top: 0;
   bottom: 0;
-  width: 3px;
-  background: linear-gradient(to bottom, var(--grad-from), var(--grad-to));
+  width: 2px;
+  background: var(--primary);
   transform: scaleY(0);
   transform-origin: top;
   transition: transform var(--dur) var(--ease), width var(--dur) var(--ease),
@@ -245,22 +246,22 @@ a {
 }
 
 .el-button--primary:not(.is-text):not(.is-link) {
-  background: var(--accent-grad);
-  border-color: transparent;
+  background: var(--primary);
+  border-color: var(--primary);
   color: var(--on-primary);
-  box-shadow: 0 6px 16px -10px var(--ring);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
 .el-button--primary:not(.is-text):not(.is-link):hover,
 .el-button--primary:not(.is-text):not(.is-link):focus-visible {
-  background: var(--accent-grad);
-  border-color: transparent;
-  transform: translateY(-1px);
-  box-shadow: 0 10px 22px -12px var(--ring);
+  background: var(--primary-strong);
+  border-color: var(--primary-strong);
+  transform: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .el-button--primary:not(.is-text):not(.is-link):active {
-  transform: translateY(0) scale(0.985);
+  transform: none;
 }
 
 .el-button.is-circle {
@@ -295,14 +296,14 @@ a {
 }
 
 .el-pagination.is-background .el-pager li.is-active {
-  background: var(--accent-grad);
-  border-color: transparent;
+  background: var(--primary);
+  border-color: var(--primary);
   color: var(--on-primary);
 }
 
 /* ---------- 消息 / 弹窗 / 下拉 ---------- */
 .el-message {
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius);
   box-shadow: var(--shadow-hover);
 }
 
@@ -323,17 +324,19 @@ a {
 }
 
 .site-nav a {
-  border-radius: var(--radius-pill);
-  padding: 6px 13px;
+  border-radius: var(--radius);
+  color: var(--muted);
   transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease);
 }
 
 .site-nav a:hover {
-  background: var(--primary-weak);
-  color: var(--primary-strong);
+  background: var(--code-bg);
+  color: var(--text);
 }
 
 .site-nav a.router-link-active {
+  background: var(--primary-weak);
+  color: var(--link);
   font-weight: 600;
 }
 
@@ -364,7 +367,7 @@ a {
 }
 
 .timeline-item:hover::before {
-  box-shadow: 0 0 0 2px var(--primary), 0 0 0 7px var(--ring);
+  box-shadow: 0 0 0 2px var(--primary);
   transform: none;
 }
 
@@ -383,10 +386,10 @@ a {
 
 
 /* ---------- 入场动画与主题过渡 ---------- */
-@keyframes rise-in {
+@keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -403,7 +406,7 @@ a {
  * to 帧的 opacity/transform 就是元素的自然值, 所以 backwards 的视觉效果与 both 一致。
  */
 .site-main > * {
-  animation: rise-in 420ms var(--ease) backwards;
+  animation: fade-in 360ms var(--ease) backwards;
 }
 
 /* 切换主题/深浅色时让颜色平滑过渡, 不闪白 */
@@ -427,39 +430,39 @@ html.theme-transition *::after {
   }
 }
 
-/* ---------- 柔和族专有: 文章卡悬停左移 + 左侧色条生长 ---------- */
+/* ---------- 极简族: 悬停只做极轻的抬升与边框加深 ---------- */
 .post-card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
+}
+
+.post-card::before {
+  transform: scaleY(0);
 }
 
 .post-card:hover::before {
   transform: scaleY(1);
 }
 
-/* ---------- 站点头部: 顶部一条渐变光带 ---------- */
+/* ---------- 站点头部: 只保留一条细分割线 ---------- */
 .site-header::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--primary), transparent);
-  opacity: 0.35;
+  display: none;
 }
 
-/* ---------- 终端卡片: 顶部渐变光带 ---------- */
-.term-card::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--grad-from), var(--grad-to));
+/* ---------- 终端卡片: 细边框 + 一枚强调色光标 ---------- */
+.term-card {
+  box-shadow: none;
 }
 
-/* ---------- 编辑区: 引用块配色跟随主题 ---------- */
+.term-cursor {
+  box-shadow: 0 0 12px -2px var(--primary);
+}
+
+/* ---------- 正文: 与文档站一致的松弛行距 ---------- */
+.markdown-body {
+  line-height: 1.85;
+}
+
 .markdown-body blockquote {
   border-left-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 6%, transparent);
 }

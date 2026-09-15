@@ -1,12 +1,12 @@
 /* ============================================================
- * 主题: 抹茶奶绿 (Matcha Latte)
- * 暖调抹茶绿配奶油底色，低饱和、温柔治愈，久看不累。
+ * 主题: 石墨 (Graphite Brass)
+ * 石墨灰配黄铜点缀，中性克制，适合以文字和图片为主的博客。
  * ------------------------------------------------------------
  * 本文件由 src/styles/themes/_source/generate-themes.mjs 生成, 请勿手改。
  * 改配色/圆角请改 _source/tokens.mjs, 然后重新运行:
  *   npm run themes:generate
  *
- * 切换方式: html[data-theme='matcha'] (见 stores/theme.ts), 深色再加 .dark
+ * 切换方式: html[data-theme='graphite'] (见 stores/theme.ts), 深色再加 .dark
  * ============================================================ */
 
 /* ---------------- 与主题模式无关的共享令牌 ---------------- */
@@ -30,41 +30,41 @@
 /* ---------------- 浅色 ---------------- */
 /* 这里刻意不写裸 :root —— 12 套主题都写 :root 的话后者会盖掉前者,
    「默认主题」就无法确定。默认主题的浅色令牌由生成器单独写进 :root。 */
-html[data-theme='matcha'] {
-  --bg: #faf8ef;
-  --card-bg: #fffdf6;
-  --text: #22271a;
-  --muted: #6a705a;
-  --border: #e8e5cf;
-  --border-strong: #d0cbaa;
-  --primary: #566f2a;
-  --primary-strong: #425520;
-  --primary-weak: #eef2dc;
+html[data-theme='graphite'] {
+  --bg: #f6f5f3;
+  --card-bg: #ffffff;
+  --text: #24211d;
+  --muted: #6f6a62;
+  --border: #e8e4dd;
+  --border-strong: #cdc7bc;
+  --primary: #414951;
+  --primary-strong: #2d3238;
+  --primary-weak: #f0f0f1;
   --on-primary: #ffffff;
-  --link: #566f2a;
-  --code-bg: #f3f1e2;
+  --link: #383f46;
+  --code-bg: #efedea;
   --code-block-bg: #ffffff;
-  --ok: #3f7a3f;
-  --warn: #96700f;
-  --danger: #b04432;
-  --ring: rgba(86, 111, 42, 0.24);
-  --grad-from: #7a9440;
-  --grad-to: #566f2a;
-  --term-bg: #151a10;
-  --term-border: #2b3320;
-  --term-text: #dbe8c0;
-  --term-dim: #7d8768;
-  --term-accent: #b3cc7a;
-  --term-prompt: #eef2dc;
-  --cell-0: #efeee1;
-  --cell-1: #d8dcb4;
-  --cell-2: #b0bd7e;
-  --cell-3: #8aa055;
-  --cell-4: #566f2a;
+  --ok: #2f7048;
+  --warn: #8a6412;
+  --danger: #a8483c;
+  --ring: rgba(65, 73, 81, 0.26);
+  --grad-from: #c2a878;
+  --grad-to: #6d6a60;
+  --term-bg: #131414;
+  --term-border: #26282a;
+  --term-text: #dedbd6;
+  --term-dim: #8a857c;
+  --term-accent: #cdb07a;
+  --term-prompt: #f2f0ec;
+  --cell-0: #ededee;
+  --cell-1: #caccce;
+  --cell-2: #a8adb3;
+  --cell-3: #858f99;
+  --cell-4: #66737f;
 
---radius: 12px;
+--radius: 8px;
 --radius-sm: 8px;
---radius-lg: 12px;
+--radius-lg: 8px;
 --radius-pill: 999px;
 --shadow: 0 1px 2px rgba(16, 45, 32, 0.04), 0 8px 24px -14px rgba(16, 45, 32, 0.18);
 --shadow-hover: 0 4px 10px -4px var(--ring), 0 22px 40px -22px rgba(16, 45, 32, 0.28);
@@ -73,65 +73,65 @@ html[data-theme='matcha'] {
 --accent-grad: linear-gradient(135deg, var(--grad-from), var(--grad-to));
 
 /* Element Plus 主色对齐(色阶由主色推导, 保证 EP 组件与主题一致) */
---el-color-primary: #566f2a;
---el-color-primary-light-3: #899a6a;
---el-color-primary-light-5: #abb795;
---el-color-primary-light-7: #ccd4bf;
---el-color-primary-light-8: #dde2d4;
---el-color-primary-light-9: #eef1ea;
---el-color-primary-dark-2: #455922;
+--el-color-primary: #414951;
+--el-color-primary-light-3: #7a8085;
+--el-color-primary-light-5: #a0a4a8;
+--el-color-primary-light-7: #c6c8cb;
+--el-color-primary-light-8: #d9dbdc;
+--el-color-primary-light-9: #ecedee;
+--el-color-primary-dark-2: #343a41;
 --el-border-radius-base: 10px;
 --el-border-radius-small: 8px;
 --el-border-radius-round: 999px;
---el-bg-color: #fffdf6;
---el-bg-color-overlay: #fffdf6;
---el-fill-color: #faf8ef;
---el-fill-color-light: color-mix(in srgb, #faf8ef 60%, #fffdf6);
---el-fill-color-lighter: color-mix(in srgb, #faf8ef 30%, #fffdf6);
---el-text-color-primary: #22271a;
---el-text-color-regular: color-mix(in srgb, #22271a 78%, #6a705a);
---el-text-color-secondary: #6a705a;
---el-border-color: #d0cbaa;
---el-border-color-light: #e8e5cf;
---el-border-color-lighter: color-mix(in srgb, #e8e5cf 60%, #fffdf6);
+--el-bg-color: #ffffff;
+--el-bg-color-overlay: #ffffff;
+--el-fill-color: #f6f5f3;
+--el-fill-color-light: color-mix(in srgb, #f6f5f3 60%, #ffffff);
+--el-fill-color-lighter: color-mix(in srgb, #f6f5f3 30%, #ffffff);
+--el-text-color-primary: #24211d;
+--el-text-color-regular: color-mix(in srgb, #24211d 78%, #6f6a62);
+--el-text-color-secondary: #6f6a62;
+--el-border-color: #cdc7bc;
+--el-border-color-light: #e8e4dd;
+--el-border-color-lighter: color-mix(in srgb, #e8e4dd 60%, #ffffff);
 }
 
 /* ---------------- 深色 ---------------- */
-html[data-theme='matcha'].dark {
-  --bg: #14170f;
-  --card-bg: #1b1f15;
-  --text: #ecefdf;
-  --muted: #a5ab93;
-  --border: #2e3325;
-  --border-strong: #444b34;
-  --primary: #b3cc7a;
-  --primary-strong: #cfe09b;
-  --primary-weak: #232b18;
-  --on-primary: #1a2110;
-  --link: #b3cc7a;
-  --code-bg: #181c12;
-  --code-block-bg: #1e1e1e;
-  --ok: #9ec96a;
-  --warn: #dcb45f;
-  --danger: #e08a72;
-  --ring: rgba(179, 204, 122, 0.24);
-  --grad-from: #cfe09b;
-  --grad-to: #8fb45a;
-  --term-bg: #0f1209;
-  --term-border: #2b3320;
-  --term-text: #dbe8c0;
-  --term-dim: #717a5c;
-  --term-accent: #b3cc7a;
-  --term-prompt: #e6ecd4;
-  --cell-0: #20261a;
-  --cell-1: #333f22;
-  --cell-2: #4d6130;
-  --cell-3: #748f43;
-  --cell-4: #b3cc7a;
+html[data-theme='graphite'].dark {
+  --bg: #141617;
+  --card-bg: #1e2022;
+  --text: #ecebe9;
+  --muted: #aeaaa3;
+  --border: #2e3033;
+  --border-strong: #43474b;
+  --primary: #a6adb5;
+  --primary-strong: #c2c7cc;
+  --primary-weak: #252b31;
+  --on-primary: #0e1720;
+  --link: #b1b8be;
+  --code-bg: #181a1b;
+  --code-block-bg: #212224;
+  --ok: #86cbab;
+  --warn: #d2bc89;
+  --danger: #da958b;
+  --ring: rgba(166, 173, 181, 0.28);
+  --grad-from: #abb6ba;
+  --grad-to: #797a91;
+  --term-bg: #0e0f10;
+  --term-border: #27292b;
+  --term-text: #dedcd8;
+  --term-dim: #738596;
+  --term-accent: #89add2;
+  --term-prompt: #f3f3f1;
+  --cell-0: #232629;
+  --cell-1: #41474e;
+  --cell-2: #5f6b77;
+  --cell-3: #818f9d;
+  --cell-4: #adb8c2;
 
---radius: 12px;
+--radius: 8px;
 --radius-sm: 8px;
---radius-lg: 12px;
+--radius-lg: 8px;
 --radius-pill: 999px;
 --shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 12px 32px -20px rgba(0, 0, 0, 0.7);
 --shadow-hover: 0 6px 14px -6px var(--ring), 0 26px 46px -26px rgba(0, 0, 0, 0.8);
@@ -140,27 +140,27 @@ html[data-theme='matcha'].dark {
 --accent-grad: linear-gradient(135deg, var(--grad-from), var(--grad-to));
 
 /* Element Plus 主色对齐(色阶由主色推导, 保证 EP 组件与主题一致) */
---el-color-primary: #b3cc7a;
---el-color-primary-light-3: #cadba2;
---el-color-primary-light-5: #d9e6bd;
---el-color-primary-light-7: #e8f0d7;
---el-color-primary-light-8: #f0f5e4;
---el-color-primary-light-9: #f7faf2;
---el-color-primary-dark-2: #8fa362;
+--el-color-primary: #a6adb5;
+--el-color-primary-light-3: #c1c6cb;
+--el-color-primary-light-5: #d3d6da;
+--el-color-primary-light-7: #e4e6e9;
+--el-color-primary-light-8: #edeff0;
+--el-color-primary-light-9: #f6f7f8;
+--el-color-primary-dark-2: #858a91;
 --el-border-radius-base: 10px;
 --el-border-radius-small: 8px;
 --el-border-radius-round: 999px;
---el-bg-color: #1b1f15;
---el-bg-color-overlay: #1b1f15;
---el-fill-color: #14170f;
---el-fill-color-light: color-mix(in srgb, #14170f 60%, #1b1f15);
---el-fill-color-lighter: color-mix(in srgb, #14170f 30%, #1b1f15);
---el-text-color-primary: #ecefdf;
---el-text-color-regular: color-mix(in srgb, #ecefdf 78%, #a5ab93);
---el-text-color-secondary: #a5ab93;
---el-border-color: #444b34;
---el-border-color-light: #2e3325;
---el-border-color-lighter: color-mix(in srgb, #2e3325 60%, #1b1f15);
+--el-bg-color: #1e2022;
+--el-bg-color-overlay: #1e2022;
+--el-fill-color: #141617;
+--el-fill-color-light: color-mix(in srgb, #141617 60%, #1e2022);
+--el-fill-color-lighter: color-mix(in srgb, #141617 30%, #1e2022);
+--el-text-color-primary: #ecebe9;
+--el-text-color-regular: color-mix(in srgb, #ecebe9 78%, #aeaaa3);
+--el-text-color-secondary: #aeaaa3;
+--el-border-color: #43474b;
+--el-border-color-light: #2e3033;
+--el-border-color-lighter: color-mix(in srgb, #2e3033 60%, #1e2022);
 }
 
 /* ============================================================

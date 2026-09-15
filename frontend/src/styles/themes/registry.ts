@@ -5,17 +5,17 @@
 
 export type ThemeId =
   | 'cuanmu'
-  | 'emerald'
   | 'neon'
   | 'moss'
   | 'mist'
-  | 'matcha'
-  | 'pine'
-  | 'bud'
-  | 'mint'
   | 'sage'
   | 'aurora'
   | 'ink'
+  | 'lilac'
+  | 'rosewood'
+  | 'oatclay'
+  | 'sailblue'
+  | 'graphite'
 
 export interface ThemeOption {
   id: ThemeId
@@ -35,13 +35,6 @@ export const THEME_OPTIONS: ThemeOption[] = [
     en: 'Preset',
     desc: '中性灰阶 + 静蓝主色，克制的文档站风格（令牌来自 VitePress + Teek 预设）。',
     swatch: ['#3a5ccc', '#3a5ccc', '#3e63dd'],
-  },
-  {
-    id: 'emerald',
-    name: '森屿绿洲',
-    en: 'Fresh Emerald',
-    desc: '翡翠绿主色 + 青绿渐变，大圆角与柔和阴影，最现代产品化的一套。',
-    swatch: ['#0b7f45', '#0d9488', '#34d980'],
   },
   {
     id: 'neon',
@@ -65,34 +58,6 @@ export const THEME_OPTIONS: ThemeOption[] = [
     swatch: ['#0e7a70', '#0e8a8a', '#2fd4bd'],
   },
   {
-    id: 'matcha',
-    name: '抹茶奶绿',
-    en: 'Matcha Latte',
-    desc: '暖调抹茶绿配奶油底色，低饱和、温柔治愈，久看不累。',
-    swatch: ['#566f2a', '#566f2a', '#b3cc7a'],
-  },
-  {
-    id: 'pine',
-    name: '松涛墨绿',
-    en: 'Pine Night',
-    desc: '深色优先的影院感，墨绿底 + 松针绿高光，对比强、气场足。',
-    swatch: ['#0d5f45', '#0f7a5a', '#43c98b'],
-  },
-  {
-    id: 'bud',
-    name: '春芽黄绿',
-    en: 'Lime Bud',
-    desc: '明亮嫩芽黄绿，年轻、有冲劲，适合想要一点活泼感的博客。',
-    swatch: ['#527d00', '#5d8c00', '#a3e635'],
-  },
-  {
-    id: 'mint',
-    name: '薄荷冰',
-    en: 'Mint Frost',
-    desc: '薄荷绿到冰蓝的渐变，清爽通透，夏天感最强的一套。',
-    swatch: ['#0d8464', '#0891b2', '#2dd4bf'],
-  },
-  {
     id: 'sage',
     name: '鼠尾草灰绿',
     en: 'Sage Neutral',
@@ -112,6 +77,41 @@ export const THEME_OPTIONS: ThemeOption[] = [
     en: 'Ink Green',
     desc: '近黑的墨底配一点青，几乎看不到绿但很耐看，偏「暗夜工作台」气质。',
     swatch: ['#1f4f40', '#1f4f40', '#6ee7c4'],
+  },
+  {
+    id: 'lilac',
+    name: '雾紫',
+    en: 'Lilac Mist',
+    desc: '雾紫配冷白，低饱和的紫罗兰点缀，安静、通透，接近纸质印刷的克制感。',
+    swatch: ['#6a5acd', '#6a5acd', '#9388d2'],
+  },
+  {
+    id: 'rosewood',
+    name: '玫瑰石英',
+    en: 'Rose Quartz',
+    desc: '藕粉玫瑰配暖白，配一块低饱和的砖红作强调，温柔但不甜腻。',
+    swatch: ['#a34e69', '#a34e69', '#c695a4'],
+  },
+  {
+    id: 'oatclay',
+    name: '燕麦陶土',
+    en: 'Oat Clay',
+    desc: '燕麦底色配陶土棕，暖调、低对比，长时间阅读也不刺眼。',
+    swatch: ['#9a5f38', '#9a5f38', '#cea78d'],
+  },
+  {
+    id: 'sailblue',
+    name: '黛蓝',
+    en: 'Slate Navy',
+    desc: '冷白配黛蓝，几乎没有彩度，最像纸质书的安静配色。',
+    swatch: ['#35597f', '#35597f', '#91adca'],
+  },
+  {
+    id: 'graphite',
+    name: '石墨',
+    en: 'Graphite Brass',
+    desc: '石墨灰配黄铜点缀，中性克制，适合以文字和图片为主的博客。',
+    swatch: ['#414951', '#6d6a60', '#a6adb5'],
   },
 ]
 

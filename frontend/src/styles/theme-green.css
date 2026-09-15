@@ -22,17 +22,17 @@
 
 /* ---------- 12 套可选主题 ---------- */
 @import './themes/theme-cuanmu.css'; /* 预设      文档站风格（VitePress + Teek 令牌，默认） */
-@import './themes/theme-emerald.css'; /* 森屿绿洲  翡翠绿 + 青绿渐变 */
 @import './themes/theme-neon.css'; /* 霓虹青柠  荧光青柠 + 硬阴影 */
 @import './themes/theme-moss.css'; /* 苔原手记  苔绿 + 陶土 + 衬线 */
 @import './themes/theme-mist.css'; /* 晨雾青    冷调青绿, 低饱和 */
-@import './themes/theme-matcha.css'; /* 抹茶奶绿  暖调抹茶 + 奶油底 */
-@import './themes/theme-pine.css'; /* 松涛墨绿  深色优先, 影院感 */
-@import './themes/theme-bud.css'; /* 春芽黄绿  明亮嫩芽黄绿 */
-@import './themes/theme-mint.css'; /* 薄荷冰    薄荷绿到冰蓝 */
 @import './themes/theme-sage.css'; /* 鼠尾草灰绿 中性灰绿, 最耐看 */
 @import './themes/theme-aurora.css'; /* 极光青绿  青绿到紫的极光 */
 @import './themes/theme-ink.css'; /* 青墨      近黑墨底 + 一点青 */
+@import './themes/theme-lilac.css'; /* 雾紫      低饱和紫罗兰 + 冷白 */
+@import './themes/theme-rosewood.css'; /* 玫瑰石英  藕粉玫瑰 + 暖白 */
+@import './themes/theme-oatclay.css'; /* 燕麦陶土  燕麦底 + 陶土棕, 暖调 */
+@import './themes/theme-sailblue.css'; /* 黛蓝      冷白 + 黛蓝, 极简 */
+@import './themes/theme-graphite.css'; /* 石墨      石墨灰 + 黄铜点缀 */
 
 /* ---------- 管理后台主题层 ----------
  * 必须放在所有主题之后: 它把 Element Plus 的 --el-color-primary 指向主题令牌,
