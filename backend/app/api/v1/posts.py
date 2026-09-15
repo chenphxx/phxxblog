@@ -53,7 +53,10 @@ from app.services.post_write import (
     STATUS_PUBLISHED,
     can_manage as _can_manage,
     require_status_transition,
+    resolve_categories,
+    resolve_categories_by_name,
     resolve_submitted_status,
+    resolve_tags,
 )
 
 router = APIRouter(prefix="/posts", tags=["文章"])
@@ -73,7 +76,7 @@ def _apply_payload(
     user: User,
     request: Request,
 ) -> None:
-    """将请求字段应用到文章(含状态规则、标签、HTML 渲染)。
+    """将请求字段应用到文章(含状态规则、分类/标签、HTML 渲染)。
 
     状态规则统一走 services/post_write.resolve_submitted_status, 不再就地判断权限码。
     """
@@ -85,7 +88,6 @@ def _apply_payload(
     post.content_md = data.content_md
     post.content_html = render_markdown(data.content_md)
     post.cover_image = data.cover_image
-    post.category_id = data.category_id
     post.status = target_status
     post.ip = get_client_ip(request)
     post.location = resolve_location(post.ip)
@@ -93,9 +95,9 @@ def _apply_payload(
     if target_status == STATUS_PUBLISHED and post.published_at is None:
         post.published_at = datetime.now()
 
-    # 标签
-    if data.tag_ids:
-        post.tags = db.query(Tag).filter(Tag.id.in_(data.tag_ids)).all()
+    # 分类与标签都按提交值整体覆盖: 清空即解除全部关联(而不是保留旧值)
+    post.categories = resolve_categories(db, data.category_ids)
+    post.tags = resolve_tags(db, data.tag_ids)
 
 
 @router.get("", response_model=dict)
@@ -114,7 +116,7 @@ def list_posts(
     """前台文章列表(仅已发布)。"""
     query = db.query(Post).filter(Post.status == 2)
     if category:
-        query = query.filter(Post.category_id == category)
+        query = query.join(Post.categories).filter(Category.id == category)
     if tag:
         query = query.join(Post.tags).filter(Tag.id == tag)
     if year:
@@ -213,8 +215,8 @@ def _post_to_markdown(post: Post) -> str:
         pairs.append(("summary", post.summary))
     if post.cover_image:
         pairs.append(("cover_image", post.cover_image))
-    if post.category:
-        pairs.append(("category", post.category.name))
+    if post.categories:
+        pairs.append(("categories", [category.name for category in post.categories]))
     if post.tags:
         pairs.append(("tags", [t.name for t in post.tags]))
     lines = frontmatter_lines(pairs)
@@ -283,21 +285,25 @@ def _import_markdown(
     else:
         status = resolved
 
-    category = None
-    category_name = str(meta.get("category") or "").strip()
-    if category_name:
-        category = (
-            db.query(Category)
-            .filter(func.lower(Category.name) == category_name.lower())
-            .first()
-        )
-        if category is None:
-            category = Category(
-                name=category_name[:50],
-                slug=unique_slug(db, Category, category_name[:80]),
-            )
-            db.add(category)
-            db.flush()
+    # frontmatter 旧格式是单个 category, 新格式是 categories 列表, 两者都支持
+    raw_categories = meta.get("categories")
+    if raw_categories is None:
+        raw_categories = meta.get("category")
+    if isinstance(raw_categories, str):
+        # 手写的 [后端, 运维] 不带引号时 json 解析不出列表, 这里按逗号兜底拆分;
+        # 其余情况整体当作一个分类名(避免把名字里带逗号的分类拆开)
+        text = raw_categories.strip()
+        if text.startswith("[") and text.endswith("]"):
+            raw_categories = [name.strip() for name in text[1:-1].split(",") if name.strip()]
+        else:
+            raw_categories = [text]
+    elif not isinstance(raw_categories, list):
+        raw_categories = []
+    categories = resolve_categories_by_name(
+        db,
+        [str(name) for name in raw_categories],
+        lambda value: unique_slug(db, Category, value),
+    )
 
     raw_tags = meta.get("tags") or []
     if isinstance(raw_tags, str):
@@ -328,7 +334,6 @@ def _import_markdown(
         summary=summary[:500] if summary else None,
         content_md=body,
         cover_image=cover_image[:255] if cover_image else None,
-        category_id=category.id if category else None,
         status=status,
     )
     if status == 2:
@@ -340,6 +345,7 @@ def _import_markdown(
                 post.published_at = datetime.strptime(date_str, "%Y-%m-%d")
             except (ValueError, TypeError):
                 post.published_at = datetime.now()
+    post.categories = categories
     post.tags = tags
     db.add(post)
     db.flush()

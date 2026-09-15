@@ -1,12 +1,13 @@
 """核心业务规则与安全断言的回归测试。
 
-只覆盖分支最多、最容易被改坏、且改错会出安全事故的六处:
+只覆盖分支最多、最容易被改坏、且改错难以在界面上发现的七处:
   1. 越权读取非公开文章必须 404(不能泄漏"存在但私密")
   2. 无发布权限的作者提交 status=2 必须被降级为审核中
   3. 刷新令牌必须一次性(轮换后旧令牌失效)
   4. 上传必须拒绝白名单外的扩展名(存储型 XSS 的那条链)
   5. 公开文章详情不得包含作者 ip / location
   6. 静态资源 /assets 里非渲染类的文件(迁移导出、附件)必须仅管理员可访问
+  7. 一篇文章的分类是多对多, 写入/筛选/分类计数都不能只认一个分类
 跑法: cd backend && .venv/Scripts/python.exe -m pytest tests -q
 """
 import io
@@ -283,3 +284,88 @@ def test_login_rate_limiter_blocks_after_threshold():
         assert "Retry-After" in (exc.headers or {})
     else:
         raise AssertionError("超过阈值的登录尝试未被拦截")
+
+
+def test_post_can_have_multiple_categories(db_session, seeded):
+    """一篇文章可以同时属于多个分类: 写入, 筛选, 分类计数都要按关联表来。
+
+    分类由 posts.category_id 单值改成 post_categories 关联表后, 最容易漏掉的是
+    "按分类筛选文章"与"分类下的已发布文章数"两处查询 —— 它们出错时界面只是
+    列表空掉或计数永远是 0, 不会报错, 所以把规则固定成断言。
+    """
+    from app.api.v1.categories import _post_counts
+    from app.api.v1.posts import _apply_payload, list_posts
+    from app.models.post import Category, Post
+    from app.schemas.post import PostCreate
+
+    admin, _author, _pw = seeded
+    backend = Category(name="后端", slug="backend")
+    ops = Category(name="运维", slug="ops")
+    db_session.add_all([backend, ops])
+    db_session.commit()
+
+    class _Req:
+        """最小 Request 替身: _apply_payload 只用到 headers 与 client。"""
+
+        headers: dict = {}
+        client = type("C", (), {"host": "127.0.0.1"})()
+
+    def _create(title, slug, category_ids, status=2):
+        """走真实写入路径建一篇文章, 返回 ORM 对象。"""
+        payload = PostCreate(
+            title=title, slug=slug, content_md="内容", status=status,
+            category_ids=category_ids,
+        )
+        post = Post(author_id=admin.id)
+        db_session.add(post)
+        _apply_payload(db_session, post, payload, admin, _Req())
+        db_session.commit()
+        return post
+
+    multi = _create("多分类", "multi-cat", [backend.id, ops.id])
+    single = _create("单分类", "single-cat", [ops.id])
+    _create("草稿", "draft-cat", [backend.id], status=0)
+
+    assert {category.name for category in multi.categories} == {"后端", "运维"}
+
+    # 重新提交空列表 = 解除全部关联(整体覆盖, 而不是保留旧值)
+    _apply_payload(
+        db_session, multi,
+        PostCreate(title="多分类", slug="multi-cat", content_md="内容", status=2),
+        admin, _Req(),
+    )
+    db_session.commit()
+    assert multi.categories == []
+
+    # 恢复多分类, 继续验证筛选与分类计数
+    _apply_payload(
+        db_session, multi,
+        PostCreate(
+            title="多分类", slug="multi-cat", content_md="内容", status=2,
+            category_ids=[backend.id, ops.id],
+        ),
+        admin, _Req(),
+    )
+    db_session.commit()
+
+    counts = _post_counts(db_session)
+    assert counts.get(backend.id) == 1, "分类计数只应统计已发布文章"
+    assert counts.get(ops.id) == 2
+
+    def _list_by_category(category_id):
+        resp = list_posts(
+            page=1, page_size=10, category=category_id, tag=None, year=None,
+            month=None, start_date=None, end_date=None, keyword=None, db=db_session,
+        )
+        return resp["data"]
+
+    by_backend = _list_by_category(backend.id)
+    assert [item.id for item in by_backend.items] == [multi.id]
+    assert by_backend.total == 1
+
+    by_ops = _list_by_category(ops.id)
+    assert sorted(item.id for item in by_ops.items) == sorted([multi.id, single.id])
+
+    # 出参是列表: 前端用 v-for 渲染, 退化成单个对象会直接白屏
+    detail = next(item for item in by_ops.items if item.id == multi.id)
+    assert [category.name for category in detail.categories] == ["后端", "运维"]

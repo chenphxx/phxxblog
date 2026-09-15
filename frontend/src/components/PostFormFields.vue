@@ -54,7 +54,8 @@ defineExpose({ syncContent })
       <el-col :span="8">
         <el-form-item label="分类(可输入新增)">
           <el-select
-            v-model="editor.form.category_id"
+            v-model="editor.form.category_ids"
+            multiple
             filterable
             allow-create
             default-first-option
@@ -62,7 +63,7 @@ defineExpose({ syncContent })
             clearable
             placeholder="选择或输入新分类"
             style="width: 100%"
-            @change="editor.onCategoryChange"
+            @change="editor.onCategoriesChange"
           >
             <el-option v-for="cat in editor.categories" :key="cat.id" :label="cat.name" :value="cat.id" />
           </el-select>

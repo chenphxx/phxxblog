@@ -28,6 +28,14 @@ post_tags = Table(
     Column("tag_id", BigInteger, ForeignKey("tags.id", ondelete="CASCADE"), primary_key=True),
 )
 
+# 文章-分类关联表(一篇文章可以同时属于多个分类, 见 docs/mysql.md 的 post_categories)
+post_categories = Table(
+    "post_categories",
+    Base.metadata,
+    Column("post_id", BigInteger, ForeignKey("posts.id", ondelete="CASCADE"), primary_key=True),
+    Column("category_id", BigInteger, ForeignKey("categories.id", ondelete="CASCADE"), primary_key=True),
+)
+
 
 class Category(Base):
     """文章分类, 支持父子层级。"""
@@ -74,7 +82,6 @@ class Post(Base):
     __tablename__ = "posts"
     __table_args__ = (
         Index("idx_status_published", "status", "published_at"),
-        Index("idx_category", "category_id"),
         Index("idx_author", "author_id"),
         # 这里原先还有一个 FULLTEXT + ngram 的 ft_post 索引, 已移除。
         #
@@ -104,9 +111,6 @@ class Post(Base):
     content_md: Mapped[str] = mapped_column(Text, nullable=False)
     content_html: Mapped[str | None] = mapped_column(Text, nullable=True)
     cover_image: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    category_id: Mapped[int | None] = mapped_column(
-        BigInteger, ForeignKey("categories.id", ondelete="SET NULL"), nullable=True
-    )
     status: Mapped[int] = mapped_column(SmallInteger, nullable=False, default=0)
     views: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     likes_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
@@ -121,8 +125,10 @@ class Post(Base):
     # 关系
     #
     # lazy 策略说明(改动前请先读):
-    #   author / category -> joined:  列表与详情都要显示, 一次 JOIN 取回最省。
-    #   tags              -> selectin: PostListItem 要序列化标签, 必须预加载。
+    #   author            -> joined:   列表与详情都要显示, 一次 JOIN 取回最省。
+    #   categories / tags -> selectin: PostListItem 要序列化分类与标签, 必须预加载。
+    #                     两者都是多对多, 若用 joined 会让 LIMIT 作用在放大后的
+    #                     行数上(分页结果会少), 因此必须 selectin。
     #   comments / likes  -> raise:   列表与详情接口都**不**使用这两个关系
     #                     (评论走 Comment 表独立查询, 点赞数读 Post.likes_count 字段),
     #                     以前是 selectin, 导致每列 10 篇文章都要多查一次
@@ -130,7 +136,12 @@ class Post(Base):
     #                     用 raise 而不是 select: 一旦有人真的误用会立刻报错,
     #                     而不是悄悄退化成 N+1。真需要时用 selectinload() 显式加载。
     author: Mapped["User"] = relationship("User", back_populates="posts", lazy="joined")
-    category: Mapped[Category | None] = relationship(lazy="joined")
+    # order_by 让同一篇文章的分类按后台的排序字段展示, 避免顺序随查询变化
+    categories: Mapped[list[Category]] = relationship(
+        secondary=post_categories,
+        lazy="selectin",
+        order_by=lambda: [Category.sort_order, Category.id],
+    )
     tags: Mapped[list[Tag]] = relationship(secondary=post_tags, lazy="selectin")
     comments: Mapped[list["Comment"]] = relationship(
         back_populates="post", lazy="raise"

@@ -25,6 +25,7 @@
 | tags | 文章标签 |
 | posts | 文章 |
 | post_tags | 文章-标签关联 |
+| post_categories | 文章-分类关联 |
 | comments | 评论(游客/注册用户, 支持回复) |
 | media | 媒体/附件(图片, 视频, 文件) |
 | post_likes | 文章点赞(游客按 IP, 用户按账号) |
@@ -130,7 +131,6 @@
 | content_md | LONGTEXT | Markdown 原文 |
 | content_html | LONGTEXT | 渲染后的 HTML |
 | cover_image | VARCHAR(255) | 封面图URL |
-| category_id | BIGINT NULL FK | 所属分类 |
 | status | TINYINT | 0草稿 1审核中 2已发布 3私密 4回收站 |
 | views | INT UNSIGNED | 阅读量 |
 | likes_count | INT UNSIGNED | 点赞数(冗余, 便于列表展示) |
@@ -138,7 +138,16 @@
 | published_at | DATETIME NULL | 发布时间 |
 | created_at / updated_at | DATETIME | 创建/更新时间 |
 
-索引: `idx_status_published(status, published_at)`, `idx_category(category_id)`, `idx_author(author_id)`, 全文索引 `ft_post(title, summary, content_md) WITH PARSER ngram`(支持中文搜索) 
+索引: `idx_status_published(status, published_at)`, `idx_author(author_id)` 
+
+分类不存本表: 一篇文章可以属于多个分类, 关联关系见 post_categories 
+
+### post_categories 文章分类关联
+
+`(post_id, category_id)` 联合主键, 分别外键关联 posts, categories 
+
+一篇文章可以同时属于多个分类(多对多) 旧版 `posts.category_id` 的单值分类列已删除, 
+历史数据由 `migration_20260915_post_categories.sql` 搬迁到本表 
 
 ### post_tags 文章标签关联
 
@@ -362,7 +371,6 @@ CREATE TABLE posts (
   content_md LONGTEXT NOT NULL,
   content_html LONGTEXT DEFAULT NULL,
   cover_image VARCHAR(255) DEFAULT NULL,
-  category_id BIGINT UNSIGNED DEFAULT NULL,
   status TINYINT NOT NULL DEFAULT 0 COMMENT '0草稿 1审核中 2已发布 3私密 4回收站',
   views INT UNSIGNED NOT NULL DEFAULT 0,
   likes_count INT UNSIGNED NOT NULL DEFAULT 0,
@@ -371,12 +379,17 @@ CREATE TABLE posts (
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_post_author FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE,
-  CONSTRAINT fk_post_cat FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL,
   INDEX idx_status_published (status, published_at),
-  INDEX idx_category (category_id),
-  INDEX idx_author (author_id),
-  FULLTEXT KEY ft_post (title, summary, content_md) WITH PARSER ngram
+  INDEX idx_author (author_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='文章表';
+
+CREATE TABLE post_categories (
+  post_id BIGINT UNSIGNED NOT NULL,
+  category_id BIGINT UNSIGNED NOT NULL,
+  PRIMARY KEY (post_id, category_id),
+  CONSTRAINT fk_pc_post FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+  CONSTRAINT fk_pc_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='文章分类关联表';
 
 CREATE TABLE post_tags (
   post_id BIGINT UNSIGNED NOT NULL,

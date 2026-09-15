@@ -58,7 +58,7 @@ class PostBase(BaseModel):
     summary: str | None = Field(default=None, max_length=500)
     content_md: str = ""
     cover_image: str | None = None
-    category_id: int | None = None
+    category_ids: list[int] = []
     tag_ids: list[int] = []
     status: int = Field(default=0, ge=0, le=4)
 
@@ -89,7 +89,7 @@ class PostListItem(BaseModel):
     published_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
-    category: CategoryOut | None = None
+    categories: list[CategoryOut] = []
     tags: list[TagOut] = []
     author: "UserBrief | None" = None
 

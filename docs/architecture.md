@@ -155,9 +155,10 @@ phxxblog/
 - 表结构校验: `check_schema()` 反射实际表结构并与模型比对, 缺列时报错(或按 `debug` 只告警)并打印 `ALTER` 语句; 
   `ensure_schema_version_table()` / `record_version()` 维护 `schema_version` 表记录已应用的迁移 
   详见 `docs/mysql.md` 的"表结构演进" 
-- 模型层 `models/*.py`: 使用 SQLAlchemy 2.0 的 `Mapped / mapped_column` 声明; `posts` 建有 `(status, published_at)`, `category_id`, `author_id` 索引与 ngram 全文索引 
+- 模型层 `models/*.py`: 使用 SQLAlchemy 2.0 的 `Mapped / mapped_column` 声明; `posts` 建有 `(status, published_at)`, `author_id` 索引 
   **关联加载策略按"是否真的要用"逐个指定**(改动前请先读模型里的注释): 
-  `Post.author/category` 用 `joined`, `Post.tags` 用 `selectin`(列表要序列化标签), 
+  `Post.author` 用 `joined`, `Post.categories/tags` 用 `selectin`(列表要序列化分类与标签; 
+  两者都是多对多, 用 `joined` 会让分页的 `LIMIT` 作用在放大后的行数上, 分页结果会变少), 
   `Post.comments/likes` 用 `raise`(列表与详情都不使用这两个关系, 误用会立刻报错而不是退化成 N+1), 
   `User.roles` 用 `selectin`(每次请求都要权限码), `User.posts` 与 `Role.users` 用 `select` 
   (以前是 `selectin`, 导致每个需要登录的接口都顺带全量拉取该用户的文章) 
@@ -244,7 +245,7 @@ phxxblog/
 
 ### 6.3 状态管理 `stores/`
 
-- `auth.ts`: `accessToken / refreshToken / user` 三份状态与 localStorage 同步; 登录成功后写入会话, 同时把 access token 同步到 API 文档鉴权 cookie; 登出时清理令牌, cookie 并跳转登录页 
+- `auth.ts`: `accessToken / refreshToken / user` 三份状态与 localStorage 同步; 登录成功后写入会话, 同时把 access token 同步到 API 文档鉴权 cookie; 登出时清理令牌与 cookie 并回到前台首页 
   `accessToken / refreshToken` 是 **computed**(读 `utils/tokenStorage.ts`)而不是 ref - 静默刷新会直接改写 localStorage(见 6.4), 
   只有每次都从存储读, UI 才能看到最新令牌 
 - `theme.ts`: 外观设置分两个独立维度 - `isDark`(深浅色)与 `themeId`(12 套配色主题, 见 `styles/themes/registry.ts`), 
@@ -461,7 +462,7 @@ phxxblog/
 ### 7.19 文章导入导出
 
 - 导出: `/posts/export?ids=...&fmt=markdown|html` 把选中文章导出为 Markdown(带 frontmatter: 标题, slug, 摘要, 分类, 标签, 发布时间, 状态等)或打包为 zip, 一并附带正文引用到的本地图片 
-- 导入: 上传一个或多个 Markdown/zip 文件, 解析 frontmatter, 自动生成不冲突的 slug, 按名称匹配或创建分类与标签, 并把压缩包内的图片保存到上传目录同时改写正文中的图片地址 
+- 导入: 上传一个或多个 Markdown/zip 文件, 解析 frontmatter, 自动生成不冲突的 slug, 按名称匹配或创建分类与标签(都可以有多个, 分类兼容旧格式的单值 `category`), 并把压缩包内的图片保存到上传目录同时改写正文中的图片地址 
 - 查重: 导入前先按标题(忽略大小写与首尾空格)与库中已有文章, 本批已出现的标题比对, 接口返回 `mode=check` 的查重结果; 前端据此提示重复, 由用户选择"仅导入不重复"(`on_duplicate=skip`)或"导入全部"(`on_duplicate=all`) 
 - 文章与日记的导入导出共用 `services/archive.py`: frontmatter 解析, zip 内图片落盘, 正文图片地址改写只有一份实现 
 
@@ -536,7 +537,7 @@ cookie 自动通过(同源代理下浏览器会带上, 见 9.2 第 4 条)
 | 表 | 说明 |
 | --- | --- |
 | users / roles / permissions | 用户, 角色, 权限及两张多对多关联表; refresh_tokens 存刷新令牌散列 |
-| posts / categories / tags | 文章(状态, 摘要, 封面, 阅读量, 点赞数, IP/归属地), 分类与标签(含颜色), 文章-标签多对多 |
+| posts / categories / tags | 文章(状态, 摘要, 封面, 阅读量, 点赞数, IP/归属地), 分类与标签(含颜色), 文章-分类与文章-标签都是多对多 |
 | comments / post_likes | 评论(自关联多级回复)与点赞去重记录 |
 | media | 上传文件元数据与实际路径 |
 | diaries | 日记(仅管理员, 支持附件) |

@@ -70,7 +70,7 @@ export interface PostItem {
   published_at?: string | null
   created_at: string
   updated_at: string
-  category?: Category | null
+  categories: Category[]
   tags: Tag[]
   author?: AuthorBrief | null
 }

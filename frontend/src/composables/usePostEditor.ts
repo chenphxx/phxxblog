@@ -23,7 +23,7 @@ export interface PostForm {
   summary: string
   content_md: string
   cover_image: string
-  category_id: number | null
+  category_ids: number[]
   tag_ids: number[]
   status: number
   public_visible: boolean
@@ -58,7 +58,7 @@ export interface PostEditorState {
   init: () => Promise<void>
   loadOptions: () => Promise<void>
   loadPost: () => Promise<void>
-  onCategoryChange: (value: unknown) => Promise<void>
+  onCategoriesChange: (values: unknown) => Promise<void>
   onTagsChange: (values: unknown) => Promise<void>
   uploadCover: (options: { file: File }) => Promise<void>
   /** 不传 targetStatus 时按 public_visible 推导(公开 -> 已发布, 否则 -> 私密) */
@@ -74,7 +74,7 @@ function emptyForm(): PostForm {
     summary: '',
     content_md: '',
     cover_image: '',
-    category_id: null,
+    category_ids: [],
     tag_ids: [],
     status: 0,
     public_visible: true,
@@ -110,7 +110,7 @@ export function usePostEditor(options: UsePostEditorOptions): PostEditorState {
         summary: post.summary || '',
         content_md: post.content_md,
         cover_image: post.cover_image || '',
-        category_id: post.category?.id || null,
+        category_ids: post.categories.map((c) => c.id),
         tag_ids: post.tags.map((t) => t.id),
         status: post.status,
         public_visible: post.status !== 3,
@@ -121,13 +121,23 @@ export function usePostEditor(options: UsePostEditorOptions): PostEditorState {
       await Promise.all([state.loadOptions(), state.loadPost()])
     },
 
-    /** 编辑器内直接新建分类 */
-    async onCategoryChange(value: unknown) {
-      if (typeof value !== 'string' || !value.trim()) return
-      const created = await categoryApi.create({ name: value.trim(), slug: value.trim() })
-      state.categories.push(created)
-      state.form.category_id = created.id
-      ElMessage.success('分类已创建')
+    /** 编辑器内直接新建分类: 与标签一样走 el-select 的 allow-create, 新项作为 string 传回 */
+    async onCategoriesChange(values: unknown) {
+      if (!Array.isArray(values)) return
+      const ids: number[] = []
+      let createdCount = 0
+      for (const value of values) {
+        if (typeof value === 'string' && value.trim()) {
+          const created = await categoryApi.create({ name: value.trim(), slug: value.trim() })
+          state.categories.push(created)
+          ids.push(created.id)
+          createdCount += 1
+        } else if (typeof value === 'number') {
+          ids.push(value)
+        }
+      }
+      state.form.category_ids = ids
+      if (createdCount > 0) ElMessage.success('分类已创建')
     },
 
     /** 编辑器内直接新建标签: el-select 的 allow-create 会把新项作为 string 传回 */

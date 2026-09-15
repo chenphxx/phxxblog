@@ -29,13 +29,14 @@ const STATUS_TEXT: Record<number, string> = {
 
     <div class="post-meta">
       <router-link
-        v-if="post.category"
-        :to="`/search?category=${post.category.id}`"
+        v-for="cat in post.categories"
+        :key="cat.id"
+        :to="`/search?category=${cat.id}`"
         class="chip chip-icon"
-        :style="chipStyle(post.category.name, post.category.color)"
+        :style="chipStyle(cat.name, cat.color)"
       >
         <MetaIcon name="folder" />
-        <span>{{ post.category.name }}</span>
+        <span>{{ cat.name }}</span>
       </router-link>
 
       <span class="meta-item">

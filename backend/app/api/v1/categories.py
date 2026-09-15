@@ -7,7 +7,7 @@ from app.core.database import get_db
 from app.core.deps import get_current_user, require_permission
 from app.core.permissions import Perm
 from app.core.response import ok
-from app.models.post import Category, Post
+from app.models.post import Category, Post, post_categories
 from app.models.user import User
 from app.schemas.post import CategoryIn, CategoryOut
 from app.services.log import write_operation_log
@@ -18,9 +18,10 @@ router = APIRouter(prefix="/categories", tags=["分类"])
 def _post_counts(db: Session) -> dict[int, int]:
     """一次 GROUP BY 取回所有分类的已发布文章数, 避免逐个 COUNT(n+1)。"""
     rows = (
-        db.query(Post.category_id, func.count(Post.id))
-        .filter(Post.status == 2, Post.category_id.isnot(None))
-        .group_by(Post.category_id)
+        db.query(post_categories.c.category_id, func.count(post_categories.c.post_id))
+        .join(Post, Post.id == post_categories.c.post_id)
+        .filter(Post.status == 2)
+        .group_by(post_categories.c.category_id)
         .all()
     )
     return {category_id: count for category_id, count in rows}

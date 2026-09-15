@@ -71,7 +71,7 @@ const post = {
   reading_minutes: 1,
   created_at: '2026-09-14T00:00:00',
   updated_at: '2026-09-14T00:00:00',
-  category: { id: 2, name: '后端', slug: 'backend' },
+  categories: [{ id: 2, name: '后端', slug: 'backend' }],
   tags: [
     { id: 5, name: 'vue', slug: 'vue' },
     { id: 6, name: 'ts', slug: 'ts' },
@@ -162,7 +162,7 @@ describe('usePostEditor', () => {
       slug: 'old-post',
       summary: '旧摘要',
       content_md: '# 正文',
-      category_id: 2,
+      category_ids: [2],
       tag_ids: [5, 6],
       public_visible: false,
     })
@@ -178,24 +178,25 @@ describe('usePostEditor', () => {
     expect(api.postCreate).not.toHaveBeenCalled()
   })
 
-  it('分类: 去掉首尾空格后新建并自动选中', async () => {
+  it('分类: 数组里的字符串项建新分类, 数字项原样保留', async () => {
     api.categoryCreate.mockResolvedValue({ id: 11, name: '运维', slug: '运维' })
     const { editor } = await setupEditor()
 
-    await editor.onCategoryChange('  运维  ')
+    await editor.onCategoriesChange([2, '  运维  '])
 
     expect(api.categoryCreate).toHaveBeenCalledWith({ name: '运维', slug: '运维' })
-    expect(editor.form.category_id).toBe(11)
+    expect(editor.form.category_ids).toEqual([2, 11])
     expect(editor.categories.map((c) => c.id)).toEqual([11])
   })
 
-  it('分类: 空字符串或非字符串(清空选择)不建新分类', async () => {
+  it('分类: 空字符串不建新分类, 非数组(清空选择)直接忽略', async () => {
     const { editor } = await setupEditor()
 
-    await editor.onCategoryChange('   ')
-    await editor.onCategoryChange(null)
+    await editor.onCategoriesChange(['   '])
+    await editor.onCategoriesChange(null)
 
     expect(api.categoryCreate).not.toHaveBeenCalled()
+    expect(editor.form.category_ids).toEqual([])
   })
 
   it('标签: 字符串项建新标签, 数字项原样保留', async () => {

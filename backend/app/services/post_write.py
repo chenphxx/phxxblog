@@ -78,6 +78,13 @@ def resolve_tags(db: Session, tag_ids: list[int] | None) -> list[Tag]:
     return db.query(Tag).filter(Tag.id.in_(tag_ids)).all()
 
 
+def resolve_categories(db: Session, category_ids: list[int] | None) -> list[Category]:
+    """按 id 取分类(一篇文章可以多选分类, 见 models/post.py 的 post_categories)。"""
+    if not category_ids:
+        return []
+    return db.query(Category).filter(Category.id.in_(category_ids)).all()
+
+
 def resolve_category_by_name(db: Session, name: str, unique_slug) -> Category:
     """按名称找分类, 不存在则新建(导入时用)。
 
@@ -106,3 +113,24 @@ def resolve_category_by_name(db: Session, name: str, unique_slug) -> Category:
     db.add(category)
     db.flush()
     return category
+
+
+def resolve_categories_by_name(db: Session, names: list[str], unique_slug) -> list[Category]:
+    """按名称批量取分类, 不存在则新建(导入时用); 按传入顺序去重返回。
+
+    Args:
+        names: frontmatter 里的分类名列表(新旧格式都已在调用方归一化)。
+        unique_slug: 由调用方注入的 slug 去重函数(见 services/archive.py)。
+    """
+    result: list[Category] = []
+    seen: set[int] = set()
+    for raw_name in names:
+        name = str(raw_name).strip()
+        if not name:
+            continue
+        category = resolve_category_by_name(db, name, unique_slug)
+        if category.id in seen:
+            continue
+        seen.add(category.id)
+        result.append(category)
+    return result

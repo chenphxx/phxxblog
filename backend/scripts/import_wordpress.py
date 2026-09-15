@@ -268,13 +268,14 @@ def main() -> None:
                 created_at=parse_datetime(text(item, "wp:post_date")) or datetime.now(),
                 updated_at=parse_datetime(text(item, "wp:post_modified")) or datetime.now(),
             )
-            # 分类
+            # 分类: WordPress 的一篇文章可以属于多个分类, 按 nicename 映射后去重保序
+            wp_categories: dict[int, Category] = {}
             for cat in item.findall("category"):
                 if cat.get("domain") == "category":
                     category = category_map.get(cat.get("nicename", ""))
-                    if category:
-                        post.category = category
-                        break
+                    if category is not None:
+                        wp_categories[category.id] = category
+            post.categories = list(wp_categories.values())
             # 标签
             tag_slugs = [c.get("nicename", "") for c in item.findall("category") if c.get("domain") == "post_tag"]
             for slug_name in tag_slugs:

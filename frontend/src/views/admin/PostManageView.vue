@@ -252,7 +252,7 @@ onMounted(load)
       import-title="导入文章"
       dup-title="检测到重复文章"
       export-title="导出选中文章"
-      import-hint="支持 .md 文件或 .zip 压缩包(可多选)。zip 内需包含 .md 文章文件; 文章图片可放在任意目录, 在正文中用相对路径引用(如 images/xxx.png), 导入时图片会一并上传并自动改写为可访问的 URL。支持 YAML frontmatter 元信息: title / slug / status / date / summary / cover_image / category / tags。未提供标题时取文件名或首个 # 标题, 默认导入为草稿。导入前会按标题查重(忽略大小写与首尾空格), 有重复时可选择仅导入不重复或全部导入。"
+      import-hint="支持 .md 文件或 .zip 压缩包(可多选)。zip 内需包含 .md 文章文件; 文章图片可放在任意目录, 在正文中用相对路径引用(如 images/xxx.png), 导入时图片会一并上传并自动改写为可访问的 URL。支持 YAML frontmatter 元信息: title / slug / status / date / summary / cover_image / categories(可多个) / tags。未提供标题时取文件名或首个 # 标题, 默认导入为草稿。导入前会按标题查重(忽略大小写与首尾空格), 有重复时可选择仅导入不重复或全部导入。"
       dup-hint="重复依据为文章标题(忽略大小写与首尾空格)。可跳过重复内容, 也可全部导入。"
       export-hint="导出为 zip 压缩包, 文章引用的图片会一并打包, 并自动改写为相对路径。"
     />
