@@ -124,15 +124,32 @@ const hoverIndex = ref<number | null>(null)
 
 const hovered = computed(() => (hoverIndex.value === null ? null : props.points[hoverIndex.value] ?? null))
 
+/** 浮层高度上限(标签 + PV/UV/阅读 四行)与它到数据点的间距, 用于判断上方是否放得下 */
+const TOOLTIP_HEIGHT = 96
+const TOOLTIP_GAP = 12
+
 /** 浮层横向位置: 贴边时向内收, 避免超出卡片 */
 const tooltipLeft = computed(() => {
   if (hoverIndex.value === null) return 0
   return Math.min(Math.max(x(hoverIndex.value), 64), Math.max(W.value - 64, 64))
 })
 
+const pointY = computed(() =>
+  hovered.value ? y(Math.max(hovered.value.pv, hovered.value.uv)) : 0,
+)
+
+/**
+ * 数据点靠上(数值高)时把浮层画到点的下方。
+ *
+ * 容器纵向是 overflow: hidden(横向需要能滚动), 而浮层默认画在数据点上方:
+ * 指向数值最高的那几个点时, 浮层上半部分会被容器顶部裁掉(只剩最后一行可见)。
+ * 上方放不下就翻到下方, 两种摆法在 260px 高的图里都不会被裁。
+ */
+const tooltipBelow = computed(() => pointY.value - TOOLTIP_GAP < TOOLTIP_HEIGHT)
+
 const tooltipTop = computed(() => {
   if (!hovered.value) return 0
-  return Math.max(y(Math.max(hovered.value.pv, hovered.value.uv)) - 12, 4)
+  return tooltipBelow.value ? pointY.value + TOOLTIP_GAP : pointY.value - TOOLTIP_GAP
 })
 
 function onPointerMove(event: PointerEvent) {
@@ -277,6 +294,7 @@ const chartLabel = computed(() => {
     <div
       v-if="hovered"
       class="chart-tooltip"
+      :class="{ 'is-below': tooltipBelow }"
       :style="{ left: `${tooltipLeft}px`, top: `${tooltipTop}px` }"
     >
       <div class="tooltip-label">{{ hovered.label }}</div>
@@ -424,6 +442,11 @@ const chartLabel = computed(() => {
   line-height: 1.6;
   pointer-events: none;
   white-space: nowrap;
+}
+
+/* 画在数据点下方时不向上偏移(默认是 translate(-50%, -100%) 贴在点上方) */
+.chart-tooltip.is-below {
+  transform: translate(-50%, 0);
 }
 
 .tooltip-label {
