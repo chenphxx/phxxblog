@@ -69,6 +69,7 @@ DEFAULT_SETTINGS = {
     "show_contributions": ("1", "首页是否展示文章发布记录(1=展示, 0=隐藏)"),
     "show_history": ("1", "首页是否展示程序员历史上的今天(1=展示, 0=隐藏)"),
     "show_session": ("1", "首页是否展示 session 终端卡片(1=展示, 0=隐藏)"),
+    "show_kanbanniang": ("1", "全站是否展示看板娘(1=展示, 0=隐藏)"),
     "footer_text": ("© {year} {site_name} · Vue3 + FastAPI", "页脚版权信息(支持 {year}/{site_name} 占位符, 留空则不显示)"),
     "tech_tags": ('["Python", "Vue", "FastAPI", "MySQL"]', "首页技术标签(JSON数组)"),
     "social_links": ('[{"name": "GitHub", "url": "https://github.com/chenphxx"}]', "社交账号链接(JSON数组)"),

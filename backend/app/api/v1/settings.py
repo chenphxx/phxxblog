@@ -30,6 +30,7 @@ PUBLIC_KEYS = [
     "show_contributions",
     "show_history",
     "show_session",
+    "show_kanbanniang",
     "footer_text",
 ]
 
@@ -50,11 +51,12 @@ DEFAULTS = {
     "show_contributions": "1",
     "show_history": "1",
     "show_session": "1",
+    "show_kanbanniang": "1",
     "footer_text": "© {year} {site_name} · Vue3 + FastAPI",
 }
 
 # 布尔型开关: 1/true/yes/on 视为开启
-BOOL_KEYS = ("show_readme", "show_contributions", "show_history", "show_session")
+BOOL_KEYS = ("show_readme", "show_contributions", "show_history", "show_session", "show_kanbanniang")
 
 
 @router.get("/public", response_model=dict)

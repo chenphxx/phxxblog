@@ -83,6 +83,7 @@ phxxblog/
 ├── .github/workflows/            # CI: 前端构建发布 / 后端测试 + 主题与图标校验
 ├── frontend/                     # 前端工程(Vue3 + TS + Vite)
 │   ├── public/fonts/             # 自托管 Cascadia Code(latin 子集)与 OFL 许可
+│   ├── public/kanbanniang/       # 看板娘: 自托管 Live2D 运行时与模型(见该目录 README)
 │   ├── scripts/
 │   │   ├── copy-vditor-assets.mjs  # 把 vditor 静态资源复制到 public/vditor
 │   │   ├── check-icons.mjs         # 校验 MetaIcon 的 SVG path(npm run check:icons)
@@ -92,9 +93,10 @@ phxxblog/
 │       ├── api/                  # http.ts(Axios 实例、拦截器与 401 静默刷新) + index.ts(按模块的接口封装)
 │       ├── components/           # 通用组件(MarkdownView / PostCard / MetaIcon / 图表 / 评论等)
 │       ├── composables/          # 跨视图复用逻辑(usePostEditor / useImportExport)
+│       ├── kanbanniang/          # 看板娘形象清单(registry.ts)与运行时加载(loader.ts)
 │       ├── layouts/              # 前台布局(顶栏 + 页脚)
 │       ├── router/               # 路由表与登录守卫
-│       ├── stores/               # Pinia: auth(登录态) / theme(深浅色 + 9 套配色主题)
+│       ├── stores/               # Pinia: auth(登录态) / theme(深浅色 + 9 套配色主题) / kanbanniang(看板娘)
 │       ├── styles/
 │       │   ├── theme.css         # 结构样式与基础令牌
 │       │   ├── theme-green.css   # 主题入口(汇总各主题 CSS)
@@ -235,7 +237,8 @@ phxxblog/
 
 - 使用 hash 模式(`createWebHashHistory`), 便于静态托管: 前台 `/`, `/post/:id`, `/archive`, `/posts`, `/search`, `/write(/:id)`, `/changelog`, `/diary`; 后台 `/admin/**`(仪表盘/文章/分类标签/评论/媒体/用户/设置/日志/资料) 
 - 全局前置守卫: 路由标记 `meta.requiresAuth` 且本地无令牌时跳转登录页并带上 `redirect` 
-- 前台布局 `layouts/SiteLayout.vue`: 顶栏(站点名 + 终端风格提示符 + 导航 + 主题按钮) + 内容区 + 页脚; 布局层负责加载公开配置(站点名/标签页标题/图标)与访问埋点 
+- 前台布局 `layouts/SiteLayout.vue`: 顶栏(站点名 + 终端风格提示符 + 导航 + 看板娘开关组 + 主题按钮) + 内容区 + 页脚; 布局层负责加载公开配置(站点名/标签页标题/图标)与访问埋点 
+  看板娘浮层 `<Kanbanniang />` 也挂在这个布局里, 因此只在后台之外的前台出现(见 7.26) 
   高度链: `.site-layout` 是 `min-height: 100vh` 的纵向 flex, `.site-body` 用 `flex: 1` 加 `grid-auto-rows: minmax(0, 1fr)` 
   撑满页头与页脚之间的空间(页脚另有 `margin-top: auto`), 内容少的页面也不会在页脚上方留出空白 
 - 后台布局 `views/admin/AdminLayout.vue`: 侧边菜单 + 顶栏(API 文档入口, 主题按钮, 退出登录) 
@@ -250,6 +253,8 @@ phxxblog/
   只有每次都从存储读, UI 才能看到最新令牌 
 - `theme.ts`: 外观设置分两个独立维度 - `isDark`(深浅色)与 `themeId`(9 套配色主题, 见 `styles/themes/registry.ts`), 
   共同决定 `html` 上的 `.dark` 类与 `data-theme` 属性并持久化; 切换时临时加 `theme-transition` 类做颜色过渡 
+- `kanbanniang.ts`: 看板娘的开关、当前形象与浮层位置(`enabled` / `modelId` / `position`, 见 7.26) 与主题一样属于访客自己的外观偏好, 
+  只存 localStorage, 不下发到后端; 另有一个不落盘的 `allowed` 承载后台的总开关(见 7.26) 
 
 ### 6.4 请求层 `api/`
 
@@ -289,6 +294,8 @@ phxxblog/
 | `CommentSection.vue / CommentNode.vue` | 评论区与递归渲染的多层回复 |
 | `LinkCard.vue` | 链接预览卡片 |
 | `ThemeSwitcher.vue` | 主题下拉(色点 + 主题名)与深浅色切换按钮, 前台后台共用 |
+| `Kanbanniang.vue` | 看板娘浮层(默认在左下角的 canvas, 按住模型本体可拖动): 运行时与模型按需加载, 后台总开关关掉、窄屏、无 WebGL 或加载失败时不展示 |
+| `KanbanniangSwitcher.vue` | 顶栏的看板娘开关, 打开后其左侧出现形象下拉(名字 + 系列); 后台总开关关掉时整组隐藏 |
 | `ThemeToggle.vue` | 仅浅色/深色切换的圆形按钮(登录页使用) |
 
 | 组合式函数 | 职责 |
@@ -421,7 +428,7 @@ phxxblog/
 
 ### 7.7 首页模块开关与分页
 
-后台`系统设置 → 前台展示`提供四个开关(主页 README, 文章发布记录, 程序员历史上的今天, session 终端卡片), 以 `1/0` 存入 `settings` 表, 由 `/settings/public` 输出为布尔值 首页按开关决定是否渲染对应模块, 并跳过对应的接口请求(不浪费请求); 首页文章列表默认展示最近 10 篇, 底部分页可查看更早文章, 翻页后自动回到列表顶部 
+后台`系统设置 → 前台展示`提供五个开关(主页 README, 文章发布记录, 程序员历史上的今天, session 终端卡片, 看板娘), 以 `1/0` 存入 `settings` 表, 由 `/settings/public` 输出为布尔值 首页按开关决定是否渲染对应模块, 并跳过对应的接口请求(不浪费请求); 看板娘开关由前台布局读取, 关掉后不加载也不展示(见 7.26); 首页文章列表默认展示最近 10 篇, 底部分页可查看更早文章, 翻页后自动回到列表顶部 
 
 ### 7.8 一言(每天仅刷新一次)
 
@@ -545,6 +552,33 @@ phxxblog/
 (导入脚本把旧站链接改写成了这个路径), 只有其中的非媒体文件会被拦下 鉴权走与 /docs 相同的 
 令牌来源与权限码, 因此未登录 401, 非 admin 403; 后台界面上的图片与下载链接靠 `phxxblog_doc_token` 
 cookie 自动通过(同源代理下浏览器会带上, 见 9.2 第 4 条) 
+
+### 7.26 看板娘
+
+形象与运行时来自 [kanbanniang](https://github.com/Vanessa219/kanbanniang)(MIT; 模型版权属原作者, 上游注明仅供研究学习),
+自托管在 `frontend/public/kanbanniang/` 下, 运行时不请求任何外部地址 - 形象清单与搬运时做过的本地化改动记在该目录的 README 里 
+
+- 上游把模型基址写死在 `live2d.js` 中(`https://unpkg.com/kanbanniang@0.2.12/`), 模型 json 的纹理也写成 unpkg 绝对地址 这里把基址改成 `/kanbanniang/`, 
+  并去掉 json 里的 unpkg 前缀 
+- 上游 `Potion-Maker/Pio`、`Potion-Maker/Tia` 与 `bilibili-live/22`、`bilibili-live/33` 的 `index.json` 里 `textures` 是空数组(换装由上游 widget 读 `textures.json` 完成, 本运行时读不到), 
+  这里按上游 `textures.json` 的首套服装显式补上纹理路径 
+- 形象清单在 `src/kanbanniang/registry.ts`(id / 名字 / 系列 / 模型 json 路径, 以及可选的画布尺寸), 加形象只需放模型目录 + 追加一条 
+  上游仓库共 26 个模型, 本仓库收录 9 个: Pio / Tia / Murakumo / Shizuku / Shizuku Pajama / Blanc / 22娘 / 33娘 来自上游, Miku 来自上游之外的来源(见下) 
+  上游剩下的都是 HyperdimensionNeptunia 系列的服装变体, 单套体积 2 MB 上下且会互相引用兄弟目录的纹理, 默认不收, 需要时按该目录 README 的步骤补 
+- Miku 上游没有, 取自 [live2d-widget-models](https://github.com/xiazeyu/live2d-widget-models) 的 `live2d-widget-model-miku`(包声明 GPL-2.0, 模型版权属原作者), 
+  按本运行时的路径约定改写(路径前缀与 `layout` 取景)后放在 `model/miku/` 
+  它是全身像, 默认的 280x250 画布只够看到膝盖以上, 因此清单里单独给它 280x420 的画布(`canvas` 字段), 并调 `layout` 让头到脚填满这块画布 
+- 开关、形象与浮层位置存在 localStorage(`blog_kanbanniang` / `blog_kanbanniang_model` / `blog_kanbanniang_pos`), 默认展示, 关掉后刷新不再发任何模型请求 
+- 后台 `系统设置 → 前台展示` 的看板娘开关经 `/settings/public` 下发, 前台布局加载公开配置后写入 store 的 `allowed`; 关掉后顶栏那组控件与浮层一起消失, 连运行时与模型都不会去请求(拿到公开配置前 `allowed` 默认 false, 请求失败时回退为展示) 
+- 浮层默认停在左下角, 按住模型本体可挪到视口内任意位置, 松手后写入 localStorage 
+  容器整体 `pointer-events: none`(运行时在 `window` 上监听鼠标, 不需要命中 canvas), 拖动也靠挂在 `window` 上的鼠标事件, 命中判定用一张从 canvas 拷下来的模型轮廓掩膜(每 1 s 刷新一次; 掩膜取不到时退化成整块都算命中) 
+  按在透明处照旧把点击透给下面的正文; 命中模型的那次按下在捕获阶段 `stopPropagation` 拦下, 否则运行时挂在 `window` 上的 `mousedown` 会把拖动当成点到了模型而触发摸头动作 
+  没拖动(位移小于 4 px)时补发一次 `mousedown` + `mouseup`, 点击互动照旧; 拖动过则吃掉紧随其后的一次 `click`, 免得点到浮层下面的链接 
+  坐标按浮层尺寸与视口大小收进可视范围(上边界让开顶栏高度, 顶栏层级高于浮层), 窗口缩小或重新打开看板娘时再次收拢 
+- 运行时(151 KB)与模型都等首屏之后再加载: 优先 `requestIdleCallback`, 没有该 API 的浏览器退回 200ms 定时器, 不与页面自身的请求抢带宽 
+- 窄屏(≤ 900px)不展示看板娘, 顶栏那组控件用同一断点隐藏 - 手机上浮层会盖住正文, 也白白多下载一份模型 
+- 关闭时只隐藏 canvas 不销毁: 运行时持有它的 WebGL 上下文, 反复销毁重建会消耗浏览器的 WebGL 上下文配额 
+- 缺少 WebGL 或运行时加载失败时打一条 `console.warn` 并放弃展示, 页面其余部分不受影响 
 
 ## 8. 数据模型概览
 
@@ -671,5 +705,6 @@ Linux cron(注意工作目录要是 `backend`, 脚本按自身位置定位 `PROJ
 - 关注体积变化时跑 `cd frontend && npm run build && npm run check:size`(先量再改, 避免"感觉变快了") 
 - 前端单测: `cd frontend && npm run test`(Vitest + jsdom) 视图里重复的流程逻辑不要复制第二份, 
   抽到 `src/composables/`; 视图之间的差异用 options 注入(参见 `usePostEditor` / `useImportExport`) 
+- 测试的分层, 用例清单, 检查脚本与 CI 的完整说明见 [测试与检查说明](./testing.md) 
 - 前端任何地方都不要直接写 `blog_access_token` 这类 key 字面量, 统一走 `utils/tokenStorage.ts` 
 - 功能变更同步更新根目录 `CHANGELOG.md`(前台可展示给访客) 

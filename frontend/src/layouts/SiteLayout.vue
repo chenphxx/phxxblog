@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import Kanbanniang from '@/components/Kanbanniang.vue'
+import KanbanniangSwitcher from '@/components/KanbanniangSwitcher.vue'
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue'
 import { settingsApi, statsApi } from '@/api'
 import { useAuthStore } from '@/stores/auth'
+import { useKanbanniangStore } from '@/stores/kanbanniang'
 import type { PublicSettings } from '@/types'
 
 const auth = useAuthStore()
+const kanbanniang = useKanbanniangStore()
 const hasToken = computed(() => !!auth.accessToken)
 const isAdmin = computed(() => auth.user?.role_codes.includes('admin'))
 const settings = ref<PublicSettings | null>(null)
@@ -28,6 +32,8 @@ onMounted(async () => {
   statsApi.track({ url: location.hash || '/' }).catch(() => {})
   try {
     settings.value = await settingsApi.public()
+    // 后台的看板娘总开关(系统设置 - 前台展示), 关掉后前台不加载也不展示
+    kanbanniang.setAllowed(settings.value.show_kanbanniang !== false)
     // 浏览器标签页名称(留空回退到站点名称)
     document.title = settings.value.site_title || settings.value.site_name || "chenphxx's blog"
     // 动态站点图标
@@ -42,7 +48,8 @@ onMounted(async () => {
       link.href = icon
     }
   } catch {
-    // 设置加载失败不影响页面
+    // 设置加载失败不影响页面, 看板娘按默认(展示)处理
+    kanbanniang.setAllowed(true)
   }
 })
 </script>
@@ -69,6 +76,7 @@ onMounted(async () => {
           </template>
           <router-link v-else to="/admin/login">登录</router-link>
         </nav>
+        <KanbanniangSwitcher />
         <ThemeSwitcher />
       </div>
     </header>
@@ -83,6 +91,9 @@ onMounted(async () => {
       </main>
 
     </div>
+
+    <!-- 看板娘: 固定浮层, 只在后台之外的前台布局里挂载 -->
+    <Kanbanniang />
 
     <footer v-if="hasFooter" class="site-footer">
       <div v-if="beianList.length" class="footer-icp">

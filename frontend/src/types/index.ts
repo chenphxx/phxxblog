@@ -174,6 +174,8 @@ export interface PublicSettings {
   show_history: boolean
   /** 首页是否展示 session 终端卡片 */
   show_session: boolean
+  /** 全站是否展示看板娘 */
+  show_kanbanniang: boolean
   /** 页脚版权信息(支持 {year}/{site_name} 占位符, 留空不显示) */
   footer_text: string
   tech_tags: string[]

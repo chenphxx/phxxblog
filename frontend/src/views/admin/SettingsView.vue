@@ -15,7 +15,7 @@ interface LinkRow {
 
 /** 前台展示开关: 名称与一句说明由它驱动, 数组顺序即页面上的顺序 */
 interface FrontModule {
-  key: 'show_readme' | 'show_contributions' | 'show_history' | 'show_session'
+  key: 'show_readme' | 'show_contributions' | 'show_history' | 'show_session' | 'show_kanbanniang'
   label: string
   desc: string
 }
@@ -50,6 +50,7 @@ const form = ref({
   show_contributions: true,
   show_history: true,
   show_session: true,
+  show_kanbanniang: true,
   footer_text: '',
   tech_tags: [] as string[],
   social_links: [] as LinkRow[],
@@ -114,6 +115,7 @@ const frontModules: FrontModule[] = [
   { key: 'show_contributions', label: '文章发布记录(贡献热力图)', desc: '按年统计发文数量的热力图' },
   { key: 'show_history', label: '程序员历史上的今天', desc: '每天更新的历史事件卡片' },
   { key: 'show_session', label: 'session 终端卡片', desc: '首页顶部的终端风格卡片, 含一言' },
+  { key: 'show_kanbanniang', label: '看板娘', desc: '全站的 Live2D 看板娘浮层, 关掉后顶栏的形象切换也一起隐藏' },
 ]
 
 /** 页脚与链接里的三处行列表 */
@@ -164,6 +166,7 @@ async function load() {
     show_contributions: parseBool(data.show_contributions),
     show_history: parseBool(data.show_history),
     show_session: parseBool(data.show_session),
+    show_kanbanniang: parseBool(data.show_kanbanniang),
     footer_text: data.footer_text ?? '© {year} {site_name} · Vue3 + FastAPI',
     tech_tags: parseArray<string[]>(data.tech_tags, []),
     social_links: parseArray<LinkRow[]>(data.social_links, []),
@@ -195,6 +198,7 @@ async function save() {
       show_contributions: form.value.show_contributions ? '1' : '0',
       show_history: form.value.show_history ? '1' : '0',
       show_session: form.value.show_session ? '1' : '0',
+      show_kanbanniang: form.value.show_kanbanniang ? '1' : '0',
     }
     await settingsApi.update(payload)
     snapshot.value = currentSnapshot()

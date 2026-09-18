@@ -151,6 +151,7 @@ Error: EBUSY: resource busy or locked, watch
 ```
 src/
   components/MetaIcon.vue   元信息小图标(日历/眼睛/标签…), 内联 SVG + currentColor
+  components/Kanbanniang*.vue 看板娘浮层(可按住形象本体拖动)与顶栏的形象下拉/开关
   composables/              跨视图复用逻辑(usePostEditor / useImportExport), 返回 reactive 对象
   api/http.ts               拦截器: 附加令牌 / 解包 / 401 静默刷新(单飞, 见文件内注释)
   utils/tokenStorage.ts     令牌与用户信息的唯一读写入口(不要在别处写 localStorage 的 key 字面量)
@@ -163,7 +164,12 @@ src/
       _source/              主题源: tokens.mjs / 模板 / 增强层 / 生成与校验脚本
       _preview/             预览页产物(不入库, 可用 npm run themes:preview 重建)
   stores/theme.ts           深浅色 + 配色主题(持久化到 localStorage)
+  stores/kanbanniang.ts     看板娘开关, 形象与浮层位置(持久化到 localStorage), 以及后台总开关的下发
+  kanbanniang/              形象清单(registry.ts)与运行时加载(loader.ts)
 ```
+
+看板娘的形象与运行时自托管在 `public/kanbanniang/`, 来源与本地化改动见 
+[`public/kanbanniang/README.md`](public/kanbanniang/README.md) 
 
 主题共 9 套, 每套都有深色与浅色, 生成与改配色的说明见 
 [`src/styles/themes/README.md`](src/styles/themes/README.md) 
