@@ -24,7 +24,13 @@ let fail = 0
 /* ---------- WCAG 对比度 ---------- */
 function relLum(hex) {
   const m = hex.replace('#', '')
-  const full = m.length === 3 ? m.split('').map((c) => c + c).join('') : m
+  const full =
+    m.length === 3
+      ? m
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : m
   const ch = [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16) / 255)
   const lin = ch.map((v) => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)))
   return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2]
@@ -137,9 +143,7 @@ if (fail === 0) console.log(`  ok   ${THEMES.length} 个生成文件与数据一
 
 /* ---------- 3) 对比度 ---------- */
 console.log('\n=== 3. 配色对比度 (文字类需 >= 4.5, 图形/渐变需 >= 3.0) ===')
-console.log(
-  '  主题'.padEnd(20) + '模式   链接   主按钮  正文   次要  hover主色  渐变两端(RGB距离)'
-)
+console.log('  主题'.padEnd(20) + '模式   链接   主按钮  正文   次要  hover主色  渐变两端(RGB距离)')
 for (const t of THEMES) {
   for (const mode of ['light', 'dark']) {
     const c = t[mode]
@@ -155,7 +159,7 @@ for (const t of THEMES) {
     // 也不该用亮度对比度衡量 —— 何况渐变两端刻意同亮度不同色相。
     // 这里只校验「两端有可见的色彩差异」, 避免渐变退化成一条纯色。
     const gfxChecks = {
-      'hover主色': contrast(c.primaryStrong, c.cardBg),
+      hover主色: contrast(c.primaryStrong, c.cardBg),
     }
     const gradVisible = rgbDistance(c.gradFrom, c.gradTo)
     /*
@@ -180,7 +184,7 @@ for (const t of THEMES) {
         (badText.length || badGfx.length || badGrad ? 'FAIL ' : 'ok   ') +
         (t.id + ' ' + t.name).padEnd(16) +
         (mode === 'light' ? '浅色' : '深色') +
-        cells
+        cells,
     )
     if (badText.length) {
       console.log('         -> 文字对比度不足: ' + badText.map(([k, v]) => `${k} ${v.toFixed(2)}:1`).join('; '))

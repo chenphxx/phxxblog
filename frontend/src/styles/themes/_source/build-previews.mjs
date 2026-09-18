@@ -569,7 +569,7 @@ for (const t of THEMES) {
     fs.writeFileSync(
       out,
       PAGE({ ...t, mode, shared, defaultRoot, light, dark, layer, posts, cells: cells(), site: 'phxxblog' }),
-      'utf8'
+      'utf8',
     )
     console.log('written:', path.relative(repo, out))
   }

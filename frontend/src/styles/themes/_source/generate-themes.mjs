@@ -181,8 +181,7 @@ const FAMILY_VALUES = {
     BTN_HOVER_BG: 'var(--primary-strong)',
     BTN_HOVER_BORDER: 'var(--primary-strong)',
     BTN_HOVER_TRANSFORM: 'translate(-1px, -1px)',
-    BTN_HOVER_SHADOW:
-      '5px 5px 0 color-mix(in srgb, var(--primary) 34%, transparent), 0 0 22px -6px var(--ring)',
+    BTN_HOVER_SHADOW: '5px 5px 0 color-mix(in srgb, var(--primary) 34%, transparent), 0 0 22px -6px var(--ring)',
     BTN_ACTIVE_TRANSFORM: 'translate(1px, 1px)',
     PAGER_ACTIVE_BG: 'var(--primary)',
     PAGER_ACTIVE_BORDER: 'var(--primary)',
@@ -396,7 +395,7 @@ export const DEFAULT_THEME: ThemeId = '${THEMES[0].id}'
 export const THEME_OPTIONS: ThemeOption[] = [
 ${THEMES.map(
   (t) =>
-    `  {\n    id: '${t.id}',\n    name: '${t.name}',\n    en: '${t.en}',\n    desc: '${t.desc}',\n    swatch: ['${t.light.primary}', '${t.light.gradTo}', '${t.dark.primary}'],\n  },`
+    `  {\n    id: '${t.id}',\n    name: '${t.name}',\n    en: '${t.en}',\n    desc: '${t.desc}',\n    swatch: ['${t.light.primary}', '${t.light.gradTo}', '${t.dark.primary}'],\n  },`,
 ).join('\n')}
 ]
 
@@ -405,6 +404,6 @@ export const THEME_IDS = THEME_OPTIONS.map((t) => t.id)
 fs.writeFileSync(path.join(outDir, 'registry.ts'), registry, 'utf8')
 console.log('written:', path.relative(repo, path.join(outDir, 'registry.ts')))
 console.log(
-  `\n共 ${THEMES.length} 套主题, 默认: ${defaultTheme.name} (${defaultTheme.id}), 增强层族: soft / hard / editorial / minimal`
+  `\n共 ${THEMES.length} 套主题, 默认: ${defaultTheme.name} (${defaultTheme.id}), 增强层族: soft / hard / editorial / minimal`,
 )
 console.log('提示: 后端首屏读取的是 theme-default.css, 它必须与 registry.ts 的 DEFAULT_THEME 一致')

@@ -13,8 +13,9 @@ export default [
       'coverage/**',
       // 由 unplugin-vue-components 生成
       'src/components.d.ts',
-      // 主题子系统: 生成物与生成器, 格式由 themes:audit 负责
-      'src/styles/themes/**',
+      // 主题子系统的生成物(生成器自己写出来的, 格式由生成器决定)
+      'src/styles/themes/*.css',
+      'src/styles/themes/registry.ts',
       'public/**',
     ],
   },
@@ -39,7 +40,7 @@ export default [
     rules: { 'vue/multi-word-component-names': 'off' },
   },
   {
-    files: ['scripts/**/*.mjs', '*.{ts,mjs}'],
+    files: ['scripts/**/*.mjs', 'src/styles/themes/_source/**/*.mjs', '*.{ts,mjs}'],
     languageOptions: {
       globals: { ...globals.node },
     },

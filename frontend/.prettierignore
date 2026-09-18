@@ -3,8 +3,13 @@ dist/
 coverage/
 src/components.d.ts
 
-# 主题子系统: CSS 由 generate-themes 生成, 格式由生成器决定(见 themes:audit)
-src/styles/themes/
+# 主题子系统的生成物: 由 generate-themes / build-previews 产出, 格式由生成器决定
+src/styles/themes/*.css
+src/styles/themes/registry.ts
+src/styles/themes/_preview/
+
+# 主题源 CSS: 直接决定生成出来的主题样式, 要改格式需同时重新生成并核对 9 套主题的观感
+src/styles/themes/_source/*.css
 
 # 静态资源与第三方拷贝
 public/

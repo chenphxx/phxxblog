@@ -47,8 +47,10 @@ npm run check:format   # 只检查格式, 不写文件(CI 用)
   单引号, 无分号, 行宽 120, 与项目原有写法保持一致 
 - 只开能自动拦截缺陷的规则, 格式类规则交给 Prettier(`eslint-config-prettier` 关掉冲突项); 
   类型检查仍由 `vue-tsc` 负责, 因此没有启用 typescript-eslint 的类型感知规则(那需要 project 配置, 明显更慢) 
-- `dist/`, `coverage/`, 生成的 `src/components.d.ts` 与整个 `src/styles/themes/` 不进检查也不格式化: 
-  主题 CSS 是 `themes:generate` 的产物, 格式由生成器决定(见 `.prettierignore`) 
+- 不进检查也不格式化的只有生成物与主题源 CSS(见 `.prettierignore`): `dist/`, `coverage/`, 
+  `src/components.d.ts`, `src/styles/themes/*.css` 与 `registry.ts`(生成器产出), 以及 `_source/*.css` 
+  (主题源样式直接决定生成结果, 要改格式就必须连 9 套主题的观感一起重新核对) 
+- 主题的生成脚本 `_source/*.mjs` 与画廊模板照常检查与格式化, 它们按 Node 环境处理(用到 `console`/`process`) 
 
 ## 测试
 
