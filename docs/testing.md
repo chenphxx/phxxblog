@@ -49,7 +49,7 @@ python -m pytest tests -q
 
 ### 2.3 用例清单
 
-`backend/tests/test_core_rules.py`, 11 条, 都是"核心业务规则与安全断言"的回归测试: 
+`backend/tests/test_core_rules.py`, 14 条, 都是"核心业务规则与安全断言"的回归测试: 
 
 | 用例 | 断言的行为 |
 | --- | --- |
@@ -64,6 +64,9 @@ python -m pytest tests -q
 | `test_post_neighbors_and_hot_ranking` | 上一篇 / 下一篇按发布时间相邻, 热门榜按阅读量倒序 |
 | `test_login_rate_limiter_blocks_after_threshold` | 登录连续失败达到阈值后返回 429 |
 | `test_post_can_have_multiple_categories` | 一篇文章属于多个分类时, 写入 / 筛选 / 分类计数都按关联表来 |
+| `test_post_import_reports_and_skips_duplicates` | 文章导入按标题查重: 查重结果与实际落库条数必须一致, 重复项按策略跳过 |
+| `test_diary_import_dedups_by_content_ignoring_whitespace` | 日记导入按正文查重, 空白差异不算不同内容(与库中及本批内容都比对) |
+| `test_diary_import_can_import_duplicates_on_demand` | 选择"导入全部"时, 重复内容必须真的写入库中 |
 
 ### 2.4 新增用例
 

@@ -29,12 +29,6 @@ def test_private_post_not_readable_by_anonymous(db_session, seeded):
 
     from app.api.v1.posts import get_post
 
-    class _Req:
-        """最小 Request 替身: 只用到 headers 与 client。"""
-
-        headers: dict = {}
-        client = type("C", (), {"host": "127.0.0.1"})()
-
     try:
         get_post(post_id=post.id, request=_Req(), user=None, db=db_session)
     except HTTPException as exc:
@@ -240,8 +234,9 @@ def test_post_neighbors_and_hot_ranking(db_session, seeded):
     """详情接口的上一篇/下一篇按发布时间相邻; 热门列表按阅读量倒序。"""
     from datetime import datetime, timedelta
 
-    from app.api.v1.posts import _post_neighbors, hot_posts
+    from app.api.v1.posts import hot_posts
     from app.models.post import Post
+    from app.services.post_query import neighbors
 
     admin, _author, _pw = seeded
     base = datetime(2026, 1, 1, 12, 0, 0)
@@ -257,10 +252,10 @@ def test_post_neighbors_and_hot_ranking(db_session, seeded):
     db_session.commit()
 
     oldest, middle, newest = posts
-    assert _post_neighbors(db_session, oldest) == (None, middle)
-    prev_post, next_post = _post_neighbors(db_session, middle)
+    assert neighbors(db_session, oldest) == (None, middle)
+    prev_post, next_post = neighbors(db_session, middle)
     assert prev_post.id == oldest.id and next_post.id == newest.id
-    assert _post_neighbors(db_session, newest) == (middle, None)
+    assert neighbors(db_session, newest) == (middle, None)
 
     # 热门: 按阅读量倒序(倒着建库故意与发布时间相反, 避免两种排序碰巧一致)
     hot = hot_posts(limit=7, db=db_session)["data"]
@@ -294,21 +289,16 @@ def test_post_can_have_multiple_categories(db_session, seeded):
     列表空掉或计数永远是 0, 不会报错, 所以把规则固定成断言。
     """
     from app.api.v1.categories import _post_counts
-    from app.api.v1.posts import _apply_payload, list_posts
+    from app.api.v1.posts import list_posts
     from app.models.post import Category, Post
     from app.schemas.post import PostCreate
+    from app.services.post_write import apply_payload
 
     admin, _author, _pw = seeded
     backend = Category(name="后端", slug="backend")
     ops = Category(name="运维", slug="ops")
     db_session.add_all([backend, ops])
     db_session.commit()
-
-    class _Req:
-        """最小 Request 替身: _apply_payload 只用到 headers 与 client。"""
-
-        headers: dict = {}
-        client = type("C", (), {"host": "127.0.0.1"})()
 
     def _create(title, slug, category_ids, status=2):
         """走真实写入路径建一篇文章, 返回 ORM 对象。"""
@@ -318,7 +308,7 @@ def test_post_can_have_multiple_categories(db_session, seeded):
         )
         post = Post(author_id=admin.id)
         db_session.add(post)
-        _apply_payload(db_session, post, payload, admin, _Req())
+        apply_payload(db_session, post, payload, admin, "127.0.0.1")
         db_session.commit()
         return post
 
@@ -329,22 +319,22 @@ def test_post_can_have_multiple_categories(db_session, seeded):
     assert {category.name for category in multi.categories} == {"后端", "运维"}
 
     # 重新提交空列表 = 解除全部关联(整体覆盖, 而不是保留旧值)
-    _apply_payload(
+    apply_payload(
         db_session, multi,
         PostCreate(title="多分类", slug="multi-cat", content_md="内容", status=2),
-        admin, _Req(),
+        admin, "127.0.0.1",
     )
     db_session.commit()
     assert multi.categories == []
 
     # 恢复多分类, 继续验证筛选与分类计数
-    _apply_payload(
+    apply_payload(
         db_session, multi,
         PostCreate(
             title="多分类", slug="multi-cat", content_md="内容", status=2,
             category_ids=[backend.id, ops.id],
         ),
-        admin, _Req(),
+        admin, "127.0.0.1",
     )
     db_session.commit()
 
@@ -369,3 +359,112 @@ def test_post_can_have_multiple_categories(db_session, seeded):
     # 出参是列表: 前端用 v-for 渲染, 退化成单个对象会直接白屏
     detail = next(item for item in by_ops.items if item.id == multi.id)
     assert [category.name for category in detail.categories] == ["后端", "运维"]
+
+
+class _Req:
+    """最小 Request 替身: 导入管线与操作日志只用到 headers 与 client。"""
+
+    headers: dict = {}
+    client = type("C", (), {"host": "127.0.0.1"})()
+
+
+def _upload(name: str, text: str):
+    """最小 UploadFile 替身: 导入管线只用到 filename 与 file.read()。
+
+    注意不能跨调用复用同一个对象 —— file 是 BytesIO, 读过一次就空了,
+    所以需要多次导入时用工厂函数重新造。
+    """
+    return type("U", (), {"filename": name, "file": io.BytesIO(text.encode("utf-8"))})()
+
+
+def _post_files():
+    """三份文章导入文件: 前两份标题相同(重复), 第三份是新的。"""
+    return [
+        _upload("a.md", "---\ntitle: 重复标题\n---\n正文 A"),
+        _upload("b.md", "---\ntitle: 重复标题\n---\n正文 B"),
+        _upload("c.md", "---\ntitle: 新标题\n---\n正文 C"),
+    ]
+
+
+def test_post_import_reports_and_skips_duplicates(db_session, seeded):
+    """文章导入按标题查重: check 模式只报重复, 导入时重复的按策略跳过。
+
+    两条合写是有意的: 查重结果与"实际落库了几条"必须对得上, 分开断言容易
+    掩盖"查重说 2 条重复, 落库时却把重复的也写进去了"这类不一致。
+    """
+    from app.api.v1.posts import import_posts
+    from app.models.post import Post
+
+    admin, _author, _pw = seeded
+
+    checked = import_posts(
+        request=_Req(), files=_post_files(), mode="check", on_duplicate="skip",
+        user=admin, db=db_session,
+    )["data"]
+    assert checked["total"] == 3, checked
+    assert checked["duplicates_count"] == 1, checked
+    assert checked["duplicates"] == ["重复标题"], checked
+
+    result = import_posts(
+        request=_Req(), files=_post_files(), mode="import", on_duplicate="skip",
+        user=admin, db=db_session,
+    )["data"]
+    assert result["imported"] == 2, result
+    assert result["skipped"] == 1, result
+
+    titles = sorted(post.title for post in db_session.query(Post).all())
+    assert titles == ["新标题", "重复标题"], titles
+    # 库里只应有一条"重复标题", 且两处同属一个批次的内容不能互相覆盖
+    kept = db_session.query(Post).filter(Post.title == "重复标题").one()
+    assert "正文 A" in kept.content_md, kept.content_md
+
+
+def test_diary_import_dedups_by_content_ignoring_whitespace(db_session, seeded):
+    """日记导入按正文查重, 空白差异不算不同内容, 重复的同样按策略跳过。"""
+    from app.api.v1.diaries import import_diaries
+    from app.models.diary import DiaryEntry
+
+    admin, _author, _pw = seeded
+    files = lambda: [
+        _upload("2026-01-01.md", "第一天的日记"),
+        _upload("dup.md", "第一天的日记"),
+        _upload("dup-space.md", "  第一天的日记  "),
+        _upload("2026-01-02.md", "第二天的日记"),
+    ]
+
+    checked = import_diaries(
+        request=_Req(), files=files(), mode="check", on_duplicate="skip",
+        user=admin, db=db_session,
+    )["data"]
+    assert checked["total"] == 4, checked
+    assert checked["duplicates_count"] == 2, checked
+
+    result = import_diaries(
+        request=_Req(), files=files(), mode="import", on_duplicate="skip",
+        user=admin, db=db_session,
+    )["data"]
+    assert result["imported"] == 2, result
+    assert result["skipped"] == 2, result
+    assert [entry.content_md for entry in db_session.query(DiaryEntry).all()] == [
+        "第一天的日记", "第二天的日记",
+    ]
+
+
+def test_diary_import_can_import_duplicates_on_demand(db_session, seeded):
+    """选择"导入全部"时, 重复内容也要真的写进去(否则用户的选择形同虚设)。"""
+    from app.api.v1.diaries import import_diaries
+    from app.models.diary import DiaryEntry
+
+    admin, _author, _pw = seeded
+    files = [
+        _upload("2026-01-01.md", "同一天的日记"),
+        _upload("2026-01-01-2.md", "同一天的日记"),
+    ]
+
+    result = import_diaries(
+        request=_Req(), files=files, mode="import", on_duplicate="all",
+        user=admin, db=db_session,
+    )["data"]
+    assert result["imported"] == 2, result
+    assert result["skipped"] == 0, result
+    assert db_session.query(DiaryEntry).count() == 2

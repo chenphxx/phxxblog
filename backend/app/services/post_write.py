@@ -2,16 +2,24 @@
 
 为什么单独抽一个模块:
     以前"谁能把文章改成什么状态"这条规则散落在三处, 而且已经**不一致**:
-      - api/v1/posts.py::_apply_payload    (新增/修改) 无权限时静默降级为"审核中"
-      - api/v1/posts.py::_import_markdown  (导入)     无权限时降级为"草稿"
-      - api/v1/posts.py::change_post_status(状态流转) 无权限时**抛 403**
-    三处各写一遍, 改一处忘两处。现在统一到这里, 路由只负责取参与返回。
+      - 新增/修改   无权限时静默降级为"审核中"
+      - 导入        无权限时降级为"草稿"
+      - 状态流转接口 无权限时**抛 403**
+    三处各写一遍, 改一处忘两处。现在统一到这里, 路由只负责取参与返回;
+    把请求字段写进文章对象的 apply_payload 也放在本模块, 保证"提交什么状态"与
+    "实际落到什么状态"始终用的是同一份规则。
 """
+import uuid
+from datetime import datetime
+
 from sqlalchemy.orm import Session
 
 from app.core.permissions import Perm
 from app.models.post import Category, Post, Tag
 from app.models.user import User
+from app.schemas.post import PostCreate, PostUpdate
+from app.services.geo import resolve_location
+from app.services.markdown import render_markdown
 
 # 文章状态: 0草稿 1审核中 2已发布 3私密 4回收站
 STATUS_DRAFT = 0
@@ -134,3 +142,49 @@ def resolve_categories_by_name(db: Session, names: list[str], unique_slug) -> li
         seen.add(category.id)
         result.append(category)
     return result
+
+
+def auto_slug(slug: str | None) -> str:
+    """生成文章 slug: 优先使用传入值, 否则生成唯一短标识。
+
+    @param slug 提交上来的 slug, 可为空
+    @return 非空的 slug
+    """
+    return slug or f"post-{uuid.uuid4().hex[:8]}"
+
+
+def apply_payload(
+    db: Session,
+    post: Post,
+    data: PostCreate | PostUpdate,
+    user: User,
+    ip: str,
+) -> None:
+    """将请求字段应用到文章(含状态规则、分类/标签、HTML 渲染)。
+
+    状态规则统一走 resolve_submitted_status, 不在路由里就地判断权限码。
+
+    @param db 数据库会话
+    @param post 目标文章(新增时是尚未入库的空对象)
+    @param data 新增或编辑提交的数据
+    @param user 提交人, 用于状态降级判定
+    @param ip 客户端 IP, 由路由从请求里取出后传入(这里不碰 Request, 便于测试)
+    """
+    target_status = resolve_submitted_status(data.status, user)
+
+    post.title = data.title
+    post.slug = auto_slug(data.slug)
+    post.summary = data.summary
+    post.content_md = data.content_md
+    post.content_html = render_markdown(data.content_md)
+    post.cover_image = data.cover_image
+    post.status = target_status
+    post.ip = ip
+    post.location = resolve_location(ip)
+
+    if target_status == STATUS_PUBLISHED and post.published_at is None:
+        post.published_at = datetime.now()
+
+    # 分类与标签都按提交值整体覆盖: 清空即解除全部关联(而不是保留旧值)
+    post.categories = resolve_categories(db, data.category_ids)
+    post.tags = resolve_tags(db, data.tag_ids)

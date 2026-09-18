@@ -21,9 +21,8 @@ from app.services.archive import (
     pack_images,
     parse_frontmatter,
     rewrite_import_images,
-    save_import_images,
-    split_import_archive,
 )
+from app.services.import_pipeline import run_import
 from app.services.log import write_operation_log
 from app.services.markdown import render_markdown
 
@@ -192,74 +191,23 @@ def import_diaries(
     db: Session = Depends(get_db),
 ):
     """导入日记: 支持 .md 文件或包含 .md 的 zip 压缩包; mode=check 只返回查重结果。"""
-    errors: list[str] = []
-    # 每个上传文件拆成 (压缩包内的原始条目, 其中的 md 文件), 便于后续按包共用图片落盘结果
-    groups: list[tuple[list[tuple[str, bytes]], list[tuple[str, str]]]] = []
-    for upload in files:
-        name = upload.filename or "untitled"
-        md_files, entries, err = split_import_archive(name, upload.file.read())
-        if err:
-            errors.append(err)
-            continue
-        groups.append((entries, md_files))
 
-    # 先整体解析一遍: 与库中已有正文、本批已出现的正文比对, 得出重复情况
-    known_keys = _existing_diary_keys(db)
-    plans: list[dict] = []
-    for group_index, (_entries, md_files) in enumerate(groups):
-        for fname, content in md_files:
-            parsed = _parse_diary_import(fname, content)
-            if parsed is None:
-                errors.append(f"{fname}: 内容为空, 已跳过")
-                continue
-            key = normalize_content(parsed["body"])
-            duplicated = key in known_keys
-            known_keys.add(key)
-            plans.append({
-                "group": group_index,
-                "filename": fname,
-                "duplicated": duplicated,
-                **parsed,
-            })
+    def _create(plan: dict, image_map: dict[str, str] | None) -> tuple[bool, str | None]:
+        """落库一条日记: 解析通过的计划项总是导入成功, 不产生错误信息。"""
+        _create_diary(db, user, plan, image_map)
+        return True, None
 
-    duplicates = [_diary_import_label(plan) for plan in plans if plan["duplicated"]]
-    if mode == "check":
-        return ok({
-            "total": len(plans),
-            "duplicates_count": len(duplicates),
-            "duplicates": duplicates[:50],
-        }, "查重完成")
-
-    image_maps: dict[int, dict[str, str]] = {}
-
-    def image_map_of(group_index: int) -> dict[str, str]:
-        """同一份压缩包内的多条日记共用一次图片落盘结果。"""
-        if group_index not in image_maps:
-            entries = groups[group_index][0]
-            image_maps[group_index] = (
-                save_import_images(entries, datetime.now().strftime("%Y/%m")) if entries else {}
-            )
-        return image_maps[group_index]
-
-    imported = 0
-    skipped = 0
-    for plan in plans:
-        if plan["duplicated"] and on_duplicate == "skip":
-            skipped += 1
-            continue
-        _create_diary(db, user, plan, image_map_of(plan["group"]))
-        imported += 1
-    db.commit()
-    write_operation_log(
-        db, request=request, user=user, module="diary", action="import",
-        detail={"imported": imported, "skipped": skipped, "duplicates": len(duplicates)},
+    payload, message = run_import(
+        db=db, user=user, request=request, files=files,
+        mode=mode, on_duplicate=on_duplicate, module="diary",
+        parse=_parse_diary_import,
+        invalid_message=lambda fname: f"{fname}: 内容为空, 已跳过",
+        existing_keys=lambda: _existing_diary_keys(db),
+        dedup_key=lambda plan: normalize_content(plan["body"]),
+        label=_diary_import_label,
+        create=_create,
     )
-    return ok({
-        "imported": imported,
-        "skipped": skipped,
-        "errors": errors[:20],
-        "duplicates_count": len(duplicates),
-    }, "导入完成")
+    return ok(payload, message)
 
 
 @router.post("", response_model=dict)

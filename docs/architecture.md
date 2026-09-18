@@ -114,7 +114,7 @@ phxxblog/
     │   ├── core/                 # config / database / security / deps / permissions / pagination / ratelimit / middleware / response
     │   ├── models/               # ORM 模型
     │   ├── schemas/              # Pydantic 请求与响应模型
-    │   └── services/             # 业务服务(markdown / upload / stats / geo / ua / log / text / link_preview / archive / post_write / ip2region)
+    │   └── services/             # 业务服务(markdown / upload / stats / geo / ua / log / text / link_preview / archive / import_pipeline / post_write / post_query / post_archive / ip2region)
     ├── tests/                    # pytest 用例(内存 SQLite, 不碰开发库)
     ├── scripts/                  # init_db.sql、migration_*.sql、WordPress 导入、IP 库下载、接口文档生成等
     ├── requirements.txt          # 运行依赖
@@ -207,6 +207,10 @@ phxxblog/
 | `log.py` | 写操作日志(谁, 何时, 哪个模块, 什么动作, 目标对象, IP) |
 | `link_preview.py` | 抓取目标网页的 og:title / description / image 生成链接卡片 |
 | `archive.py` | 导入导出公共工具: frontmatter 解析/生成, zip 内图片落盘与正文图片路径改写(文章与日记共用) |
+| `import_pipeline.py` | 导入管线: 拆分上传文件, 逐项解析, 查重(与库中已有内容及本批内容比对), 按去重策略落库并写操作日志(文章与日记共用, 解析, 查重键与落库动作由调用方注入) |
+| `post_write.py` | 文章写入规则: 状态降级与流转校验, 请求字段写入(apply_payload), 分类/标签解析(按 id 取, 或按名称匹配与新建) |
+| `post_query.py` | 文章查询: 前台列表(分类/标签/年月/日期区间/关键词), 后台列表, 归档分组, 热门榜单, 相邻文章 |
+| `post_archive.py` | 文章导入导出: frontmatter 序列化与 zip 打包, 标题推断与查重键, 导入时的分类/标签新建与状态降级, 落库 |
 
 ### 5.7 路由模块一览 `backend/app/api/v1/`
 
@@ -491,7 +495,7 @@ phxxblog/
 - 导出: `/posts/export?ids=...&fmt=markdown|html` 把选中文章导出为 Markdown(带 frontmatter: 标题, slug, 摘要, 分类, 标签, 发布时间, 状态等)或打包为 zip, 一并附带正文引用到的本地图片 
 - 导入: 上传一个或多个 Markdown/zip 文件, 解析 frontmatter, 自动生成不冲突的 slug, 按名称匹配或创建分类与标签(都可以有多个, 分类兼容旧格式的单值 `category`), 并把压缩包内的图片保存到上传目录同时改写正文中的图片地址 
 - 查重: 导入前先按标题(忽略大小写与首尾空格)与库中已有文章, 本批已出现的标题比对, 接口返回 `mode=check` 的查重结果; 前端据此提示重复, 由用户选择"仅导入不重复"(`on_duplicate=skip`)或"导入全部"(`on_duplicate=all`) 
-- 文章与日记的导入导出共用 `services/archive.py`: frontmatter 解析, zip 内图片落盘, 正文图片地址改写只有一份实现 
+- 文章与日记的导入导出分两层共用: `services/archive.py` 放公共工具(frontmatter 解析与生成, zip 内图片落盘, 正文图片地址改写), `services/import_pipeline.py` 放导入骨架(拆包 → 解析 → 查重 → 落库 → 写日志), 两处都只有一份实现 各自的解析规则与落库动作作为函数传进管线: 文章用 `services/post_archive.py`, 日记用 `api/v1/diaries.py` 里的解析与创建函数 
 
 ### 7.20 WordPress 数据迁移
 
@@ -519,6 +523,7 @@ phxxblog/
 - 导出: `GET /api/v1/diaries/export?ids=...&fmt=markdown|html` 打包为 zip Markdown 文件按 `YYYY-MM-DD.md` 命名(同一天多条追加 `-2`, `-3` 序号), frontmatter 记录 `date` 与 `created_at`; html 格式输出完整 HTML 文档 正文引用到的本地图片一并放入 `images/<日期>/` 并改写为包内相对路径 
 - 导入: `POST /api/v1/diaries/import` 支持 .md 或 zip(可多选) 日期优先取 frontmatter 的 `date`, 其次取文件名开头的 `YYYY-MM-DD`, 都取不到则记为今天; `created_at` 有效时一并还原, 用于同一天多条日记的排序 zip 内的图片保存到上传目录并自动改写正文地址, 内容为空的文件会被跳过并在结果中给出提示 
 - 查重: 导入前按正文比对(`normalize_content` 忽略空白差异, 图片地址只比较文件名, 因此"相对路径"与导入后改写出的 `/assets/uploads/...` 地址视为同一张图), 与库中已有日记及本批内容比对; 前端可选择仅导入不重复或全部导入 
+- 管线: 与文章共用 `services/import_pipeline.py`, 日记只提供三项差异: 解析(日期与正文), 查重键(归一化后的正文), 落库(创建 DiaryEntry) 
 - 前端入口: 日记页右上角的"导入日记 / 导出日记"按钮(导出可选 Markdown 或 HTML 格式) 
 
 ### 7.23 文章目录与相邻文章
