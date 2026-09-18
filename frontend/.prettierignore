@@ -1,0 +1,12 @@
+# 生成物: 由构建脚本产出, 不参与格式化
+dist/
+coverage/
+src/components.d.ts
+
+# 主题子系统: CSS 由 generate-themes 生成, 格式由生成器决定(见 themes:audit)
+src/styles/themes/
+
+# 静态资源与第三方拷贝
+public/
+node_modules/
+package-lock.json

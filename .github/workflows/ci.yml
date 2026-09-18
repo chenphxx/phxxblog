@@ -40,6 +40,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
 
+      # 检查与格式规则都在 backend/ruff.toml, 与本地 verify_all.py 跑的是同一套
+      - name: Lint (ruff)
+        run: ruff check .
+
+      - name: Check formatting (ruff)
+        run: ruff format --check .
+
       # 测试用内存 SQLite, 不需要 MySQL 服务, 也不会碰到开发库
       - name: Run tests
         env:
@@ -81,6 +88,13 @@ jobs:
       # 程序式 API(ElMessage / ElMessageBox)的样式不会自动注入, 漏了会让确认框变裸样式
       - name: Verify Element Plus programmatic styles
         run: npm run check:element-styles
+
+      # 配置在 frontend/eslint.config.js 与 frontend/.prettierrc.json
+      - name: Lint (eslint)
+        run: npm run check:lint
+
+      - name: Check formatting (prettier)
+        run: npm run check:format
 
       - name: Type check & unit tests
         run: |

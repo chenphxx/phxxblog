@@ -1,0 +1,29 @@
+# 后端静态检查与格式化配置
+# 用法: ruff check . / ruff check --fix . / ruff format .
+line-length = 100
+target-version = "py311"
+
+exclude = [
+  # 第三方 ip2region 绑定, 保持原样便于与上游比对
+  "app/services/ip2region",
+]
+
+[lint]
+# 只选能自动拦截缺陷的规则集: pycodestyle 错误类(E4/E7/E9)、pyflakes(F)、
+# 空白类(W)、导入排序(I)、bugbear(B)
+select = ["E4", "E7", "E9", "F", "W", "I", "B"]
+ignore = [
+  # FastAPI 的 Depends(...) 必须写在默认参数里
+  "B008",
+]
+
+[lint.per-file-ignores]
+# SQLAlchemy 关系用字符串前向引用跨模块类型名, 这些名字在本文件里没有导入
+"app/models/*.py" = ["F821"]
+# 这个脚本里的多行字符串就是要写进 docs/api.md 的正文, 行尾空格是文档约定, 不能删
+"scripts/gen_api_doc.py" = ["W291"]
+
+[lint.isort]
+known-first-party = ["app"]
+# 让 "from x import a, b as c" 保持一条语句, 而不是把带别名的名字拆成第二条 import
+combine-as-imports = true

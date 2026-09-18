@@ -10,6 +10,7 @@
 | 后端单元与接口测试 | pytest + 内存 SQLite | `backend/tests/` | 不连 MySQL, 不起 HTTP 服务 |
 | 前端单元与组件测试 | Vitest + jsdom | `frontend/src/**/*.test.ts` | 不发真实请求(接口层整体 mock) |
 | 静态一致性检查 | Node / Python 脚本 | `frontend/scripts/`, `backend/scripts/` | 只有 `backend/scripts/check_*.py` 需要开发库(只读) |
+| 代码检查与格式化 | ruff, ESLint, Prettier | `backend/ruff.toml`, `frontend/eslint.config.js`, `frontend/.prettierrc.json` | 不需要 |
 | 类型检查与构建 | vue-tsc, vite build | `frontend/` | 不需要 |
 | 持续集成 | GitHub Actions | `.github/workflows/` | 在干净容器里重跑上面这些 |
 
@@ -29,7 +30,7 @@ pip install -r requirements-dev.txt
 python -m pytest tests -q
 ```
 
-- 测试依赖与生产依赖分开: `backend/requirements-dev.txt` 只比 `requirements.txt` 多 `pytest 9.1.1` 与 `httpx 0.28.1` 
+- 测试依赖与生产依赖分开: `backend/requirements-dev.txt` 只比 `requirements.txt` 多 `ruff 0.16.8`, `pytest 9.1.1` 与 `httpx 0.28.1` 
 - 配置在 `backend/pytest.ini`: `testpaths = tests`, `python_files = test_*.py`, 默认带 `-q`, 并忽略 `DeprecationWarning` 
 - 用例直接调用路由函数与 service(必要时用一个最小的 Request 替身), 不启动 HTTP 服务, 因此不占端口也不需要网络 
 
@@ -129,6 +130,8 @@ composable 的断言方式, Axios 假 adapter 的用法, Element Plus 组件的�
 | `npm run check:icons` | 按 SVG 规范给 `MetaIcon` 的 path 分词, 再逐段核对命令参数个数 | 手写 path 时出现 `7.5.5` 这类"数字粘连", 笔画画不出来但页面不报错 |
 | `npm run check:element-styles` | 扫描源码里用到的程序式 API(`ElMessage` / `ElMessageBox` 等), 核对 `main.ts` 是否 import 了对应样式 | 按需引入下漏了样式行, 确认框会变成没有遮罩的裸按钮 |
 | `npm run check:size` | 打印首屏与整包体积(未压缩 / gzip 后) | 不判失败, 用来发现体积回退; 需先 `npm run build` |
+| `npm run check:lint` | ESLint 静态检查(配置在 `eslint.config.js`) | 出现未使用的导入或变量, 无效赋值, 模板属性顺序不合规 |
+| `npm run check:format` | Prettier 格式检查(配置在 `.prettierrc.json`) | 代码未按统一格式书写; `npm run format` 可自动修 |
 
 ### 4.2 后端
 
@@ -142,6 +145,22 @@ composable 的断言方式, Axios 假 adapter 的用法, Element Plus 组件的�
 | `check_upload_path.py` | `resolve_upload_file` 的路径校验(含旧实现会漏掉的绕过用例) |
 | `check_settings_keys.py` | 设置项的后端默认值, 公开键列表, 前端类型与后台表单四处的键是否一致(不需要数据库) |
 
+### 4.3 后端静态检查与格式化(ruff)
+
+配置在 `backend/ruff.toml`, 选了哪些规则集, 忽略了什么, 都写在文件注释里: 
+
+| 命令 | 作用 |
+| --- | --- |
+| `ruff check .` | 静态检查: 未使用的导入 / 变量, 无效赋值, 裸 `except`, 导入排序, bugbear 常见陷阱 |
+| `ruff check --fix .` | 自动修可自动修的部分(其余需要手工处理) |
+| `ruff format .` | 按统一风格格式化, 行宽 100 |
+
+三处刻意的排除, 改配置前先看这里: 
+
+- `app/services/ip2region/` 是第三方绑定, 整体不检查也不格式化, 便于与上游比对 
+- `app/models/*.py` 忽略 `F821`: SQLAlchemy 的关系用字符串前向引用跨模块类型名, 这些名字在本文件里没有导入 
+- `scripts/gen_api_doc.py` 忽略 `W291`: 它里面的多行字符串就是要写进 `docs/api.md` 的正文, 行尾空格是文档约定 
+
 ## 5. 一键验证与 CI
 
 ### 5.1 `verify_all.py`
@@ -151,7 +170,7 @@ cd backend
 .venv/Scripts/python.exe scripts/verify_all.py
 ```
 
-把散落在各处的检查串起来跑一遍并打印汇总表, 退出码非 0 即有用例或检查失败 目前 9 项: 
+把散落在各处的检查串起来跑一遍并打印汇总表, 退出码非 0 即有用例或检查失败 目前 13 项: 
 
 | 分组 | 检查 |
 | --- | --- |
@@ -159,11 +178,13 @@ cd backend
 | 后端 | `python -m pytest tests -q` |
 | 后端 | 启动即校验表结构(`missing_columns()` 为空) |
 | 后端 | `scripts/check_settings_keys.py`(设置项的默认值, 公开键, 前端类型与表单一致) |
+| 后端 | `ruff check .` 与 `ruff format --check .` |
 | 前端 | `npx vue-tsc -b --force` |
 | 前端 | `npm run test` |
 | 前端 | `npm run themes:audit` |
 | 前端 | `npm run check:icons` |
 | 前端 | `npm run check:element-styles` |
+| 前端 | `npx eslint .` 与 `npm run check:format` |
 
 它假设后端虚拟环境在 `backend/.venv`(`Scripts/python.exe`), 前端依赖已经 `npm install` 不跑 `npm run build` 与 `npm run check:size`, 这两条只在本节 5.2 与手工验证时跑 
 
@@ -173,8 +194,8 @@ cd backend
 
 | job | 内容 |
 | --- | --- |
-| `backend` | Python 3.11 加 `requirements-dev.txt`, 带 `PHXXBLOG_SECRET_KEY` 环境变量跑 `python -m pytest tests -q`(内存 SQLite, 不需要 MySQL 服务) |
-| `frontend` | Node 版本取自仓库根 `.nvmrc`, `npm ci` 后依次跑 `themes:audit`, `check:icons`, `check:element-styles`, `vue-tsc -b --force` 加 `npm run test`, 最后 `npm run build` 加 `check:size` |
+| `backend` | Python 3.11 加 `requirements-dev.txt`, 依次跑 `ruff check .`, `ruff format --check .`, 再带 `PHXXBLOG_SECRET_KEY` 环境变量跑 `python -m pytest tests -q`(内存 SQLite, 不需要 MySQL 服务) |
+| `frontend` | Node 版本取自仓库根 `.nvmrc`, `npm ci` 后依次跑 `themes:audit`, `check:icons`, `check:element-styles`, `check:lint`, `check:format`, `vue-tsc -b --force` 加 `npm run test`, 最后 `npm run build` 加 `check:size` |
 
 - 触发条件: push 到 `main`, pull request, 以及手动 `workflow_dispatch` 
 - 路径过滤同时覆盖 `backend/**` 与 `frontend/**` - 只写 `backend/**` 时单独改前端不会触发任何检查(这是修过的漏洞) 
@@ -202,4 +223,5 @@ push 到 `main` 后构建前端, 并把 `frontend/dist` 以孤立提交强推到
 - 新增分支多或涉及安全边界的逻辑时补用例; 纯样式与文案调整不补 
 - 测试不连真实数据库, 不发真实外部请求; 需要外部依赖时用替换实现, 不要为了省事放宽这条 
 - 新增检查脚本时同时接进 `verify_all.py` 与 `.github/workflows/ci.yml`, 保证本地与 CI 跑的是同一套 
+- 格式问题交给工具: 后端 `ruff format .`, 前端 `npm run format` 不要手工对齐空格或换行去迎合检查 
 - 踩过的坑记在就近的位置(`backend/tests/conftest.py` 的文件头, `frontend/vitest.config.ts` 与相关脚本的注释, `frontend/README.md` 的「测试」一节), 不要只留在提交信息里 

@@ -80,7 +80,7 @@ phxxblog/
 │   ├── mysql.md                  # 数据库表结构设计
 │   └── architecture.md           # 本文档: 技术架构与实现说明
 ├── assets/                       # 上传文件与素材(uploads/<年>/<月>/ 由后端写入)
-├── .github/workflows/            # CI: 前端构建发布 / 后端测试 + 主题与图标校验
+├── .github/workflows/            # CI: 前端构建发布 / 后端测试 + 主题, 图标, 检查与格式校验
 ├── frontend/                     # 前端工程(Vue3 + TS + Vite)
 │   ├── public/fonts/             # 自托管 Cascadia Code(latin 子集)与 OFL 许可
 │   ├── public/kanbanniang/       # 看板娘: 自托管 Live2D 运行时与模型(见该目录 README)
@@ -88,6 +88,8 @@ phxxblog/
 │   │   ├── copy-vditor-assets.mjs  # 把 vditor 静态资源复制到 public/vditor
 │   │   ├── check-icons.mjs         # 校验 MetaIcon 的 SVG path(npm run check:icons)
 │   │   └── measure-first-paint.mjs # 量首屏/整包体积(npm run check:size)
+│   ├── eslint.config.js          # ESLint 扁平配置(检查与格式的约定见 frontend/README.md)
+│   ├── .prettierrc.json          # Prettier 配置: 单引号, 无分号, 行宽 120
 │   ├── vitest.config.ts          # 单测配置(与 vite.config.ts 分开, 见 frontend/README.md)
 │   └── src/
 │       ├── api/                  # http.ts(Axios 实例、拦截器与 401 静默刷新) + index.ts(按模块的接口封装)
@@ -117,8 +119,9 @@ phxxblog/
     │   └── services/             # 业务服务(markdown / upload / stats / geo / ua / log / text / link_preview / archive / import_pipeline / post_write / post_query / post_archive / ip2region)
     ├── tests/                    # pytest 用例(内存 SQLite, 不碰开发库)
     ├── scripts/                  # init_db.sql、migration_*.sql、WordPress 导入、IP 库下载、接口文档生成等
+    ├── ruff.toml                 # 后端静态检查与格式化配置
     ├── requirements.txt          # 运行依赖
-    └── requirements-dev.txt       # 测试依赖(pytest / httpx)
+    └── requirements-dev.txt       # 开发依赖(pytest / httpx / ruff)
 ```
 
 ## 5. 后端实现
@@ -714,6 +717,9 @@ Linux cron(注意工作目录要是 `backend`, 脚本按自身位置定位 `PROJ
 - 前端必须用 Node >= 22.19(CI 与 `.nvmrc` 用 24): jsdom 30 依赖 undici 8, 而 undici 8 需要 
   `node:worker_threads.markAsUncloneable` 低于该版本加载 jsdom 会直接抛 
   `TypeError: webidl.util.markAsUncloneable is not a function`, 所有测试文件都起不来 
+- 提交前过一遍检查与格式, 不要手工调整格式去迎合检查: 后端 `ruff check .` 与 `ruff format .`(配置 `backend/ruff.toml`), 
+  前端 `npm run check:lint` 与 `npm run format`(配置 `frontend/eslint.config.js` 与 `frontend/.prettierrc.json`) 
+  两者都已接进 `verify_all.py` 与 CI, 规则集与刻意的排除项见 [测试与检查说明](./testing.md) 的 4.3 
 - 前端提交前建议执行类型检查与构建: `cd frontend && npm run build` 
 - 关注体积变化时跑 `cd frontend && npm run build && npm run check:size`(先量再改, 避免"感觉变快了") 
 - 前端单测: `cd frontend && npm run test`(Vitest + jsdom) 视图里重复的流程逻辑不要复制第二份, 
