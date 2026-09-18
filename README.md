@@ -119,4 +119,5 @@ python scripts/import_wordpress.py --xml 路径.xml --no-download   # 跳过附�
 - [技术架构与实现说明](docs/architecture.md) - 技术栈, 系统架构, 目录职责与各功能的实现方式 
 - [接口文档](docs/api.md) - 全部 74 个接口的路径, 鉴权要求与业务约束 
 - [数据库表结构设计](docs/mysql.md) - 18 张表的字段说明, 完整 DDL 与"表结构演进"约定 
+- [测试与检查说明](docs/testing.md) - 测试分层, 用例清单, 检查脚本与 CI 流水线 
 - [更新日志](CHANGELOG.md) 
