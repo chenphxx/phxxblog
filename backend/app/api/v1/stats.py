@@ -1,4 +1,5 @@
 """访问统计接口: 埋点、总览、趋势、来源分析。"""
+
 from datetime import date, datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
@@ -44,20 +45,22 @@ def overview(
 ):
     """统计总览: 文章/访问量/评论/用户/点赞。"""
     total_views = db.query(func.sum(Post.views)).scalar() or 0
-    return ok({
-        "posts": db.query(func.count(Post.id)).scalar(),
-        "published_posts": db.query(func.count(Post.id)).filter(Post.status == 2).scalar(),
-        "views": int(total_views),
-        "comments": db.query(func.count(Comment.id)).scalar(),
-        "users": db.query(func.count(User.id)).scalar(),
-        "likes": db.query(func.count(PostLike.id)).scalar(),
-        "today_pv": (
-            db.query(DailyStat.pv).filter(DailyStat.stat_date == date.today()).scalar() or 0
-        ),
-        "today_uv": (
-            db.query(DailyStat.uv).filter(DailyStat.stat_date == date.today()).scalar() or 0
-        ),
-    })
+    return ok(
+        {
+            "posts": db.query(func.count(Post.id)).scalar(),
+            "published_posts": db.query(func.count(Post.id)).filter(Post.status == 2).scalar(),
+            "views": int(total_views),
+            "comments": db.query(func.count(Comment.id)).scalar(),
+            "users": db.query(func.count(User.id)).scalar(),
+            "likes": db.query(func.count(PostLike.id)).scalar(),
+            "today_pv": (
+                db.query(DailyStat.pv).filter(DailyStat.stat_date == date.today()).scalar() or 0
+            ),
+            "today_uv": (
+                db.query(DailyStat.uv).filter(DailyStat.stat_date == date.today()).scalar() or 0
+            ),
+        }
+    )
 
 
 @router.get("/trend", response_model=dict)
@@ -103,8 +106,7 @@ def trend(
                 month += 12
                 year -= 1
             month_rows = [
-                s for s in rows
-                if s.stat_date.year == year and s.stat_date.month == month
+                s for s in rows if s.stat_date.year == year and s.stat_date.month == month
             ]
             merged = DailyStat(stat_date=date(year, month, 1))
             merged.pv = sum(s.pv for s in month_rows)
@@ -142,22 +144,29 @@ def visits(
         .limit(page_size)
         .all()
     )
-    return ok(Page[dict](
-        items=[{
-            "id": v.id,
-            "post_id": v.post_id,
-            "post_title": v.post.title if v.post else None,
-            "ip": v.ip,
-            "location": resolve_location(v.ip) if v.ip else "",
-            "browser": v.browser,
-            "os": v.os,
-            "device": v.device,
-            "referer": v.referer,
-            "url": v.url,
-            "visit_time": v.visit_time.isoformat() if v.visit_time else None,
-        } for v in items],
-        total=total, page=page, page_size=page_size,
-    ))
+    return ok(
+        Page[dict](
+            items=[
+                {
+                    "id": v.id,
+                    "post_id": v.post_id,
+                    "post_title": v.post.title if v.post else None,
+                    "ip": v.ip,
+                    "location": resolve_location(v.ip) if v.ip else "",
+                    "browser": v.browser,
+                    "os": v.os,
+                    "device": v.device,
+                    "referer": v.referer,
+                    "url": v.url,
+                    "visit_time": v.visit_time.isoformat() if v.visit_time else None,
+                }
+                for v in items
+            ],
+            total=total,
+            page=page,
+            page_size=page_size,
+        )
+    )
 
 
 @router.get("/contributions", response_model=dict)
@@ -219,17 +228,19 @@ def sources(
             .all()
         ]
 
-    return ok({
-        "browsers": top(VisitLog.browser),
-        "os": top(VisitLog.os),
-        "devices": top(VisitLog.device),
-        "referers": [
-            {"name": name, "count": count}
-            for name, count in db.query(VisitLog.referer, func.count(VisitLog.id))
-            .filter(VisitLog.referer.isnot(None), VisitLog.referer != "")
-            .group_by(VisitLog.referer)
-            .order_by(func.count(VisitLog.id).desc())
-            .limit(10)
-            .all()
-        ],
-    })
+    return ok(
+        {
+            "browsers": top(VisitLog.browser),
+            "os": top(VisitLog.os),
+            "devices": top(VisitLog.device),
+            "referers": [
+                {"name": name, "count": count}
+                for name, count in db.query(VisitLog.referer, func.count(VisitLog.id))
+                .filter(VisitLog.referer.isnot(None), VisitLog.referer != "")
+                .group_by(VisitLog.referer)
+                .order_by(func.count(VisitLog.id).desc())
+                .limit(10)
+                .all()
+            ],
+        }
+    )

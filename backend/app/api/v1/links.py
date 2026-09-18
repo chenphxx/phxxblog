@@ -1,4 +1,5 @@
 """链接预览接口(嵌入链接时预览网页内容)。"""
+
 from urllib.parse import urlparse
 
 from fastapi import APIRouter, HTTPException, Query

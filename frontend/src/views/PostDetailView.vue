@@ -128,7 +128,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="page-container" v-loading="loading">
+  <div v-loading="loading" class="page-container">
     <template v-if="post">
       <div class="post-column">
         <div class="post-main">
@@ -202,19 +202,11 @@ onBeforeUnmount(() => {
             <footer class="post-footer">
               <p class="post-updated">最后更新于 {{ formatDateTime(post.updated_at) }}</p>
               <nav class="post-nav" aria-label="相邻文章">
-                <router-link
-                  v-if="post.prev_post"
-                  class="post-nav-card is-prev"
-                  :to="`/post/${post.prev_post.id}`"
-                >
+                <router-link v-if="post.prev_post" class="post-nav-card is-prev" :to="`/post/${post.prev_post.id}`">
                   <span class="post-nav-label"><MetaIcon name="back" />上一篇</span>
                   <span class="post-nav-title">{{ post.prev_post.title }}</span>
                 </router-link>
-                <router-link
-                  v-if="post.next_post"
-                  class="post-nav-card is-next"
-                  :to="`/post/${post.next_post.id}`"
-                >
+                <router-link v-if="post.next_post" class="post-nav-card is-next" :to="`/post/${post.next_post.id}`">
                   <span class="post-nav-label">下一篇<MetaIcon name="external" /></span>
                   <span class="post-nav-title">{{ post.next_post.title }}</span>
                 </router-link>
@@ -308,7 +300,10 @@ onBeforeUnmount(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease,
+    border-color 0.15s ease;
 }
 .toc-link:hover {
   color: var(--primary);
@@ -348,7 +343,9 @@ onBeforeUnmount(() => {
   border-radius: var(--radius);
   padding: 5px 12px;
   cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
 }
 .back-link:hover {
   color: var(--primary);

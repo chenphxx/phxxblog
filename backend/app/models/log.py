@@ -1,7 +1,8 @@
 """操作日志模型。"""
+
 from datetime import datetime
 
-from sqlalchemy import BigInteger, DateTime, ForeignKey, Index, JSON, String
+from sqlalchemy import JSON, BigInteger, DateTime, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base

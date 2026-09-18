@@ -1,4 +1,5 @@
 """媒体模型。"""
+
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict

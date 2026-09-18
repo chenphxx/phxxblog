@@ -1,4 +1,5 @@
 """评论模型(游客/注册用户, 支持回复)。"""
+
 from datetime import datetime
 
 from sqlalchemy import BigInteger, DateTime, ForeignKey, Index, SmallInteger, String, Text
@@ -40,6 +41,4 @@ class Comment(Base):
     parent: Mapped["Comment | None"] = relationship(
         remote_side="Comment.id", back_populates="replies", lazy="joined"
     )
-    replies: Mapped[list["Comment"]] = relationship(
-        back_populates="parent", lazy="selectin"
-    )
+    replies: Mapped[list["Comment"]] = relationship(back_populates="parent", lazy="selectin")

@@ -143,7 +143,9 @@ html:root .el-button--info:not(.is-plain):not(.is-text):not(.is-link) {
   margin-bottom: 2px;
   border-radius: var(--radius-sm);
   color: var(--muted);
-  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+  transition:
+    background-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
 }
 
 .admin-aside .el-menu-item:hover {
@@ -239,7 +241,9 @@ html:root .el-button--info:not(.is-plain):not(.is-text):not(.is-link) {
   font-size: 13px;
   color: var(--muted);
   text-decoration: none;
-  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+  transition:
+    border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
 }
 
 .back-home:hover {
@@ -247,7 +251,8 @@ html:root .el-button--info:not(.is-plain):not(.is-text):not(.is-link) {
   color: var(--link);
 }
 
-/* ---------- 4. 后台登录页 ---------- */.login-page {
+/* ---------- 4. 后台登录页 ---------- */
+.login-page {
   background:
     radial-gradient(760px 420px at 12% -8%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 62%),
     radial-gradient(620px 380px at 92% 6%, color-mix(in srgb, var(--grad-to) 12%, transparent), transparent 58%),

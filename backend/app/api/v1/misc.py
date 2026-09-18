@@ -1,12 +1,13 @@
 """杂项接口: 更新日志等。"""
+
 import json
 from datetime import date
-from pathlib import Path
 
+import requests
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
-import requests
 from sqlalchemy.orm import Session
+
 from app.core.config import PROJECT_ROOT
 from app.core.database import get_db
 from app.core.deps import require_permission
@@ -88,7 +89,13 @@ def saying(force: bool = False, db: Session = Depends(get_db)):
     if row:
         row.setting_value = value
     else:
-        db.add(Setting(setting_key=SAYING_CACHE_KEY, setting_value=value, description="一言每日缓存(自动维护)"))
+        db.add(
+            Setting(
+                setting_key=SAYING_CACHE_KEY,
+                setting_value=value,
+                description="一言每日缓存(自动维护)",
+            )
+        )
     db.commit()
     return ok({"text": text, "cached": False})
 
@@ -100,9 +107,11 @@ def programmer_history_today():
         resp = requests.get("https://uapis.cn/api/v1/history/programmer/today", timeout=15)
         resp.raise_for_status()
         data = resp.json()
-        return ok({
-            "date": data.get("date") or "",
-            "events": data.get("events") or [],
-        })
+        return ok(
+            {
+                "date": data.get("date") or "",
+                "events": data.get("events") or [],
+            }
+        )
     except Exception:
         return ok({"date": "", "events": []})

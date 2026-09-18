@@ -1,4 +1,5 @@
 """FastAPI 依赖: 当前用户、权限校验、通用工具。"""
+
 from typing import Callable
 
 import jwt
@@ -47,18 +48,16 @@ def get_current_user(
 ) -> User:
     """从 Authorization 头解析当前登录用户。"""
     if credentials is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="未登录"
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="未登录")
     try:
         payload = decode_token(credentials.credentials)
         if payload.get("type") != "access":
             raise HTTPException(status_code=401, detail="令牌类型错误")
         user_id = int(payload["sub"])
-    except (jwt.PyJWTError, KeyError, ValueError):
+    except (jwt.PyJWTError, KeyError, ValueError) as err:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="令牌无效或已过期"
-        )
+        ) from err
     user = db.get(User, user_id)
     if user is None:
         raise HTTPException(status_code=401, detail="用户不存在")

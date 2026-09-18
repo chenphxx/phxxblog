@@ -15,7 +15,15 @@ const statusFilter = ref<number | undefined>(undefined)
 const keyword = ref('')
 const selected = ref<PostItem[]>([])
 /** 列表分页与取数; 筛选条件在 fetch 闭包里读当前值, 换条件时调 reset() 回到第 1 页 */
-const { items: posts, total, page, pageSize, loading, load, reset } = usePagedList<PostItem>({
+const {
+  items: posts,
+  total,
+  page,
+  pageSize,
+  loading,
+  load,
+  reset,
+} = usePagedList<PostItem>({
   fetch: (page, pageSize) =>
     postApi.adminList({
       page,
@@ -31,7 +39,11 @@ const io = useImportExport({
   unit: '篇',
   canExport: () => selected.value.length > 0,
   exportMessage: () => `已导出 ${selected.value.length} 篇文章`,
-  exportFile: (fmt) => postApi.exportPosts(selected.value.map((post) => post.id), fmt),
+  exportFile: (fmt) =>
+    postApi.exportPosts(
+      selected.value.map((post) => post.id),
+      fmt,
+    ),
   checkImports: (files) => postApi.checkImportPosts(files),
   submitImports: (files, onDuplicate) => postApi.importPosts(files, onDuplicate),
   onImported: () => reset(),
@@ -88,7 +100,9 @@ async function togglePrivate(post: PostItem) {
 
 async function batchSetPrivate() {
   if (!selected.value.length) return
-  await ElMessageBox.confirm(`将选中的 ${selected.value.length} 篇文章设为私密(仅管理员可见)吗?`, '确认', { type: 'warning' })
+  await ElMessageBox.confirm(`将选中的 ${selected.value.length} 篇文章设为私密(仅管理员可见)吗?`, '确认', {
+    type: 'warning',
+  })
   for (const post of selected.value) {
     try {
       await postApi.changeStatus(post.id, 3)
@@ -147,13 +161,7 @@ async function batchForceDelete() {
         </el-radio-group>
       </div>
       <div class="admin-toolbar-actions">
-        <el-input
-          v-model="keyword"
-          placeholder="搜索标题"
-          clearable
-          @keyup.enter="reset()"
-          @clear="reset()"
-        />
+        <el-input v-model="keyword" placeholder="搜索标题" clearable @keyup.enter="reset()" @clear="reset()" />
         <el-button @click="reset()">搜索</el-button>
         <el-button @click="io.importDialog = true">导入文章</el-button>
         <el-button type="primary" @click="router.push('/admin/posts/new')">新建文章</el-button>
@@ -168,7 +176,7 @@ async function batchForceDelete() {
         <el-button size="small" @click="io.openExportDialog">导出选中</el-button>
         <el-button size="small" type="danger" @click="batchForceDelete">彻底删除</el-button>
       </div>
-      <el-table :data="posts" v-loading="loading" @selection-change="onSelectionChange">
+      <el-table v-loading="loading" :data="posts" @selection-change="onSelectionChange">
         <el-table-column type="selection" width="45" />
         <el-table-column prop="id" label="ID" width="70" />
         <el-table-column prop="title" label="标题" min-width="200" show-overflow-tooltip>
@@ -207,14 +215,38 @@ async function batchForceDelete() {
             <!-- el-table 插槽的 row 是 DefaultRow(Record<string, any>),
                  显式断言成实际行类型以保留函数的类型约束 -->
             <div class="op-row">
-              <el-button v-if="row.status === 2" size="small" type="warning" @click="togglePrivate(row as PostItem)">私密</el-button>
-              <el-button v-else-if="row.status === 3" size="small" type="success" @click="togglePrivate(row as PostItem)">公开</el-button>
+              <el-button v-if="row.status === 2" size="small" type="warning" @click="togglePrivate(row as PostItem)"
+                >私密</el-button
+              >
+              <el-button
+                v-else-if="row.status === 3"
+                size="small"
+                type="success"
+                @click="togglePrivate(row as PostItem)"
+                >公开</el-button
+              >
               <el-button size="small" @click="router.push(`/admin/posts/${row.id}/edit`)">编辑</el-button>
-              <el-button v-if="row.status === 4" size="small" type="success" @click="restore(row as PostItem)">恢复</el-button>
-              <el-button v-if="row.status === 4" size="small" type="danger" @click="forceDelete(row as PostItem)">彻底删除</el-button>
+              <el-button v-if="row.status === 4" size="small" type="success" @click="restore(row as PostItem)"
+                >恢复</el-button
+              >
+              <el-button v-if="row.status === 4" size="small" type="danger" @click="forceDelete(row as PostItem)"
+                >彻底删除</el-button
+              >
               <template v-else>
-                <el-button v-if="row.status !== 2 && row.status !== 3" size="small" type="primary" @click="changeStatus(row as PostItem, 2, '发布')">发布</el-button>
-                <el-button v-if="row.status === 0" size="small" type="warning" @click="changeStatus(row as PostItem, 1, '提交审核')">审核</el-button>
+                <el-button
+                  v-if="row.status !== 2 && row.status !== 3"
+                  size="small"
+                  type="primary"
+                  @click="changeStatus(row as PostItem, 2, '发布')"
+                  >发布</el-button
+                >
+                <el-button
+                  v-if="row.status === 0"
+                  size="small"
+                  type="warning"
+                  @click="changeStatus(row as PostItem, 1, '提交审核')"
+                  >审核</el-button
+                >
                 <el-button size="small" type="danger" @click="trash(row as PostItem)">删除</el-button>
               </template>
             </div>

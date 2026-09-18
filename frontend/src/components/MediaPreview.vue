@@ -26,7 +26,7 @@ const emit = defineEmits<{
   (e: 'download', item: MediaItem): void
 }>()
 
-const current = computed(() => (props.index === null ? null : props.items[props.index] ?? null))
+const current = computed(() => (props.index === null ? null : (props.items[props.index] ?? null)))
 const kind = computed(() => (current.value ? previewKind(current.value) : 'unsupported'))
 
 /** 图片默认适应窗口, 需要看细节时可切到原始大小(超出部分滚动查看) */
@@ -164,7 +164,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
             class="viewer-frame"
             :title="`PDF 预览 ${current.original_name}`"
           />
-          <pre v-else-if="kind === 'text'" v-loading="textLoading" class="viewer-text">{{ textError || textContent }}</pre>
+          <pre v-else-if="kind === 'text'" v-loading="textLoading" class="viewer-text">{{
+            textError || textContent
+          }}</pre>
           <div v-else class="viewer-fallback">
             <div class="viewer-fallback-icon">📄</div>
             <p>该格式无法在线预览, 请下载后查看</p>

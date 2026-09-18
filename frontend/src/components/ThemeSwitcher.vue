@@ -80,7 +80,10 @@ function pick(id: ThemeId) {
   border-radius: var(--el-border-radius-base, 6px);
   font-family: inherit;
   font-size: 13px;
-  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .theme-picker:hover {

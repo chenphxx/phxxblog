@@ -3,12 +3,12 @@
 跑法: backend/.venv/Scripts/python.exe scripts/check_upload_path.py
 只读, 不删任何文件。
 """
+
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from app.core.config import PROJECT_ROOT, settings  # noqa: E402
 from app.services.upload import resolve_upload_file, upload_root  # noqa: E402
 
 root = upload_root()
@@ -40,7 +40,7 @@ for desc, stored, expect in cases:
         print(f"       解析结果: {got}")
 
 print()
-print(f"  实测数据库里真实媒体的路径解析:")
+print("  实测数据库里真实媒体的路径解析:")
 from app.core.database import SessionLocal  # noqa: E402
 from app.models.media import Media  # noqa: E402
 

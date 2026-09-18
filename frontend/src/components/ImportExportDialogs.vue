@@ -48,7 +48,9 @@ const io = props.io
   <el-dialog v-model="io.dupDialog" :title="dupTitle" width="560px">
     <el-alert type="warning" :closable="false" show-icon>
       <template #title>
-        共 {{ io.duplicateTotal }} {{ io.unit }}待导入, 其中 {{ io.duplicateCount }} {{ io.unit }}与已有{{ io.entity }}重复
+        共 {{ io.duplicateTotal }} {{ io.unit }}待导入, 其中 {{ io.duplicateCount }} {{ io.unit }}与已有{{
+          io.entity
+        }}重复
       </template>
       {{ dupHint }}
     </el-alert>

@@ -1,11 +1,6 @@
 import axios, { type AxiosRequestConfig } from 'axios'
 import { ElMessage } from 'element-plus'
-import {
-  clearSession,
-  getAccessToken,
-  getRefreshToken,
-  saveTokens,
-} from '@/utils/tokenStorage'
+import { clearSession, getAccessToken, getRefreshToken, saveTokens } from '@/utils/tokenStorage'
 import type { TokenPair } from '@/types'
 
 /** 解包后的请求接口: get/post/put/delete 直接返回后端 data 字段 */
@@ -50,9 +45,7 @@ const PROTECTED_PREFIXES = ['/admin', '/write', '/diary', '/changelog']
 
 /** 当前是否为受保护页面(基于 hash 路由) */
 function isProtectedRoute(hash: string): boolean {
-  return PROTECTED_PREFIXES.some(
-    (prefix) => hash.startsWith(`#${prefix}`) || hash.includes(`#${prefix}/`),
-  )
+  return PROTECTED_PREFIXES.some((prefix) => hash.startsWith(`#${prefix}`) || hash.includes(`#${prefix}/`))
 }
 
 /** 清空登录态, 并在受保护页面上跳登录页 */
@@ -103,24 +96,16 @@ function isAuthEndpoint(url: string): boolean {
 rawAxios.interceptors.response.use(
   // 后端统一返回 { code, message, data }, 这里解出 data 供调用方直接使用
   // blob 响应(文件下载)不拆包, 直接返回完整响应
-  (response) =>
-    response.config.responseType === 'blob'
-      ? (response as never)
-      : (response.data.data as never),
+  (response) => (response.config.responseType === 'blob' ? (response as never) : (response.data.data as never)),
   (error) => {
     const status = error.response?.status
     const method = (error.config?.method || 'get').toUpperCase()
     const url = error.config?.url || ''
-    const message =
-      error.response?.data?.message ||
-      error.response?.data?.detail ||
-      error.message ||
-      '请求失败'
+    const message = error.response?.data?.message || error.response?.data?.detail || error.message || '请求失败'
 
     if (status === 401) {
       const config = error.config as RetriableConfig | undefined
-      const canRetry =
-        config && !config._retried && !isAuthEndpoint(url) && Boolean(getRefreshToken())
+      const canRetry = config && !config._retried && !isAuthEndpoint(url) && Boolean(getRefreshToken())
       if (canRetry) {
         config._retried = true
         return (async () => {

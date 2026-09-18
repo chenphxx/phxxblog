@@ -28,9 +28,13 @@ function formatDate(value: string) {
       <span class="muted">{{ formatDate(comment.created_at) }}</span>
       <el-tag size="small" effect="plain" type="info">{{ comment.location || '未知地区' }}</el-tag>
       <span class="head-actions">
-        <el-button v-if="comment.can_edit" size="small" text type="primary" @click="emit('edit', comment)">编辑</el-button>
+        <el-button v-if="comment.can_edit" size="small" text type="primary" @click="emit('edit', comment)"
+          >编辑</el-button
+        >
         <el-button size="small" text type="primary" @click="emit('reply', comment)">回复</el-button>
-        <el-button v-if="comment.can_delete" size="small" text type="danger" @click="emit('delete', comment)">删除</el-button>
+        <el-button v-if="comment.can_delete" size="small" text type="danger" @click="emit('delete', comment)"
+          >删除</el-button
+        >
       </span>
     </div>
     <div class="comment-content">{{ comment.content }}</div>

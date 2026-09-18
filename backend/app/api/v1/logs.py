@@ -1,5 +1,4 @@
 """操作日志接口。"""
-from datetime import datetime
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session

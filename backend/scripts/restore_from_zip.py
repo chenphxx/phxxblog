@@ -7,6 +7,7 @@
 用法:
     python scripts/restore_from_zip.py [--zip 压缩包路径]
 """
+
 import argparse
 import glob
 import mimetypes
@@ -54,7 +55,9 @@ def main() -> None:
     if args.zip:
         zip_path = Path(args.zip)
     else:
-        candidates = glob.glob(str(PROJECT_ROOT / "assets" / "wordpress" / "media_library_export-*.zip"))
+        candidates = glob.glob(
+            str(PROJECT_ROOT / "assets" / "wordpress" / "media_library_export-*.zip")
+        )
         if not candidates:
             print("未找到媒体库导出压缩包")
             return
@@ -109,19 +112,26 @@ def main() -> None:
             local_url = f"/assets/uploads/wordpress/{rel}"
             # 媒体库 filename 唯一(同名文件用父目录前缀区分)
             filename = target.name
-            if filename in used_filenames or db.query(Media).filter(Media.filename == filename).first():
+            if (
+                filename in used_filenames
+                or db.query(Media).filter(Media.filename == filename).first()
+            ):
                 filename = rel.replace("/", "_")
             used_filenames.add(filename)
-            db.add(Media(
-                uploader_id=1,
-                original_name=target.name,
-                filename=filename,
-                path=str(target).replace("\\", "/"),
-                url=local_url,
-                mime_type=mimetypes.guess_type(target.name)[0],
-                size=target.stat().st_size,
-                type="image" if target.suffix.lower() in {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"} else "file",
-            ))
+            db.add(
+                Media(
+                    uploader_id=1,
+                    original_name=target.name,
+                    filename=filename,
+                    path=str(target).replace("\\", "/"),
+                    url=local_url,
+                    mime_type=mimetypes.guess_type(target.name)[0],
+                    size=target.stat().st_size,
+                    type="image"
+                    if target.suffix.lower() in {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"}
+                    else "file",
+                )
+            )
             url_map[remote] = local_url
             url_map[unquote(remote)] = local_url
             restored += 1

@@ -75,9 +75,7 @@ const activeRange = computed<QuickRangeKey | null>(() => {
   return QUICK_RANGES.find((r) => resolveQuickRange(r.key).join('~') === current)?.key ?? null
 })
 
-const activeRangeLabel = computed(
-  () => QUICK_RANGES.find((r) => r.key === activeRange.value)?.label ?? '快捷筛选',
-)
+const activeRangeLabel = computed(() => QUICK_RANGES.find((r) => r.key === activeRange.value)?.label ?? '快捷筛选')
 
 /** 区间 KPI: 总量/日均/峰值 */
 const kpi = computed(() => summarize(trend.value))
@@ -141,6 +139,12 @@ function applyQuickRange(command: string | number | object) {
   dateRange.value = resolveQuickRange(String(command) as QuickRangeKey)
 }
 
+/** 刷新访问记录: 回到第 1 页再取数(分页不变时 watch 不会触发) */
+async function refreshVisits() {
+  visitsPage.value = 1
+  await loadVisits()
+}
+
 async function loadVisits() {
   visitsLoading.value = true
   try {
@@ -180,11 +184,7 @@ onMounted(async () => {
     <!-- 数据卡片 -->
     <el-row :gutter="16">
       <el-col v-for="card in cards" :key="card.key" :xs="12" :sm="6">
-        <div
-          class="card stat-card clickable"
-          :style="{ '--stat-color': card.color }"
-          @click="onCardClick(card)"
-        >
+        <div class="card stat-card clickable" :style="{ '--stat-color': card.color }" @click="onCardClick(card)">
           <div class="stat-head">
             <span class="stat-label muted">{{ card.label }}</span>
             <span class="stat-icon"><MetaIcon :name="card.icon" size="16" /></span>
@@ -232,8 +232,12 @@ onMounted(async () => {
           />
           <span v-else class="muted range-hint">月/年粒度使用固定窗口, 不支持自定义区间</span>
           <el-radio-group v-model="chartType" size="small" aria-label="图表类型">
-            <el-radio-button value="line"><el-icon><TrendCharts /></el-icon></el-radio-button>
-            <el-radio-button value="bar"><el-icon><Histogram /></el-icon></el-radio-button>
+            <el-radio-button value="line"
+              ><el-icon><TrendCharts /></el-icon
+            ></el-radio-button>
+            <el-radio-button value="bar"
+              ><el-icon><Histogram /></el-icon
+            ></el-radio-button>
           </el-radio-group>
           <el-radio-group v-model="granularity" size="small" aria-label="统计粒度">
             <el-radio-button value="day">日</el-radio-button>
@@ -282,12 +286,12 @@ onMounted(async () => {
     </div>
 
     <!-- 访问记录 -->
-    <div class="card" id="visits-section" style="margin-top: 20px">
+    <div id="visits-section" class="card" style="margin-top: 20px">
       <div class="trend-header">
         <h3 style="margin: 0">访问记录</h3>
-        <el-button size="small" @click="visitsPage = 1; loadVisits()">刷新</el-button>
+        <el-button size="small" @click="refreshVisits()">刷新</el-button>
       </div>
-      <el-table :data="visits" v-loading="visitsLoading" size="small">
+      <el-table v-loading="visitsLoading" :data="visits" size="small">
         <el-table-column prop="visit_time" label="时间" width="150">
           <template #default="{ row }">{{ (row.visit_time || '').replace('T', ' ').slice(0, 16) }}</template>
         </el-table-column>
@@ -300,7 +304,9 @@ onMounted(async () => {
         <el-table-column prop="os" label="系统" width="90" />
         <el-table-column label="文章" min-width="140" show-overflow-tooltip>
           <template #default="{ row }">
-            <router-link v-if="row.post_id" :to="`/post/${row.post_id}`">{{ row.post_title || `#${row.post_id}` }}</router-link>
+            <router-link v-if="row.post_id" :to="`/post/${row.post_id}`">{{
+              row.post_title || `#${row.post_id}`
+            }}</router-link>
             <span v-else>-</span>
           </template>
         </el-table-column>
@@ -322,7 +328,12 @@ onMounted(async () => {
       <el-col :xs="24" :md="12">
         <div class="card">
           <h3>最新文章</h3>
-          <el-table :data="recentPosts" size="small" style="cursor: pointer" @row-click="(row: PostItem) => router.push(`/admin/posts/${row.id}/edit`)">
+          <el-table
+            :data="recentPosts"
+            size="small"
+            style="cursor: pointer"
+            @row-click="(row: PostItem) => router.push(`/admin/posts/${row.id}/edit`)"
+          >
             <el-table-column prop="title" label="标题" min-width="160" show-overflow-tooltip />
             <el-table-column prop="status" label="状态" width="80">
               <template #default="{ row }">
@@ -338,7 +349,12 @@ onMounted(async () => {
       <el-col :xs="24" :md="12">
         <div class="card">
           <h3>最新评论</h3>
-          <el-table :data="recentComments" size="small" style="cursor: pointer" @row-click="(row: CommentItem) => router.push(`/post/${row.post_id}`)">
+          <el-table
+            :data="recentComments"
+            size="small"
+            style="cursor: pointer"
+            @row-click="(row: CommentItem) => router.push(`/post/${row.post_id}`)"
+          >
             <el-table-column label="评论人" width="100">
               <template #default="{ row }">{{ row.author_name || '匿名' }}</template>
             </el-table-column>
@@ -354,161 +370,164 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-  /* 数据卡片: 用主题强调色做淡底图标, 数字用正文色, 不再写死颜色 */
-  .stat-card {
-    margin-bottom: 16px;
-    padding: 14px 16px;
-  }
-  .clickable {
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-  }
-  .clickable:hover {
-    transform: translateY(-2px);
-    border-color: var(--border-strong);
-    box-shadow: var(--shadow-hover);
-  }
-  .stat-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-  }
-  .stat-label {
-    font-size: 13px;
-  }
-  .stat-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: var(--radius-sm);
-    color: var(--stat-color, var(--primary));
-    background: color-mix(in srgb, var(--stat-color, var(--primary)) 14%, transparent);
-  }
-  .stat-value {
-    font-size: 30px;
-    font-weight: 700;
-    line-height: 1.2;
-    margin-top: 8px;
-    color: var(--text);
-  }
-  .trend-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 12px;
-  }
-  .trend-title {
-    display: flex;
-    align-items: baseline;
-    flex-wrap: wrap;
-    gap: 6px 12px;
-  }
-  .trend-today {
-    font-family: var(--font-mono);
-  }
-  .trend-today b {
-    color: var(--text);
-  }
-  .trend-controls {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-  .range-hint {
-    font-size: 12px;
-  }
-  /* 快捷区间下拉里当前生效项: 加粗并用主题色, 与选中态的按钮呼应 */
-  .is-current-range {
-    color: var(--primary);
-    font-weight: 600;
-  }
+/* 数据卡片: 用主题强调色做淡底图标, 数字用正文色, 不再写死颜色 */
+.stat-card {
+  margin-bottom: 16px;
+  padding: 14px 16px;
+}
+.clickable {
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
+}
+.clickable:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-hover);
+}
+.stat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.stat-label {
+  font-size: 13px;
+}
+.stat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  color: var(--stat-color, var(--primary));
+  background: color-mix(in srgb, var(--stat-color, var(--primary)) 14%, transparent);
+}
+.stat-value {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-top: 8px;
+  color: var(--text);
+}
+.trend-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.trend-title {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+}
+.trend-today {
+  font-family: var(--font-mono);
+}
+.trend-today b {
+  color: var(--text);
+}
+.trend-controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.range-hint {
+  font-size: 12px;
+}
+/* 快捷区间下拉里当前生效项: 加粗并用主题色, 与选中态的按钮呼应 */
+.is-current-range {
+  color: var(--primary);
+  font-weight: 600;
+}
 
-  /* ---------- 区间 KPI ---------- */
-  .trend-kpi {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px 32px;
-    padding: 14px 0 10px;
-    margin-top: 4px;
-    border-top: 1px solid var(--border);
-    transition: opacity var(--dur) var(--ease);
-  }
-  .trend-kpi.is-loading {
-    opacity: 0.55;
-  }
-  .kpi {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 92px;
-  }
-  .kpi-label {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 0.02em;
-  }
-  .kpi-value {
-    font-family: var(--font-mono);
-    font-size: 21px;
-    font-weight: 700;
-    line-height: 1.25;
-    color: var(--text);
-  }
-  .kpi-delta {
-    font-family: var(--font-mono);
-    font-size: 11px;
-  }
-  .kpi-delta em {
-    font-style: normal;
-  }
-  .kpi-delta.is-up {
-    color: var(--ok);
-  }
-  .kpi-delta.is-down {
-    color: var(--danger);
-  }
+/* ---------- 区间 KPI ---------- */
+.trend-kpi {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 32px;
+  padding: 14px 0 10px;
+  margin-top: 4px;
+  border-top: 1px solid var(--border);
+  transition: opacity var(--dur) var(--ease);
+}
+.trend-kpi.is-loading {
+  opacity: 0.55;
+}
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 92px;
+}
+.kpi-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+.kpi-value {
+  font-family: var(--font-mono);
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--text);
+}
+.kpi-delta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.kpi-delta em {
+  font-style: normal;
+}
+.kpi-delta.is-up {
+  color: var(--ok);
+}
+.kpi-delta.is-down {
+  color: var(--danger);
+}
 
-  /* 图表容器: 给 v-loading 遮罩留出与图一致的高度, 避免加载时卡片高度跳动 */
-  .chart-body {
-    min-height: 260px;
-  }
+/* 图表容器: 给 v-loading 遮罩留出与图一致的高度, 避免加载时卡片高度跳动 */
+.chart-body {
+  min-height: 260px;
+}
 
-  .legend {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-top: 8px;
-    font-size: 12px;
-    flex-wrap: wrap;
-  }
-  /* 图例与图内线条同源: 都取 TrendChart 里的同名令牌, 保证颜色始终一致 */
-  .swatch-line {
-    display: inline-block;
-    width: 16px;
-    height: 2px;
-    margin-right: 6px;
-    vertical-align: middle;
-  }
-  .swatch-pv {
-    background: var(--primary);
-  }
-  .swatch-uv {
-    background: repeating-linear-gradient(90deg, var(--grad-to) 0 5px, transparent 5px 9px);
-  }
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 8px;
+  font-size: 12px;
+  flex-wrap: wrap;
+}
+/* 图例与图内线条同源: 都取 TrendChart 里的同名令牌, 保证颜色始终一致 */
+.swatch-line {
+  display: inline-block;
+  width: 16px;
+  height: 2px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.swatch-pv {
+  background: var(--primary);
+}
+.swatch-uv {
+  background: repeating-linear-gradient(90deg, var(--grad-to) 0 5px, transparent 5px 9px);
+}
+.legend-hint {
+  margin-left: auto;
+  opacity: 0.8;
+}
+@media (max-width: 720px) {
   .legend-hint {
-    margin-left: auto;
-    opacity: 0.8;
+    margin-left: 0;
   }
-  @media (max-width: 720px) {
-    .legend-hint {
-      margin-left: 0;
-    }
-  }
+}
 </style>

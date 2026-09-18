@@ -1,4 +1,5 @@
 """访问统计模型: 明细与按日聚合。"""
+
 from datetime import date, datetime
 
 from sqlalchemy import BigInteger, Date, DateTime, ForeignKey, Index, Integer, String

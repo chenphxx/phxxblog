@@ -1,13 +1,14 @@
 """用户、角色、权限、刷新令牌模型。"""
+
 from datetime import datetime
 
 from sqlalchemy import (
+    JSON,
     BigInteger,
     Boolean,
     Column,
     DateTime,
     ForeignKey,
-    JSON,
     SmallInteger,
     String,
     Table,
@@ -15,7 +16,6 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
-
 
 # 用户-角色关联表
 user_roles = Table(
@@ -30,7 +30,12 @@ role_permissions = Table(
     "role_permissions",
     Base.metadata,
     Column("role_id", BigInteger, ForeignKey("roles.id", ondelete="CASCADE"), primary_key=True),
-    Column("permission_id", BigInteger, ForeignKey("permissions.id", ondelete="CASCADE"), primary_key=True),
+    Column(
+        "permission_id",
+        BigInteger,
+        ForeignKey("permissions.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
 )
 
 # 刷新令牌会话表
@@ -80,9 +85,7 @@ class User(Base):
     roles: Mapped[list["Role"]] = relationship(
         secondary=user_roles, back_populates="users", lazy="selectin"
     )
-    posts: Mapped[list["Post"]] = relationship(
-        back_populates="author", lazy="select"
-    )
+    posts: Mapped[list["Post"]] = relationship(back_populates="author", lazy="select")
 
     @property
     def role_codes(self) -> list[str]:

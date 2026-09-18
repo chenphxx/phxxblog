@@ -1,4 +1,5 @@
 """认证接口: 注册/登录/刷新/注销/个人信息/密码/邮箱。"""
+
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -132,11 +133,7 @@ def refresh_token(data: RefreshIn, request: Request, db: Session = Depends(get_d
         raise HTTPException(status_code=401, detail="刷新令牌无效或已过期")
 
     # 吊销旧令牌并签发新令牌(轮换)
-    db.execute(
-        refresh_tokens.update()
-        .where(refresh_tokens.c.id == row["id"])
-        .values(revoked=True)
-    )
+    db.execute(refresh_tokens.update().where(refresh_tokens.c.id == row["id"]).values(revoked=True))
     user = db.get(User, row["user_id"])
     if user is None or user.status == 0:
         raise HTTPException(status_code=401, detail="用户不存在或已被禁用")
@@ -210,7 +207,11 @@ def update_profile(
         user.nickname = data.nickname
     db.commit()
     write_operation_log(
-        db, request=request, user=user, module="auth", action="update_profile",
+        db,
+        request=request,
+        user=user,
+        module="auth",
+        action="update_profile",
         detail={"username": user.username, "nickname": user.nickname},
     )
     return ok(UserOut.model_validate(user), "资料已更新")

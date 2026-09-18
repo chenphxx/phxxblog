@@ -12,7 +12,7 @@
  *
  * 用法: node scripts/measure-first-paint.mjs   (需先 npm run build)
  */
-import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { gzipSync } from 'node:zlib'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'

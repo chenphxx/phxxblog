@@ -1,4 +1,5 @@
 """日记接口(仅管理员)。"""
+
 import io
 import re
 import zipfile
@@ -9,8 +10,8 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.deps import require_permission
-from app.core.permissions import Perm
 from app.core.pagination import paginate
+from app.core.permissions import Perm
 from app.core.response import ok
 from app.models.diary import DiaryEntry
 from app.models.user import User
@@ -32,13 +33,14 @@ router = APIRouter(prefix="/diaries", tags=["日记"])
 _DATE_PREFIX_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})")
 
 
-
 def _diary_to_markdown(entry: DiaryEntry) -> str:
     """将日记序列化为带 YAML frontmatter 的 Markdown 文本。"""
-    lines = frontmatter_lines([
-        ("date", entry.entry_date.strftime("%Y-%m-%d")),
-        ("created_at", entry.created_at.strftime("%Y-%m-%d %H:%M:%S")),
-    ])
+    lines = frontmatter_lines(
+        [
+            ("date", entry.entry_date.strftime("%Y-%m-%d")),
+            ("created_at", entry.created_at.strftime("%Y-%m-%d %H:%M:%S")),
+        ]
+    )
     lines.append("")
     lines.append(entry.content_md)
     return "\n".join(lines)
@@ -140,7 +142,9 @@ def list_diaries(
 @router.get("/export", response_model=None)
 def export_diaries(
     ids: str | None = Query(None, description="逗号分隔的日记ID, 不传则导出全部"),
-    fmt: str = Query("markdown", pattern="^(markdown|html)$", description="导出格式: markdown / html"),
+    fmt: str = Query(
+        "markdown", pattern="^(markdown|html)$", description="导出格式: markdown / html"
+    ),
     user: User = Depends(require_permission(Perm.DIARY_MANAGE)),
     db: Session = Depends(get_db),
 ):
@@ -185,8 +189,12 @@ def export_diaries(
 def import_diaries(
     request: Request,
     files: list[UploadFile] = File(...),
-    mode: str = Query("import", pattern="^(check|import)$", description="check=只查重不写入, import=执行导入"),
-    on_duplicate: str = Query("skip", pattern="^(skip|all)$", description="重复时: skip=仅导入不重复, all=一并导入"),
+    mode: str = Query(
+        "import", pattern="^(check|import)$", description="check=只查重不写入, import=执行导入"
+    ),
+    on_duplicate: str = Query(
+        "skip", pattern="^(skip|all)$", description="重复时: skip=仅导入不重复, all=一并导入"
+    ),
     user: User = Depends(require_permission(Perm.DIARY_MANAGE)),
     db: Session = Depends(get_db),
 ):
@@ -198,8 +206,13 @@ def import_diaries(
         return True, None
 
     payload, message = run_import(
-        db=db, user=user, request=request, files=files,
-        mode=mode, on_duplicate=on_duplicate, module="diary",
+        db=db,
+        user=user,
+        request=request,
+        files=files,
+        mode=mode,
+        on_duplicate=on_duplicate,
+        module="diary",
         parse=_parse_diary_import,
         invalid_message=lambda fname: f"{fname}: 内容为空, 已跳过",
         existing_keys=lambda: _existing_diary_keys(db),
@@ -227,8 +240,13 @@ def create_diary(
     db.add(entry)
     db.commit()
     write_operation_log(
-        db, request=request, user=user, module="diary", action="create",
-        target_type="diary", target_id=entry.id,
+        db,
+        request=request,
+        user=user,
+        module="diary",
+        action="create",
+        target_type="diary",
+        target_id=entry.id,
     )
     return ok(DiaryOut.model_validate(entry), "日记已保存")
 
@@ -251,8 +269,13 @@ def update_diary(
         entry.entry_date = data.entry_date
     db.commit()
     write_operation_log(
-        db, request=request, user=user, module="diary", action="update",
-        target_type="diary", target_id=diary_id,
+        db,
+        request=request,
+        user=user,
+        module="diary",
+        action="update",
+        target_type="diary",
+        target_id=diary_id,
     )
     return ok(DiaryOut.model_validate(entry), "保存成功")
 
@@ -271,7 +294,12 @@ def delete_diary(
     db.delete(entry)
     db.commit()
     write_operation_log(
-        db, request=request, user=user, module="diary", action="delete",
-        target_type="diary", target_id=diary_id,
+        db,
+        request=request,
+        user=user,
+        module="diary",
+        action="delete",
+        target_type="diary",
+        target_id=diary_id,
     )
     return ok(message="删除成功")

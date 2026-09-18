@@ -183,10 +183,7 @@ onActivated(async () => {
     return
   }
   try {
-    const [settingData, categoryData] = await Promise.all([
-      settingsApi.public(),
-      categoryApi.list(),
-    ])
+    const [settingData, categoryData] = await Promise.all([settingsApi.public(), categoryApi.list()])
     settings.value = settingData
     categories.value = categoryData
     // 回到第 1 页, 保证能看到最新文章
@@ -216,7 +213,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="page-container home-page" v-loading="loading">
+  <div v-loading="loading" class="page-container home-page">
     <div class="home-grid">
       <!-- 左侧: 个人资料 + 常用网站 -->
       <div class="home-left">
@@ -249,13 +246,21 @@ onMounted(async () => {
               class="social-link"
               :title="linkName(link)"
             >
-              <img v-if="favicon(link.url)" :src="favicon(link.url)" alt="" class="social-icon" @error="fallbackIcon($event, link.url)" />
+              <img
+                v-if="favicon(link.url)"
+                :src="favicon(link.url)"
+                alt=""
+                class="social-icon"
+                @error="fallbackIcon($event, link.url)"
+              />
               <span>{{ linkName(link) }}</span>
             </a>
           </div>
 
           <div class="profile-tags">
-            <el-tag v-for="tag in settings?.tech_tags || []" :key="tag" size="small" effect="plain" round>{{ tag }}</el-tag>
+            <el-tag v-for="tag in settings?.tech_tags || []" :key="tag" size="small" effect="plain" round>{{
+              tag
+            }}</el-tag>
           </div>
 
           <div class="profile-categories">
@@ -285,7 +290,13 @@ onMounted(async () => {
             rel="noopener noreferrer"
             class="site-link"
           >
-            <img v-if="favicon(link.url)" :src="favicon(link.url)" alt="" class="site-link-icon" @error="fallbackIcon($event, link.url)" />
+            <img
+              v-if="favicon(link.url)"
+              :src="favicon(link.url)"
+              alt=""
+              class="site-link-icon"
+              @error="fallbackIcon($event, link.url)"
+            />
             <span>{{ linkName(link) }}</span>
           </a>
         </aside>
@@ -300,13 +311,29 @@ onMounted(async () => {
             <span class="term-dot term-dot-green" />
             <span class="term-title">session — {{ settings?.site_name || 'blog' }}</span>
             <div class="term-actions">
-              <el-button size="small" circle :disabled="!saying" :icon="CopyDocument" title="复制一言" @click="copySaying" />
-              <el-button size="small" circle :loading="sayingLoading" :icon="Refresh" title="换一句" @click="loadSaying(true)" />
+              <el-button
+                size="small"
+                circle
+                :disabled="!saying"
+                :icon="CopyDocument"
+                title="复制一言"
+                @click="copySaying"
+              />
+              <el-button
+                size="small"
+                circle
+                :loading="sayingLoading"
+                :icon="Refresh"
+                title="换一句"
+                @click="loadSaying(true)"
+              />
             </div>
           </div>
           <div class="term-body">
             <p class="term-line"><span class="term-prompt">$</span> whoami</p>
-            <p class="term-out">{{ settings?.site_name || 'phxxblog' }}<span v-if="settings?.site_bio"> — {{ settings.site_bio }}</span></p>
+            <p class="term-out">
+              {{ settings?.site_name || 'phxxblog' }}<span v-if="settings?.site_bio"> — {{ settings.site_bio }}</span>
+            </p>
             <p class="term-line"><span class="term-prompt">$</span> ls posts | wc -l</p>
             <p class="term-out">{{ totalPosts }}</p>
             <p class="term-line"><span class="term-prompt">$</span> tail -n 1 posts/latest</p>
@@ -328,7 +355,14 @@ onMounted(async () => {
         <section v-if="settings?.show_history !== false" class="card history-card">
           <div class="history-head">
             <p class="eyebrow">history — 程序员历史上的今天</p>
-            <el-button size="small" circle :loading="historyLoading" :icon="Refresh" title="刷新" @click="loadHistory" />
+            <el-button
+              size="small"
+              circle
+              :loading="historyLoading"
+              :icon="Refresh"
+              title="刷新"
+              @click="loadHistory"
+            />
           </div>
           <template v-if="historyEvents.length">
             <p class="muted history-date">
@@ -406,7 +440,10 @@ onMounted(async () => {
           style="width: 220px; height: 220px; border-radius: 12px"
         >
           <template #error>
-            <div style="width: 220px; height: 220px; display: flex; align-items: center; justify-content: center" class="muted">
+            <div
+              style="width: 220px; height: 220px; display: flex; align-items: center; justify-content: center"
+              class="muted"
+            >
               暂无头像
             </div>
           </template>

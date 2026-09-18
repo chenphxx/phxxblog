@@ -1,11 +1,12 @@
 """评论接口: 前台发表/查看, 后台管理。"""
+
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.deps import get_client_ip, get_current_user, get_optional_user, require_permission
+from app.core.deps import get_client_ip, get_optional_user, require_permission
 from app.core.permissions import Perm
 from app.core.response import ok
 from app.models.analytics import DailyStat
@@ -155,10 +156,14 @@ def admin_list_comments(
         .limit(page_size)
         .all()
     )
-    return ok(Page[CommentOut](
-        items=[CommentOut.model_validate(c) for c in items],
-        total=total, page=page, page_size=page_size,
-    ))
+    return ok(
+        Page[CommentOut](
+            items=[CommentOut.model_validate(c) for c in items],
+            total=total,
+            page=page,
+            page_size=page_size,
+        )
+    )
 
 
 @router.put("/comments/{comment_id}", response_model=dict)
@@ -179,8 +184,13 @@ def update_comment(
     comment.content = data.content
     db.commit()
     write_operation_log(
-        db, request=request, user=user, module="comment", action="update",
-        target_type="comment", target_id=comment_id,
+        db,
+        request=request,
+        user=user,
+        module="comment",
+        action="update",
+        target_type="comment",
+        target_id=comment_id,
     )
     return ok(CommentOut.model_validate(comment), "评论已更新")
 
@@ -200,8 +210,13 @@ def update_comment_status(
     comment.status = status
     db.commit()
     write_operation_log(
-        db, request=request, user=admin, module="comment", action=f"status:{status}",
-        target_type="comment", target_id=comment_id,
+        db,
+        request=request,
+        user=admin,
+        module="comment",
+        action=f"status:{status}",
+        target_type="comment",
+        target_id=comment_id,
     )
     return ok(message="状态已更新")
 
@@ -223,7 +238,12 @@ def delete_comment(
     db.delete(comment)
     db.commit()
     write_operation_log(
-        db, request=request, user=user, module="comment", action="delete",
-        target_type="comment", target_id=comment_id,
+        db,
+        request=request,
+        user=user,
+        module="comment",
+        action="delete",
+        target_type="comment",
+        target_id=comment_id,
     )
     return ok(message="删除成功")

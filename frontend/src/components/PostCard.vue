@@ -80,7 +80,9 @@ const STATUS_TEXT: Record<number, string> = {
 .post-card {
   margin-bottom: 14px;
   padding: 18px 20px;
-  transition: border-color 0.15s ease, transform 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
 }
 .post-card:hover {
   border-color: var(--border-strong);

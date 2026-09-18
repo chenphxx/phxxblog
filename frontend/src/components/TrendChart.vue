@@ -8,7 +8,7 @@
  *   3. PV 画成带渐变填充的面积, UV 用虚线区分 —— 序列不只用颜色区分, 色觉障碍下也能分辨;
  *   4. 悬停/键盘左右键出现十字准线与数值浮层, 取代原生 <title> 的系统提示框。
  */
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, useId } from 'vue'
 import type { TrendPoint } from '@/types'
 
 const props = defineProps<{
@@ -21,9 +21,8 @@ const H = 260
 const PAD = { top: 18, right: 18, bottom: 28, left: 46 }
 const Y_TICKS = 4
 
-/** 渐变 id 必须唯一, 否则同页多个趋势图会互相覆盖填充色 */
-let gradientSeq = 0
-const gradientId = `trend-area-${++gradientSeq}`
+/** 渐变 id 必须唯一, 否则同页多个趋势图会互相覆盖填充色(useId 保证每个实例不同) */
+const gradientId = `trend-area-${useId()}`
 
 const wrap = ref<HTMLElement | null>(null)
 const width = ref(720)
@@ -93,9 +92,7 @@ const xTicks = computed(() => {
   const total = props.points.length
   if (!total) return []
   const stepIndex = Math.max(1, Math.ceil(total / 8))
-  const ticks = props.points
-    .map((p, i) => ({ label: p.label, i }))
-    .filter((tick) => tick.i % stepIndex === 0)
+  const ticks = props.points.map((p, i) => ({ label: p.label, i })).filter((tick) => tick.i % stepIndex === 0)
   const last = total - 1
   if (ticks[ticks.length - 1]?.i !== last) ticks.push({ label: props.points[last].label, i: last })
   return ticks
@@ -122,7 +119,7 @@ const barGap = computed(() => Math.min(1.5, (innerW.value / Math.max(props.point
 /* ---------- 悬停/键盘交互 ---------- */
 const hoverIndex = ref<number | null>(null)
 
-const hovered = computed(() => (hoverIndex.value === null ? null : props.points[hoverIndex.value] ?? null))
+const hovered = computed(() => (hoverIndex.value === null ? null : (props.points[hoverIndex.value] ?? null)))
 
 /** 浮层高度上限(标签 + PV/UV/阅读 四行)与它到数据点的间距, 用于判断上方是否放得下 */
 const TOOLTIP_HEIGHT = 96
@@ -134,9 +131,7 @@ const tooltipLeft = computed(() => {
   return Math.min(Math.max(x(hoverIndex.value), 64), Math.max(W.value - 64, 64))
 })
 
-const pointY = computed(() =>
-  hovered.value ? y(Math.max(hovered.value.pv, hovered.value.uv)) : 0,
-)
+const pointY = computed(() => (hovered.value ? y(Math.max(hovered.value.pv, hovered.value.uv)) : 0))
 
 /**
  * 数据点靠上(数值高)时把浮层画到点的下方。
@@ -241,7 +236,11 @@ const chartLabel = computed(() => {
       <template v-if="!isEmpty">
         <!-- 柱状图 -->
         <template v-if="type === 'bar'">
-          <g v-for="(p, i) in points" :key="`bar-${p.label}-${i}`" :class="{ 'is-dim': hoverIndex !== null && hoverIndex !== i }">
+          <g
+            v-for="(p, i) in points"
+            :key="`bar-${p.label}-${i}`"
+            :class="{ 'is-dim': hoverIndex !== null && hoverIndex !== i }"
+          >
             <rect
               :x="x(i) - barWidth - barGap"
               :y="y(p.pv)"
@@ -298,9 +297,15 @@ const chartLabel = computed(() => {
       :style="{ left: `${tooltipLeft}px`, top: `${tooltipTop}px` }"
     >
       <div class="tooltip-label">{{ hovered.label }}</div>
-      <div class="tooltip-row"><i class="swatch swatch-pv" />PV <b>{{ hovered.pv }}</b></div>
-      <div class="tooltip-row"><i class="swatch swatch-uv" />UV <b>{{ hovered.uv }}</b></div>
-      <div v-if="hovered.post_views" class="tooltip-row"><i class="swatch swatch-post" />阅读 <b>{{ hovered.post_views }}</b></div>
+      <div class="tooltip-row">
+        <i class="swatch swatch-pv" />PV <b>{{ hovered.pv }}</b>
+      </div>
+      <div class="tooltip-row">
+        <i class="swatch swatch-uv" />UV <b>{{ hovered.uv }}</b>
+      </div>
+      <div v-if="hovered.post_views" class="tooltip-row">
+        <i class="swatch swatch-post" />阅读 <b>{{ hovered.post_views }}</b>
+      </div>
     </div>
   </div>
 </template>

@@ -17,10 +17,7 @@ const theme = useThemeStore()
 /** highlight.js 的最小类型(Vditor 会在运行时把 highlight.js 挂到 window.hljs) */
 interface HljsLike {
   getLanguage: (name: string) => unknown
-  highlight: (
-    code: string,
-    options: { language: string; ignoreIllegals?: boolean },
-  ) => { relevance: number }
+  highlight: (code: string, options: { language: string; ignoreIllegals?: boolean }) => { relevance: number }
 }
 
 /**
@@ -28,10 +25,39 @@ interface HljsLike {
  * 不直接使用全部语言, 既是为了速度, 也是为了避免长尾语言给出离谱的结果。
  */
 const AUTO_LANGS = [
-  'c', 'cpp', 'rust', 'python', 'javascript', 'typescript', 'java', 'go', 'csharp',
-  'bash', 'shell', 'powershell', 'sql', 'json', 'yaml', 'xml', 'html', 'css', 'php',
-  'kotlin', 'swift', 'objectivec', 'ruby', 'lua', 'perl', 'r', 'matlab', 'dart',
-  'scala', 'dockerfile', 'makefile', 'ini', 'markdown',
+  'c',
+  'cpp',
+  'rust',
+  'python',
+  'javascript',
+  'typescript',
+  'java',
+  'go',
+  'csharp',
+  'bash',
+  'shell',
+  'powershell',
+  'sql',
+  'json',
+  'yaml',
+  'xml',
+  'html',
+  'css',
+  'php',
+  'kotlin',
+  'swift',
+  'objectivec',
+  'ruby',
+  'lua',
+  'perl',
+  'r',
+  'matlab',
+  'dart',
+  'scala',
+  'dockerfile',
+  'makefile',
+  'ini',
+  'markdown',
 ]
 
 /** 代码高亮主题: 对齐 VSCode 默认配色(浅色 vs / 深色 vs2015) */
@@ -71,9 +97,15 @@ const LANG_HINTS: Array<[RegExp, string]> = [
   [/^\s*#\s*(include|define|ifdef|ifndef|pragma|undef|error|line|elif|endif)\b/m, 'c'],
   [/\b(printf|scanf|malloc|calloc|realloc|memcpy|strcmp|strcpy|strlen|puts|gets|sizeof)\s*\(/, 'c'],
   // Rust: 带类型的 let 绑定 / 特征宏 / 特征关键字
-  [/\blet\s+\w+\s*:\s*(i8|i16|i32|i64|i128|u8|u16|u32|u64|usize|isize|f32|f64|bool|String|&str|Vec|Option|Result)\b|\bimpl\s+\w|\btrait\s+\w|\bmut\s+\w|println!|vec!|\.unwrap\(\)/, 'rust'],
+  [
+    /\blet\s+\w+\s*:\s*(i8|i16|i32|i64|i128|u8|u16|u32|u64|usize|isize|f32|f64|bool|String|&str|Vec|Option|Result)\b|\bimpl\s+\w|\btrait\s+\w|\bmut\s+\w|println!|vec!|\.unwrap\(\)/,
+    'rust',
+  ],
   // PowerShell: 别名与常见 cmdlet
-  [/\b(irm|iex)\b|Invoke-(Expression|WebRequest|RestMethod)|\b(Get|Set|New|Test|Remove)-(Item|Content|ChildItem|Command|Process|Service|Value|Variable|Object)\b/, 'powershell'],
+  [
+    /\b(irm|iex)\b|Invoke-(Expression|WebRequest|RestMethod)|\b(Get|Set|New|Test|Remove)-(Item|Content|ChildItem|Command|Process|Service|Value|Variable|Object)\b/,
+    'powershell',
+  ],
 ]
 
 /**
@@ -92,7 +124,7 @@ function detectLanguage(instance: HljsLike, code: string): string | undefined {
   let bestScore = 0
   AUTO_LANGS.forEach((lang) => {
     if (!instance.getLanguage(lang)) return
-    let score = 0
+    let score: number
     try {
       score = instance.highlight(code, { language: lang, ignoreIllegals: true }).relevance
     } catch {
@@ -123,18 +155,12 @@ async function highlightCode(root: HTMLDivElement) {
   root.querySelectorAll<HTMLElement>('pre > code').forEach((code) => {
     // 清理上一次渲染的类名与行号节点, 保证语言解析正确、行号不重复
     code.classList.remove('hljs', 'vditor-linenumber')
-    code
-      .querySelectorAll('.vditor-linenumber__rows, .vditor-linenumber__temp')
-      .forEach((node) => node.remove())
+    code.querySelectorAll('.vditor-linenumber__rows, .vditor-linenumber__temp').forEach((node) => node.remove())
     if (LANGUAGE_RE.test(code.className)) return
     const language = detectLanguage(instance, code.textContent || '')
     if (language) code.classList.add(`language-${language}`)
   })
-  Vditor.highlightRender(
-    { enable: true, lineNumber: true, defaultLang: '', style: codeStyle() },
-    root,
-    '/vditor',
-  )
+  Vditor.highlightRender({ enable: true, lineNumber: true, defaultLang: '', style: codeStyle() }, root, '/vditor')
 }
 
 /** 超过该行数的代码块默认折叠 */
@@ -167,12 +193,10 @@ function applyCodeFold(root: HTMLDivElement) {
     // 按实际行高算出"前 20 行"的高度, 避免出现半行
     const styles = getComputedStyle(pre)
     const codeStyles = getComputedStyle(code)
-    const codePadding =
-      (parseFloat(codeStyles.paddingTop) || 0) + (parseFloat(codeStyles.paddingBottom) || 0)
+    const codePadding = (parseFloat(codeStyles.paddingTop) || 0) + (parseFloat(codeStyles.paddingBottom) || 0)
     // 用实测高度反推行高, 比读 line-height 更可靠(不受字号/字体影响)
     const lineHeight = (code.getBoundingClientRect().height - codePadding) / lineCount
-    const border =
-      (parseFloat(styles.borderTopWidth) || 0) + (parseFloat(styles.borderBottomWidth) || 0)
+    const border = (parseFloat(styles.borderTopWidth) || 0) + (parseFloat(styles.borderBottomWidth) || 0)
     const paddingTop = parseFloat(styles.paddingTop) || 0
     // 项目全局 box-sizing: border-box; 让边框盒正好等于"上内边距 + 20 行",
     // 裁剪边界(内边距盒)就落在第 20 行末尾, 不会露出第 21 行
@@ -189,9 +213,7 @@ function applyCodeFold(root: HTMLDivElement) {
     toggle.type = 'button'
     toggle.className = 'code-fold-toggle'
     const sync = () => {
-      toggle.textContent = wrapper.classList.contains('is-collapsed')
-        ? `展开全部 (共 ${lineCount} 行)`
-        : '收起'
+      toggle.textContent = wrapper.classList.contains('is-collapsed') ? `展开全部 (共 ${lineCount} 行)` : '收起'
     }
     toggle.addEventListener('click', () => {
       if (wrapper.classList.toggle('is-collapsed')) expandedBlocks.delete(index)
@@ -305,11 +327,5 @@ onBeforeUnmount(() => {
 
 <template>
   <div ref="el" class="markdown-body vditor-reset" />
-  <el-image-viewer
-    v-if="previewSrc"
-    :url-list="[previewSrc]"
-    teleported
-    hide-on-click-modal
-    @close="previewSrc = ''"
-  />
+  <el-image-viewer v-if="previewSrc" :url-list="[previewSrc]" teleported hide-on-click-modal @close="previewSrc = ''" />
 </template>

@@ -3,6 +3,7 @@
 跑法: backend/.venv/Scripts/python.exe scripts/check_query_counts.py
 只读, 不写数据库。
 """
+
 import logging
 import sys
 from pathlib import Path
@@ -52,11 +53,7 @@ def scenario_auth(db: Session):
 def scenario_list(db: Session):
     """模拟 GET /api/v1/posts: 列 10 篇已发布文章并序列化。"""
     posts = (
-        db.query(Post)
-        .filter(Post.status == 2)
-        .order_by(Post.published_at.desc())
-        .limit(10)
-        .all()
+        db.query(Post).filter(Post.status == 2).order_by(Post.published_at.desc()).limit(10).all()
     )
     for p in posts:
         PostListItem.model_validate(p)
@@ -92,4 +89,3 @@ print("  B. 公开列表 10 篇                                            9 条
 print("  C. 后台页(鉴权 + 列 10 篇)                                 15 条")
 print()
 print("说明: B 的剩余条数 = 1(文章) + 1(tags) + 2(角色/权限, 来自 author->roles)。")
-

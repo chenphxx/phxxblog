@@ -1,4 +1,5 @@
 """访问统计服务: 记录访问明细并按日聚合。"""
+
 from datetime import date, datetime
 
 from fastapi import Request
@@ -24,10 +25,14 @@ def record_visit(
     today = date.today()
 
     # 判断今日是否已有该 IP 的访问记录(用于 UV)
-    is_new_uv = not db.query(VisitLog.id).filter(
-        VisitLog.ip == ip,
-        VisitLog.visit_time >= datetime(today.year, today.month, today.day),
-    ).first()
+    is_new_uv = (
+        not db.query(VisitLog.id)
+        .filter(
+            VisitLog.ip == ip,
+            VisitLog.visit_time >= datetime(today.year, today.month, today.day),
+        )
+        .first()
+    )
 
     visit = VisitLog(
         post_id=post.id if post else None,

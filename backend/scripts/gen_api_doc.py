@@ -5,6 +5,7 @@
 
 用法: backend/.venv/Scripts/python.exe scripts/gen_api_doc.py
 """
+
 import importlib.util
 import sys
 from pathlib import Path
@@ -25,7 +26,7 @@ MODULE_NOTES: dict[str, str] = {
     "分类与标签都是多选: 请求用 `category_ids` / `tag_ids` 传列表, 每次都按提交值**整体覆盖**(传空数组即清空全部关联); "
     "响应里的 `categories` / `tags` 也是列表, 按分类筛选 `/posts?category=` 命中该分类的任一文章 "
     "\n>"
-    "\n> `/posts/hot` 按阅读量倒序返回已发布文章(前台首页与文章详情页侧栏的\"热门文章\"); 详情接口额外返回 `prev_post` / `next_post`, 为按发布时间相邻的上一篇/下一篇, 首尾文章对应项为 `null` ",
+    '\n> `/posts/hot` 按阅读量倒序返回已发布文章(前台首页与文章详情页侧栏的"热门文章"); 详情接口额外返回 `prev_post` / `next_post`, 为按发布时间相邻的上一篇/下一篇, 首尾文章对应项为 `null` ',
     "分类": "列表公开; 写操作需 `post:manage` 列表里的 `post_count` 只统计已发布文章 "
     "一篇文章可以同时属于多个分类, 该计数按关联表 `post_categories` 统计 ",
     "标签": "列表公开; 写操作需 `post:manage` ",

@@ -1,4 +1,5 @@
 """RSS 与 Sitemap(挂载在根路径)。"""
+
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends
@@ -43,11 +44,7 @@ def rss_feed(db: Session = Depends(get_db)):
     feed.language("zh-CN")
 
     posts = (
-        db.query(Post)
-        .filter(Post.status == 2)
-        .order_by(Post.published_at.desc())
-        .limit(50)
-        .all()
+        db.query(Post).filter(Post.status == 2).order_by(Post.published_at.desc()).limit(50).all()
     )
     for post in posts:
         entry = feed.add_entry()
@@ -66,17 +63,15 @@ def rss_feed(db: Session = Depends(get_db)):
 @router.get("/sitemap.xml", include_in_schema=False)
 def sitemap(db: Session = Depends(get_db)):
     """SEO 站点地图。"""
-    posts = (
-        db.query(Post)
-        .filter(Post.status == 2)
-        .order_by(Post.published_at.desc())
-        .all()
-    )
+    posts = db.query(Post).filter(Post.status == 2).order_by(Post.published_at.desc()).all()
     urls = [f"{settings.site_url}/"]
     urls += [f"{settings.site_url}/archive"]
     urls += [f"{settings.site_url}/post/{post.id}" for post in posts]
     today = datetime.now().date().isoformat()
-    xml = ["<?xml version=\"1.0\" encoding=\"UTF-8\"?>", "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">"]
+    xml = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ]
     for url in urls:
         xml.append(f"  <url><loc>{url}</loc><lastmod>{today}</lastmod></url>")
     xml.append("</urlset>")

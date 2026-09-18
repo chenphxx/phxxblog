@@ -2,6 +2,7 @@
 
 数据来源: ip2region 官方仓库(lionsoul2014/ip2region)。
 """
+
 from pathlib import Path
 
 import requests

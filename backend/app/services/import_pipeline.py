@@ -5,6 +5,7 @@
     的闭包与注释都一样, 真正不同的只有三件事: 怎么解析, 拿什么查重, 怎么落库。
     两份实现改一处忘一处是迟早的事, 所以把骨架收敛到这里, 差异由调用方以函数注入。
 """
+
 from datetime import datetime
 from typing import Callable
 
@@ -82,12 +83,14 @@ def run_import(
             key = dedup_key(parsed)
             duplicated = key in known_keys
             known_keys.add(key)
-            plans.append({
-                "group": group_index,
-                "filename": fname,
-                "duplicated": duplicated,
-                **parsed,
-            })
+            plans.append(
+                {
+                    "group": group_index,
+                    "filename": fname,
+                    "duplicated": duplicated,
+                    **parsed,
+                }
+            )
 
     duplicates = [label(plan) for plan in plans if plan["duplicated"]]
     if mode == "check":
@@ -123,7 +126,11 @@ def run_import(
             skipped += 1
     db.commit()
     write_operation_log(
-        db, request=request, user=user, module=module, action="import",
+        db,
+        request=request,
+        user=user,
+        module=module,
+        action="import",
         detail={"imported": imported, "skipped": skipped, "duplicates": len(duplicates)},
     )
     return {

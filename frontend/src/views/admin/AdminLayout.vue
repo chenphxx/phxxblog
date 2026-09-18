@@ -171,7 +171,9 @@ onMounted(() => {
   cursor: pointer;
   font-size: 13px;
   color: var(--muted);
-  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+  transition:
+    border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
 }
 .user-chip:hover {
   border-color: var(--primary);

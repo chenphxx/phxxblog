@@ -40,9 +40,11 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="page-container archive-page" v-loading="loading">
+  <div v-loading="loading" class="page-container archive-page">
     <p class="eyebrow" style="margin: 0 0 4px">archive — 归档</p>
-    <h1 style="margin: 0 0 16px">归档 <span class="muted count-label">共 {{ totalPosts }} 篇文章</span></h1>
+    <h1 style="margin: 0 0 16px">
+      归档 <span class="muted count-label">共 {{ totalPosts }} 篇文章</span>
+    </h1>
 
     <div class="archive-body">
       <!-- 侧边栏: 年份/月份跳转 -->
@@ -66,9 +68,7 @@ onMounted(async () => {
         <template v-for="[year, months] in yearGroups" :key="year">
           <h2 :id="`archive-${year}`" class="year-title">{{ year }}</h2>
           <div v-for="month in months" :key="month.month" class="month-block">
-            <h3 :id="anchor(year, month.month)" class="month-title">
-              {{ month.month }} 月 · {{ month.count }} 篇
-            </h3>
+            <h3 :id="anchor(year, month.month)" class="month-title">{{ month.month }} 月 · {{ month.count }} 篇</h3>
             <div class="timeline">
               <div v-for="post in month.posts" :key="post.id" class="timeline-item">
                 <div class="timeline-date muted">

@@ -139,9 +139,7 @@ export function useImportExport(options: UseImportExportOptions): ImportExportSt
       state.importing = true
       try {
         const result = await options.submitImports(state.importFiles, onDuplicate)
-        ElMessage.success(
-          `导入完成: 成功 ${result.imported} ${options.unit}, 跳过 ${result.skipped} ${options.unit}`,
-        )
+        ElMessage.success(`导入完成: 成功 ${result.imported} ${options.unit}, 跳过 ${result.skipped} ${options.unit}`)
         if (result.errors?.length) {
           ElMessage.warning(`部分文件导入失败: ${result.errors.slice(0, 3).join('; ')}`)
         }

@@ -129,7 +129,9 @@ async function removeSelected() {
     ElMessage.warning('请先勾选要删除的文件')
     return
   }
-  await ElMessageBox.confirm(`确定删除选中的 ${selected.value.length} 个文件吗? 磁盘文件将一并删除。`, '确认', { type: 'warning' })
+  await ElMessageBox.confirm(`确定删除选中的 ${selected.value.length} 个文件吗? 磁盘文件将一并删除。`, '确认', {
+    type: 'warning',
+  })
   for (const id of selected.value) {
     await mediaApi.remove(id)
   }
@@ -177,12 +179,7 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <div
-      ref="gridRef"
-      class="media-grid"
-      :style="{ '--media-grid-row-height': `${rowHeight}px` }"
-      v-loading="loading"
-    >
+    <div ref="gridRef" v-loading="loading" class="media-grid" :style="{ '--media-grid-row-height': `${rowHeight}px` }">
       <!-- 点卡片任意位置预览; 勾选框与操作按钮上的点击不冒泡到这里 -->
       <div
         v-for="(media, i) in items"
@@ -200,7 +197,7 @@ onBeforeUnmount(() => {
           "modelValue 是数组" 的用法(见 use-checkbox-status.mjs), 但发布的 .d.ts 把
           modelValue 收窄成了标量, 因此类型上必须放行 —— 断言只影响这一处。
         -->
-        <el-checkbox v-model="(selected as never)" :value="media.id" class="media-check" @click.stop />
+        <el-checkbox v-model="selected as never" :value="media.id" class="media-check" @click.stop />
         <div class="media-preview">
           <img v-if="media.type === 'image'" :src="media.url" :alt="media.original_name" loading="lazy" />
           <!-- 卡片里只当缩略图: 点任意位置进浮层播放(缩略图带 controls 会和"点击预览"打架) -->
@@ -211,9 +208,7 @@ onBeforeUnmount(() => {
           <div v-else class="file-placeholder">{{ media.type === 'audio' ? '🎵' : '📄' }}</div>
         </div>
         <div class="media-name" :title="media.original_name">{{ media.original_name }}</div>
-        <div class="muted" style="font-size: 12px">
-          {{ formatFileSize(media.size) }} · {{ media.type }}
-        </div>
+        <div class="muted" style="font-size: 12px">{{ formatFileSize(media.size) }} · {{ media.type }}</div>
         <div class="media-actions" @click.stop>
           <el-button size="small" @click="copyUrl(media)">复制URL</el-button>
           <el-button size="small" @click="downloadMedia(media)">下载</el-button>
@@ -222,12 +217,7 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <MediaPreview
-      v-model:index="previewIndex"
-      :items="items"
-      @close="previewIndex = null"
-      @download="downloadMedia"
-    />
+    <MediaPreview v-model:index="previewIndex" :items="items" @close="previewIndex = null" @download="downloadMedia" />
 
     <el-pagination
       v-if="total > pageSize"

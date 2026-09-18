@@ -6,10 +6,16 @@ import { usePagedList } from '@/composables/usePagedList'
 
 const moduleFilter = ref('')
 /** 列表分页与取数; 换筛选条件时调 reset() 回到第 1 页 */
-const { items: logs, total, page, pageSize, loading, reset } = usePagedList<OperationLog>({
+const {
+  items: logs,
+  total,
+  page,
+  pageSize,
+  loading,
+  reset,
+} = usePagedList<OperationLog>({
   pageSize: 20,
-  fetch: (page, pageSize) =>
-    logApi.list({ page, page_size: pageSize, module: moduleFilter.value || undefined }),
+  fetch: (page, pageSize) => logApi.list({ page, page_size: pageSize, module: moduleFilter.value || undefined }),
 })
 </script>
 
@@ -30,7 +36,7 @@ const { items: logs, total, page, pageSize, loading, reset } = usePagedList<Oper
     </div>
 
     <div class="card">
-      <el-table :data="logs" v-loading="loading">
+      <el-table v-loading="loading" :data="logs">
         <el-table-column prop="id" label="ID" width="70" />
         <el-table-column prop="username" label="操作人" width="120">
           <template #default="{ row }">{{ row.username || '游客/系统' }}</template>

@@ -1,12 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  deltaPercent,
-  parseDay,
-  previousRange,
-  resolveQuickRange,
-  spanDays,
-  summarize,
-} from '@/utils/trendRange'
+import { deltaPercent, parseDay, previousRange, resolveQuickRange, spanDays, summarize } from '@/utils/trendRange'
 import type { TrendPoint } from '@/types'
 
 /** 构造一个趋势点, 只关心 KPI 汇总用到的字段 */

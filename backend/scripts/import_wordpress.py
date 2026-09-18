@@ -7,6 +7,7 @@
     python scripts/import_wordpress.py
     python scripts/import_wordpress.py --xml assets/wordpress/所有内容.xml --no-download
 """
+
 import argparse
 import glob
 import mimetypes
@@ -110,7 +111,9 @@ def download_attachment(url: str) -> bytes | None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="迁移 WordPress WXR 数据到本项目")
-    parser.add_argument("--xml", default="", help="WXR XML 文件路径(默认自动找 assets/wordpress 下最大的 xml)")
+    parser.add_argument(
+        "--xml", default="", help="WXR XML 文件路径(默认自动找 assets/wordpress 下最大的 xml)"
+    )
     parser.add_argument("--no-download", action="store_true", help="跳过附件下载(仅导入元数据)")
     args = parser.parse_args()
 
@@ -208,20 +211,24 @@ def main() -> None:
             if not db.query(Media).filter(Media.filename == filename).first():
                 suffix = target.suffix.lower()
                 file_type = (
-                    "image" if suffix in {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".bmp", ".ico"}
-                    else "video" if suffix in {".mp4", ".webm", ".mov", ".avi", ".mkv"}
+                    "image"
+                    if suffix in {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".bmp", ".ico"}
+                    else "video"
+                    if suffix in {".mp4", ".webm", ".mov", ".avi", ".mkv"}
                     else "file"
                 )
-                db.add(Media(
-                    uploader_id=next(iter(author_map.values())).id if author_map else None,
-                    original_name=target.name,
-                    filename=filename,
-                    path=str(target).replace("\\", "/"),
-                    url=local_url,
-                    mime_type=mimetypes.guess_type(target.name)[0],
-                    size=target.stat().st_size,
-                    type=file_type,
-                ))
+                db.add(
+                    Media(
+                        uploader_id=next(iter(author_map.values())).id if author_map else None,
+                        original_name=target.name,
+                        filename=filename,
+                        path=str(target).replace("\\", "/"),
+                        url=local_url,
+                        mime_type=mimetypes.guess_type(target.name)[0],
+                        size=target.stat().st_size,
+                        type=file_type,
+                    )
+                )
                 media_count += 1
         db.commit()
         print(f"附件: 下载/登记 {media_count} 个")
@@ -233,9 +240,7 @@ def main() -> None:
             if text(item, "wp:post_type") != "post":
                 continue
             title = text(item, "title")
-            slug = unique_slug(
-                db, unquote(text(item, "wp:post_name")) or "", Post, Post.slug
-            )
+            slug = unique_slug(db, unquote(text(item, "wp:post_name")) or "", Post, Post.slug)
             # 幂等: 同名 slug 已存在则跳过
             if db.query(Post).filter(Post.slug == slug).first():
                 print(f"  [跳过] 已存在: {title}")
@@ -277,7 +282,11 @@ def main() -> None:
                         wp_categories[category.id] = category
             post.categories = list(wp_categories.values())
             # 标签
-            tag_slugs = [c.get("nicename", "") for c in item.findall("category") if c.get("domain") == "post_tag"]
+            tag_slugs = [
+                c.get("nicename", "")
+                for c in item.findall("category")
+                if c.get("domain") == "post_tag"
+            ]
             for slug_name in tag_slugs:
                 tag = db.query(Tag).filter(Tag.slug == slug_name).first()
                 if tag is None:
@@ -345,7 +354,9 @@ def main() -> None:
         print(f"评论: 共导入 {comment_count} 条")
 
         print("\n迁移完成! 统计数据:")
-        print(f"  分类: {db.query(Category).count()} | 文章: {db.query(Post).count()} | 评论: {db.query(Comment).count()} | 媒体: {db.query(Media).count()}")
+        print(
+            f"  分类: {db.query(Category).count()} | 文章: {db.query(Post).count()} | 评论: {db.query(Comment).count()} | 媒体: {db.query(Media).count()}"
+        )
     finally:
         db.close()
 

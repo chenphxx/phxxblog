@@ -1,4 +1,5 @@
 """文章、分类、标签模型。"""
+
 from datetime import datetime
 
 from sqlalchemy import (
@@ -19,7 +20,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.database import Base
 from app.services.text import count_words, reading_minutes
 
-
 # 文章-标签关联表
 post_tags = Table(
     "post_tags",
@@ -33,7 +33,9 @@ post_categories = Table(
     "post_categories",
     Base.metadata,
     Column("post_id", BigInteger, ForeignKey("posts.id", ondelete="CASCADE"), primary_key=True),
-    Column("category_id", BigInteger, ForeignKey("categories.id", ondelete="CASCADE"), primary_key=True),
+    Column(
+        "category_id", BigInteger, ForeignKey("categories.id", ondelete="CASCADE"), primary_key=True
+    ),
 )
 
 
@@ -59,9 +61,7 @@ class Category(Base):
     parent: Mapped["Category | None"] = relationship(
         remote_side="Category.id", back_populates="children"
     )
-    children: Mapped[list["Category"]] = relationship(
-        back_populates="parent", lazy="selectin"
-    )
+    children: Mapped[list["Category"]] = relationship(back_populates="parent", lazy="selectin")
 
 
 class Tag(Base):
@@ -143,12 +143,8 @@ class Post(Base):
         order_by=lambda: [Category.sort_order, Category.id],
     )
     tags: Mapped[list[Tag]] = relationship(secondary=post_tags, lazy="selectin")
-    comments: Mapped[list["Comment"]] = relationship(
-        back_populates="post", lazy="raise"
-    )
-    likes: Mapped[list["PostLike"]] = relationship(
-        back_populates="post", lazy="raise"
-    )
+    comments: Mapped[list["Comment"]] = relationship(back_populates="post", lazy="raise")
+    likes: Mapped[list["PostLike"]] = relationship(back_populates="post", lazy="raise")
 
     @property
     def word_count(self) -> int:

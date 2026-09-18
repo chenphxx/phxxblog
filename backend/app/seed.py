@@ -1,8 +1,9 @@
 """初始化脚本: 建表、创建权限/角色/管理员、写入默认设置。"""
+
 import os
 import secrets
-from pathlib import Path
 import sys
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -13,7 +14,6 @@ from app.core.settings_schema import DEFAULT_SETTINGS
 from app.models.post import Category, Tag
 from app.models.setting import Setting
 from app.models.user import Permission, Role, User
-
 
 PERMISSIONS = [
     (Perm.POST_CREATE, "创建文章", "post:create"),
@@ -44,9 +44,15 @@ ROLES = {
         "name": "编辑",
         "description": "可发布与管理内容",
         "permissions": [
-            Perm.POST_CREATE, Perm.POST_EDIT, Perm.POST_PUBLISH,
-            Perm.POST_DELETE, Perm.POST_MANAGE, Perm.COMMENT_MANAGE,
-            Perm.MEDIA_MANAGE, Perm.STATS_VIEW, Perm.LOG_VIEW,
+            Perm.POST_CREATE,
+            Perm.POST_EDIT,
+            Perm.POST_PUBLISH,
+            Perm.POST_DELETE,
+            Perm.POST_MANAGE,
+            Perm.COMMENT_MANAGE,
+            Perm.MEDIA_MANAGE,
+            Perm.STATS_VIEW,
+            Perm.LOG_VIEW,
         ],
     },
     "author": {
@@ -54,28 +60,6 @@ ROLES = {
         "description": "可创作文章并提交审核",
         "permissions": [Perm.POST_CREATE, Perm.POST_EDIT, Perm.POST_DELETE],
     },
-}
-
-
-DEFAULT_SETTINGS = {
-    "site_name": ("phxxblog", "站点名称"),
-    "site_title": ("", "浏览器标签页名称(留空用站点名称)"),
-    "site_desc": ("记录技术成长与生活点滴的个人博客", "站点描述"),
-    "site_keywords": ("blog, 技术, 分享", "SEO 关键词"),
-    "site_icon": ("", "站点图标URL"),
-    "site_avatar": ("", "首页头像URL"),
-    "site_bio": ("一个热爱编程的开发者", "首页个人简介"),
-    "site_readme": ("", "主页 README(Markdown)"),
-    "show_readme": ("1", "首页是否展示 README 模块(1=展示, 0=隐藏)"),
-    "show_contributions": ("1", "首页是否展示文章发布记录(1=展示, 0=隐藏)"),
-    "show_history": ("1", "首页是否展示程序员历史上的今天(1=展示, 0=隐藏)"),
-    "show_session": ("1", "首页是否展示 session 终端卡片(1=展示, 0=隐藏)"),
-    "show_kanbanniang": ("1", "全站是否展示看板娘(1=展示, 0=隐藏)"),
-    "footer_text": ("© {year} {site_name} · Vue3 + FastAPI", "页脚版权信息(支持 {year}/{site_name} 占位符, 留空则不显示)"),
-    "tech_tags": ('["Python", "Vue", "FastAPI", "MySQL"]', "首页技术标签(JSON数组)"),
-    "social_links": ('[{"name": "GitHub", "url": "https://github.com/chenphxx"}]', "社交账号链接(JSON数组)"),
-    "website_links": ("[]", "网站链接(JSON数组)"),
-    "beian_info": ("[]", "网站备案信息(JSON数组, 元素含 name/url/icon)"),
 }
 
 
@@ -126,7 +110,7 @@ def seed() -> None:
             db.add(admin)
             print("=" * 60)
             print("已创建管理员账号")
-            print(f"  用户名: admin")
+            print("  用户名: admin")
             print(f"  密码  : {admin_password}")
             if not os.getenv("PHXXBLOG_ADMIN_PASSWORD"):
                 print("  (随机生成, 仅本次显示; 请立即登录后台修改)")

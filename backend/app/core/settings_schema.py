@@ -15,6 +15,7 @@
 前端的对应契约在 frontend/src/types/index.ts 的 PublicSettings;
 两侧是否一致由 scripts/check_settings_keys.py 校验(已挂进 verify_all.py)。
 """
+
 # 键 -> (默认值, 说明); 说明会在初始化数据库时写入 settings.description
 DEFAULT_SETTINGS: dict[str, tuple[str, str]] = {
     "site_name": ("phxxblog", "站点名称"),
@@ -30,9 +31,15 @@ DEFAULT_SETTINGS: dict[str, tuple[str, str]] = {
     "show_history": ("1", "首页是否展示程序员历史上的今天(1=展示, 0=隐藏)"),
     "show_session": ("1", "首页是否展示 session 终端卡片(1=展示, 0=隐藏)"),
     "show_kanbanniang": ("1", "全站是否展示看板娘(1=展示, 0=隐藏)"),
-    "footer_text": ("© {year} {site_name} · Vue3 + FastAPI", "页脚版权信息(支持 {year}/{site_name} 占位符, 留空则不显示)"),
+    "footer_text": (
+        "© {year} {site_name} · Vue3 + FastAPI",
+        "页脚版权信息(支持 {year}/{site_name} 占位符, 留空则不显示)",
+    ),
     "tech_tags": ('["Python", "Vue", "FastAPI", "MySQL"]', "首页技术标签(JSON数组)"),
-    "social_links": ('[{"name": "GitHub", "url": "https://github.com/chenphxx"}]', "社交账号链接(JSON数组)"),
+    "social_links": (
+        '[{"name": "GitHub", "url": "https://github.com/chenphxx"}]',
+        "社交账号链接(JSON数组)",
+    ),
     "website_links": ("[]", "网站链接(JSON数组)"),
     "beian_info": ("[]", "网站备案信息(JSON数组, 元素含 name/url/icon)"),
 }
@@ -63,4 +70,10 @@ PUBLIC_KEYS = [
 ]
 
 # 布尔型开关: 1/true/yes/on 视为开启
-BOOL_KEYS = ("show_readme", "show_contributions", "show_history", "show_session", "show_kanbanniang")
+BOOL_KEYS = (
+    "show_readme",
+    "show_contributions",
+    "show_history",
+    "show_session",
+    "show_kanbanniang",
+)

@@ -1,4 +1,5 @@
 """系统设置接口。"""
+
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
@@ -66,7 +67,11 @@ def update_settings(
             db.add(Setting(setting_key=key, setting_value=str(value)))
     db.commit()
     write_operation_log(
-        db, request=request, user=admin, module="setting", action="update",
+        db,
+        request=request,
+        user=admin,
+        module="setting",
+        action="update",
         detail={"keys": list(data.keys())},
     )
     return ok(message="设置已保存")

@@ -1,4 +1,5 @@
 """用户/角色/权限管理接口。"""
+
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
@@ -40,8 +41,17 @@ def list_users(
             or_(User.username.like(like), User.nickname.like(like), User.email.like(like))
         )
     total = query.count()
-    items = query.order_by(User.created_at.desc()).offset((page - 1) * page_size).limit(page_size).all()
-    return ok(Page[UserOut](items=[UserOut.model_validate(u) for u in items], total=total, page=page, page_size=page_size))
+    items = (
+        query.order_by(User.created_at.desc()).offset((page - 1) * page_size).limit(page_size).all()
+    )
+    return ok(
+        Page[UserOut](
+            items=[UserOut.model_validate(u) for u in items],
+            total=total,
+            page=page,
+            page_size=page_size,
+        )
+    )
 
 
 @router.post("", response_model=dict)
@@ -68,8 +78,14 @@ def create_user(
     db.add(user)
     db.commit()
     write_operation_log(
-        db, request=request, user=_, module="user", action="create",
-        target_type="user", target_id=user.id, detail={"username": user.username},
+        db,
+        request=request,
+        user=_,
+        module="user",
+        action="create",
+        target_type="user",
+        target_id=user.id,
+        detail={"username": user.username},
     )
     return ok(UserOut.model_validate(user), "创建成功")
 
@@ -97,8 +113,14 @@ def update_user(
         user.roles = db.query(Role).filter(Role.code.in_(roles)).all()
     db.commit()
     write_operation_log(
-        db, request=request, user=admin, module="user", action="update",
-        target_type="user", target_id=user.id, detail=changes,
+        db,
+        request=request,
+        user=admin,
+        module="user",
+        action="update",
+        target_type="user",
+        target_id=user.id,
+        detail=changes,
     )
     return ok(UserOut.model_validate(user), "保存成功")
 
@@ -118,8 +140,14 @@ def reset_password(
     user.password_hash = hash_password(data.password)
     db.commit()
     write_operation_log(
-        db, request=request, user=admin, module="user", action="reset_password",
-        target_type="user", target_id=user_id, detail={"username": user.username},
+        db,
+        request=request,
+        user=admin,
+        module="user",
+        action="reset_password",
+        target_type="user",
+        target_id=user_id,
+        detail={"username": user.username},
     )
     return ok(message="密码已重置")
 
@@ -140,8 +168,14 @@ def delete_user(
     db.delete(user)
     db.commit()
     write_operation_log(
-        db, request=request, user=admin, module="user", action="delete",
-        target_type="user", target_id=user_id, detail={"username": user.username},
+        db,
+        request=request,
+        user=admin,
+        module="user",
+        action="delete",
+        target_type="user",
+        target_id=user_id,
+        detail={"username": user.username},
     )
     return ok(message="删除成功")
 
@@ -156,13 +190,18 @@ def list_roles(
 ):
     """角色列表(含权限码)。"""
     roles = db.query(Role).all()
-    return ok([
-        RoleOut(
-            id=r.id, name=r.name, code=r.code, description=r.description,
-            permission_codes=[p.code for p in r.permissions],
-        )
-        for r in roles
-    ])
+    return ok(
+        [
+            RoleOut(
+                id=r.id,
+                name=r.name,
+                code=r.code,
+                description=r.description,
+                permission_codes=[p.code for p in r.permissions],
+            )
+            for r in roles
+        ]
+    )
 
 
 @router.post("/roles", response_model=dict)
@@ -180,8 +219,14 @@ def create_role(
     db.add(role)
     db.commit()
     write_operation_log(
-        db, request=request, user=admin, module="role", action="create",
-        target_type="role", target_id=role.id, detail={"code": role.code},
+        db,
+        request=request,
+        user=admin,
+        module="role",
+        action="create",
+        target_type="role",
+        target_id=role.id,
+        detail={"code": role.code},
     )
     return ok(message="创建成功")
 
@@ -204,8 +249,13 @@ def update_role(
     role.permissions = db.query(Permission).filter(Permission.code.in_(data.permission_codes)).all()
     db.commit()
     write_operation_log(
-        db, request=request, user=admin, module="role", action="update",
-        target_type="role", target_id=role_id,
+        db,
+        request=request,
+        user=admin,
+        module="role",
+        action="update",
+        target_type="role",
+        target_id=role_id,
     )
     return ok(message="保存成功")
 
@@ -226,8 +276,13 @@ def delete_role(
     db.delete(role)
     db.commit()
     write_operation_log(
-        db, request=request, user=admin, module="role", action="delete",
-        target_type="role", target_id=role_id,
+        db,
+        request=request,
+        user=admin,
+        module="role",
+        action="delete",
+        target_type="role",
+        target_id=role_id,
     )
     return ok(message="删除成功")
 

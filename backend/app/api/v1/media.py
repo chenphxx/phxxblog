@@ -1,4 +1,5 @@
 """媒体接口: 上传/列表/删除。"""
+
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile
 from sqlalchemy.orm import Session
 
@@ -26,15 +27,23 @@ def upload_file(
     db: Session = Depends(get_db),
 ):
     """上传文件到 assets/ 目录(登录用户可用, 供文章/评论插入)。"""
-    if not (Perm.MEDIA_MANAGE in user.permission_codes or Perm.POST_CREATE in user.permission_codes):
+    if not (
+        Perm.MEDIA_MANAGE in user.permission_codes or Perm.POST_CREATE in user.permission_codes
+    ):
         raise HTTPException(status_code=403, detail="无上传权限")
     info = save_upload(file)
     media = Media(uploader_id=user.id, related_type=related_type, related_id=related_id, **info)
     db.add(media)
     db.commit()
     write_operation_log(
-        db, request=request, user=user, module="media", action="upload",
-        target_type="media", target_id=media.id, detail={"filename": media.original_name},
+        db,
+        request=request,
+        user=user,
+        module="media",
+        action="upload",
+        target_type="media",
+        target_id=media.id,
+        detail={"filename": media.original_name},
     )
     return ok(MediaOut.model_validate(media), "上传成功")
 
@@ -58,10 +67,14 @@ def list_media(
         .limit(page_size)
         .all()
     )
-    return ok(Page[MediaOut](
-        items=[MediaOut.model_validate(m) for m in items],
-        total=total, page=page, page_size=page_size,
-    ))
+    return ok(
+        Page[MediaOut](
+            items=[MediaOut.model_validate(m) for m in items],
+            total=total,
+            page=page,
+            page_size=page_size,
+        )
+    )
 
 
 @router.delete("/{media_id}", response_model=dict)
@@ -85,7 +98,13 @@ def delete_media(
     db.delete(media)
     db.commit()
     write_operation_log(
-        db, request=request, user=admin, module="media", action="delete",
-        target_type="media", target_id=media_id, detail={"filename": media.original_name},
+        db,
+        request=request,
+        user=admin,
+        module="media",
+        action="delete",
+        target_type="media",
+        target_id=media_id,
+        detail={"filename": media.original_name},
     )
     return ok(message="删除成功")

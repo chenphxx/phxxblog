@@ -1,4 +1,5 @@
 """自定义中间件: 限制 API 文档与静态资源仅管理员可访问。"""
+
 from pathlib import PurePosixPath
 from typing import Awaitable, Callable
 

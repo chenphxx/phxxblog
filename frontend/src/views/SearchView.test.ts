@@ -80,14 +80,21 @@ describe('SearchView 响应 route.query 变化', () => {
 
   it('先进 /search?category=1, 再切到 category=2 时列表必须跟着变', async () => {
     listMock.mockImplementation((params: { category?: number }) =>
-      Promise.resolve({ items: makePosts(String(params.category), params.category === 2 ? 3 : 5), total: 0, page: 1, page_size: 10 }),
+      Promise.resolve({
+        items: makePosts(String(params.category), params.category === 2 ? 3 : 5),
+        total: 0,
+        page: 1,
+        page_size: 10,
+      }),
     )
 
     const router = makeRouter()
     await router.push('/search?category=1')
     await router.isReady()
 
-    const wrapper = mount(SearchView, { global: { plugins: [router], stubs: globalStubs, directives: globalDirectives } })
+    const wrapper = mount(SearchView, {
+      global: { plugins: [router], stubs: globalStubs, directives: globalDirectives },
+    })
     await flushPromises()
 
     expect(wrapper.findAll('.post-stub')).toHaveLength(5)
@@ -109,7 +116,9 @@ describe('SearchView 响应 route.query 变化', () => {
     await router.push('/search?category=1')
     await router.isReady()
 
-    const wrapper = mount(SearchView, { global: { plugins: [router], stubs: globalStubs, directives: globalDirectives } })
+    const wrapper = mount(SearchView, {
+      global: { plugins: [router], stubs: globalStubs, directives: globalDirectives },
+    })
     await flushPromises()
 
     // 模拟用户翻到第 2 页

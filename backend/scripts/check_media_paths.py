@@ -2,6 +2,7 @@
 
 只读。用法: python scripts/check_media_paths.py
 """
+
 import sys
 from pathlib import Path
 
@@ -48,7 +49,7 @@ print()
 print(f"  path 字段指向的文件存在: {path_ok}")
 print(f"  path 字段指向的文件不存在: {path_bad}")
 if path_bad:
-    print(f"    -> path 字段已失效(项目搬迁/数据库导入导致), 删除媒体时无法清理磁盘文件")
+    print("    -> path 字段已失效(项目搬迁/数据库导入导致), 删除媒体时无法清理磁盘文件")
 
 for kind, val in samples:
     print(f"  [{kind}] {val}")
@@ -57,7 +58,9 @@ print()
 if url_missing == 0 and path_bad == 0:
     verdict = "url 与 path 都有效, 磁盘文件齐全 —— 无需处理"
 elif url_missing == 0 and path_bad:
-    verdict = "url 有效但 path 字段失效(项目搬迁/数据库导入导致) → 用 repair_media_paths.py 按 url 重算"
+    verdict = (
+        "url 有效但 path 字段失效(项目搬迁/数据库导入导致) → 用 repair_media_paths.py 按 url 重算"
+    )
 elif url_missing and path_bad == 0:
     verdict = "path 有效但 url 指向的文件缺失 —— 需要人工确认 url 是否正确"
 else:

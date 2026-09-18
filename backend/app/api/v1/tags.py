@@ -1,4 +1,5 @@
 """标签接口。"""
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -30,7 +31,10 @@ def _post_counts(db: Session) -> dict[int, int]:
 def _tag_out(tag: Tag, counts: dict[int, int]) -> TagOut:
     """组装标签输出(含文章数)。"""
     return TagOut(
-        id=tag.id, name=tag.name, slug=tag.slug, color=tag.color,
+        id=tag.id,
+        name=tag.name,
+        slug=tag.slug,
+        color=tag.color,
         post_count=counts.get(tag.id, 0),
     )
 
@@ -57,8 +61,14 @@ def create_tag(
     db.add(tag)
     db.commit()
     write_operation_log(
-        db, request=request, user=_, module="tag", action="create",
-        target_type="tag", target_id=tag.id, detail={"name": tag.name},
+        db,
+        request=request,
+        user=_,
+        module="tag",
+        action="create",
+        target_type="tag",
+        target_id=tag.id,
+        detail={"name": tag.name},
     )
     return ok(_tag_out(tag, _post_counts(db)), "创建成功")
 
@@ -79,8 +89,13 @@ def update_tag(
     tag.slug = data.slug
     db.commit()
     write_operation_log(
-        db, request=request, user=_, module="tag", action="update",
-        target_type="tag", target_id=tag_id,
+        db,
+        request=request,
+        user=_,
+        module="tag",
+        action="update",
+        target_type="tag",
+        target_id=tag_id,
     )
     return ok(_tag_out(tag, _post_counts(db)), "保存成功")
 
@@ -99,7 +114,12 @@ def delete_tag(
     db.delete(tag)
     db.commit()
     write_operation_log(
-        db, request=request, user=_, module="tag", action="delete",
-        target_type="tag", target_id=tag_id,
+        db,
+        request=request,
+        user=_,
+        module="tag",
+        action="delete",
+        target_type="tag",
+        target_id=tag_id,
     )
     return ok(message="删除成功")

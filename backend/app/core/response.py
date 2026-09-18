@@ -1,4 +1,5 @@
 """统一响应结构。"""
+
 from typing import Any
 
 from pydantic import BaseModel

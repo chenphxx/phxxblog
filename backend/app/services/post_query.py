@@ -7,6 +7,7 @@
 
 这里只负责"查什么", 统一返回 ORM 对象, 响应模型的组装留给路由层。
 """
+
 from datetime import datetime, timedelta
 
 from sqlalchemy import func, or_
@@ -92,10 +93,7 @@ def admin_list(
         query = query.filter(Post.title.like(f"%{keyword}%"))
     total = query.count()
     items = (
-        query.order_by(Post.updated_at.desc())
-        .offset((page - 1) * page_size)
-        .limit(page_size)
-        .all()
+        query.order_by(Post.updated_at.desc()).offset((page - 1) * page_size).limit(page_size).all()
     )
     return items, total
 

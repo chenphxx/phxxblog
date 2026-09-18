@@ -1,4 +1,5 @@
 """ORM 模型汇总, 确保所有表注册到 Base.metadata。"""
+
 from app.models.analytics import DailyStat, VisitLog
 from app.models.comment import Comment
 from app.models.diary import DiaryEntry

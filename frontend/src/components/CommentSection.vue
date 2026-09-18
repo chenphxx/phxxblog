@@ -113,8 +113,8 @@ onMounted(load)
         :title="`正在回复 @${replyingTo.author_name || '匿名'}`"
         type="info"
         closable
-        @close="cancelReply"
         style="margin-bottom: 12px"
+        @close="cancelReply"
       />
       <div v-if="!auth.user" class="guest-fields">
         <el-input v-model="form.author_name" placeholder="昵称(必填)" style="max-width: 200px" />

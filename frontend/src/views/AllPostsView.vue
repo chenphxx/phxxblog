@@ -4,7 +4,13 @@ import type { PostItem } from '@/types'
 import PostCard from '@/components/PostCard.vue'
 import { usePagedList } from '@/composables/usePagedList'
 
-const { items: posts, total, page, pageSize, loading } = usePagedList<PostItem>({
+const {
+  items: posts,
+  total,
+  page,
+  pageSize,
+  loading,
+} = usePagedList<PostItem>({
   fetch: (page, pageSize) => postApi.list({ page, page_size: pageSize }),
 })
 </script>

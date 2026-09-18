@@ -15,7 +15,7 @@ const props = withDefaults(
     /** 顺时针旋转, 用于 loading */
     spin?: boolean
   }>(),
-  { size: '1em', spin: false }
+  { size: '1em', spin: false },
 )
 
 export type IconName =
@@ -36,8 +36,7 @@ export type IconName =
 
 /** 路径数据: 统一 24x24 视口、描边风格, 与站内其它图标一致 */
 const PATHS: Record<IconName, string> = {
-  calendar:
-    'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z',
+  calendar: 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z',
   clock: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20ZM12 6v6l4 2',
   eye: 'M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z',
   thumb:

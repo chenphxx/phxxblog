@@ -80,9 +80,7 @@ describe('useImportExport', () => {
 
   it('查到重复时打开查重弹窗并关闭导入弹窗, 不写入数据', async () => {
     const options = makeOptions({
-      checkImports: vi.fn(() =>
-        Promise.resolve(makeCheck({ duplicates_count: 1, duplicates: ['旧文章'], total: 3 })),
-      ),
+      checkImports: vi.fn(() => Promise.resolve(makeCheck({ duplicates_count: 1, duplicates: ['旧文章'], total: 3 }))),
     })
     const io = useImportExport(options)
     io.importDialog = true
@@ -106,10 +104,7 @@ describe('useImportExport', () => {
 
     await io.doImport()
 
-    expect(options.submitImports).toHaveBeenCalledWith(
-      [expect.any(File)],
-      'skip',
-    )
+    expect(options.submitImports).toHaveBeenCalledWith([expect.any(File)], 'skip')
     expect(io.importDialog).toBe(false)
     expect(io.importFiles).toEqual([])
     expect(options.onImported).toHaveBeenCalledTimes(1)
@@ -131,9 +126,7 @@ describe('useImportExport', () => {
 
   it('某个文件导入失败时会额外给出警告', async () => {
     const options = makeOptions({
-      submitImports: vi.fn(() =>
-        Promise.resolve(makeResult({ imported: 1, skipped: 1, errors: ['b.md 解析失败'] })),
-      ),
+      submitImports: vi.fn(() => Promise.resolve(makeResult({ imported: 1, skipped: 1, errors: ['b.md 解析失败'] }))),
     })
     const io = useImportExport(options)
     pickFiles(io, [new File(['a'], 'a.md')])

@@ -45,13 +45,17 @@ async function login() {
           <el-input v-model="form.username" placeholder="admin" />
         </el-form-item>
         <el-form-item label="密码">
-          <el-input v-model="form.password" type="password" show-password placeholder="请输入密码" @keyup.enter="login" />
+          <el-input
+            v-model="form.password"
+            type="password"
+            show-password
+            placeholder="请输入密码"
+            @keyup.enter="login"
+          />
         </el-form-item>
         <el-button type="primary" style="width: 100%" :loading="loading" @click="login">登 录</el-button>
       </el-form>
-      <div class="login-footer muted">
-        初始管理员: admin, 初始密码见后端 seed 输出(首次登录后请修改)
-      </div>
+      <div class="login-footer muted">初始管理员: admin, 初始密码见后端 seed 输出(首次登录后请修改)</div>
     </div>
   </div>
 </template>

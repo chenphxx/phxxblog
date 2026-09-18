@@ -136,11 +136,7 @@ watch(
 watch(
   () => theme.isDark,
   (isDark) => {
-    vditor?.setTheme(
-      isDark ? 'dark' : 'classic',
-      isDark ? 'dark' : 'light',
-      isDark ? 'vs2015' : 'vs',
-    )
+    vditor?.setTheme(isDark ? 'dark' : 'classic', isDark ? 'dark' : 'light', isDark ? 'vs2015' : 'vs')
   },
 )
 

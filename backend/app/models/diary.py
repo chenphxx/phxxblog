@@ -1,4 +1,5 @@
 """日记模型。"""
+
 from datetime import date, datetime
 
 from sqlalchemy import BigInteger, Date, DateTime, ForeignKey, Text

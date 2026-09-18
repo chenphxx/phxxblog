@@ -8,6 +8,7 @@
      但 main.py 的 lifespan 会 create_all, 这里我们自己也建表。
   4. 每个测试用独立的内存库(fixture function 作用域), 避免相互污染。
 """
+
 import os
 import sys
 from pathlib import Path
@@ -33,8 +34,8 @@ def _bigint_as_integer(type_, compiler, **kw):
 @pytest.fixture()
 def db_session():
     """一个独立的内存数据库会话(每次测试全新)。"""
-    from app.core.database import Base
     import app.models  # noqa: F401  确保所有模型都注册到 Base.metadata
+    from app.core.database import Base
 
     engine = create_engine(
         "sqlite://",
@@ -69,10 +70,18 @@ def seeded(db_session):
     password = "TestPassw0rd!"
     perms = {}
     for code in (
-        Perm.POST_CREATE, Perm.POST_EDIT, Perm.POST_PUBLISH,
-        Perm.POST_DELETE, Perm.POST_MANAGE, Perm.COMMENT_MANAGE,
-        Perm.MEDIA_MANAGE, Perm.SETTING_MANAGE, Perm.DIARY_MANAGE,
-        Perm.CHANGELOG_MANAGE, Perm.STATS_VIEW, Perm.LOG_VIEW,
+        Perm.POST_CREATE,
+        Perm.POST_EDIT,
+        Perm.POST_PUBLISH,
+        Perm.POST_DELETE,
+        Perm.POST_MANAGE,
+        Perm.COMMENT_MANAGE,
+        Perm.MEDIA_MANAGE,
+        Perm.SETTING_MANAGE,
+        Perm.DIARY_MANAGE,
+        Perm.CHANGELOG_MANAGE,
+        Perm.STATS_VIEW,
+        Perm.LOG_VIEW,
     ):
         perm = Permission(name=code, code=code)
         db_session.add(perm)
@@ -87,13 +96,17 @@ def seeded(db_session):
     db_session.flush()
 
     admin = User(
-        username="admin", email="admin@example.com",
-        password_hash=hash_password(password), nickname="管理员",
+        username="admin",
+        email="admin@example.com",
+        password_hash=hash_password(password),
+        nickname="管理员",
     )
     admin.roles = [admin_role]
     author = User(
-        username="author", email="author@example.com",
-        password_hash=hash_password(password), nickname="作者",
+        username="author",
+        email="author@example.com",
+        password_hash=hash_password(password),
+        nickname="作者",
     )
     author.roles = [author_role]
     db_session.add_all([admin, author])

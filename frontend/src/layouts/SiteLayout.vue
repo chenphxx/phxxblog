@@ -17,7 +17,7 @@ const settings = ref<PublicSettings | null>(null)
 const DEFAULT_FOOTER_TEXT = '© {year} {site_name} · Vue3 + FastAPI'
 const footerText = computed(() => {
   // 配置项缺失(未初始化)时用默认文案, 后台显式留空则不显示
-  const raw = (settings.value ? settings.value.footer_text ?? DEFAULT_FOOTER_TEXT : DEFAULT_FOOTER_TEXT).trim()
+  const raw = (settings.value ? (settings.value.footer_text ?? DEFAULT_FOOTER_TEXT) : DEFAULT_FOOTER_TEXT).trim()
   if (!raw) return ''
   return raw
     .replaceAll('{year}', String(new Date().getFullYear()))
@@ -89,7 +89,6 @@ onMounted(async () => {
           </keep-alive>
         </router-view>
       </main>
-
     </div>
 
     <!-- 看板娘: 固定浮层, 只在后台之外的前台布局里挂载 -->

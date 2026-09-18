@@ -7,6 +7,7 @@
 用法:
     python scripts/restore_attachments.py [--xml 所有内容.xml]
 """
+
 import argparse
 import glob
 import mimetypes
@@ -115,16 +116,20 @@ def main() -> None:
                 print(f"  [下载失败] {snapshot}: {exc}")
                 time.sleep(0.3)
                 continue
-            db.add(Media(
-                uploader_id=1,
-                original_name=target.name,
-                filename=target.name,
-                path=str(target).replace("\\", "/"),
-                url=local_url,
-                mime_type=mimetypes.guess_type(target.name)[0],
-                size=target.stat().st_size,
-                type="image" if target.suffix.lower() in {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"} else "file",
-            ))
+            db.add(
+                Media(
+                    uploader_id=1,
+                    original_name=target.name,
+                    filename=target.name,
+                    path=str(target).replace("\\", "/"),
+                    url=local_url,
+                    mime_type=mimetypes.guess_type(target.name)[0],
+                    size=target.stat().st_size,
+                    type="image"
+                    if target.suffix.lower() in {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"}
+                    else "file",
+                )
+            )
             # 改写文章正文中的旧站链接
             posts = db.query(Post).all()
             for post in posts:

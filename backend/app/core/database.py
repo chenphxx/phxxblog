@@ -14,6 +14,7 @@
 
     将来若需要多环境部署(本地 + 服务器 + CI), 再迁移到 Alembic。
 """
+
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 

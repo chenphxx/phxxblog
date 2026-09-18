@@ -2,6 +2,7 @@
 
 只读。用法: backend/.venv/Scripts/python.exe scripts/check_list_query_counts.py
 """
+
 import logging
 import sys
 from pathlib import Path

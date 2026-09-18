@@ -1,4 +1,5 @@
 """文章接口: 前台浏览、后台管理、发布流程、点赞、归档。"""
+
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, Response, UploadFile
@@ -47,7 +48,9 @@ def _page_out(items: list[Post], total: int, page: int, page_size: int) -> Page[
     """把查询结果组装成统一的分页响应(列表接口的出参结构只在这里定义一次)。"""
     return Page[PostListItem](
         items=[PostListItem.model_validate(item) for item in items],
-        total=total, page=page, page_size=page_size,
+        total=total,
+        page=page,
+        page_size=page_size,
     )
 
 
@@ -66,8 +69,16 @@ def list_posts(
 ):
     """前台文章列表(仅已发布)。"""
     items, total = post_query.public_list(
-        db, page=page, page_size=page_size, category=category, tag=tag,
-        year=year, month=month, start_date=start_date, end_date=end_date, keyword=keyword,
+        db,
+        page=page,
+        page_size=page_size,
+        category=category,
+        tag=tag,
+        year=year,
+        month=month,
+        start_date=start_date,
+        end_date=end_date,
+        keyword=keyword,
     )
     return ok(_page_out(items, total, page, page_size))
 
@@ -98,7 +109,12 @@ def admin_list_posts(
 ):
     """后台文章管理列表(管理员看全部, 作者只看自己)。"""
     items, total = post_query.admin_list(
-        db, user=user, page=page, page_size=page_size, status=status, keyword=keyword,
+        db,
+        user=user,
+        page=page,
+        page_size=page_size,
+        status=status,
+        keyword=keyword,
     )
     return ok(_page_out(items, total, page, page_size))
 
@@ -106,7 +122,9 @@ def admin_list_posts(
 @router.get("/export", response_model=None)
 def export_posts(
     ids: str | None = Query(None, description="逗号分隔的文章ID, 不传则导出全部(作者本人/管理员)"),
-    fmt: str = Query("markdown", pattern="^(markdown|html)$", description="导出格式: markdown / html"),
+    fmt: str = Query(
+        "markdown", pattern="^(markdown|html)$", description="导出格式: markdown / html"
+    ),
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -132,23 +150,30 @@ def export_posts(
 def import_posts(
     request: Request,
     files: list[UploadFile] = File(...),
-    mode: str = Query("import", pattern="^(check|import)$", description="check=只查重不写入, import=执行导入"),
-    on_duplicate: str = Query("skip", pattern="^(skip|all)$", description="重复时: skip=仅导入不重复, all=一并导入"),
+    mode: str = Query(
+        "import", pattern="^(check|import)$", description="check=只查重不写入, import=执行导入"
+    ),
+    on_duplicate: str = Query(
+        "skip", pattern="^(skip|all)$", description="重复时: skip=仅导入不重复, all=一并导入"
+    ),
     user: User = Depends(require_permission(Perm.POST_CREATE)),
     db: Session = Depends(get_db),
 ):
     """导入文章: 支持 .md 文件或包含 .md 的 zip 压缩包; mode=check 只返回查重结果。"""
     payload, message = run_import(
-        db=db, user=user, request=request, files=files,
-        mode=mode, on_duplicate=on_duplicate, module="post",
+        db=db,
+        user=user,
+        request=request,
+        files=files,
+        mode=mode,
+        on_duplicate=on_duplicate,
+        module="post",
         parse=post_archive.parse_import,
         invalid_message=lambda fname: f"{fname}: 无法识别标题",
         existing_keys=lambda: post_archive.existing_title_keys(db),
         dedup_key=lambda plan: title_key(plan["title"]),
         label=lambda plan: plan["title"],
-        create=lambda plan, image_map: post_archive.create_from_plan(
-            db, user, plan, image_map
-        ),
+        create=lambda plan, image_map: post_archive.create_from_plan(db, user, plan, image_map),
     )
     return ok(payload, message)
 
@@ -200,10 +225,17 @@ def create_post(
     db.add(post)
     db.commit()
     write_operation_log(
-        db, request=request, user=user, module="post", action="create",
-        target_type="post", target_id=post.id, detail={"title": post.title},
+        db,
+        request=request,
+        user=user,
+        module="post",
+        action="create",
+        target_type="post",
+        target_id=post.id,
+        detail={"title": post.title},
     )
     return ok(PostDetailAdmin.model_validate(post), "已保存")
+
 
 @router.put("/{post_id}", response_model=dict)
 def update_post(
@@ -222,8 +254,14 @@ def update_post(
     apply_payload(db, post, data, user, get_client_ip(request))
     db.commit()
     write_operation_log(
-        db, request=request, user=user, module="post", action="update",
-        target_type="post", target_id=post.id, detail={"title": post.title},
+        db,
+        request=request,
+        user=user,
+        module="post",
+        action="update",
+        target_type="post",
+        target_id=post.id,
+        detail={"title": post.title},
     )
     return ok(PostDetailAdmin.model_validate(post), "保存成功")
 
@@ -244,8 +282,13 @@ def trash_post(
     post.status = 4
     db.commit()
     write_operation_log(
-        db, request=request, user=user, module="post", action="trash",
-        target_type="post", target_id=post_id,
+        db,
+        request=request,
+        user=user,
+        module="post",
+        action="trash",
+        target_type="post",
+        target_id=post_id,
     )
     return ok(message="已移入回收站")
 
@@ -265,8 +308,14 @@ def force_delete_post(
     db.delete(post)
     db.commit()
     write_operation_log(
-        db, request=request, user=user, module="post", action="force_delete",
-        target_type="post", target_id=post_id, detail={"title": title},
+        db,
+        request=request,
+        user=user,
+        module="post",
+        action="force_delete",
+        target_type="post",
+        target_id=post_id,
+        detail={"title": title},
     )
     return ok(message="已彻底删除")
 
@@ -287,8 +336,13 @@ def restore_post(
     post.status = 0
     db.commit()
     write_operation_log(
-        db, request=request, user=user, module="post", action="restore",
-        target_type="post", target_id=post_id,
+        db,
+        request=request,
+        user=user,
+        module="post",
+        action="restore",
+        target_type="post",
+        target_id=post_id,
     )
     return ok(message="已恢复为草稿")
 
@@ -316,8 +370,13 @@ def change_post_status(
     post.status = target
     db.commit()
     write_operation_log(
-        db, request=request, user=user, module="post", action=f"status:{target}",
-        target_type="post", target_id=post_id,
+        db,
+        request=request,
+        user=user,
+        module="post",
+        action=f"status:{target}",
+        target_type="post",
+        target_id=post_id,
     )
     return ok(message=f"已切换为{STATUS_NAMES.get(target, target)}")
 
@@ -350,7 +409,9 @@ def like_post(
         db.add(PostLike(post_id=post_id, user_id=user.id if user else None, ip=ip))
         post.likes_count += 1
         liked = True
-        today_stat = db.query(DailyStat).filter(DailyStat.stat_date == datetime.now().date()).first()
+        today_stat = (
+            db.query(DailyStat).filter(DailyStat.stat_date == datetime.now().date()).first()
+        )
         if today_stat is None:
             today_stat = DailyStat(stat_date=datetime.now().date())
             db.add(today_stat)

@@ -105,9 +105,7 @@ describe('DiaryView 新增日记', () => {
     await vm.save()
 
     expect(api.diaryCreate).toHaveBeenCalledTimes(1)
-    expect(api.diaryCreate).toHaveBeenCalledWith(
-      expect.objectContaining({ content_md: '输入法刚敲出来的内容' }),
-    )
+    expect(api.diaryCreate).toHaveBeenCalledWith(expect.objectContaining({ content_md: '输入法刚敲出来的内容' }))
     expect(ElMessage.warning).not.toHaveBeenCalled()
     expect(ElMessage.success).toHaveBeenCalledWith('日记已保存')
   })
@@ -131,9 +129,7 @@ describe('DiaryView 新增日记', () => {
 
     await vm.save()
 
-    expect(api.diaryCreate).toHaveBeenCalledWith(
-      expect.objectContaining({ content_md: '直接写进模型的内容' }),
-    )
+    expect(api.diaryCreate).toHaveBeenCalledWith(expect.objectContaining({ content_md: '直接写进模型的内容' }))
   })
 
   it('新增日记的默认日期用本地日期, 不是 UTC 日期', async () => {

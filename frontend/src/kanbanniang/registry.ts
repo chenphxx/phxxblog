@@ -27,13 +27,29 @@ export const KANBANNIAN_MODELS = [
   { id: 'tia', name: 'Tia', series: 'Potion-Maker', path: 'model/Potion-Maker/Tia/index.json' },
   { id: 'murakumo', name: 'Murakumo', series: '舰队 Collection', path: 'model/KantaiCollection/murakumo/index.json' },
   { id: 'shizuku', name: 'Shizuku', series: 'ShizukuTalk', path: 'model/ShizukuTalk/shizuku-48/index.json' },
-  { id: 'shizuku-pajama', name: 'Shizuku Pajama', series: 'ShizukuTalk', path: 'model/ShizukuTalk/shizuku-pajama/index.json' },
-  { id: 'blanc', name: 'Blanc', series: 'HyperdimensionNeptunia', path: 'model/HyperdimensionNeptunia/blanc_normal/index.json' },
+  {
+    id: 'shizuku-pajama',
+    name: 'Shizuku Pajama',
+    series: 'ShizukuTalk',
+    path: 'model/ShizukuTalk/shizuku-pajama/index.json',
+  },
+  {
+    id: 'blanc',
+    name: 'Blanc',
+    series: 'HyperdimensionNeptunia',
+    path: 'model/HyperdimensionNeptunia/blanc_normal/index.json',
+  },
   { id: 'bilibili-22', name: '22娘', series: 'bilibili-live', path: 'model/bilibili-live/22/index.json' },
   { id: 'bilibili-33', name: '33娘', series: 'bilibili-live', path: 'model/bilibili-live/33/index.json' },
   // 唯一不来自 Vanessa219/kanbanniang 的形象, 取自 live2d-widget-models 的 live2d-widget-model-miku 包
   // 它是全身像: 在默认的 280x250 画布里只能看到膝盖以上, 因此单独给一块更高的画布
-  { id: 'miku', name: 'Miku', series: 'Hatsune Miku', path: 'model/miku/miku.model.json', canvas: { width: 280, height: 420 } },
+  {
+    id: 'miku',
+    name: 'Miku',
+    series: 'Hatsune Miku',
+    path: 'model/miku/miku.model.json',
+    canvas: { width: 280, height: 420 },
+  },
 ] as const satisfies readonly KanbanniangModel[]
 
 export type KanbanniangModelId = (typeof KANBANNIAN_MODELS)[number]['id']

@@ -15,7 +15,15 @@ const keyword = ref('')
  * 角色列表跟着每次加载一起取: 用户对话框要选角色, 只在挂载时取一次的话,
  * 在别处改过角色后这里拿到的还是旧的。
  */
-const { items: users, total, page, pageSize, loading, load, reset } = usePagedList<User>({
+const {
+  items: users,
+  total,
+  page,
+  pageSize,
+  loading,
+  load,
+  reset,
+} = usePagedList<User>({
   fetch: async (page, pageSize) => {
     const [userData, roleData] = await Promise.all([
       userApi.list({ page, page_size: pageSize, keyword: keyword.value || undefined }),
@@ -128,7 +136,7 @@ async function resetPassword() {
     </div>
 
     <div class="card">
-      <el-table :data="users" v-loading="loading">
+      <el-table v-loading="loading" :data="users">
         <el-table-column prop="id" label="ID" width="70" />
         <el-table-column prop="username" label="用户名" width="120" />
         <el-table-column prop="nickname" label="昵称" width="120" />
@@ -180,11 +188,22 @@ async function resetPassword() {
         <el-form-item label="昵称"><el-input v-model="form.nickname" /></el-form-item>
         <el-form-item label="角色">
           <el-select v-model="form.roles" multiple style="width: 100%">
-            <el-option v-for="role in roles" :key="role.code" :label="`${role.name} (${role.code})`" :value="role.code" />
+            <el-option
+              v-for="role in roles"
+              :key="role.code"
+              :label="`${role.name} (${role.code})`"
+              :value="role.code"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="状态">
-          <el-switch v-model="form.status" :active-value="1" :inactive-value="0" active-text="启用" inactive-text="禁用" />
+          <el-switch
+            v-model="form.status"
+            :active-value="1"
+            :inactive-value="0"
+            active-text="启用"
+            inactive-text="禁用"
+          />
         </el-form-item>
       </el-form>
       <template #footer>

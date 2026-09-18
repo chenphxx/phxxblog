@@ -3,6 +3,7 @@
 数据文件: backend/data/ip2region_v4.xdb, 可用
 `python scripts/download_ip2region.py` 下载; 缺失时优雅降级为空字符串。
 """
+
 from functools import lru_cache
 from pathlib import Path
 
@@ -21,8 +22,7 @@ def _get_searcher():
         return None
     import io
 
-    from app.services.ip2region import searcher as xdb
-    from app.services.ip2region import util
+    from app.services.ip2region import searcher as xdb, util
 
     handle = io.open(db, "rb")
     try:

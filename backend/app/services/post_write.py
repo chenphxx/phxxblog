@@ -9,6 +9,7 @@
     把请求字段写进文章对象的 apply_payload 也放在本模块, 保证"提交什么状态"与
     "实际落到什么状态"始终用的是同一份规则。
 """
+
 import uuid
 from datetime import datetime
 
@@ -101,20 +102,12 @@ def resolve_category_by_name(db: Session, name: str, unique_slug) -> Category:
             避免本模块反向依赖具体实现。
     """
     name = name.strip()
-    existing = (
-        db.query(Category)
-        .filter(Category.name == name[:50])
-        .first()
-    )
+    existing = db.query(Category).filter(Category.name == name[:50]).first()
     if existing is not None:
         return existing
     from sqlalchemy import func
 
-    existing = (
-        db.query(Category)
-        .filter(func.lower(Category.name) == name.lower())
-        .first()
-    )
+    existing = db.query(Category).filter(func.lower(Category.name) == name.lower()).first()
     if existing is not None:
         return existing
     category = Category(name=name[:50], slug=unique_slug(name[:80]))

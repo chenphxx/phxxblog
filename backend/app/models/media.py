@@ -1,4 +1,5 @@
 """媒体/附件模型(图片、视频、文件)。"""
+
 from datetime import datetime
 
 from sqlalchemy import BigInteger, DateTime, ForeignKey, Index, String

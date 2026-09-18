@@ -1,4 +1,5 @@
 """系统设置模型。"""
+
 from datetime import datetime
 
 from sqlalchemy import DateTime, String, Text

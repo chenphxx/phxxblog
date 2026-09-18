@@ -18,6 +18,7 @@
 建议: 每月跑一次(Windows 计划任务 / Linux cron 均可), 例如
   0 4 1 * *  cd /path/to/backend && .venv/bin/python scripts/cleanup_old_data.py --apply
 """
+
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -55,8 +56,10 @@ with SessionLocal() as db:
     from app.models.user import refresh_tokens
 
     token_q = db.query(refresh_tokens).filter(
-        or_(refresh_tokens.c.revoked == True,  # noqa: E712
-            refresh_tokens.c.expires_at < now)
+        or_(
+            refresh_tokens.c.revoked == True,  # noqa: E712
+            refresh_tokens.c.expires_at < now,
+        )
     )
     token_count = token_q.count()
     total_tokens = db.query(refresh_tokens).count()
@@ -67,7 +70,9 @@ with SessionLocal() as db:
     total_logs = db.query(OperationLog).count()
 
     print(f"  visit_logs      : 共 {total_visits:>6} 条, 将删除 {visit_count:>6} 条")
-    print(f"  refresh_tokens  : 共 {total_tokens:>6} 条, 将删除 {token_count:>6} 条 (已吊销/已过期)")
+    print(
+        f"  refresh_tokens  : 共 {total_tokens:>6} 条, 将删除 {token_count:>6} 条 (已吊销/已过期)"
+    )
     print(f"  operation_logs  : 共 {total_logs:>6} 条, 将删除 {log_count:>6} 条")
 
     if APPLY:
@@ -76,7 +81,9 @@ with SessionLocal() as db:
         deleted_logs = log_q.delete(synchronize_session=False)
         db.commit()
         print()
-        print(f"  已删除: visit_logs {deleted_visits}, refresh_tokens {deleted_tokens}, operation_logs {deleted_logs}")
+        print(
+            f"  已删除: visit_logs {deleted_visits}, refresh_tokens {deleted_tokens}, operation_logs {deleted_logs}"
+        )
     else:
         print()
         if visit_count or token_count or log_count:

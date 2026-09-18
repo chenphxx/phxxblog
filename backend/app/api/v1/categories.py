@@ -1,10 +1,11 @@
 """分类接口。"""
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.deps import get_current_user, require_permission
+from app.core.deps import require_permission
 from app.core.permissions import Perm
 from app.core.response import ok
 from app.models.post import Category, Post, post_categories
@@ -30,9 +31,13 @@ def _post_counts(db: Session) -> dict[int, int]:
 def _category_out(category: Category, counts: dict[int, int]) -> CategoryOut:
     """组装分类输出(含文章数)。"""
     return CategoryOut(
-        id=category.id, name=category.name, slug=category.slug,
-        parent_id=category.parent_id, description=category.description,
-        color=category.color, sort_order=category.sort_order,
+        id=category.id,
+        name=category.name,
+        slug=category.slug,
+        parent_id=category.parent_id,
+        description=category.description,
+        color=category.color,
+        sort_order=category.sort_order,
         post_count=counts.get(category.id, 0),
     )
 
@@ -59,8 +64,14 @@ def create_category(
     db.add(category)
     db.commit()
     write_operation_log(
-        db, request=request, user=_, module="category", action="create",
-        target_type="category", target_id=category.id, detail={"name": category.name},
+        db,
+        request=request,
+        user=_,
+        module="category",
+        action="create",
+        target_type="category",
+        target_id=category.id,
+        detail={"name": category.name},
     )
     return ok(_category_out(category, _post_counts(db)), "创建成功")
 
@@ -81,8 +92,13 @@ def update_category(
         setattr(category, field, value)
     db.commit()
     write_operation_log(
-        db, request=request, user=_, module="category", action="update",
-        target_type="category", target_id=category_id,
+        db,
+        request=request,
+        user=_,
+        module="category",
+        action="update",
+        target_type="category",
+        target_id=category_id,
     )
     return ok(_category_out(category, _post_counts(db)), "保存成功")
 
@@ -101,7 +117,12 @@ def delete_category(
     db.delete(category)
     db.commit()
     write_operation_log(
-        db, request=request, user=_, module="category", action="delete",
-        target_type="category", target_id=category_id,
+        db,
+        request=request,
+        user=_,
+        module="category",
+        action="delete",
+        target_type="category",
+        target_id=category_id,
     )
     return ok(message="删除成功")

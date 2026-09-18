@@ -10,6 +10,7 @@
   7. 一篇文章的分类是多对多, 写入/筛选/分类计数都不能只认一个分类
 跑法: cd backend && .venv/Scripts/python.exe -m pytest tests -q
 """
+
 import io
 
 
@@ -19,8 +20,11 @@ def test_private_post_not_readable_by_anonymous(db_session, seeded):
 
     admin, _author, _pw = seeded
     post = Post(
-        author_id=admin.id, title="私密文章", slug="secret-1",
-        content_md="内容", status=3,
+        author_id=admin.id,
+        title="私密文章",
+        slug="secret-1",
+        content_md="内容",
+        status=3,
     )
     db_session.add(post)
     db_session.commit()
@@ -51,13 +55,15 @@ def test_author_cannot_publish_directly(seeded):
 def test_refresh_token_is_single_use(db_session, seeded):
     """刷新令牌轮换后, 旧令牌必须失效(重放检测)。"""
     from app.core.security import hash_token
-    from app.models.user import User, refresh_tokens
+    from app.models.user import refresh_tokens
 
     admin, _author, _pw = seeded
     raw = "old-refresh-token-value"
     db_session.execute(
         refresh_tokens.insert().values(
-            user_id=admin.id, token_hash=hash_token(raw), revoked=False,
+            user_id=admin.id,
+            token_hash=hash_token(raw),
+            revoked=False,
             expires_at=__import__("datetime").datetime.now()
             + __import__("datetime").timedelta(days=1),
         )
@@ -148,8 +154,13 @@ def test_public_post_detail_has_no_author_ip(db_session, seeded):
 
     admin, _author, _pw = seeded
     post = Post(
-        author_id=admin.id, title="公开文章", slug="public-1",
-        content_md="内容", status=2, ip="203.0.113.9", location="某省某市",
+        author_id=admin.id,
+        title="公开文章",
+        slug="public-1",
+        content_md="内容",
+        status=2,
+        ip="203.0.113.9",
+        location="某省某市",
     )
     db_session.add(post)
     db_session.commit()
@@ -177,8 +188,13 @@ def test_record_visit_keeps_post_updated_at(db_session, seeded):
     admin, _author, _pw = seeded
     edited_at = datetime(2026, 1, 2, 3, 4, 5)
     post = Post(
-        author_id=admin.id, title="文章", slug="visit-1", content_md="内容",
-        status=2, published_at=edited_at, updated_at=edited_at,
+        author_id=admin.id,
+        title="文章",
+        slug="visit-1",
+        content_md="内容",
+        status=2,
+        published_at=edited_at,
+        updated_at=edited_at,
     )
     db_session.add(post)
     db_session.commit()
@@ -242,8 +258,12 @@ def test_post_neighbors_and_hot_ranking(db_session, seeded):
     base = datetime(2026, 1, 1, 12, 0, 0)
     posts = [
         Post(
-            author_id=admin.id, title=f"文章{index}", slug=f"neighbor-{index}",
-            content_md="内容", status=2, published_at=base + timedelta(days=index),
+            author_id=admin.id,
+            title=f"文章{index}",
+            slug=f"neighbor-{index}",
+            content_md="内容",
+            status=2,
+            published_at=base + timedelta(days=index),
             views=index,
         )
         for index in range(3)
@@ -303,7 +323,10 @@ def test_post_can_have_multiple_categories(db_session, seeded):
     def _create(title, slug, category_ids, status=2):
         """走真实写入路径建一篇文章, 返回 ORM 对象。"""
         payload = PostCreate(
-            title=title, slug=slug, content_md="内容", status=status,
+            title=title,
+            slug=slug,
+            content_md="内容",
+            status=status,
             category_ids=category_ids,
         )
         post = Post(author_id=admin.id)
@@ -320,21 +343,28 @@ def test_post_can_have_multiple_categories(db_session, seeded):
 
     # 重新提交空列表 = 解除全部关联(整体覆盖, 而不是保留旧值)
     apply_payload(
-        db_session, multi,
+        db_session,
+        multi,
         PostCreate(title="多分类", slug="multi-cat", content_md="内容", status=2),
-        admin, "127.0.0.1",
+        admin,
+        "127.0.0.1",
     )
     db_session.commit()
     assert multi.categories == []
 
     # 恢复多分类, 继续验证筛选与分类计数
     apply_payload(
-        db_session, multi,
+        db_session,
+        multi,
         PostCreate(
-            title="多分类", slug="multi-cat", content_md="内容", status=2,
+            title="多分类",
+            slug="multi-cat",
+            content_md="内容",
+            status=2,
             category_ids=[backend.id, ops.id],
         ),
-        admin, "127.0.0.1",
+        admin,
+        "127.0.0.1",
     )
     db_session.commit()
 
@@ -344,8 +374,16 @@ def test_post_can_have_multiple_categories(db_session, seeded):
 
     def _list_by_category(category_id):
         resp = list_posts(
-            page=1, page_size=10, category=category_id, tag=None, year=None,
-            month=None, start_date=None, end_date=None, keyword=None, db=db_session,
+            page=1,
+            page_size=10,
+            category=category_id,
+            tag=None,
+            year=None,
+            month=None,
+            start_date=None,
+            end_date=None,
+            keyword=None,
+            db=db_session,
         )
         return resp["data"]
 
@@ -398,16 +436,24 @@ def test_post_import_reports_and_skips_duplicates(db_session, seeded):
     admin, _author, _pw = seeded
 
     checked = import_posts(
-        request=_Req(), files=_post_files(), mode="check", on_duplicate="skip",
-        user=admin, db=db_session,
+        request=_Req(),
+        files=_post_files(),
+        mode="check",
+        on_duplicate="skip",
+        user=admin,
+        db=db_session,
     )["data"]
     assert checked["total"] == 3, checked
     assert checked["duplicates_count"] == 1, checked
     assert checked["duplicates"] == ["重复标题"], checked
 
     result = import_posts(
-        request=_Req(), files=_post_files(), mode="import", on_duplicate="skip",
-        user=admin, db=db_session,
+        request=_Req(),
+        files=_post_files(),
+        mode="import",
+        on_duplicate="skip",
+        user=admin,
+        db=db_session,
     )["data"]
     assert result["imported"] == 2, result
     assert result["skipped"] == 1, result
@@ -425,28 +471,39 @@ def test_diary_import_dedups_by_content_ignoring_whitespace(db_session, seeded):
     from app.models.diary import DiaryEntry
 
     admin, _author, _pw = seeded
-    files = lambda: [
-        _upload("2026-01-01.md", "第一天的日记"),
-        _upload("dup.md", "第一天的日记"),
-        _upload("dup-space.md", "  第一天的日记  "),
-        _upload("2026-01-02.md", "第二天的日记"),
-    ]
+
+    def files():
+        return [
+            _upload("2026-01-01.md", "第一天的日记"),
+            _upload("dup.md", "第一天的日记"),
+            _upload("dup-space.md", "  第一天的日记  "),
+            _upload("2026-01-02.md", "第二天的日记"),
+        ]
 
     checked = import_diaries(
-        request=_Req(), files=files(), mode="check", on_duplicate="skip",
-        user=admin, db=db_session,
+        request=_Req(),
+        files=files(),
+        mode="check",
+        on_duplicate="skip",
+        user=admin,
+        db=db_session,
     )["data"]
     assert checked["total"] == 4, checked
     assert checked["duplicates_count"] == 2, checked
 
     result = import_diaries(
-        request=_Req(), files=files(), mode="import", on_duplicate="skip",
-        user=admin, db=db_session,
+        request=_Req(),
+        files=files(),
+        mode="import",
+        on_duplicate="skip",
+        user=admin,
+        db=db_session,
     )["data"]
     assert result["imported"] == 2, result
     assert result["skipped"] == 2, result
     assert [entry.content_md for entry in db_session.query(DiaryEntry).all()] == [
-        "第一天的日记", "第二天的日记",
+        "第一天的日记",
+        "第二天的日记",
     ]
 
 
@@ -462,8 +519,12 @@ def test_diary_import_can_import_duplicates_on_demand(db_session, seeded):
     ]
 
     result = import_diaries(
-        request=_Req(), files=files, mode="import", on_duplicate="all",
-        user=admin, db=db_session,
+        request=_Req(),
+        files=files,
+        mode="import",
+        on_duplicate="all",
+        user=admin,
+        db=db_session,
     )["data"]
     assert result["imported"] == 2, result
     assert result["skipped"] == 0, result

@@ -82,7 +82,8 @@ function color(count: number): string {
         size="small"
         style="width: 130px"
         placeholder="筛选年份"
-        @update:model-value="emit('update:year', ($event as number) || null)"      >
+        @update:model-value="emit('update:year', ($event as number) || null)"
+      >
         <!--
           "近一年"用 0 作为哨兵值: el-option 的 value 类型是
           string | number | boolean | object, 传 null 或 undefined 都会被类型拒绝。
@@ -95,18 +96,18 @@ function color(count: number): string {
 
     <svg :width="WEEKDAY_LABELS.length * 8 + weeks * (CELL + GAP)" :height="7 * (CELL + GAP) + 18">
       <!-- 星期标签 -->
-      <text v-for="(label, index) in WEEKDAY_LABELS" :key="label" :x="2" :y="18 + index * 2 * (CELL + GAP) + 8" class="weekday-text">
+      <text
+        v-for="(label, index) in WEEKDAY_LABELS"
+        :key="label"
+        :x="2"
+        :y="18 + index * 2 * (CELL + GAP) + 8"
+        class="weekday-text"
+      >
         {{ label }}
       </text>
 
       <!-- 月份标签 -->
-      <text
-        v-for="label in monthLabels"
-        :key="label.x"
-        :x="14 + label.x"
-        :y="10"
-        class="month-text"
-      >
+      <text v-for="label in monthLabels" :key="label.x" :x="14 + label.x" :y="10" class="month-text">
         {{ label.text }}
       </text>
 
@@ -127,7 +128,12 @@ function color(count: number): string {
 
     <div class="legend muted">
       <span>少</span>
-      <span v-for="level in 5" :key="level" :style="{ background: color([0, 2, 5, 9, 100][level - 1]) }" class="legend-cell" />
+      <span
+        v-for="level in 5"
+        :key="level"
+        :style="{ background: color([0, 2, 5, 9, 100][level - 1]) }"
+        class="legend-cell"
+      />
       <span>多</span>
     </div>
   </div>

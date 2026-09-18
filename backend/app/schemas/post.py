@@ -1,4 +1,5 @@
 """文章/分类/标签模型。"""
+
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field

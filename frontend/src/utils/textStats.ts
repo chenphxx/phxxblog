@@ -21,4 +21,3 @@ export function readingMinutes(words: number): number {
   if (words <= 0) return 0
   return Math.max(1, Math.ceil(words / READING_SPEED))
 }
-

@@ -11,6 +11,7 @@
   python scripts/repair_media_paths.py            # 只预览(dry-run), 默认
   python scripts/repair_media_paths.py --apply    # 实际写入
 """
+
 import sys
 from pathlib import Path
 

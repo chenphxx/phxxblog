@@ -3,6 +3,7 @@
 媒体库导出 zip 中重名文件(image.png / image-1.png ...)被导出工具改名,
 文件自身的修改时间保留了上传月份, 用它和 WXR 附件上传日期匹配即可得到正确对应关系。
 """
+
 import glob
 import re
 import sys
@@ -70,10 +71,12 @@ def main() -> None:
             match = re.search(r"/wp-content/uploads/(.+)$", remote)
             if match:
                 rel = unquote(match.group(1)).replace("\\", "/")
-                attachments.append({
-                    "rel": rel,
-                    "date": (text(item, "wp:post_date") or "")[:7],
-                })
+                attachments.append(
+                    {
+                        "rel": rel,
+                        "date": (text(item, "wp:post_date") or "")[:7],
+                    }
+                )
 
         # 分组: 同名多次出现才需要重配对
         from collections import defaultdict
@@ -114,11 +117,17 @@ def main() -> None:
                     continue
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(new_bytes)
-                media = db.query(Media).filter(Media.url == f"/assets/uploads/wordpress/{att['rel']}").first()
+                media = (
+                    db.query(Media)
+                    .filter(Media.url == f"/assets/uploads/wordpress/{att['rel']}")
+                    .first()
+                )
                 if media:
                     media.size = target.stat().st_size
                 changed += 1
-                print(f"修正: {att['rel']} <- {pick['name']} (mtime {pick['mtime']}, 上传 {att['date']})")
+                print(
+                    f"修正: {att['rel']} <- {pick['name']} (mtime {pick['mtime']}, 上传 {att['date']})"
+                )
         db.commit()
         print(f"\n完成: 修正 {changed} 个文件")
     finally:

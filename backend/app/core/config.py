@@ -2,6 +2,7 @@
 
 通过 pydantic-settings 从环境变量 / .env 文件加载配置。
 """
+
 from functools import lru_cache
 from pathlib import Path
 
@@ -27,9 +28,7 @@ class Settings(BaseSettings):
     debug: bool = False
 
     # 数据库连接(默认使用 PyMySQL 驱动)
-    database_url: str = (
-        "mysql+pymysql://root:password@localhost:3306/phxxblog?charset=utf8mb4"
-    )
+    database_url: str = "mysql+pymysql://root:password@localhost:3306/phxxblog?charset=utf8mb4"
 
     # JWT 配置
     secret_key: str = DEFAULT_SECRET_KEY

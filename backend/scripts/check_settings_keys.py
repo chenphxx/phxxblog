@@ -9,6 +9,7 @@
     只会表现为"后台存了但前台读不到"或者"类型里没有这个字段", 靠人眼极难发现。
     这个脚本把四者的键集合对齐, 挂了 verify_all.py 里一起跑。
 """
+
 import re
 import sys
 from pathlib import Path
@@ -18,7 +19,12 @@ ROOT = BACKEND.parent
 
 sys.path.insert(0, str(BACKEND))
 
-from app.core.settings_schema import BOOL_KEYS, DEFAULTS, DEFAULT_SETTINGS, PUBLIC_KEYS  # noqa: E402
+from app.core.settings_schema import (  # noqa: E402
+    BOOL_KEYS,
+    DEFAULT_SETTINGS,
+    DEFAULTS,
+    PUBLIC_KEYS,
+)
 
 # Windows 下 stdout 被重定向到管道时默认按本地编码(GBK)输出, 而 verify_all.py 按 UTF-8
 # 读取子进程输出, 不统一编码就会在汇总表里显示成乱码
@@ -66,7 +72,10 @@ print("前端: 类型与后台表单")
 types_src = TYPES_TS.read_text(encoding="utf-8")
 view_src = SETTINGS_VIEW.read_text(encoding="utf-8")
 public_settings = interface_keys(types_src, "PublicSettings")
-check(public_settings == set(PUBLIC_KEYS), f"PublicSettings 与 PUBLIC_KEYS 完全一致({len(public_settings)} 个)")
+check(
+    public_settings == set(PUBLIC_KEYS),
+    f"PublicSettings 与 PUBLIC_KEYS 完全一致({len(public_settings)} 个)",
+)
 
 # 类型里有、后端没公开的键 -> 前端会拿到 undefined; 后端公开、类型里没有 -> 类型检查看不到
 missing_in_types = set(PUBLIC_KEYS) - public_settings

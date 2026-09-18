@@ -2,6 +2,7 @@
 
 文章与日记的导入导出共用这里的实现, 避免两处逻辑漂移。
 """
+
 import io
 import json
 import re
@@ -29,9 +30,7 @@ def split_import_archive(
         try:
             with zipfile.ZipFile(io.BytesIO(raw)) as zf:
                 entries = [
-                    (info.filename, zf.read(info))
-                    for info in zf.infolist()
-                    if not info.is_dir()
+                    (info.filename, zf.read(info)) for info in zf.infolist() if not info.is_dir()
                 ]
         except zipfile.BadZipFile:
             return [], [], f"{name}: 不是有效的 zip 压缩包"
@@ -150,7 +149,7 @@ def rewrite_import_images(text: str, image_map: dict[str, str]) -> str:
 
     def repl_html(match: re.Match) -> str:
         target = lookup_image(image_map, match.group(2))
-        return f'{match.group(1)}{target}{match.group(3)}' if target else match.group(0)
+        return f"{match.group(1)}{target}{match.group(3)}" if target else match.group(0)
 
     text = re.sub(r"!\[([^\]]*)\]\(([^)]+)\)", repl_md, text)
     text = re.sub(r'(<img[^>]*\bsrc=")([^"]+)(")', repl_html, text)
@@ -165,7 +164,7 @@ def parse_frontmatter(content: str) -> tuple[dict, str]:
     if end == -1:
         return {}, content
     block = content[3:end]
-    body = content[end + 4:].lstrip("\r\n")
+    body = content[end + 4 :].lstrip("\r\n")
     meta: dict = {}
     for line in block.splitlines():
         if ":" not in line:

@@ -1,4 +1,5 @@
 """文本统计: 文章字数与预计阅读时间。"""
+
 import math
 import re
 

@@ -7,9 +7,16 @@ import { usePagedList } from '@/composables/usePagedList'
 
 const statusFilter = ref<number | undefined>(undefined)
 /** 列表分页与取数; 换筛选条件时调 reset() 回到第 1 页 */
-const { items: comments, total, page, pageSize, loading, load, reset } = usePagedList<CommentItem>({
-  fetch: (page, pageSize) =>
-    commentApi.adminList({ page, page_size: pageSize, status: statusFilter.value }),
+const {
+  items: comments,
+  total,
+  page,
+  pageSize,
+  loading,
+  load,
+  reset,
+} = usePagedList<CommentItem>({
+  fetch: (page, pageSize) => commentApi.adminList({ page, page_size: pageSize, status: statusFilter.value }),
 })
 
 const STATUS_TEXT: Record<number, string> = { 1: '正常', 0: '隐藏', 2: '回收站' }
@@ -52,7 +59,7 @@ async function remove(comment: CommentItem) {
     </div>
 
     <div class="card">
-      <el-table :data="comments" v-loading="loading">
+      <el-table v-loading="loading" :data="comments">
         <el-table-column prop="id" label="ID" width="70" />
         <el-table-column label="评论人" width="120">
           <template #default="{ row }">
@@ -69,11 +76,7 @@ async function remove(comment: CommentItem) {
           <template #default="{ row }">
             <!-- 用 router-link 而不是裸 <a> + click: 前者可 Tab 聚焦、可回车触发,
                  并且语义上就是"链接"(屏幕阅读器不会把它当普通文本) -->
-            <router-link
-              class="comment-link"
-              :to="`/post/${row.post_id}`"
-              :title="`查看文章 #${row.post_id}`"
-            >
+            <router-link class="comment-link" :to="`/post/${row.post_id}`" :title="`查看文章 #${row.post_id}`">
               {{ row.content }}
             </router-link>
           </template>
@@ -97,9 +100,15 @@ async function remove(comment: CommentItem) {
           <template #default="{ row }">
             <div class="op-row">
               <!-- el-table 插槽的 row 是 DefaultRow, 显式断言成实际行类型 -->
-              <el-button v-if="row.status !== 1" size="small" type="success" @click="setStatus(row as CommentItem, 1)">显示</el-button>
-              <el-button v-if="row.status === 1" size="small" type="warning" @click="setStatus(row as CommentItem, 0)">隐藏</el-button>
-              <el-button v-if="row.status !== 2" size="small" type="info" @click="setStatus(row as CommentItem, 2)">回收站</el-button>
+              <el-button v-if="row.status !== 1" size="small" type="success" @click="setStatus(row as CommentItem, 1)"
+                >显示</el-button
+              >
+              <el-button v-if="row.status === 1" size="small" type="warning" @click="setStatus(row as CommentItem, 0)"
+                >隐藏</el-button
+              >
+              <el-button v-if="row.status !== 2" size="small" type="info" @click="setStatus(row as CommentItem, 2)"
+                >回收站</el-button
+              >
               <el-button size="small" type="danger" @click="remove(row as CommentItem)">删除</el-button>
             </div>
           </template>

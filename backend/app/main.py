@@ -1,4 +1,5 @@
 """FastAPI 应用入口。"""
+
 from pathlib import Path
 
 from fastapi import FastAPI, Request

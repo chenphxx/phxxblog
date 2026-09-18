@@ -8,6 +8,7 @@
 收益不只是少写几行 —— 分页参数校验、count 与 items 的取数顺序、返回结构都只有一处定义,
 将来改协议(比如换成游标分页)不用再翻 9 个文件。
 """
+
 from typing import Any, TypeVar
 
 from pydantic import BaseModel

@@ -344,9 +344,7 @@ onMounted(load)
 
       <div class="card">
         <h3>页脚与链接 <span class="vis-badge">公开可见</span></h3>
-        <p class="muted section-hint">
-          社交链接显示在首页的个人资料卡, 网站链接仅管理员可见, 备案与版权信息显示在页脚
-        </p>
+        <p class="muted section-hint">社交链接显示在首页的个人资料卡, 网站链接仅管理员可见, 备案与版权信息显示在页脚</p>
         <el-form label-position="top">
           <el-form-item v-for="list in linkLists" :key="list.key">
             <template #label>
@@ -358,12 +356,7 @@ onMounted(load)
                 <span class="link-row-index">{{ index + 1 }}</span>
                 <el-input v-model="row.name" class="link-row-name" :placeholder="list.namePlaceholder" />
                 <el-input v-model="row.url" :placeholder="list.urlPlaceholder" />
-                <el-input
-                  v-if="list.hasIcon"
-                  v-model="row.icon"
-                  class="link-row-icon"
-                  placeholder="图标(选填)"
-                />
+                <el-input v-if="list.hasIcon" v-model="row.icon" class="link-row-icon" placeholder="图标(选填)" />
                 <el-button
                   class="link-row-remove"
                   text
@@ -376,10 +369,7 @@ onMounted(load)
             </div>
           </el-form-item>
           <el-form-item label="页脚版权信息">
-            <el-input
-              v-model="form.footer_text"
-              placeholder="留空则不显示, 支持 {year} 与 {site_name} 占位符"
-            />
+            <el-input v-model="form.footer_text" placeholder="留空则不显示, 支持 {year} 与 {site_name} 占位符" />
             <div class="muted form-hint">
               支持 <code>{year}</code> 与 <code>{site_name}</code> 占位符, 留空则页脚不显示版权信息
             </div>

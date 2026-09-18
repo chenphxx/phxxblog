@@ -19,7 +19,15 @@ const dateRange = ref<[string, string] | null>(null)
  * 分页与取数交给 usePagedList: 三个分支的差异只在"取哪一页", 翻页与"回到第 1 页"
  * 的规则由 composable 统一处理。
  */
-const { items: posts, total, page, pageSize, loading, load, reset } = usePagedList<PostItem>({
+const {
+  items: posts,
+  total,
+  page,
+  pageSize,
+  loading,
+  load,
+  reset,
+} = usePagedList<PostItem>({
   autoLoad: false, // 挂载时要先取分类/标签, 由 onMounted 统一触发
   fetch: (page, pageSize) => {
     const start_date = dateRange.value?.[0] || undefined
@@ -66,7 +74,7 @@ watch(
     syncFromQuery()
     // 换了分类/标签/关键词必须回到第 1 页: 否则会拿新条件去取旧条件下的第 N 页, 结果是空列表
     reset()
-  }
+  },
 )
 
 onMounted(async () => {

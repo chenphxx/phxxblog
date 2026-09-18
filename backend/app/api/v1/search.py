@@ -1,4 +1,5 @@
 """站内搜索接口。"""
+
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, Query
@@ -25,16 +26,13 @@ def search(
 ):
     """全文搜索已发布文章(标题/摘要/正文)。"""
     like = f"%{q}%"
-    query = (
-        db.query(Post)
-        .filter(
-            Post.status == 2,
-            or_(
-                Post.title.like(like),
-                Post.summary.like(like),
-                Post.content_md.like(like),
-            ),
-        )
+    query = db.query(Post).filter(
+        Post.status == 2,
+        or_(
+            Post.title.like(like),
+            Post.summary.like(like),
+            Post.content_md.like(like),
+        ),
     )
     if start_date:
         query = query.filter(Post.published_at >= datetime.strptime(start_date, "%Y-%m-%d"))
@@ -49,7 +47,11 @@ def search(
         .limit(page_size)
         .all()
     )
-    return ok(Page[PostListItem](
-        items=[PostListItem.model_validate(p) for p in items],
-        total=total, page=page, page_size=page_size,
-    ))
+    return ok(
+        Page[PostListItem](
+            items=[PostListItem.model_validate(p) for p in items],
+            total=total,
+            page=page,
+            page_size=page_size,
+        )
+    )

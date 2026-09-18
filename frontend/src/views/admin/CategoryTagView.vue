@@ -11,8 +11,16 @@ const tags = ref<Tag[]>([])
 
 /** 颜色预设(留空则由前端按名称自动生成) */
 const COLOR_PRESETS = [
-  '#0e7490', '#2563eb', '#7c3aed', '#db2777', '#dc2626',
-  '#ea580c', '#ca8a04', '#16a34a', '#0d9488', '#64748b',
+  '#0e7490',
+  '#2563eb',
+  '#7c3aed',
+  '#db2777',
+  '#dc2626',
+  '#ea580c',
+  '#ca8a04',
+  '#16a34a',
+  '#0d9488',
+  '#64748b',
 ]
 
 const categoryForm = ref({ id: 0, name: '', slug: '', description: '', color: '', sort_order: 0 })
@@ -27,7 +35,14 @@ async function load() {
 
 function openCategoryDialog(category?: Category) {
   categoryForm.value = category
-    ? { id: category.id, name: category.name, slug: category.slug, description: category.description || '', color: category.color || '', sort_order: category.sort_order }
+    ? {
+        id: category.id,
+        name: category.name,
+        slug: category.slug,
+        description: category.description || '',
+        color: category.color || '',
+        sort_order: category.sort_order,
+      }
     : { id: 0, name: '', slug: '', description: '', color: '', sort_order: 0 }
   categoryDialog.value = true
 }

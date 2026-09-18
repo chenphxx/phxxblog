@@ -146,7 +146,7 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="page-container" v-loading="loading">
+  <div v-loading="loading" class="page-container">
     <div class="diary-header">
       <div>
         <p class="eyebrow" style="margin: 0 0 4px">diary — 日记</p>

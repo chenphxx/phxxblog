@@ -38,10 +38,12 @@
    * 注意: 这两项与 src/styles/themes/_source/template.css 里的同名令牌保持一致,
    * 主题 CSS 是按主题分文件生成的, 每个文件都会写入这份定义。
    */
-  --font-sans: 'Cascadia Code', 'Cascadia Mono', ui-monospace, 'PingFang SC', 'Microsoft YaHei',
-    'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-  --font-mono: 'Cascadia Code', 'Cascadia Mono', 'JetBrains Mono', ui-monospace, 'SFMono-Regular',
-    Consolas, 'Liberation Mono', monospace;
+  --font-sans:
+    'Cascadia Code', 'Cascadia Mono', ui-monospace, 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', 'Helvetica Neue',
+    Arial, sans-serif;
+  --font-mono:
+    'Cascadia Code', 'Cascadia Mono', 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono',
+    monospace;
 
   /* Element Plus 主色对齐 */
   --el-color-primary: #0e7490;
@@ -127,7 +129,9 @@ body {
   font-family: var(--font-sans);
   font-size: 15px;
   line-height: 1.7;
-  transition: background-color 0.25s ease, color 0.25s ease;
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease;
 }
 
 a {
@@ -554,7 +558,9 @@ a:hover {
   padding: 6px 10px;
   border-radius: 4px;
   white-space: nowrap;
-  transition: color 0.15s ease, background-color 0.15s ease;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
 }
 
 .site-nav a:hover {

@@ -17,12 +17,7 @@ vi.mock('element-plus', () => ({
 }))
 
 import request, { rawAxios, refreshClient } from './http'
-import {
-  ACCESS_TOKEN_KEY,
-  REFRESH_TOKEN_KEY,
-  getAccessToken,
-  getRefreshToken,
-} from '@/utils/tokenStorage'
+import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY, getAccessToken, getRefreshToken } from '@/utils/tokenStorage'
 
 const ok = (config: InternalAxiosRequestConfig, body: unknown) => ({
   data: body,

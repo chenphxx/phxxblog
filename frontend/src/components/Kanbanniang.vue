@@ -316,20 +316,24 @@ onBeforeUnmount(() => {
 
 // 打开时才加载; 关闭时只是隐藏 canvas, 不销毁 —— 运行时持有它的 WebGL 上下文,
 // 反复销毁重建会消耗浏览器的 WebGL 上下文配额
-watch(visible, (on) => {
-  if (maskTimer !== undefined) {
-    window.clearInterval(maskTimer)
-    maskTimer = undefined
-  }
-  if (!on) return
-  // 关掉看板娘期间窗口可能变小过, 重新展示时先把浮层拉回视口
-  reclamp()
-  // 轮廓会随闲置动作缓慢变化, 隔一段时间重新取一张
-  maskTimer = window.setInterval(captureMask, MASK_REFRESH_MS)
-  whenIdle(() => {
-    if (!disposed) void show()
-  })
-}, { immediate: true })
+watch(
+  visible,
+  (on) => {
+    if (maskTimer !== undefined) {
+      window.clearInterval(maskTimer)
+      maskTimer = undefined
+    }
+    if (!on) return
+    // 关掉看板娘期间窗口可能变小过, 重新展示时先把浮层拉回视口
+    reclamp()
+    // 轮廓会随闲置动作缓慢变化, 隔一段时间重新取一张
+    maskTimer = window.setInterval(captureMask, MASK_REFRESH_MS)
+    whenIdle(() => {
+      if (!disposed) void show()
+    })
+  },
+  { immediate: true },
+)
 
 watch(() => kb.modelId, switchModel)
 </script>

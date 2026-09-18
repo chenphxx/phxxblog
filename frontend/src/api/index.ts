@@ -35,18 +35,15 @@ function importForm(files: File[]) {
 
 /** 认证 */
 export const authApi = {
-  login: (data: { username: string; password: string }) =>
-    http.post<AuthResult>('/auth/login', data),
+  login: (data: { username: string; password: string }) => http.post<AuthResult>('/auth/login', data),
   register: (data: { username: string; email: string; password: string; nickname?: string }) =>
     http.post<AuthResult>('/auth/register', data),
   me: () => http.get<User>('/auth/me'),
   refresh: (refresh_token: string) => http.post<TokenPair>('/auth/refresh', { refresh_token }),
   logout: (refresh_token: string) => http.post<null>('/auth/logout', { refresh_token }),
-  changePassword: (data: { old_password: string; new_password: string }) =>
-    http.put('/auth/password', data),
+  changePassword: (data: { old_password: string; new_password: string }) => http.put('/auth/password', data),
   changeEmail: (data: { email: string }) => http.put('/auth/email', data),
-  updateProfile: (data: { username?: string; nickname?: string }) =>
-    http.put<User>('/auth/profile', data),
+  updateProfile: (data: { username?: string; nickname?: string }) => http.put<User>('/auth/profile', data),
 }
 
 /** 文章 */
@@ -61,8 +58,7 @@ export const postApi = {
   trash: (id: number) => http.delete<null>(`/posts/${id}`),
   forceDelete: (id: number) => http.delete<null>(`/posts/${id}/force`),
   restore: (id: number) => http.post<null>(`/posts/${id}/restore`),
-  changeStatus: (id: number, status: number) =>
-    http.post(`/posts/${id}/publish`, { status }),
+  changeStatus: (id: number, status: number) => http.post(`/posts/${id}/publish`, { status }),
   like: (id: number) => http.post<{ liked: boolean; likes_count: number }>(`/posts/${id}/like`),
   exportPosts: async (ids: number[], fmt = 'markdown') => {
     const token = getAccessToken()
@@ -101,11 +97,11 @@ export const tagApi = {
 /** 评论 */
 export const commentApi = {
   list: (postId: number) => http.get<CommentItem[]>(`/posts/${postId}/comments`),
-  create: (postId: number, data: Record<string, unknown>) =>
-    http.post<CommentItem>(`/posts/${postId}/comments`, data),
+  create: (postId: number, data: Record<string, unknown>) => http.post<CommentItem>(`/posts/${postId}/comments`, data),
   adminList: (params?: Record<string, unknown>) => http.get<Page<CommentItem>>('/comments/admin', { params }),
   update: (id: number, data: Record<string, unknown>) => http.put<CommentItem>(`/comments/${id}`, data),
-  updateStatus: (id: number, status: number) => http.patch<null>(`/comments/${id}/status`, null, { params: { status } }),
+  updateStatus: (id: number, status: number) =>
+    http.patch<null>(`/comments/${id}/status`, null, { params: { status } }),
   remove: (id: number) => http.delete<null>(`/comments/${id}`),
 }
 
@@ -198,8 +194,7 @@ export const userApi = {
   list: (params?: Record<string, unknown>) => http.get<Page<User>>('/users', { params }),
   create: (data: Record<string, unknown>) => http.post<User>('/users', data),
   update: (id: number, data: Record<string, unknown>) => http.put<User>(`/users/${id}`, data),
-  resetPassword: (id: number, password: string) =>
-    http.put<null>(`/users/${id}/password`, { password }),
+  resetPassword: (id: number, password: string) => http.put<null>(`/users/${id}/password`, { password }),
   remove: (id: number) => http.delete<null>(`/users/${id}`),
   roles: () => http.get<Role[]>('/users/roles'),
   createRole: (data: Record<string, unknown>) => http.post<null>('/users/roles', data),

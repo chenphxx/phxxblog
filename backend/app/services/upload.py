@@ -12,6 +12,7 @@
     若确实需要上传 SVG, 请改为部署层面单独挂一个子域, 或让反代对上传目录
     强制加 `Content-Disposition: attachment` + `X-Content-Type-Options: nosniff`。
 """
+
 import uuid
 from datetime import date
 from pathlib import Path
@@ -27,7 +28,22 @@ IMAGE_EXTS: Final = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".ico"}
 VIDEO_EXTS: Final = {".mp4", ".webm", ".mov", ".avi", ".mkv", ".flv"}
 AUDIO_EXTS: Final = {".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac"}
 # 文档类只作为附件下载(部署层面应对上传目录关闭这些类型的 inline 渲染)
-DOCUMENT_EXTS: Final = {".pdf", ".txt", ".md", ".csv", ".json", ".zip", ".7z", ".rar", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx"}
+DOCUMENT_EXTS: Final = {
+    ".pdf",
+    ".txt",
+    ".md",
+    ".csv",
+    ".json",
+    ".zip",
+    ".7z",
+    ".rar",
+    ".doc",
+    ".docx",
+    ".xls",
+    ".xlsx",
+    ".ppt",
+    ".pptx",
+}
 
 ALLOWED_EXTS: Final = IMAGE_EXTS | VIDEO_EXTS | AUDIO_EXTS | DOCUMENT_EXTS
 

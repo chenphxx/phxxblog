@@ -43,7 +43,7 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="page-container" v-loading="loading">
+  <div v-loading="loading" class="page-container">
     <div class="changelog-header">
       <div>
         <p class="eyebrow" style="margin: 0 0 4px">changelog — 更新日志</p>
