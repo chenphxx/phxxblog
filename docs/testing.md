@@ -96,7 +96,7 @@ npm run test:coverage   # 覆盖率报告 -> coverage/index.html
 
 ### 3.3 用例清单
 
-9 个文件 68 条: 
+10 个文件 73 条: 
 
 | 文件 | 覆盖内容 |
 | --- | --- |
@@ -106,6 +106,7 @@ npm run test:coverage   # 覆盖率报告 -> coverage/index.html
 | `src/utils/trendRange.test.ts` | 访问趋势的时间范围, 环比与汇总 |
 | `src/composables/usePostEditor.test.ts` | 文章编辑流程: 状态推导, 分类 / 标签就地新建, 删除取消不误删, 封面上传复位 |
 | `src/composables/useImportExport.test.ts` | 导入查重分支, 导入后刷新, 导出下载与失败回滚 |
+| `src/composables/usePagedList.test.ts` | 列表分页: 翻页与"回到第 1 页"各只请求一次, 请求失败也要复位 loading |
 | `src/api/http.test.ts` | 401 静默刷新: 重放原请求, 并发只刷新一次, 防循环, 刷新失败才登出 |
 | `src/views/DiaryView.test.ts` | **回归**: Vditor 组字期间 `v-model` 落后时, 保存必须取编辑器内容 |
 | `src/views/SearchView.test.ts` | **回归**: 被 keep-alive 缓存的组件在 `route.query` 变化时必须重新检索 |

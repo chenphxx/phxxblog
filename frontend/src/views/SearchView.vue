@@ -5,6 +5,7 @@ import { Search } from '@element-plus/icons-vue'
 import { categoryApi, postApi, searchApi, tagApi } from '@/api'
 import type { Category, PostItem, Tag } from '@/types'
 import PostCard from '@/components/PostCard.vue'
+import { usePagedList } from '@/composables/usePagedList'
 
 const route = useRoute()
 const keyword = ref((route.query.q as string) || '')
@@ -12,12 +13,34 @@ const categoryId = ref(route.query.category ? Number(route.query.category) : nul
 const tagId = ref(route.query.tag ? Number(route.query.tag) : null)
 const categories = ref<Category[]>([])
 const tags = ref<Tag[]>([])
-const posts = ref<PostItem[]>([])
-const total = ref(0)
-const page = ref(1)
-const pageSize = 10
-const loading = ref(false)
 const dateRange = ref<[string, string] | null>(null)
+
+/**
+ * 分页与取数交给 usePagedList: 三个分支的差异只在"取哪一页", 翻页与"回到第 1 页"
+ * 的规则由 composable 统一处理。
+ */
+const { items: posts, total, page, pageSize, loading, load, reset } = usePagedList<PostItem>({
+  autoLoad: false, // 挂载时要先取分类/标签, 由 onMounted 统一触发
+  fetch: (page, pageSize) => {
+    const start_date = dateRange.value?.[0] || undefined
+    const end_date = dateRange.value?.[1] || undefined
+    if (categoryId.value || tagId.value) {
+      return postApi.list({
+        page,
+        page_size: pageSize,
+        category: categoryId.value || undefined,
+        tag: tagId.value || undefined,
+        keyword: keyword.value.trim() || undefined,
+        start_date,
+        end_date,
+      })
+    }
+    if (keyword.value.trim()) {
+      return searchApi.search(keyword.value.trim(), { page, page_size: pageSize, start_date, end_date })
+    }
+    return postApi.list({ page, page_size: pageSize, start_date, end_date })
+  },
+})
 
 /**
  * 从 URL 查询参数回填筛选条件并重新检索。
@@ -33,7 +56,6 @@ function syncFromQuery() {
   keyword.value = (q.q as string) || ''
   categoryId.value = q.category ? Number(q.category) : null
   tagId.value = q.tag ? Number(q.tag) : null
-  page.value = 1
 }
 
 watch(
@@ -42,50 +64,14 @@ watch(
     // 仅在本路由内处理; 离开该页时不必发请求
     if (route.name !== 'search') return
     syncFromQuery()
-    search()
+    // 换了分类/标签/关键词必须回到第 1 页: 否则会拿新条件去取旧条件下的第 N 页, 结果是空列表
+    reset()
   }
 )
 
-async function search() {
-  loading.value = true
-  const start_date = dateRange.value?.[0] || undefined
-  const end_date = dateRange.value?.[1] || undefined
-  try {
-    if (categoryId.value || tagId.value) {
-      const data = await postApi.list({
-        page: page.value,
-        page_size: pageSize,
-        category: categoryId.value || undefined,
-        tag: tagId.value || undefined,
-        keyword: keyword.value.trim() || undefined,
-        start_date,
-        end_date,
-      })
-      posts.value = data.items
-      total.value = data.total
-    } else if (keyword.value.trim()) {
-      const data = await searchApi.search(keyword.value.trim(), {
-        page: page.value,
-        page_size: pageSize,
-        start_date,
-        end_date,
-      })
-      posts.value = data.items
-      total.value = data.total
-    } else {
-      const data = await postApi.list({ page: page.value, page_size: pageSize, start_date, end_date })
-      posts.value = data.items
-      total.value = data.total
-    }
-  } finally {
-    loading.value = false
-  }
-}
-
-watch(page, search)
 onMounted(async () => {
   ;[categories.value, tags.value] = await Promise.all([categoryApi.list(), tagApi.list()])
-  search()
+  load()
 })
 </script>
 
@@ -100,13 +86,13 @@ onMounted(async () => {
         placeholder="输入关键词搜索文章..."
         :prefix-icon="Search"
         clearable
-        @keyup.enter="page = 1; search()"
-        @clear="page = 1; search()"
+        @keyup.enter="reset()"
+        @clear="reset()"
       />
-      <el-select v-model="categoryId" placeholder="按分类筛选" clearable style="width: 180px" @change="page = 1; search()">
+      <el-select v-model="categoryId" placeholder="按分类筛选" clearable style="width: 180px" @change="reset()">
         <el-option v-for="cat in categories" :key="cat.id" :label="`${cat.name} (${cat.post_count})`" :value="cat.id" />
       </el-select>
-      <el-select v-model="tagId" placeholder="按标签筛选" clearable style="width: 180px" @change="page = 1; search()">
+      <el-select v-model="tagId" placeholder="按标签筛选" clearable style="width: 180px" @change="reset()">
         <el-option v-for="tag in tags" :key="tag.id" :label="`#${tag.name} (${tag.post_count})`" :value="tag.id" />
       </el-select>
       <el-date-picker
@@ -117,9 +103,9 @@ onMounted(async () => {
         start-placeholder="开始日期"
         end-placeholder="结束日期"
         style="width: 260px"
-        @change="page = 1; search()"
+        @change="reset()"
       />
-      <el-button type="primary" @click="page = 1; search()">搜索</el-button>
+      <el-button type="primary" @click="reset()">搜索</el-button>
     </div>
 
     <div v-loading="loading" style="margin-top: 20px; min-height: 100px">

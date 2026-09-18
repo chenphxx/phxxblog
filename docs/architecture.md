@@ -92,7 +92,7 @@ phxxblog/
 │   └── src/
 │       ├── api/                  # http.ts(Axios 实例、拦截器与 401 静默刷新) + index.ts(按模块的接口封装)
 │       ├── components/           # 通用组件(MarkdownView / PostCard / MetaIcon / 图表 / 评论等)
-│       ├── composables/          # 跨视图复用逻辑(usePostEditor / useImportExport)
+│       ├── composables/          # 跨视图复用逻辑(usePostEditor / useImportExport / usePagedList)
 │       ├── kanbanniang/          # 看板娘形象清单(registry.ts)与运行时加载(loader.ts)
 │       ├── layouts/              # 前台布局(顶栏 + 页脚)
 │       ├── router/               # 路由表与登录守卫
@@ -312,9 +312,10 @@ phxxblog/
 | --- | --- |
 | `usePostEditor.ts` | 文章编辑的全部状态与流程(加载选项/详情, 分类标签就地新建, 封面上传, 保存, 删除) |
 | `useImportExport.ts` | 导入(查重 -> 选择策略 -> 写入), 导出下载与三个弹窗的状态 |
+| `usePagedList.ts` | 列表分页的公共状态与取数(8 个列表页共用): 翻页自动请求, reset() 回到第 1 页, 失败也复位 loading |
 
-两个 composable 都返回 `reactive` 对象(内部不使用 ref), 调用方直接写 `editor.form.title` / `io.importDialog`, 无需 `.value` 
-视图之间的差异(取消的去向, 数量单位, 文案)通过 options 注入 - 这是把原先 4 个视图里约 400 行重复逻辑收敛成两份的原因 
+`usePostEditor` 与 `useImportExport` 返回 `reactive` 对象(内部不使用 ref), 调用方直接写 `editor.form.title` / `io.importDialog`, 无需 `.value`; `usePagedList` 返回一组 ref, 便于模板用 `v-model:current-page="page"` 直接与分页器双向绑定 
+视图之间的差异(取消的去向, 数量单位, 文案, 取数接口)通过 options 注入 - 这是把原先 4 个视图里约 400 行重复逻辑收敛成两份, 把 8 个列表页各自一份的分页状态收敛成一份的原因 
 
 ### 6.6 样式与主题
 
@@ -715,7 +716,7 @@ Linux cron(注意工作目录要是 `backend`, 脚本按自身位置定位 `PROJ
 - 前端提交前建议执行类型检查与构建: `cd frontend && npm run build` 
 - 关注体积变化时跑 `cd frontend && npm run build && npm run check:size`(先量再改, 避免"感觉变快了") 
 - 前端单测: `cd frontend && npm run test`(Vitest + jsdom) 视图里重复的流程逻辑不要复制第二份, 
-  抽到 `src/composables/`; 视图之间的差异用 options 注入(参见 `usePostEditor` / `useImportExport`) 
+  抽到 `src/composables/`; 视图之间的差异用 options 注入(参见 `usePostEditor` / `useImportExport` / `usePagedList`) 
 - 测试的分层, 用例清单, 检查脚本与 CI 的完整说明见 [测试与检查说明](./testing.md) 
 - 前端任何地方都不要直接写 `blog_access_token` 这类 key 字面量, 统一走 `utils/tokenStorage.ts` 
 - 功能变更同步更新根目录 `CHANGELOG.md`(前台可展示给访客) 

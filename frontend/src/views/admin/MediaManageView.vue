@@ -6,17 +6,14 @@ import type { MediaItem } from '@/types'
 import MediaPreview from '@/components/MediaPreview.vue'
 import { formatFileSize } from '@/utils/format'
 import { mediaGridMetrics } from '@/utils/mediaGrid'
+import { usePagedList } from '@/composables/usePagedList'
 
-const items = ref<MediaItem[]>([])
 /**
  * 选中项存 id 而不是对象。
  * el-checkbox 的值类型是标量(string | number | boolean), 传对象会被类型拒绝
  * (且运行时的勾选态比较也不可靠); 用 id 数组既符合它的设计, 也避免重复持有对象。
  */
 const selected = ref<number[]>([])
-const total = ref(0)
-const page = ref(1)
-const loading = ref(false)
 const uploading = ref(false)
 
 /*
@@ -35,6 +32,17 @@ const pageSize = ref(12)
 const rowHeight = ref(210)
 let observer: ResizeObserver | null = null
 
+/**
+ * 列表分页与取数。
+ * autoLoad 关掉: 挂载时要先量一次栅格容量(它决定每页数量), 再按真实容量取数据,
+ * 否则首屏会先按默认的 12 个取一次、再按真实容量重取一次。
+ */
+const { items, total, page, loading, load, reset } = usePagedList<MediaItem>({
+  pageSize,
+  autoLoad: false,
+  fetch: (page, size) => mediaApi.list({ page, page_size: size }),
+})
+
 /** 量一次栅格: 一屏能放下的格子数与每行应有的高度; 量不到尺寸时返回 null */
 function gridMetrics() {
   const el = gridRef.value
@@ -51,19 +59,7 @@ function onGridResize() {
   if (metrics.capacity === pageSize.value) return
   // 容量变了要回到第 1 页: 否则页码对应的区间会整体错位, 末页还可能越界取到空数据
   pageSize.value = metrics.capacity
-  page.value = 1
-  load()
-}
-
-async function load() {
-  loading.value = true
-  try {
-    const data = await mediaApi.list({ page: page.value, page_size: pageSize.value })
-    items.value = data.items
-    total.value = data.total
-  } finally {
-    loading.value = false
-  }
+  reset()
 }
 
 async function onFileChange(event: Event) {
@@ -76,8 +72,7 @@ async function onFileChange(event: Event) {
       await mediaApi.upload(file)
     }
     ElMessage.success('上传成功')
-    page.value = 1
-    load()
+    reset()
   } finally {
     uploading.value = false
     input.value = ''
@@ -241,7 +236,6 @@ onBeforeUnmount(() => {
       :total="total"
       layout="prev, pager, next, total"
       style="justify-content: center; margin-top: 16px"
-      @current-change="load"
     />
   </div>
 </template>

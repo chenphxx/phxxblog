@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { postApi } from '@/api'
@@ -8,16 +8,22 @@ import { formatDateTime } from '@/utils/datetime'
 import MetaIcon from '@/components/MetaIcon.vue'
 import ImportExportDialogs from '@/components/ImportExportDialogs.vue'
 import { useImportExport } from '@/composables/useImportExport'
+import { usePagedList } from '@/composables/usePagedList'
 
 const router = useRouter()
 const statusFilter = ref<number | undefined>(undefined)
 const keyword = ref('')
-const posts = ref<PostItem[]>([])
-const total = ref(0)
-const page = ref(1)
-const pageSize = 10
-const loading = ref(false)
 const selected = ref<PostItem[]>([])
+/** 列表分页与取数; 筛选条件在 fetch 闭包里读当前值, 换条件时调 reset() 回到第 1 页 */
+const { items: posts, total, page, pageSize, loading, load, reset } = usePagedList<PostItem>({
+  fetch: (page, pageSize) =>
+    postApi.adminList({
+      page,
+      page_size: pageSize,
+      status: statusFilter.value,
+      keyword: keyword.value || undefined,
+    }),
+})
 
 const io = useImportExport({
   filePrefix: 'phxxblog-posts',
@@ -28,10 +34,7 @@ const io = useImportExport({
   exportFile: (fmt) => postApi.exportPosts(selected.value.map((post) => post.id), fmt),
   checkImports: (files) => postApi.checkImportPosts(files),
   submitImports: (files, onDuplicate) => postApi.importPosts(files, onDuplicate),
-  onImported: () => {
-    page.value = 1
-    load()
-  },
+  onImported: () => reset(),
 })
 
 const STATUS_TEXT = ['草稿', '审核中', '已发布', '私密', '回收站']
@@ -41,22 +44,6 @@ const STATUS_TEXT = ['草稿', '审核中', '已发布', '私密', '回收站']
  */
 type TagType = 'primary' | 'success' | 'warning' | 'info' | 'danger'
 const STATUS_TYPE: Record<number, TagType> = { 0: 'info', 1: 'warning', 2: 'success', 3: 'danger', 4: 'info' }
-
-async function load() {
-  loading.value = true
-  try {
-    const data = await postApi.adminList({
-      page: page.value,
-      page_size: pageSize,
-      status: statusFilter.value,
-      keyword: keyword.value || undefined,
-    })
-    posts.value = data.items
-    total.value = data.total
-  } finally {
-    loading.value = false
-  }
-}
 
 async function changeStatus(post: PostItem, status: number, message: string) {
   await ElMessageBox.confirm(`确定${message}《${post.title}》吗?`, '确认', { type: 'warning' })
@@ -146,8 +133,6 @@ async function batchForceDelete() {
   selected.value = []
   load()
 }
-
-onMounted(load)
 </script>
 
 <template>
@@ -156,7 +141,7 @@ onMounted(load)
 
     <div class="admin-toolbar">
       <div class="admin-toolbar-filters">
-        <el-radio-group v-model="statusFilter" @change="page = 1; load()">
+        <el-radio-group v-model="statusFilter" @change="reset()">
           <el-radio-button :value="undefined">全部</el-radio-button>
           <el-radio-button v-for="(text, index) in STATUS_TEXT" :key="index" :value="index">{{ text }}</el-radio-button>
         </el-radio-group>
@@ -166,10 +151,10 @@ onMounted(load)
           v-model="keyword"
           placeholder="搜索标题"
           clearable
-          @keyup.enter="page = 1; load()"
-          @clear="page = 1; load()"
+          @keyup.enter="reset()"
+          @clear="reset()"
         />
-        <el-button @click="page = 1; load()">搜索</el-button>
+        <el-button @click="reset()">搜索</el-button>
         <el-button @click="io.importDialog = true">导入文章</el-button>
         <el-button type="primary" @click="router.push('/admin/posts/new')">新建文章</el-button>
       </div>
@@ -243,7 +228,6 @@ onMounted(load)
         :total="total"
         layout="prev, pager, next, total"
         style="justify-content: center; margin-top: 16px"
-        @current-change="load"
       />
     </div>
 

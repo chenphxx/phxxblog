@@ -1,31 +1,16 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import { logApi } from '@/api'
 import type { OperationLog } from '@/types'
+import { usePagedList } from '@/composables/usePagedList'
 
-const logs = ref<OperationLog[]>([])
-const total = ref(0)
-const page = ref(1)
-const pageSize = 20
 const moduleFilter = ref('')
-const loading = ref(false)
-
-async function load() {
-  loading.value = true
-  try {
-    const data = await logApi.list({
-      page: page.value,
-      page_size: pageSize,
-      module: moduleFilter.value || undefined,
-    })
-    logs.value = data.items
-    total.value = data.total
-  } finally {
-    loading.value = false
-  }
-}
-
-onMounted(load)
+/** 列表分页与取数; 换筛选条件时调 reset() 回到第 1 页 */
+const { items: logs, total, page, pageSize, loading, reset } = usePagedList<OperationLog>({
+  pageSize: 20,
+  fetch: (page, pageSize) =>
+    logApi.list({ page, page_size: pageSize, module: moduleFilter.value || undefined }),
+})
 </script>
 
 <template>
@@ -38,8 +23,8 @@ onMounted(load)
           v-model="moduleFilter"
           placeholder="按模块筛选(post/user/comment...)"
           clearable
-          @keyup.enter="page = 1; load()"
-          @clear="page = 1; load()"
+          @keyup.enter="reset()"
+          @clear="reset()"
         />
       </div>
     </div>
@@ -76,7 +61,6 @@ onMounted(load)
         :total="total"
         layout="prev, pager, next, total"
         style="justify-content: center; margin-top: 16px"
-        @current-change="load"
       />
     </div>
   </div>

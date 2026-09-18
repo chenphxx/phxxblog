@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { commentApi } from '@/api'
 import type { CommentItem } from '@/types'
+import { usePagedList } from '@/composables/usePagedList'
 
 const statusFilter = ref<number | undefined>(undefined)
-const comments = ref<CommentItem[]>([])
-const total = ref(0)
-const page = ref(1)
-const pageSize = 10
-const loading = ref(false)
+/** 列表分页与取数; 换筛选条件时调 reset() 回到第 1 页 */
+const { items: comments, total, page, pageSize, loading, load, reset } = usePagedList<CommentItem>({
+  fetch: (page, pageSize) =>
+    commentApi.adminList({ page, page_size: pageSize, status: statusFilter.value }),
+})
 
 const STATUS_TEXT: Record<number, string> = { 1: '正常', 0: '隐藏', 2: '回收站' }
 /**
@@ -20,21 +21,6 @@ const STATUS_TEXT: Record<number, string> = { 1: '正常', 0: '隐藏', 2: '回�
  */
 type TagType = 'primary' | 'success' | 'warning' | 'info' | 'danger'
 const STATUS_TYPE: Record<number, TagType> = { 1: 'success', 0: 'warning', 2: 'info' }
-
-async function load() {
-  loading.value = true
-  try {
-    const data = await commentApi.adminList({
-      page: page.value,
-      page_size: pageSize,
-      status: statusFilter.value,
-    })
-    comments.value = data.items
-    total.value = data.total
-  } finally {
-    loading.value = false
-  }
-}
 
 async function setStatus(comment: CommentItem, status: number) {
   await commentApi.updateStatus(comment.id, status)
@@ -48,8 +34,6 @@ async function remove(comment: CommentItem) {
   ElMessage.success('删除成功')
   load()
 }
-
-onMounted(load)
 </script>
 
 <template>
@@ -58,7 +42,7 @@ onMounted(load)
 
     <div class="admin-toolbar">
       <div class="admin-toolbar-filters">
-        <el-radio-group v-model="statusFilter" @change="page = 1; load()">
+        <el-radio-group v-model="statusFilter" @change="reset()">
           <el-radio-button :value="undefined">全部</el-radio-button>
           <el-radio-button :value="1">正常</el-radio-button>
           <el-radio-button :value="0">隐藏</el-radio-button>
@@ -128,7 +112,6 @@ onMounted(load)
         :total="total"
         layout="prev, pager, next, total"
         style="justify-content: center; margin-top: 16px"
-        @current-change="load"
       />
     </div>
   </div>

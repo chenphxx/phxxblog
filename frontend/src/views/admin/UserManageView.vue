@@ -1,19 +1,30 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { userApi } from '@/api'
 import type { Role, User } from '@/types'
 import { useAuthStore } from '@/stores/auth'
+import { usePagedList } from '@/composables/usePagedList'
 
 const auth = useAuthStore()
 
-const users = ref<User[]>([])
 const roles = ref<Role[]>([])
-const total = ref(0)
-const page = ref(1)
-const pageSize = 10
 const keyword = ref('')
-const loading = ref(false)
+/**
+ * 列表分页与取数。
+ * 角色列表跟着每次加载一起取: 用户对话框要选角色, 只在挂载时取一次的话,
+ * 在别处改过角色后这里拿到的还是旧的。
+ */
+const { items: users, total, page, pageSize, loading, load, reset } = usePagedList<User>({
+  fetch: async (page, pageSize) => {
+    const [userData, roleData] = await Promise.all([
+      userApi.list({ page, page_size: pageSize, keyword: keyword.value || undefined }),
+      userApi.roles(),
+    ])
+    roles.value = roleData
+    return userData
+  },
+})
 
 const dialog = ref(false)
 const resetDialog = ref(false)
@@ -27,21 +38,6 @@ const form = ref({
   roles: [] as string[],
   status: 1,
 })
-
-async function load() {
-  loading.value = true
-  try {
-    const [userData, roleData] = await Promise.all([
-      userApi.list({ page: page.value, page_size: pageSize, keyword: keyword.value || undefined }),
-      userApi.roles(),
-    ])
-    users.value = userData.items
-    total.value = userData.total
-    roles.value = roleData
-  } finally {
-    loading.value = false
-  }
-}
 
 function openDialog(user?: User) {
   form.value = user
@@ -111,8 +107,6 @@ async function resetPassword() {
   ElMessage.success('密码已重置')
   resetDialog.value = false
 }
-
-onMounted(load)
 </script>
 
 <template>
@@ -125,10 +119,10 @@ onMounted(load)
           v-model="keyword"
           placeholder="搜索用户名/昵称/邮箱"
           clearable
-          @keyup.enter="page = 1; load()"
-          @clear="page = 1; load()"
+          @keyup.enter="reset()"
+          @clear="reset()"
         />
-        <el-button @click="page = 1; load()">搜索</el-button>
+        <el-button @click="reset()">搜索</el-button>
         <el-button type="primary" @click="openDialog()">新增用户</el-button>
       </div>
     </div>
@@ -171,7 +165,6 @@ onMounted(load)
         :total="total"
         layout="prev, pager, next, total"
         style="justify-content: center; margin-top: 16px"
-        @current-change="load"
       />
     </div>
 

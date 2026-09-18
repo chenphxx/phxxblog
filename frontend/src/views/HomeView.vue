@@ -12,15 +12,30 @@ import MetaIcon from '@/components/MetaIcon.vue'
 import { useAuthStore } from '@/stores/auth'
 import { chipStyle } from '@/utils/chipColor'
 import { formatDateTime } from '@/utils/datetime'
+import { usePagedList } from '@/composables/usePagedList'
 
 const settings = ref<PublicSettings | null>(null)
-const posts = ref<PostItem[]>([])
-const totalPosts = ref(0)
-/** 首页文章分页: 每页 10 篇, 第 1 页即最近 10 篇 */
-const page = ref(1)
-const pageSize = 10
-const postsLoading = ref(false)
 const latestPost = ref<PostItem | null>(null)
+/**
+ * 首页文章分页: 每页 10 篇, 第 1 页即最近 10 篇。
+ * autoLoad 关掉是因为首页要与其它的模块请求一起发(见 onMounted), 便于统一收尾。
+ */
+const {
+  items: posts,
+  total: totalPosts,
+  page,
+  pageSize,
+  loading: postsLoading,
+  load: loadPosts,
+  reset: resetPosts,
+} = usePagedList<PostItem>({
+  autoLoad: false,
+  fetch: (page, pageSize) => postApi.list({ page, page_size: pageSize }),
+  // 终端卡片里的"最新一篇"始终取第 1 页的第一条
+  onLoaded: (items) => {
+    if (page.value === 1) latestPost.value = items[0] || null
+  },
+})
 /** 左侧栏热门文章(按浏览量, 取 7 条) */
 const hotPosts = ref<PostItem[]>([])
 const postsAnchor = ref<HTMLElement>()
@@ -95,23 +110,8 @@ function linkName(link: { name?: string; url: string }) {
   }
 }
 
-/** 加载首页文章列表(全部文章, 按发布时间倒序) */
-async function loadPosts() {
-  postsLoading.value = true
-  try {
-    const data = await postApi.list({ page: page.value, page_size: pageSize })
-    posts.value = data.items
-    totalPosts.value = data.total
-    // 终端卡片里的"最新一篇"始终取第 1 页的第一条
-    if (page.value === 1) latestPost.value = data.items[0] || null
-  } finally {
-    postsLoading.value = false
-  }
-}
-
-/** 翻页后回到文章列表顶部, 便于查看更早的文章 */
-watch(page, async () => {
-  await loadPosts()
+/** 翻页后回到文章列表顶部, 便于查看更早的文章(首次加载不滚动) */
+watch(page, () => {
   postsAnchor.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 })
 
@@ -190,11 +190,7 @@ onActivated(async () => {
     settings.value = settingData
     categories.value = categoryData
     // 回到第 1 页, 保证能看到最新文章
-    if (page.value !== 1) {
-      page.value = 1 // watch(page) 会触发 loadPosts
-    } else {
-      await loadPosts()
-    }
+    await resetPosts()
     // 阅读量会随访问变化, 一并刷新榜单
     await loadHotPosts()
   } catch {

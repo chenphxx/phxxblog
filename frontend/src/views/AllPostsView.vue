@@ -1,28 +1,12 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
 import { postApi } from '@/api'
 import type { PostItem } from '@/types'
 import PostCard from '@/components/PostCard.vue'
+import { usePagedList } from '@/composables/usePagedList'
 
-const posts = ref<PostItem[]>([])
-const total = ref(0)
-const page = ref(1)
-const pageSize = 10
-const loading = ref(false)
-
-async function load() {
-  loading.value = true
-  try {
-    const data = await postApi.list({ page: page.value, page_size: pageSize })
-    posts.value = data.items
-    total.value = data.total
-  } finally {
-    loading.value = false
-  }
-}
-
-watch(page, load)
-onMounted(load)
+const { items: posts, total, page, pageSize, loading } = usePagedList<PostItem>({
+  fetch: (page, pageSize) => postApi.list({ page, page_size: pageSize }),
+})
 </script>
 
 <template>

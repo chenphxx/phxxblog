@@ -55,6 +55,7 @@ npm run check:size     # 打印首屏/整包体积(先 npm run build)
 | `src/utils/datetime.test.ts` | 时间格式化(全站列表/详情共用, 改动影响面大) |
 | `src/composables/usePostEditor.test.ts` | 文章编辑流程: 状态推导, 分类/标签就地新建, 删除取消不误删, 封面上传复位 |
 | `src/composables/useImportExport.test.ts` | 导入查重分支, 导入后刷新, 导出下载与失败回滚 |
+| `src/composables/usePagedList.test.ts` | 列表分页: 翻页与"回到第 1 页"各只请求一次, 请求失败也要复位 loading |
 | `src/api/http.test.ts` | 401 静默刷新: 重放原请求, 并发只刷新一次, 防循环, 刷新失败才登出 |
 | `src/views/DiaryView.test.ts` | **回归测试**: Vditor 组字期间 v-model 落后时, 保存必须取编辑器内容 |
 | `src/views/SearchView.test.ts` | **回归测试**: 该组件被 keep-alive 缓存, 切换 `route.query` 时必须重新检索 |
@@ -152,7 +153,7 @@ Error: EBUSY: resource busy or locked, watch
 src/
   components/MetaIcon.vue   元信息小图标(日历/眼睛/标签…), 内联 SVG + currentColor
   components/Kanbanniang*.vue 看板娘浮层(可按住形象本体拖动)与顶栏的形象下拉/开关
-  composables/              跨视图复用逻辑(usePostEditor / useImportExport), 返回 reactive 对象
+  composables/              跨视图复用逻辑(usePostEditor / useImportExport / usePagedList)
   api/http.ts               拦截器: 附加令牌 / 解包 / 401 静默刷新(单飞, 见文件内注释)
   utils/tokenStorage.ts     令牌与用户信息的唯一读写入口(不要在别处写 localStorage 的 key 字面量)
   styles/
