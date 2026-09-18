@@ -166,6 +166,7 @@ Error: EBUSY: resource busy or locked, watch
 src/
   components/MetaIcon.vue   元信息小图标(日历/眼睛/标签…), 内联 SVG + currentColor
   components/Kanbanniang*.vue 看板娘浮层(可按住形象本体拖动)与顶栏的形象下拉/开关
+  components/home/          首页的模块组件: 每个模块自己取数, 自己转圈, 开关由 HomeView 判断
   composables/              跨视图复用逻辑(usePostEditor / useImportExport / usePagedList)
   api/http.ts               拦截器: 附加令牌 / 解包 / 401 静默刷新(单飞, 见文件内注释)
   utils/tokenStorage.ts     令牌与用户信息的唯一读写入口(不要在别处写 localStorage 的 key 字面量)

@@ -1,24 +1,38 @@
 <script setup lang="ts">
 import { computed, onActivated, onMounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { CopyDocument, Refresh } from '@element-plus/icons-vue'
-import { categoryApi, mediaApi, miscApi, postApi, settingsApi, statsApi } from '@/api'
-import type { Category, ContributionPoint, HistoryEvent, PostItem, PublicSettings } from '@/types'
+import { categoryApi, mediaApi, postApi, settingsApi } from '@/api'
+import type { Category, PostItem, PublicSettings } from '@/types'
 import PostCard from '@/components/PostCard.vue'
-import HotPostsCard from '@/components/HotPostsCard.vue'
 import MarkdownView from '@/components/MarkdownView.vue'
-import ContributionsChart from '@/components/ContributionsChart.vue'
-import MetaIcon from '@/components/MetaIcon.vue'
+import HomeProfileCard from '@/components/home/HomeProfileCard.vue'
+import HomeSiteLinksCard from '@/components/home/HomeSiteLinksCard.vue'
+import HomeHotPostsCard from '@/components/home/HomeHotPostsCard.vue'
+import HomeSessionCard from '@/components/home/HomeSessionCard.vue'
+import HomeHistoryCard from '@/components/home/HomeHistoryCard.vue'
+import HomeContributionsSection from '@/components/home/HomeContributionsSection.vue'
 import { useAuthStore } from '@/stores/auth'
-import { chipStyle } from '@/utils/chipColor'
-import { formatDateTime } from '@/utils/datetime'
 import { usePagedList } from '@/composables/usePagedList'
+
+/**
+ * @brief 前台首页
+ *
+ * 只持有页面级数据与布局: 站点设置(含头像弹窗), 分类, 文章列表与分页。
+ * 辅助模块(个人资料以外的热门文章, 终端会话, 历史上的今天, 发布记录)各自取数与转圈,
+ * 因此任何一个慢接口都不会再把整页按在加载态; 模块开关只在模板里判断一处, 关掉的模块
+ * 不挂载也就不会发请求。模块实例通过模板 ref 暴露 refresh(), 由 onActivated 统一重取。
+ */
 
 const settings = ref<PublicSettings | null>(null)
 const latestPost = ref<PostItem | null>(null)
+const categories = ref<Category[]>([])
+const loading = ref(true)
+const auth = useAuthStore()
+const isAdmin = computed(() => auth.user?.role_codes.includes('admin'))
+
 /**
  * 首页文章分页: 每页 10 篇, 第 1 页即最近 10 篇。
- * autoLoad 关掉是因为首页要与其它的模块请求一起发(见 onMounted), 便于统一收尾。
+ * autoLoad 关掉是因为要与站点设置的请求一起发(见 onMounted), 便于统一收尾。
  */
 const {
   items: posts,
@@ -36,25 +50,13 @@ const {
     if (page.value === 1) latestPost.value = items[0] || null
   },
 })
-/** 左侧栏热门文章(按浏览量, 取 7 条) */
-const hotPosts = ref<PostItem[]>([])
+
 const postsAnchor = ref<HTMLElement>()
-const categories = ref<Category[]>([])
-const contributions = ref<ContributionPoint[]>([])
-const loading = ref(true)
-const auth = useAuthStore()
-const isAdmin = computed(() => auth.user?.role_codes.includes('admin'))
-const contributionYear = ref<number | null>(null)
-const saying = ref('')
-const sayingLoading = ref(false)
-const historyEvents = ref<HistoryEvent[]>([])
-const historyDate = ref('')
-const historyLoading = ref(false)
-/** 可筛选年份(近 6 年) */
-const contributionYears = computed(() => {
-  const current = new Date().getFullYear()
-  return Array.from({ length: 6 }, (_, i) => current - i)
-})
+/** 辅助模块实例: 关掉开关时组件不挂载, 这里就是 null */
+const hotPostsRef = ref<InstanceType<typeof HomeHotPostsCard> | null>(null)
+const sessionRef = ref<InstanceType<typeof HomeSessionCard> | null>(null)
+const historyRef = ref<InstanceType<typeof HomeHistoryCard> | null>(null)
+const contributionsRef = ref<InstanceType<typeof HomeContributionsSection> | null>(null)
 
 // 头像查看/更换
 const avatarDialog = ref(false)
@@ -84,93 +86,10 @@ async function saveAvatar() {
   avatarDialog.value = false
 }
 
-function favicon(url: string) {
-  try {
-    return `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=64`
-  } catch {
-    return ''
-  }
-}
-
-function fallbackIcon(event: Event, url: string) {
-  const img = event.target as HTMLImageElement
-  try {
-    img.src = `https://${new URL(url).hostname}/favicon.ico`
-  } catch {
-    img.style.visibility = 'hidden'
-  }
-}
-
-function linkName(link: { name?: string; url: string }) {
-  if (link.name) return link.name
-  try {
-    return new URL(link.url).hostname
-  } catch {
-    return link.url
-  }
-}
-
 /** 翻页后回到文章列表顶部, 便于查看更早的文章(首次加载不滚动) */
 watch(page, () => {
   postsAnchor.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 })
-
-/**
- * 加载左侧栏的热门文章。
- * 属于辅助模块, 失败时保持空列表即可(请求拦截器已经提示过错误)。
- */
-async function loadHotPosts() {
-  try {
-    hotPosts.value = await postApi.hot(7)
-  } catch {
-    hotPosts.value = []
-  }
-}
-
-async function loadContributions() {
-  contributions.value = await statsApi.contributions({
-    source: 'post',
-    weeks: 52,
-    year: contributionYear.value || undefined,
-  })
-}
-
-async function loadSaying(force = false) {
-  sayingLoading.value = true
-  try {
-    const data = await miscApi.saying(force)
-    saying.value = data.text
-  } catch {
-    saying.value = '一言暂时走神了, 点击右侧刷新重试'
-  } finally {
-    sayingLoading.value = false
-  }
-}
-
-async function copySaying() {
-  if (!saying.value) return
-  try {
-    await navigator.clipboard.writeText(saying.value)
-    ElMessage.success('一言已复制')
-  } catch {
-    ElMessage.error('复制失败')
-  }
-}
-
-async function loadHistory() {
-  historyLoading.value = true
-  try {
-    const data = await miscApi.historyToday()
-    historyDate.value = data.date
-    historyEvents.value = data.events || []
-  } catch {
-    historyEvents.value = []
-  } finally {
-    historyLoading.value = false
-  }
-}
-
-watch(contributionYear, loadContributions)
 
 // keep-alive 缓存下, 从后台修改设置/发布文章后返回首页要刷新。
 // 注意: 以前这里只重取 settings, 文章列表/totalPosts/latestPost 仍是旧数据 ——
@@ -186,10 +105,15 @@ onActivated(async () => {
     const [settingData, categoryData] = await Promise.all([settingsApi.public(), categoryApi.list()])
     settings.value = settingData
     categories.value = categoryData
-    // 回到第 1 页, 保证能看到最新文章
-    await resetPosts()
-    // 阅读量会随访问变化, 一并刷新榜单
-    await loadHotPosts()
+    await Promise.all([
+      // 回到第 1 页, 保证能看到最新文章
+      resetPosts(),
+      // 各模块的数据也随访问变化(阅读量, 一言, 发布记录), 一并重取
+      hotPostsRef.value?.refresh(),
+      sessionRef.value?.refresh(),
+      historyRef.value?.refresh(),
+      contributionsRef.value?.refresh(),
+    ])
   } catch {
     // 忽略刷新失败
   }
@@ -200,12 +124,7 @@ onMounted(async () => {
     const [settingData, categoryData] = await Promise.all([settingsApi.public(), categoryApi.list()])
     settings.value = settingData
     categories.value = categoryData
-    const tasks: Promise<unknown>[] = [loadPosts(), loadHotPosts()]
-    // 后台关闭的模块不再请求对应接口
-    if (settingData?.show_contributions !== false) tasks.push(loadContributions())
-    if (settingData?.show_history !== false) tasks.push(loadHistory())
-    if (settingData?.show_session !== false) tasks.push(loadSaying())
-    await Promise.all(tasks)
+    await loadPosts()
   } finally {
     loading.value = false
   }
@@ -217,193 +136,34 @@ onMounted(async () => {
     <div class="home-grid">
       <!-- 左侧: 个人资料 + 常用网站 -->
       <div class="home-left">
-        <aside class="profile-card card">
-          <!-- 头像可点击查看大图: el-avatar 渲染成 span, 不加 role/tabindex 的话
-               键盘用户无法触发, 屏幕阅读器也不知道它是个按钮 -->
-          <el-avatar
-            :size="96"
-            :src="settings?.site_avatar || undefined"
-            class="profile-avatar clickable-avatar"
-            role="button"
-            tabindex="0"
-            aria-label="查看或更换头像"
-            @click="openAvatar"
-            @keydown.enter.prevent="openAvatar"
-            @keydown.space.prevent="openAvatar"
-          >
-            {{ (settings?.site_name || 'B')[0] }}
-          </el-avatar>
-          <h1 class="profile-name">{{ settings?.site_name || 'phxxblog' }}</h1>
-          <p class="profile-bio">{{ settings?.site_bio || '' }}</p>
-
-          <div class="profile-social">
-            <a
-              v-for="link in settings?.social_links || []"
-              :key="link.url"
-              :href="link.url"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="social-link"
-              :title="linkName(link)"
-            >
-              <img
-                v-if="favicon(link.url)"
-                :src="favicon(link.url)"
-                alt=""
-                class="social-icon"
-                @error="fallbackIcon($event, link.url)"
-              />
-              <span>{{ linkName(link) }}</span>
-            </a>
-          </div>
-
-          <div class="profile-tags">
-            <el-tag v-for="tag in settings?.tech_tags || []" :key="tag" size="small" effect="plain" round>{{
-              tag
-            }}</el-tag>
-          </div>
-
-          <div class="profile-categories">
-            <router-link
-              v-for="cat in categories"
-              :key="cat.id"
-              :to="`/search?category=${cat.id}`"
-              class="category-chip chip"
-              :style="chipStyle(cat.name, cat.color)"
-            >
-              {{ cat.name }} ({{ cat.post_count }})
-            </router-link>
-          </div>
-        </aside>
+        <HomeProfileCard :settings="settings" :categories="categories" @open-avatar="openAvatar" />
 
         <!-- 热门文章(位于个人信息与常用网站之间) -->
-        <HotPostsCard :posts="hotPosts" />
+        <HomeHotPostsCard ref="hotPostsRef" />
 
         <!-- 常用网站(仅管理员可见, 位于个人信息下方) -->
-        <aside v-if="isAdmin && settings?.website_links?.length" class="card site-links-card">
-          <h3>常用网站</h3>
-          <a
-            v-for="link in settings.website_links"
-            :key="link.url"
-            :href="link.url"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="site-link"
-          >
-            <img
-              v-if="favicon(link.url)"
-              :src="favicon(link.url)"
-              alt=""
-              class="site-link-icon"
-              @error="fallbackIcon($event, link.url)"
-            />
-            <span>{{ linkName(link) }}</span>
-          </a>
-        </aside>
+        <HomeSiteLinksCard v-if="isAdmin && settings?.website_links?.length" :links="settings.website_links" />
       </div>
 
       <!-- 右侧: 终端会话 + 内容区块 -->
       <main class="home-main">
-        <section v-if="settings?.show_session !== false" class="term-card">
-          <div class="term-head">
-            <span class="term-dot term-dot-red" />
-            <span class="term-dot term-dot-amber" />
-            <span class="term-dot term-dot-green" />
-            <span class="term-title">session — {{ settings?.site_name || 'blog' }}</span>
-            <div class="term-actions">
-              <el-button
-                size="small"
-                circle
-                :disabled="!saying"
-                :icon="CopyDocument"
-                title="复制一言"
-                @click="copySaying"
-              />
-              <el-button
-                size="small"
-                circle
-                :loading="sayingLoading"
-                :icon="Refresh"
-                title="换一句"
-                @click="loadSaying(true)"
-              />
-            </div>
-          </div>
-          <div class="term-body">
-            <p class="term-line"><span class="term-prompt">$</span> whoami</p>
-            <p class="term-out">
-              {{ settings?.site_name || 'phxxblog' }}<span v-if="settings?.site_bio"> — {{ settings.site_bio }}</span>
-            </p>
-            <p class="term-line"><span class="term-prompt">$</span> ls posts | wc -l</p>
-            <p class="term-out">{{ totalPosts }}</p>
-            <p class="term-line"><span class="term-prompt">$</span> tail -n 1 posts/latest</p>
-            <p v-if="latestPost" class="term-out">
-              <router-link :to="`/post/${latestPost.id}`" class="term-link">
-                <MetaIcon name="calendar" />
-                <span>{{ formatDateTime(latestPost.published_at || latestPost.created_at) }}</span>
-                <span class="term-sep">·</span>
-                <span>{{ latestPost.title }}</span>
-              </router-link>
-            </p>
-            <p v-else class="term-out">暂无文章</p>
-            <p class="term-line"><span class="term-prompt">$</span> say</p>
-            <p class="term-out">{{ saying || '一言加载中...' }}</p>
-            <p class="term-line"><span class="term-prompt">$</span><span class="term-cursor" aria-hidden="true" /></p>
-          </div>
-        </section>
+        <!-- 模块开关只在这里判断: 关掉的模块不挂载, 也就不会去请求接口 -->
+        <HomeSessionCard
+          v-if="settings && settings.show_session !== false"
+          ref="sessionRef"
+          :settings="settings"
+          :total-posts="totalPosts"
+          :latest-post="latestPost"
+        />
 
-        <section v-if="settings?.show_history !== false" class="card history-card">
-          <div class="history-head">
-            <p class="eyebrow">history — 程序员历史上的今天</p>
-            <el-button
-              size="small"
-              circle
-              :loading="historyLoading"
-              :icon="Refresh"
-              title="刷新"
-              @click="loadHistory"
-            />
-          </div>
-          <template v-if="historyEvents.length">
-            <p class="muted history-date">
-              <MetaIcon name="calendar" />
-              <span>{{ historyDate || '今日' }}</span>
-            </p>
-            <div v-for="(event, index) in historyEvents" :key="index" class="history-event">
-              <span class="history-year">{{ event.year }}</span>
-              <div class="history-body">
-                <div class="history-title">{{ event.title }}</div>
-                <div class="history-desc">{{ event.description }}</div>
-                <div class="history-tags">
-                  <span v-if="event.category" class="code-token">
-                    <MetaIcon name="folder" />
-                    <span>{{ event.category }}</span>
-                  </span>
-                  <span v-for="tag in event.tags || []" :key="tag" class="code-token">
-                    <MetaIcon name="hash" />
-                    <span>{{ tag }}</span>
-                  </span>
-                </div>
-              </div>
-            </div>
-          </template>
-          <el-empty v-else-if="!historyLoading" description="暂无历史上的今天数据" :image-size="60" />
-        </section>
+        <HomeHistoryCard v-if="settings && settings.show_history !== false" ref="historyRef" />
 
         <section v-if="settings?.show_readme !== false && settings?.site_readme" class="card section-card">
           <p class="eyebrow" style="margin-bottom: 10px">readme — 关于</p>
           <MarkdownView :content="settings.site_readme" />
         </section>
 
-        <section v-if="settings?.show_contributions !== false" class="card section-card">
-          <p class="eyebrow" style="margin-bottom: 12px">activity — 文章发布记录</p>
-          <ContributionsChart
-            :points="contributions"
-            :years="contributionYears"
-            :year="contributionYear"
-            @update:year="contributionYear = $event"
-          />
-        </section>
+        <HomeContributionsSection v-if="settings && settings.show_contributions !== false" ref="contributionsRef" />
 
         <section ref="postsAnchor" class="home-posts">
           <div class="posts-head">
@@ -466,7 +226,6 @@ onMounted(async () => {
     </el-dialog>
   </div>
 </template>
-
 <style scoped>
 .home-grid {
   display: grid;
@@ -480,106 +239,6 @@ onMounted(async () => {
   gap: 20px;
   position: sticky;
   top: 76px;
-}
-.profile-card {
-  text-align: center;
-  padding: 26px 18px 20px;
-}
-.profile-avatar {
-  margin-bottom: 12px;
-}
-.clickable-avatar {
-  cursor: pointer;
-}
-/* 键盘用户也需要看到焦点位置(头像已加 tabindex="0") */
-.clickable-avatar:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 3px;
-  border-radius: 50%;
-}
-.profile-name {
-  margin: 0 0 6px;
-  font-size: 21px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-.profile-bio {
-  font-family: var(--font-mono);
-  color: var(--muted);
-  font-size: 12px;
-  margin: 0 0 16px;
-}
-.profile-social {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 14px;
-}
-.social-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 10px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  color: var(--text);
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  text-decoration: none;
-}
-.social-link:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-}
-.social-icon {
-  width: 16px;
-  height: 16px;
-}
-.site-links-card {
-  padding: 16px;
-  text-align: left;
-}
-.site-links-card h3 {
-  margin: 0 0 12px;
-  font-size: 15px;
-}
-.site-link {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 0;
-  color: var(--text);
-  font-size: 14px;
-  text-decoration: none;
-}
-.site-link:hover {
-  color: var(--primary);
-}
-.site-link-icon {
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
-  flex-shrink: 0;
-}
-.profile-tags {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 14px;
-}
-.profile-categories {
-  border-top: 1px solid var(--border);
-  padding-top: 12px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
-}
-.category-chip {
-  font-size: 11.5px;
-  padding: 2px 10px;
 }
 .home-main {
   min-width: 0;
@@ -615,192 +274,12 @@ onMounted(async () => {
   margin-top: 20px;
 }
 
-/* ---------- 终端会话卡片(招牌元素) ---------- */
-.term-card {
-  margin-bottom: 20px;
-  background: var(--term-bg);
-  border: 1px solid var(--term-border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  overflow: hidden;
-}
-.term-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--term-border);
-  background: color-mix(in srgb, var(--term-bg) 82%, #0d1b22);
-}
-.term-dot {
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.term-dot-red {
-  background: #f87171;
-}
-.term-dot-amber {
-  background: #fbbf24;
-}
-.term-dot-green {
-  background: #34d399;
-}
-.term-title {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--term-dim);
-  flex: 1;
-  text-align: center;
-  margin-right: 58px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.term-actions {
-  display: flex;
-  gap: 6px;
-  flex-shrink: 0;
-}
-.term-actions .el-button {
-  --el-button-bg-color: transparent;
-  --el-button-border-color: var(--term-border);
-  --el-button-text-color: var(--term-dim);
-  /* 悬停底色由终端令牌推导, 跟随主题而不是写死 #16222b */
-  --el-button-hover-bg-color: color-mix(in srgb, var(--term-bg) 78%, var(--term-accent));
-  --el-button-hover-border-color: color-mix(in srgb, var(--term-border) 55%, var(--term-accent));
-  --el-button-hover-text-color: var(--term-text);
-}
-.term-body {
-  padding: 16px 20px 18px;
-  font-family: var(--font-mono);
-  font-size: 13.5px;
-  line-height: 1.75;
-}
-.term-line {
-  margin: 8px 0 0;
-  color: var(--term-prompt);
-}
-.term-prompt {
-  color: var(--term-accent);
-  margin-right: 8px;
-  user-select: none;
-}
-.term-out {
-  margin: 0 0 2px 20px;
-  color: var(--term-text);
-  overflow-wrap: anywhere;
-}
-.term-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  color: var(--term-text);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  text-decoration-color: color-mix(in srgb, var(--term-text) 45%, transparent);
-}
-.term-link:hover {
-  color: #ffffff;
-}
-.term-sep {
-  color: var(--term-dim);
-}
-.term-cursor {
-  display: inline-block;
-  width: 8px;
-  height: 15px;
-  margin-left: 2px;
-  vertical-align: -2px;
-  background: var(--term-accent);
-  animation: term-blink 1.1s steps(2, start) infinite;
-}
-@keyframes term-blink {
-  0%,
-  49% {
-    opacity: 1;
-  }
-  50%,
-  100% {
-    opacity: 0;
-  }
-}
-.history-card {
-  margin-bottom: 20px;
-}
-.history-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-.history-head .eyebrow {
-  margin: 0;
-}
-.history-date {
-  margin: 0 0 8px;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-.history-event {
-  display: flex;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px dashed var(--border);
-}
-.history-event:last-child {
-  border-bottom: none;
-}
-.history-year {
-  flex-shrink: 0;
-  width: 54px;
-  font-weight: 700;
-  color: var(--primary);
-  font-size: 15px;
-}
-.history-body {
-  min-width: 0;
-}
-.history-title {
-  font-size: 14.5px;
-  font-weight: 600;
-}
-.history-desc {
-  font-size: 13px;
-  color: var(--muted);
-  margin: 4px 0 6px;
-  line-height: 1.6;
-}
-.history-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.code-token {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  color: var(--primary);
-  background: var(--primary-weak);
-  border-radius: 4px;
-  padding: 1px 7px;
-}
 @media (max-width: 900px) {
   .home-grid {
     grid-template-columns: 1fr;
   }
   .home-left {
     position: static;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .term-cursor {
-    animation: none;
-    opacity: 1;
   }
 }
 </style>

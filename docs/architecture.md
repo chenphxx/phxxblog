@@ -94,6 +94,7 @@ phxxblog/
 │   └── src/
 │       ├── api/                  # http.ts(Axios 实例、拦截器与 401 静默刷新) + index.ts(按模块的接口封装)
 │       ├── components/           # 通用组件(MarkdownView / PostCard / MetaIcon / 图表 / 评论等)
+│       │   └── home/             # 首页模块组件(个人资料 / 热门文章 / 常用网站 / 终端 / 历史上的今天 / 发布记录)
 │       ├── composables/          # 跨视图复用逻辑(usePostEditor / useImportExport / usePagedList)
 │       ├── kanbanniang/          # 看板娘形象清单(registry.ts)与运行时加载(loader.ts)
 │       ├── layouts/              # 前台布局(顶栏 + 页脚)
@@ -106,7 +107,7 @@ phxxblog/
 │       │   ├── fonts.css         # 自托管 Cascadia Code 的 @font-face
 │       │   └── themes/           # 9 套主题令牌(生成物) + registry.ts + _source/(源与脚本)
 │       ├── types/index.ts        # 与后端对齐的 TypeScript 类型
-│       ├── utils/                # 令牌存储、文档 cookie、标签配色、文本统计等工具
+│       ├── utils/                # 令牌存储、文档 cookie、标签配色、链接图标、文本统计等工具
 │       └── views/                # 页面(前台 views/ + 后台 views/admin/)
 └── backend/                      # 后端工程(FastAPI)
     ├── app/
@@ -444,6 +445,11 @@ phxxblog/
 
 后台`系统设置 → 前台展示`提供五个开关(主页 README, 文章发布记录, 程序员历史上的今天, session 终端卡片, 看板娘), 以 `1/0` 存入 `settings` 表, 由 `/settings/public` 输出为布尔值 首页按开关决定是否渲染对应模块, 并跳过对应的接口请求(不浪费请求); 看板娘开关由前台布局读取, 关掉后不加载也不展示(见 7.26); 首页文章列表默认展示最近 10 篇, 底部分页可查看更早文章, 翻页后自动回到列表顶部 
 - 设置键与默认值集中定义在 `core/settings_schema.py`: 初始化脚本(seed)与 `/settings` 接口都从这里取默认值, 新增设置项时后端只改这一个文件 `PUBLIC_KEYS` 显式列出对前台公开的键(安全边界, 不从默认值反推), 它与前端 `types/index.ts` 的 `PublicSettings` 及后台表单是否一致, 由 `scripts/check_settings_keys.py` 校验(见 testing.md) 
+
+- 首页自身只持有页面级数据(站点设置, 分类, 文章列表与分页)与布局, 各展示模块拆到 `components/home/`: 
+  每个模块自己取数, 自己转圈, 取数失败也只影响自己那块(以前是整页一个 loading, 任何一个慢接口都会把首页按在加载态) 
+  模块开关只在 `HomeView.vue` 的模板里判断一处, 关掉的模块不挂载, 因此也不会发请求; 
+  keep-alive 重新激活时由首页通过模板 ref 调用各模块暴露的 `refresh()` 重新取数 
 
 ### 7.8 一言(每天仅刷新一次)
 

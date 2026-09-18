@@ -97,7 +97,7 @@ npm run test:coverage   # 覆盖率报告 -> coverage/index.html
 
 ### 3.3 用例清单
 
-10 个文件 73 条: 
+16 个文件 95 条: 
 
 | 文件 | 覆盖内容 |
 | --- | --- |
@@ -111,6 +111,12 @@ npm run test:coverage   # 覆盖率报告 -> coverage/index.html
 | `src/api/http.test.ts` | 401 静默刷新: 重放原请求, 并发只刷新一次, 防循环, 刷新失败才登出 |
 | `src/views/DiaryView.test.ts` | **回归**: Vditor 组字期间 `v-model` 落后时, 保存必须取编辑器内容 |
 | `src/views/SearchView.test.ts` | **回归**: 被 keep-alive 缓存的组件在 `route.query` 变化时必须重新检索 |
+| `src/views/HomeView.test.ts` | 首页模块开关: 关掉的模块对应接口一次都不请求, 翻页只重取文章列表 |
+| `src/components/home/HomeSessionCard.test.ts` | 终端卡片: 一言的取数与 force 刷新(绕过每天一次的缓存), 失败给出可重试提示 |
+| `src/components/home/HomeHistoryCard.test.ts` | 历史上的今天: 挂载取数, refresh 重取, 取数失败按空状态展示 |
+| `src/components/home/HomeContributionsSection.test.ts` | 发布记录: 按年份参数取数, 失败后 loading 必须复位 |
+| `src/components/home/HomeHotPostsCard.test.ts` | 热门文章: 固定取 7 条, 取数失败保持空列表 |
+| `src/utils/linkIcon.test.ts` | 链接图标与显示名的兜底分支(地址不合法时不渲染图标/退回原文) |
 
 `DiaryView` 与 `SearchView` 两组是针对真实 bug 写的 后者用真实 router 反复 push 不同 query 复现 keep-alive 场景, 验证方式是: 把组件里响应 route 变化的那段逻辑删掉, 用例会失败(`expected length 3 but got 5`), 所以不是"假绿" 
 
