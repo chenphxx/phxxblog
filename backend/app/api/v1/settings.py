@@ -6,57 +6,12 @@ from app.core.database import get_db
 from app.core.deps import require_permission
 from app.core.permissions import Perm
 from app.core.response import ok
+from app.core.settings_schema import BOOL_KEYS, DEFAULTS, PUBLIC_KEYS
 from app.models.setting import Setting
 from app.models.user import User
 from app.services.log import write_operation_log
 
 router = APIRouter(prefix="/settings", tags=["设置"])
-
-# 前台公开的配置键
-PUBLIC_KEYS = [
-    "site_name",
-    "site_title",
-    "site_desc",
-    "site_keywords",
-    "site_icon",
-    "site_avatar",
-    "site_bio",
-    "site_readme",
-    "tech_tags",
-    "social_links",
-    "website_links",
-    "beian_info",
-    "show_readme",
-    "show_contributions",
-    "show_history",
-    "show_session",
-    "show_kanbanniang",
-    "footer_text",
-]
-
-DEFAULTS = {
-    "site_name": "phxxblog",
-    "site_title": "",
-    "site_desc": "记录技术成长与生活点滴的个人博客",
-    "site_keywords": "blog, 技术, 分享",
-    "site_icon": "",
-    "site_avatar": "",
-    "site_bio": "一个热爱编程的开发者",
-    "site_readme": "",
-    "tech_tags": "Python, Vue, FastAPI",
-    "social_links": "[]",
-    "website_links": "[]",
-    "beian_info": "[]",
-    "show_readme": "1",
-    "show_contributions": "1",
-    "show_history": "1",
-    "show_session": "1",
-    "show_kanbanniang": "1",
-    "footer_text": "© {year} {site_name} · Vue3 + FastAPI",
-}
-
-# 布尔型开关: 1/true/yes/on 视为开启
-BOOL_KEYS = ("show_readme", "show_contributions", "show_history", "show_session", "show_kanbanniang")
 
 
 @router.get("/public", response_model=dict)

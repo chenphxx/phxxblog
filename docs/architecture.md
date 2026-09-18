@@ -111,7 +111,7 @@ phxxblog/
     │   ├── main.py               # 应用入口: 中间件、异常处理、路由与静态目录挂载
     │   ├── seed.py               # 初始化: 权限/角色/管理员/默认设置/默认分类标签
     │   ├── api/v1/               # 路由层(按业务模块拆分)
-    │   ├── core/                 # config / database / security / deps / permissions / pagination / ratelimit / middleware / response
+    │   ├── core/                 # config / database / security / deps / permissions / pagination / ratelimit / middleware / response / settings_schema
     │   ├── models/               # ORM 模型
     │   ├── schemas/              # Pydantic 请求与响应模型
     │   └── services/             # 业务服务(markdown / upload / stats / geo / ua / log / text / link_preview / archive / import_pipeline / post_write / post_query / post_archive / ip2region)
@@ -440,6 +440,7 @@ phxxblog/
 ### 7.7 首页模块开关与分页
 
 后台`系统设置 → 前台展示`提供五个开关(主页 README, 文章发布记录, 程序员历史上的今天, session 终端卡片, 看板娘), 以 `1/0` 存入 `settings` 表, 由 `/settings/public` 输出为布尔值 首页按开关决定是否渲染对应模块, 并跳过对应的接口请求(不浪费请求); 看板娘开关由前台布局读取, 关掉后不加载也不展示(见 7.26); 首页文章列表默认展示最近 10 篇, 底部分页可查看更早文章, 翻页后自动回到列表顶部 
+- 设置键与默认值集中定义在 `core/settings_schema.py`: 初始化脚本(seed)与 `/settings` 接口都从这里取默认值, 新增设置项时后端只改这一个文件 `PUBLIC_KEYS` 显式列出对前台公开的键(安全边界, 不从默认值反推), 它与前端 `types/index.ts` 的 `PublicSettings` 及后台表单是否一致, 由 `scripts/check_settings_keys.py` 校验(见 testing.md) 
 
 ### 7.8 一言(每天仅刷新一次)
 

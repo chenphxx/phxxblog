@@ -140,6 +140,7 @@ composable 的断言方式, Axios 假 adapter 的用法, Element Plus 组件的�
 | `check_list_query_counts.py` | 分类 / 标签接口的 SQL 条数(验证 n+1 优化) |
 | `check_media_paths.py` | `media` 表的 `url` / `path` 与磁盘文件是否对得上 |
 | `check_upload_path.py` | `resolve_upload_file` 的路径校验(含旧实现会漏掉的绕过用例) |
+| `check_settings_keys.py` | 设置项的后端默认值, 公开键列表, 前端类型与后台表单四处的键是否一致(不需要数据库) |
 
 ## 5. 一键验证与 CI
 
@@ -150,13 +151,14 @@ cd backend
 .venv/Scripts/python.exe scripts/verify_all.py
 ```
 
-把散落在各处的检查串起来跑一遍并打印汇总表, 退出码非 0 即有用例或检查失败 目前 8 项: 
+把散落在各处的检查串起来跑一遍并打印汇总表, 退出码非 0 即有用例或检查失败 目前 9 项: 
 
 | 分组 | 检查 |
 | --- | --- |
 | 后端 | `import app.main` 可导入 |
 | 后端 | `python -m pytest tests -q` |
 | 后端 | 启动即校验表结构(`missing_columns()` 为空) |
+| 后端 | `scripts/check_settings_keys.py`(设置项的默认值, 公开键, 前端类型与表单一致) |
 | 前端 | `npx vue-tsc -b --force` |
 | 前端 | `npm run test` |
 | 前端 | `npm run themes:audit` |

@@ -29,6 +29,7 @@ py = str(BACKEND / ".venv" / "Scripts" / "python.exe")
 run("后端: 可导入", [py, "-c", "import app.main"], BACKEND)
 run("后端: pytest", [py, "-m", "pytest", "tests", "-q"], BACKEND, ok_hint="passed")
 run("后端: 启动即校验表结构", [py, "-c", "from app.core.database import missing_columns; assert not missing_columns(), missing_columns()"], BACKEND)
+run("后端: 设置项定义一致", [py, "scripts/check_settings_keys.py"], BACKEND, ok_hint="全部一致")
 
 if sys.platform == "win32":
     npx = "npx.cmd"

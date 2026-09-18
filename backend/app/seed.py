@@ -9,6 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from app.core.database import Base, SessionLocal, engine
 from app.core.permissions import Perm
 from app.core.security import hash_password
+from app.core.settings_schema import DEFAULT_SETTINGS
 from app.models.post import Category, Tag
 from app.models.setting import Setting
 from app.models.user import Permission, Role, User
