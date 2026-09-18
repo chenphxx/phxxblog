@@ -21,7 +21,7 @@ const footerText = computed(() => {
   if (!raw) return ''
   return raw
     .replaceAll('{year}', String(new Date().getFullYear()))
-    .replaceAll('{site_name}', settings.value?.site_name || 'chenphxx')
+    .replaceAll('{site_name}', settings.value?.site_name || 'phxxblog')
 })
 const beianList = computed(() => (settings.value?.beian_info ?? []).filter((b) => b.name))
 /** 页脚无任何内容时整体不渲染 */
@@ -35,7 +35,7 @@ onMounted(async () => {
     // 后台的看板娘总开关(系统设置 - 前台展示), 关掉后前台不加载也不展示
     kanbanniang.setAllowed(settings.value.show_kanbanniang !== false)
     // 浏览器标签页名称(留空回退到站点名称)
-    document.title = settings.value.site_title || settings.value.site_name || "chenphxx's blog"
+    document.title = settings.value.site_title || settings.value.site_name || 'phxxblog'
     // 动态站点图标
     const icon = settings.value.site_icon || settings.value.site_avatar
     if (icon) {
@@ -59,7 +59,7 @@ onMounted(async () => {
     <header class="site-header">
       <div class="site-header-inner">
         <router-link to="/" class="site-brand">
-          <span class="brand-user">{{ settings?.site_name || 'chenphxx' }}</span>
+          <span class="brand-user">{{ settings?.site_name || 'phxxblog' }}</span>
           <span class="brand-host">@blog</span><span class="brand-path">:~$</span>
         </router-link>
         <nav class="site-nav">

@@ -54,7 +54,7 @@ onMounted(() => {
     settingsApi
       .public()
       .then((data) => {
-        document.title = data.site_title || data.site_name || "chenphxx's blog"
+        document.title = data.site_title || data.site_name || 'phxxblog'
       })
       .catch(() => {}),
   )

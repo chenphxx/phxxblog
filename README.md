@@ -6,7 +6,7 @@
 
 ### 环境要求
 
-- Node.js ≥ 18(推荐 20+) 
+- Node.js ≥ 22.19(`.nvmrc` 与 CI 用 24, 再低会加载不了 jsdom, 测试跑不起来) 
 - Python ≥ 3.10 
 - MySQL 9(本项目使用的是MySQL 9, 其他版本自行测试即可) 
 
@@ -30,10 +30,17 @@ pip install -r requirements.txt
 copy .env.example .env               # Windows: copy; macOS/Linux: cp
 ```
 
-编辑 `.env`, 把数据库连接串里的密码改成你的 MySQL 密码: 
+编辑 `.env`, 改两处: 数据库连接串里的密码, 以及 `PHXXBLOG_SECRET_KEY`(`.env.example` 里的占位值长度不足 32, 不改会拒绝启动): 
 
 ```ini
 PHXXBLOG_DATABASE_URL=mysql+pymysql://root:你的MySQL密码@localhost:3306/phxxblog?charset=utf8mb4
+PHXXBLOG_SECRET_KEY=至少 32 位的随机字符串
+```
+
+密钥生成方式: 
+
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(48))"
 ```
 
 初始化管理员账号, 角色权限和默认设置, 并下载离线 IP 定位库(用于评论显示省市区): 
@@ -49,7 +56,7 @@ python scripts/download_ip2region.py
 uvicorn app.main:app --reload --port 8000
 ```
 
-> 首次初始化会创建管理员账号(admin), 请登录后台后尽快修改密码 
+> 首次初始化会创建管理员账号 admin: 密码取 `PHXXBLOG_ADMIN_PASSWORD`, 没配则随机生成并在 seed 的输出里打印一次(只显示这一次), 请登录后台后尽快修改 
 
 ### 启动前端
 
@@ -118,6 +125,6 @@ python scripts/import_wordpress.py --xml 路径.xml --no-download   # 跳过附�
 
 - [技术架构与实现说明](docs/architecture.md) - 技术栈, 系统架构, 目录职责与各功能的实现方式 
 - [接口文档](docs/api.md) - 全部 74 个接口的路径, 鉴权要求与业务约束 
-- [数据库表结构设计](docs/mysql.md) - 18 张表的字段说明, 完整 DDL 与"表结构演进"约定 
+- [数据库表结构设计](docs/mysql.md) - 20 张表的字段说明, 完整 DDL 与"表结构演进"约定 
 - [测试与检查说明](docs/testing.md) - 测试分层, 用例清单, 检查脚本与 CI 流水线 
 - [更新日志](CHANGELOG.md) 

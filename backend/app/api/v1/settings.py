@@ -35,7 +35,7 @@ PUBLIC_KEYS = [
 ]
 
 DEFAULTS = {
-    "site_name": "chenphxx's blog",
+    "site_name": "phxxblog",
     "site_title": "",
     "site_desc": "记录技术成长与生活点滴的个人博客",
     "site_keywords": "blog, 技术, 分享",

@@ -25,7 +25,7 @@ def _aware(value: datetime | None) -> datetime | None:
 
 def _site_name(db: Session) -> str:
     row = db.get(Setting, "site_name")
-    return row.setting_value if row and row.setting_value else "chenphxx's blog"
+    return row.setting_value if row and row.setting_value else "phxxblog"
 
 
 def _site_desc(db: Session) -> str:

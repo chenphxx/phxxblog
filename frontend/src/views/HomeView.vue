@@ -240,7 +240,7 @@ onMounted(async () => {
           >
             {{ (settings?.site_name || 'B')[0] }}
           </el-avatar>
-          <h1 class="profile-name">{{ settings?.site_name || 'chenphxx' }}</h1>
+          <h1 class="profile-name">{{ settings?.site_name || 'phxxblog' }}</h1>
           <p class="profile-bio">{{ settings?.site_bio || '' }}</p>
 
           <div class="profile-social">
@@ -310,7 +310,7 @@ onMounted(async () => {
           </div>
           <div class="term-body">
             <p class="term-line"><span class="term-prompt">$</span> whoami</p>
-            <p class="term-out">{{ settings?.site_name || 'chenphxx' }}<span v-if="settings?.site_bio"> — {{ settings.site_bio }}</span></p>
+            <p class="term-out">{{ settings?.site_name || 'phxxblog' }}<span v-if="settings?.site_bio"> — {{ settings.site_bio }}</span></p>
             <p class="term-line"><span class="term-prompt">$</span> ls posts | wc -l</p>
             <p class="term-out">{{ totalPosts }}</p>
             <p class="term-line"><span class="term-prompt">$</span> tail -n 1 posts/latest</p>

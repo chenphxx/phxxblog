@@ -356,7 +356,7 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
 <body>
 <header class="site-header">
   <div class="site-header-inner">
-    <a class="site-brand" href="#"><span>chenphxx</span><span>@blog</span><span class="brand-path">:~$</span></a>
+    <a class="site-brand" href="#"><span>phxxblog</span><span>@blog</span><span class="brand-path">:~$</span></a>
     <nav class="site-nav">
       <a href="#" class="router-link-active">首页</a>
       <a href="#">归档</a>
@@ -384,7 +384,7 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
     <div class="home-left">
       <aside class="card profile-card">
         <div class="profile-avatar">C</div>
-        <h1 class="profile-name">chenphxx</h1>
+        <h1 class="profile-name">phxxblog</h1>
         <p class="profile-bio">写代码, 也写点别的</p>
         <div class="profile-social">
           <a class="social-link" href="#">GitHub</a>
@@ -410,13 +410,13 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
           <span class="term-dot term-dot-red"></span>
           <span class="term-dot term-dot-amber"></span>
           <span class="term-dot term-dot-green"></span>
-          <span class="term-title">session — chenphxx</span>
+          <span class="term-title">session — phxxblog</span>
           <button class="term-btn">复制</button>
           <button class="term-btn">换一句</button>
         </div>
         <div class="term-body">
           <p class="term-line"><span class="term-prompt">$</span> whoami</p>
-          <p class="term-out">chenphxx — 写代码, 也写点别的</p>
+          <p class="term-out">phxxblog — 写代码, 也写点别的</p>
           <p class="term-line"><span class="term-prompt">$</span> ls posts | wc -l</p>
           <p class="term-out">56</p>
           <p class="term-line"><span class="term-prompt">$</span> tail -n 1 posts/latest</p>
@@ -489,7 +489,7 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
   </div>
 </div>
 
-<footer class="site-footer">© 2024 chenphxx · Vue3 + FastAPI</footer>
+<footer class="site-footer">© 2024 phxxblog · Vue3 + FastAPI</footer>
 </body>
 </html>
 `
@@ -568,7 +568,7 @@ for (const t of THEMES) {
     const out = path.join(outDir, `${t.id}-${mode}.html`)
     fs.writeFileSync(
       out,
-      PAGE({ ...t, mode, shared, defaultRoot, light, dark, layer, posts, cells: cells(), site: 'chenphxx' }),
+      PAGE({ ...t, mode, shared, defaultRoot, light, dark, layer, posts, cells: cells(), site: 'phxxblog' }),
       'utf8'
     )
     console.log('written:', path.relative(repo, out))

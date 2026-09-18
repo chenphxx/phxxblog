@@ -57,7 +57,7 @@ ROLES = {
 
 
 DEFAULT_SETTINGS = {
-    "site_name": ("chenphxx's blog", "站点名称"),
+    "site_name": ("phxxblog", "站点名称"),
     "site_title": ("", "浏览器标签页名称(留空用站点名称)"),
     "site_desc": ("记录技术成长与生活点滴的个人博客", "站点描述"),
     "site_keywords": ("blog, 技术, 分享", "SEO 关键词"),

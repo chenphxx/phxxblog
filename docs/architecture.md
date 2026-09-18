@@ -139,17 +139,23 @@ phxxblog/
 
 | 配置项 | 默认值 | 说明 |
 | --- | --- | --- |
-| `PHXXBLOG_DEBUG` | true | 调试模式(同时决定 SQLAlchemy 是否打印 SQL) |
+| `PHXXBLOG_DEBUG` | false | 调试模式(同时决定 SQLAlchemy 是否打印 SQL); 本地按需在 `.env` 里打开 |
 | `PHXXBLOG_DATABASE_URL` | mysql+pymysql://root:password@localhost:3306/phxxblog | 数据库连接串 |
-| `PHXXBLOG_SECRET_KEY` | change-me-to-a-random-secret-key | JWT 签名密钥 |
+| `PHXXBLOG_SECRET_KEY` | change-me-to-a-random-secret-key | JWT 签名密钥; 用仓库里的占位值或长度不足 32 会拒绝启动 |
 | `PHXXBLOG_ALGORITHM` | HS256 | JWT 算法 |
 | `PHXXBLOG_ACCESS_TOKEN_EXPIRE_MINUTES` | 30 | 访问令牌有效期 |
 | `PHXXBLOG_REFRESH_TOKEN_EXPIRE_DAYS` | 7 | 刷新令牌有效期 |
+| `PHXXBLOG_ALLOW_REGISTER` | false | 是否开放注册; 个人博客建议保持 false, 否则任意访客都能注册成 author 并上传文件 |
+| `PHXXBLOG_TRUSTED_PROXIES` | 空 | 可信反向代理 IP(逗号分隔), 只有来自这些地址的请求才采信 X-Forwarded-For |
 | `PHXXBLOG_CORS_ORIGINS` | http://localhost:5173,http://127.0.0.1:5173 | 允许的跨域来源(逗号分隔) |
 | `PHXXBLOG_UPLOAD_DIR` | `<仓库根目录>/assets/uploads` | 上传目录(相对路径按启动目录解析) |
 | `PHXXBLOG_GEO_DB_PATH` | backend/data/ip2region_v4.xdb | 离线 IP 库路径 |
 | `PHXXBLOG_MAX_UPLOAD_SIZE` | 100MB | 单文件大小上限 |
 | `PHXXBLOG_SITE_URL` | http://localhost:5173 | 站点地址(RSS/sitemap 生成绝对链接) |
+| `PHXXBLOG_DATA_RETENTION_DAYS` | 180 | 访问明细 `visit_logs` 的保留天数, 由 `scripts/cleanup_old_data.py` 清理 |
+| `PHXXBLOG_AUDIT_LOG_RETENTION_DAYS` | 365 | 操作日志 `operation_logs` 的保留天数(审计用途) |
+
+另外 `PHXXBLOG_ADMIN_PASSWORD` 由 `seed.py` 直接读环境变量, 不是 `config.py` 的配置项: 留空时随机生成初始密码, 并在 seed 的输出里打印一次 
 
 ### 5.3 数据层
 
@@ -619,16 +625,16 @@ npm run dev
 ### 9.2 生产部署要点
 
 1. 前端执行 `npm run build`(内部先跑 `vue-tsc` 类型检查), 产物在 `frontend/dist`, 交给静态服务器托管 
-   注意 `dist` 里含 `vditor/`(约 21 MB) 与 `fonts/`(约 58 KB), 两者都是运行时按需加载的资源, 不要裁剪 
+   注意 `dist` 里含 `vditor/`(约 21 MB), `kanbanniang/`(约 11 MB, 看板娘的运行时与模型) 与 `fonts/`(约 58 KB), 都是运行时按需加载的资源, 不要裁剪 
 2. **确认静态服务器开启了 gzip/brotli 压缩** 可用 `npm run check:size`(内部读 `dist/index.html` 
    实际引用的资源, 不是估算)打印当前体积, 当前值: 
 
    | 口径 | 未压缩 | gzip 后 |
    | --- | --- | --- |
-   | 首屏(渲染首屏前必须下载的 js/css) | 约 295 KB | 约 84 KB |
-   | 按需资源(路由/功能懒加载) | 约 1240 KB | 约 375 KB |
+   | 首屏(渲染首屏前必须下载的 js/css) | 约 290 KB | 约 83 KB |
+   | 按需资源(路由/功能懒加载) | 约 1430 KB | 约 430 KB |
 
-   若托管方未压缩, 首屏传输量会从 84 KB 涨到 295 KB Nginx 参考: 
+   若托管方未压缩, 首屏传输量会从 83 KB 涨到 290 KB Nginx 参考: 
    `gzip on; gzip_types text/css application/javascript font/woff2;` 
    改动体积后记得同步更新本节数字(`npm run check:size` 的输出即上表口径) 
 3. 后端以 `uvicorn app.main:app --host 0.0.0.0 --port 8000` 或 gunicorn + uvicorn worker 运行, 建议关闭 `PHXXBLOG_DEBUG` 

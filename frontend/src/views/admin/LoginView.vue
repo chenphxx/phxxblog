@@ -50,7 +50,7 @@ async function login() {
         <el-button type="primary" style="width: 100%" :loading="loading" @click="login">登 录</el-button>
       </el-form>
       <div class="login-footer muted">
-        默认管理员: admin / admin123456(首次登录后请修改)
+        初始管理员: admin, 初始密码见后端 seed 输出(首次登录后请修改)
       </div>
     </div>
   </div>
