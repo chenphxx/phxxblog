@@ -1,4 +1,4 @@
-"""生成 docs/api.md
+"""生成 docs/接口文档.md
 
 路由清单从后端源码提取(复用 dump_routes.py 的解析逻辑), 因此不会与实现漂移;
 各模块的业务约束写在本文件的 MODULE_NOTES 里
