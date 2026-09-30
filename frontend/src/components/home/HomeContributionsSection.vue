@@ -8,7 +8,7 @@ import ContributionsChart from '@/components/ContributionsChart.vue'
  * @brief 首页的"文章发布记录"区块
  *
  * 自己取数与切换年份, 取数期间只让本区块转圈: 这个接口要按 52 周聚合, 比首页的其它
- * 请求慢, 以前它没回来整页都停在加载态。
+ * 请求慢, 以前它没回来整页都停在加载态
  */
 const points = ref<ContributionPoint[]>([])
 const year = ref<number | null>(null)

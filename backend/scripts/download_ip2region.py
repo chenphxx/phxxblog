@@ -1,6 +1,6 @@
-"""下载 ip2region 离线 IP 库(backend/data/ip2region_v4.xdb)。
+"""下载 ip2region 离线 IP 库(backend/data/ip2region_v4.xdb)
 
-数据来源: ip2region 官方仓库(lionsoul2014/ip2region)。
+数据来源: ip2region 官方仓库(lionsoul2014/ip2region)
 """
 
 from pathlib import Path

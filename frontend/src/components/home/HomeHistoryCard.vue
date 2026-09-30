@@ -9,7 +9,7 @@ import MetaIcon from '@/components/MetaIcon.vue'
  * @brief 首页的"程序员历史上的今天"卡片
  *
  * 自己取数与刷新, 取数失败按"暂无数据"展示: 这个数据来自第三方接口, 它不稳定时
- * 不该让首页其它内容跟着停在加载态。
+ * 不该让首页其它内容跟着停在加载态
  */
 const events = ref<HistoryEvent[]>([])
 const date = ref('')

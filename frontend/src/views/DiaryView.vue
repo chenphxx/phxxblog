@@ -52,8 +52,8 @@ const groups = computed(() => {
 const groupsList = computed(() => Array.from(groups.value.entries()))
 
 /**
- * 本地日期(YYYY-MM-DD)。
- * 不能用 toISOString(): 它按 UTC 取日期, 在东八区 00:00~08:00 之间会得到"昨天"。
+ * 本地日期(YYYY-MM-DD)
+ * 不能用 toISOString(): 它按 UTC 取日期, 在东八区 00:00~08:00 之间会得到"昨天"
  */
 function today(): string {
   const now = new Date()

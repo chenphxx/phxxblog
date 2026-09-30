@@ -1,12 +1,12 @@
 /**
- * 主题令牌表(冷调与中性色为主, 不限于绿色)。
+ * 主题令牌表(冷调与中性色为主, 不限于绿色)
  *
  * 这是所有主题的唯一事实来源:
  *   node _source/generate-themes.mjs
- * 会据此生成 frontend/src/styles/themes/theme-<id>.css。
+ * 会据此生成 frontend/src/styles/themes/theme-<id>.css
  *
- * 每个主题必须给出浅色(light)与深色(dark)两套颜色类令牌。
- * 与模式无关的令牌(字体、代码折叠高度)由生成器统一写入, 不需要在这里重复。
+ * 每个主题必须给出浅色(light)与深色(dark)两套颜色类令牌
+ * 与模式无关的令牌(字体, 代码折叠高度)由生成器统一写入, 不需要在这里重复
  *
  * 字段说明:
  *   id / name / en   主题标识与展示名(下拉菜单里显示)
@@ -15,7 +15,7 @@
  *   radius           卡片圆角基准, 决定整套的软硬气质
  *   light / dark     两套颜色令牌
  *
- * 注意: 颜色不只为了好看, 还要过对比度校验。
+ * 注意: 颜色不只为了好看, 还要过对比度校验
  *   --link      主色当文字用时必须 >= 4.5:1(可深于 --primary)
  *   --onPrimary 主色填充上的文字色, 对 --primary 必须 >= 4.5:1
  *   --gradFrom  渐变起点属于装饰图形, >= 3:1 即可
@@ -61,7 +61,7 @@ export const THEMES = [
     id: 'cuanmu',
     name: '预设',
     en: 'Preset',
-    desc: '中性灰阶 + 静蓝主色，克制的文档站风格（令牌来自 VitePress + Teek 预设）。',
+    desc: '中性灰阶 + 静蓝主色, 克制的文档站风格(令牌来自 VitePress + Teek 预设)',
     family: 'minimal',
     radius: '8px',
     /**
@@ -74,17 +74,17 @@ export const THEMES = [
      *   dark 次要文字         → Teek 的 --tk-text-color-secondary (#9facba)
      */
     light: {
-      bg: '#f6f6f7', // --vp-c-bg-alt: 页面级浅灰（VitePress 正文底为纯白，作为整页底用浅灰更耐看）
+      bg: '#f6f6f7', // --vp-c-bg-alt: 页面级浅灰(VitePress 正文底为纯白, 作为整页底用浅灰更耐看)
       cardBg: '#ffffff', // --vp-c-bg
       text: '#3c3c43', // --vp-c-text-1
       muted: '#67676c', // --vp-c-text-2
       border: '#e2e2e3', // --vp-c-divider
       borderStrong: '#c2c2c4', // --vp-c-border
-      primary: '#3a5ccc', // --vp-c-indigo-2（实心按钮底：比 indigo-3 深一档以保证白字对比度）
+      primary: '#3a5ccc', // --vp-c-indigo-2(实心按钮底: 比 indigo-3 深一档以保证白字对比度)
       primaryStrong: '#3451b2', // --vp-c-brand-1
       primaryWeak: '#eff2fd', // --vp-c-brand-soft 的实色近似
       onPrimary: '#ffffff',
-      link: '#3451b2', // --vp-c-brand-1（品牌文字）
+      link: '#3451b2', // --vp-c-brand-1(品牌文字)
       codeBg: '#f6f6f7',
       codeBlockBg: '#ffffff',
       ok: '#18794e', // --vp-c-green-1
@@ -93,7 +93,7 @@ export const THEMES = [
       ring: 'rgba(58, 92, 204, 0.28)',
       gradFrom: '#5672cd',
       gradTo: '#3a5ccc',
-      termBg: '#1b1b1f', // 与站点深色底一致，终端看起来像站点自己的面板
+      termBg: '#1b1b1f', // 与站点深色底一致, 终端看起来像站点自己的面板
       termBorder: '#2e2e32',
       termText: '#dfdfd6', // --vp-c-text-1 (dark)
       termDim: '#8f8f97',
@@ -143,7 +143,7 @@ export const THEMES = [
     id: 'neon',
     name: '霓虹青柠',
     en: 'Neon Lime',
-    desc: '荧光青柠 + 近黑底色，方正硬阴影与等宽标题，开发者气质最强。',
+    desc: '荧光青柠 + 近黑底色, 方正硬阴影与等宽标题, 开发者气质最强',
     family: 'hard',
     radius: '6px',
     light: {
@@ -215,7 +215,7 @@ export const THEMES = [
     id: 'moss',
     name: '苔原手记',
     en: 'Moss Editorial',
-    desc: '苔绿 + 陶土点缀与衬线标题，纸质底色，最安静耐读的一套。',
+    desc: '苔绿 + 陶土点缀与衬线标题, 纸质底色, 最安静耐读的一套',
     family: 'editorial',
     radius: '10px',
     light: {
@@ -288,7 +288,7 @@ export const THEMES = [
     id: 'mist',
     name: '晨雾青',
     en: 'Morning Mist',
-    desc: '冷调青绿 + 灰绿底色，低饱和、干净克制，像清晨的薄雾。',
+    desc: '冷调青绿 + 灰绿底色, 低饱和, 干净克制, 像清晨的薄雾',
     family: 'soft',
     radius: '12px',
     light: {
@@ -360,7 +360,7 @@ export const THEMES = [
     id: 'sage',
     name: '鼠尾草灰绿',
     en: 'Sage Neutral',
-    desc: '灰绿中性色，几乎没有彩度，配任何图片都稳，最不容易看腻。',
+    desc: '灰绿中性色, 几乎没有彩度, 配任何图片都稳, 最不容易看腻',
     family: 'editorial',
     radius: '8px',
     light: {
@@ -432,7 +432,7 @@ export const THEMES = [
     id: 'aurora',
     name: '极光青绿',
     en: 'Aurora Teal',
-    desc: '青绿到紫的极光渐变，梦幻有个性，适合想要一点记忆点的博客。',
+    desc: '青绿到紫的极光渐变, 梦幻有个性, 适合想要一点记忆点的博客',
     family: 'hard',
     radius: '12px',
     light: {
@@ -504,7 +504,7 @@ export const THEMES = [
     id: 'lilac',
     name: '雾紫',
     en: 'Lilac Mist',
-    desc: '雾紫配冷白，低饱和的紫罗兰点缀，安静、通透，接近纸质印刷的克制感。',
+    desc: '雾紫配冷白, 低饱和的紫罗兰点缀, 安静, 通透, 接近纸质印刷的克制感',
     family: 'minimal',
     radius: '12px',
     light: {
@@ -576,7 +576,7 @@ export const THEMES = [
     id: 'sailblue',
     name: '黛蓝',
     en: 'Slate Navy',
-    desc: '冷白配黛蓝，几乎没有彩度，最像纸质书的安静配色。',
+    desc: '冷白配黛蓝, 几乎没有彩度, 最像纸质书的安静配色',
     family: 'minimal',
     radius: '10px',
     light: {
@@ -648,7 +648,7 @@ export const THEMES = [
     id: 'graphite',
     name: '石墨',
     en: 'Graphite Brass',
-    desc: '石墨灰配黄铜点缀，中性克制，适合以文字和图片为主的博客。',
+    desc: '石墨灰配黄铜点缀, 中性克制, 适合以文字和图片为主的博客',
     family: 'editorial',
     radius: '8px',
     light: {

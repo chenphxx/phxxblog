@@ -1,16 +1,16 @@
-"""文件上传服务: 校验、落盘到 assets/ 并生成记录。
+"""文件上传服务: 校验, 落盘到 assets/ 并生成记录
 
 安全约定(重要, 改动前请先读):
     上传目录是**同源静态托管**的(见 main.py 的 /assets 挂载), 也就是说
-    上传一个能被浏览器当脚本执行的文件, 就等于拿到了本域的 XSS 能力。
-    因此这里采用**扩展名白名单**: 不在白名单里的一律拒绝, 而不是"未知类型放行"。
+    上传一个能被浏览器当脚本执行的文件, 就等于拿到了本域的 XSS 能力
+    因此这里采用**扩展名白名单**: 不在白名单里的一律拒绝, 而不是"未知类型放行"
 
     特别地, 以下类型被刻意排除:
       - .svg  矢量图可内嵌 <script>, 浏览器会当文档渲染并执行
       - .html/.htm/.xml  直接就是可执行文档
       - .js/.mjs/.css    同源脚本/样式注入
     若确实需要上传 SVG, 请改为部署层面单独挂一个子域, 或让反代对上传目录
-    强制加 `Content-Disposition: attachment` + `X-Content-Type-Options: nosniff`。
+    强制加 `Content-Disposition: attachment` + `X-Content-Type-Options: nosniff`
 """
 
 import uuid
@@ -60,7 +60,7 @@ MAGIC_BYTES: Final[dict[str, tuple[bytes, ...]]] = {
 
 
 def _detect_type(suffix: str) -> str:
-    """扩展名 -> 媒体类型。"""
+    """扩展名 -> 媒体类型"""
     if suffix in IMAGE_EXTS:
         return "image"
     if suffix in VIDEO_EXTS:
@@ -71,19 +71,19 @@ def _detect_type(suffix: str) -> str:
 
 
 def upload_root() -> Path:
-    """上传根目录(绝对路径)。"""
+    """上传根目录(绝对路径)"""
     return Path(settings.upload_dir).resolve()
 
 
 def resolve_upload_file(stored_path: str) -> Path | None:
-    """把数据库里记录的媒体路径解析成受信任的绝对路径; 不在上传目录内则返回 None。
+    """把数据库里记录的媒体路径解析成受信任的绝对路径; 不在上传目录内则返回 None
 
     修复了两个问题:
-      1. 以前 media 删除用 `str(target).startswith(str(upload_root))` 判断包含关系 ——
-         `.../uploads_evil/x` 也会通过前缀校验。这里改成按路径段比较(`in parents`)。
-      2. 以前用 `Path.cwd() / media.path` 解析相对路径, 依赖"从哪个目录启动进程" ——
-         同样一份数据, 从仓库根目录启动和从 backend/ 启动会解析到不同位置。
-         现在以 PROJECT_ROOT 为基准, 且优先信任绝对路径(上传时写的就是绝对路径)。
+      1. 以前 media 删除用 `str(target).startswith(str(upload_root))` 判断包含关系
+         `.../uploads_evil/x` 也会通过前缀校验. 这里改成按路径段比较(`in parents`)
+      2. 以前用 `Path.cwd() / media.path` 解析相对路径, 依赖"从哪个目录启动进程"
+         同样一份数据, 从仓库根目录启动和从 backend/ 启动会解析到不同位置
+         现在以 PROJECT_ROOT 为基准, 且优先信任绝对路径(上传时写的就是绝对路径)
     """
     if not stored_path:
         return None
@@ -96,7 +96,7 @@ def resolve_upload_file(stored_path: str) -> Path | None:
 
 
 def _check_magic(header: bytes, suffix: str) -> None:
-    """校验声称为图片的文件头是否匹配。"""
+    """校验声称为图片的文件头是否匹配"""
     expected = MAGIC_BYTES.get(suffix)
     if not expected:
         return
@@ -107,7 +107,7 @@ def _check_magic(header: bytes, suffix: str) -> None:
 
 
 def save_upload(file: UploadFile) -> dict:
-    """保存上传文件, 返回 {original_name, filename, path, url, mime_type, size, type}。"""
+    """保存上传文件, 返回 {original_name, filename, path, url, mime_type, size, type}"""
     original_name = file.filename or "unnamed"
     suffix = Path(original_name).suffix.lower()
 

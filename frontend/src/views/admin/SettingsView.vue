@@ -99,10 +99,10 @@ const readmeCollapsed = computed(() => readmeFoldable.value && !readmeExpanded.v
 const readmeWords = computed(() => countWords(form.value.site_readme))
 /**
  * 高度始终跟着内容走(短内容不留空白), 只有"内容超过 README_ROWS 行且未展开"时才加上限,
- * 超出的部分靠 scoped 样式裁掉、并叠一层底部渐隐; 两种状态都不会出现右侧滚动条。
+ * 超出的部分靠 scoped 样式裁掉, 并叠一层底部渐隐; 两种状态都不会出现右侧滚动条
  *
- * 上限只按"逻辑行数"启用: 行数没超时干脆不封顶, 免得长段落自动换行后撑过 README_ROWS 行、
- * 在折叠态被悄悄裁掉又没有展开按钮可点。
+ * 上限只按"逻辑行数"启用: 行数没超时干脆不封顶, 免得长段落自动换行后撑过 README_ROWS 行,
+ * 在折叠态被悄悄裁掉又没有展开按钮可点
  */
 const readmeAutosize = computed(() => {
   if (readmeExpanded.value || !readmeFoldable.value) return { minRows: README_MIN_ROWS }
@@ -310,7 +310,7 @@ onMounted(load)
               <div class="readme-wrap" :class="{ 'is-collapsed': readmeCollapsed }">
                 <!--
                   key 随折叠状态变化: el-input 只在 modelValue 变化时重算 autosize 高度,
-                  展开那一刻值没有变, 不重建的话高度会停在 20 行、把后面的行裁掉。
+                  展开那一刻值没有变, 不重建的话高度会停在 20 行, 把后面的行裁掉
                 -->
                 <el-input
                   :key="readmeExpanded ? 'expanded' : 'collapsed'"
@@ -382,11 +382,11 @@ onMounted(load)
 
 <style scoped>
 /*
- * 设置页是后台里最长的表单: 工具条吸顶后, 滚到页脚/备案处也能直接保存。
+ * 设置页是后台里最长的表单: 工具条吸顶后, 滚到页脚/备案处也能直接保存
  *
  * sticky 的吸附边界是滚动容器(.admin-main)的内容盒, 而它自带 20px 上内边距,
  * 若直接把 top 设为 0, 工具条上方会留出一条 20px 的缝, 卡片文字会从缝里露出来;
- * 用 top: -20px 抵消这段内边距即可(卡片不会延伸到这里, 所以不会有内容穿透)。
+ * 用 top: -20px 抵消这段内边距即可(卡片不会延伸到这里, 所以不会有内容穿透)
  */
 .settings-toolbar {
   position: sticky;
@@ -449,8 +449,8 @@ onMounted(load)
 }
 
 /*
- * 右侧不允许出现滚动条, 所以把 textarea 的 overflow 压成 hidden。
- * el-input 在用 maxRows 封顶时会把 overflow-y 写成行内样式, 必须带 !important 才盖得住。
+ * 右侧不允许出现滚动条, 所以把 textarea 的 overflow 压成 hidden
+ * el-input 在用 maxRows 封顶时会把 overflow-y 写成行内样式, 必须带 !important 才盖得住
  */
 .readme-input :deep(textarea) {
   overflow-y: hidden !important;
@@ -562,7 +562,7 @@ onMounted(load)
 .link-list > .el-button {
   margin-left: calc(var(--link-index-width) + var(--link-row-gap));
 }
-/* 每行常驻一个红色"删除"整屏都是噪音, 默认灰、鼠标移到该行才变红 */
+/* 每行常驻一个红色"删除"整屏都是噪音, 默认灰, 鼠标移到该行才变红 */
 .link-row .link-row-remove {
   flex: 0 0 auto;
   color: var(--muted);

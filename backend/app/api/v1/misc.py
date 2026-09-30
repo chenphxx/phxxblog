@@ -1,4 +1,4 @@
-"""杂项接口: 更新日志等。"""
+"""杂项接口: 更新日志等"""
 
 import json
 from datetime import date
@@ -20,7 +20,7 @@ router = APIRouter(prefix="/misc", tags=["其他"])
 
 
 class ChangelogIn(BaseModel):
-    """更新日志内容。"""
+    """更新日志内容"""
 
     content: str = Field(min_length=1, max_length=200000)
 
@@ -30,7 +30,7 @@ def changelog(
     user: User = Depends(require_permission(Perm.CHANGELOG_MANAGE)),
     _db: Session = Depends(get_db),
 ):
-    """更新日志内容(需 changelog:manage 权限, 内容同 CHANGELOG.md)。"""
+    """更新日志内容(需 changelog:manage 权限, 内容同 CHANGELOG.md)"""
     path = PROJECT_ROOT / "CHANGELOG.md"
     content = path.read_text(encoding="utf-8") if path.exists() else ""
     return ok({"content": content})
@@ -42,7 +42,7 @@ def update_changelog(
     user: User = Depends(require_permission(Perm.CHANGELOG_MANAGE)),
     _db: Session = Depends(get_db),
 ):
-    """保存更新日志(需 changelog:manage 权限, 写回 CHANGELOG.md)。"""
+    """保存更新日志(需 changelog:manage 权限, 写回 CHANGELOG.md)"""
     path = PROJECT_ROOT / "CHANGELOG.md"
     path.write_text(data.content, encoding="utf-8")
     return ok(message="更新日志已保存")
@@ -53,7 +53,7 @@ SAYING_CACHE_KEY = "saying_cache"
 
 
 def _read_saying_cache(db: Session) -> dict:
-    """读取一言缓存(格式: {"date": "YYYY-MM-DD", "text": "..."}), 解析失败返回空。"""
+    """读取一言缓存(格式: {"date": "YYYY-MM-DD", "text": "..."}), 解析失败返回空"""
     row = db.get(Setting, SAYING_CACHE_KEY)
     if not row:
         return {}
@@ -66,9 +66,9 @@ def _read_saying_cache(db: Session) -> dict:
 
 @router.get("/saying", response_model=dict)
 def saying(force: bool = False, db: Session = Depends(get_db)):
-    """一言(随机语录): 代理 uapis.cn 接口, 避免前端跨域。
+    """一言(随机语录): 代理 uapis.cn 接口, 避免前端跨域
 
-    默认每天只刷新一次(结果缓存在 settings 表), 前端手动点"换一句"时传 force=true 强制刷新。
+    默认每天只刷新一次(结果缓存在 settings 表), 前端手动点"换一句"时传 force=true 强制刷新
     """
     today = date.today().isoformat()
     cache = _read_saying_cache(db)
@@ -102,7 +102,7 @@ def saying(force: bool = False, db: Session = Depends(get_db)):
 
 @router.get("/history/programmer-today", response_model=dict)
 def programmer_history_today():
-    """程序员历史上的今天(公开): 代理 uapis.cn 接口, 避免前端跨域。"""
+    """程序员历史上的今天(公开): 代理 uapis.cn 接口, 避免前端跨域"""
     try:
         resp = requests.get("https://uapis.cn/api/v1/history/programmer/today", timeout=15)
         resp.raise_for_status()

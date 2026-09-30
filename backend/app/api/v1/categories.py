@@ -1,4 +1,4 @@
-"""分类接口。"""
+"""分类接口"""
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import func
@@ -17,7 +17,7 @@ router = APIRouter(prefix="/categories", tags=["分类"])
 
 
 def _post_counts(db: Session) -> dict[int, int]:
-    """一次 GROUP BY 取回所有分类的已发布文章数, 避免逐个 COUNT(n+1)。"""
+    """一次 GROUP BY 取回所有分类的已发布文章数, 避免逐个 COUNT(n+1)"""
     rows = (
         db.query(post_categories.c.category_id, func.count(post_categories.c.post_id))
         .join(Post, Post.id == post_categories.c.post_id)
@@ -29,7 +29,7 @@ def _post_counts(db: Session) -> dict[int, int]:
 
 
 def _category_out(category: Category, counts: dict[int, int]) -> CategoryOut:
-    """组装分类输出(含文章数)。"""
+    """组装分类输出(含文章数)"""
     return CategoryOut(
         id=category.id,
         name=category.name,
@@ -44,7 +44,7 @@ def _category_out(category: Category, counts: dict[int, int]) -> CategoryOut:
 
 @router.get("", response_model=dict)
 def list_categories(db: Session = Depends(get_db)):
-    """分类列表(公开)。"""
+    """分类列表(公开)"""
     categories = db.query(Category).order_by(Category.sort_order, Category.id).all()
     counts = _post_counts(db)
     return ok([_category_out(c, counts) for c in categories])
@@ -57,7 +57,7 @@ def create_category(
     _: User = Depends(require_permission(Perm.POST_MANAGE)),
     db: Session = Depends(get_db),
 ):
-    """新增分类。"""
+    """新增分类"""
     if db.query(Category).filter(Category.slug == data.slug).first():
         raise HTTPException(status_code=400, detail="分类别名已存在")
     category = Category(**data.model_dump())
@@ -84,7 +84,7 @@ def update_category(
     _: User = Depends(require_permission(Perm.POST_MANAGE)),
     db: Session = Depends(get_db),
 ):
-    """编辑分类。"""
+    """编辑分类"""
     category = db.get(Category, category_id)
     if category is None:
         raise HTTPException(status_code=404, detail="分类不存在")
@@ -110,7 +110,7 @@ def delete_category(
     _: User = Depends(require_permission(Perm.POST_MANAGE)),
     db: Session = Depends(get_db),
 ):
-    """删除分类。"""
+    """删除分类"""
     category = db.get(Category, category_id)
     if category is None:
         raise HTTPException(status_code=404, detail="分类不存在")

@@ -53,8 +53,8 @@ const prevPv = ref<number | null>(null)
 const router = useRouter()
 
 /*
- * 数据卡片: 强调色不再写死十六进制, 而是引用主题令牌。
- * 这样换主题时后台的强调色会跟着变(旧代码写死 GitHub 蓝/红/绿/黄, 换主题后很突兀)。
+ * 数据卡片: 强调色不再写死十六进制, 而是引用主题令牌
+ * 这样换主题时后台的强调色会跟着变(旧代码写死 GitHub 蓝/红/绿/黄, 换主题后很突兀)
  */
 const cards = [
   { key: 'posts', label: '文章数', icon: 'file' as IconName, color: 'var(--primary)', to: '/admin/posts' },
@@ -64,10 +64,10 @@ const cards = [
 ]
 
 /**
- * 当前生效的快捷区间。
+ * 当前生效的快捷区间
  *
  * 由 dateRange 反推而不是单独维护一份状态: 手改日期后高亮会自动消失,
- * 不需要再靠 @change 回调去手动同步(那正是两边状态会不一致的原因)。
+ * 不需要再靠 @change 回调去手动同步(那正是两边状态会不一致的原因)
  */
 const activeRange = computed<QuickRangeKey | null>(() => {
   if (!dateRange.value) return null
@@ -100,8 +100,8 @@ async function loadTrend() {
     const [start, end] = dateRange.value ?? defaultDayRange()
     const span = spanDays(parseDay(start), parseDay(end))
     /*
-     * 本期与上期一次取回(而不是发两个请求), 因此需要 2 倍区间长度不超上限。
-     * 超上限(如自定义 366 天)时只取本期, 环比显示"无上期对比"。
+     * 本期与上期一次取回(而不是发两个请求), 因此需要 2 倍区间长度不超上限
+     * 超上限(如自定义 366 天)时只取本期, 环比显示"无上期对比"
      */
     if (span > 0 && span * 2 <= TREND_MAX_DAYS) {
       const [prevStart] = previousRange(start, end)
@@ -157,8 +157,8 @@ async function loadVisits() {
 }
 
 /*
- * 合并成一个 watcher: 点快捷区间会同时改粒度与区间, 分成两个 watcher 会发两次请求。
- * 同一个 flush 内多个来源只触发一次回调。
+ * 合并成一个 watcher: 点快捷区间会同时改粒度与区间, 分成两个 watcher 会发两次请求
+ * 同一个 flush 内多个来源只触发一次回调
  */
 watch([granularity, dateRange], loadTrend)
 watch(visitsPage, loadVisits)

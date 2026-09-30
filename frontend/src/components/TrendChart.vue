@@ -1,12 +1,12 @@
 <script setup lang="ts">
 /**
- * 访问趋势图(纯 SVG, 不依赖第三方图表库)。
+ * 访问趋势图(纯 SVG, 不依赖第三方图表库)
  *
  * 与旧实现的区别:
  *   1. 配色改用主题令牌(PV = --primary, UV = --grad-to), 换主题时线条与图例同步;
  *   2. 宽度由 ResizeObserver 实测, 不再用固定 viewBox 等比放大(宽屏下坐标文字会跟着变大);
- *   3. PV 画成带渐变填充的面积, UV 用虚线区分 —— 序列不只用颜色区分, 色觉障碍下也能分辨;
- *   4. 悬停/键盘左右键出现十字准线与数值浮层, 取代原生 <title> 的系统提示框。
+ *   3. PV 画成带渐变填充的面积, UV 用虚线区分 - 序列不只用颜色区分, 色觉障碍下也能分辨;
+ *   4. 悬停/键盘左右键出现十字准线与数值浮层, 取代原生 <title> 的系统提示框
  */
 import { computed, onBeforeUnmount, onMounted, ref, useId } from 'vue'
 import type { TrendPoint } from '@/types'
@@ -51,8 +51,8 @@ const baseY = PAD.top + innerH
 const isEmpty = computed(() => props.points.every((p) => p.pv === 0 && p.uv === 0))
 
 /**
- * 取一个"好看"的 Y 轴上限: 保证上限能被 4 整除, 四个刻度都是整数。
- * 直接用原始最大值会出现 2.5 / 7.5 这类刻度, 原始值取整又会丢掉顶部留白。
+ * 取一个"好看"的 Y 轴上限: 保证上限能被 4 整除, 四个刻度都是整数
+ * 直接用原始最大值会出现 2.5 / 7.5 这类刻度, 原始值取整又会丢掉顶部留白
  */
 function niceMax(raw: number): number {
   if (raw <= Y_TICKS) return Y_TICKS
@@ -110,7 +110,7 @@ const areaPv = computed(() => {
 
 /*
  * 柱宽与柱间距都按分组宽度等比收缩: 数据点很多(如自定义 365 天)时,
- * 固定 2px 间距会让相邻两组的柱子叠在一起。
+ * 固定 2px 间距会让相邻两组的柱子叠在一起
  */
 const barWidth = computed(() => Math.max(1, Math.min(14, (innerW.value / Math.max(props.points.length, 1)) * 0.34)))
 
@@ -134,11 +134,11 @@ const tooltipLeft = computed(() => {
 const pointY = computed(() => (hovered.value ? y(Math.max(hovered.value.pv, hovered.value.uv)) : 0))
 
 /**
- * 数据点靠上(数值高)时把浮层画到点的下方。
+ * 数据点靠上(数值高)时把浮层画到点的下方
  *
  * 容器纵向是 overflow: hidden(横向需要能滚动), 而浮层默认画在数据点上方:
- * 指向数值最高的那几个点时, 浮层上半部分会被容器顶部裁掉(只剩最后一行可见)。
- * 上方放不下就翻到下方, 两种摆法在 260px 高的图里都不会被裁。
+ * 指向数值最高的那几个点时, 浮层上半部分会被容器顶部裁掉(只剩最后一行可见)
+ * 上方放不下就翻到下方, 两种摆法在 260px 高的图里都不会被裁
  */
 const tooltipBelow = computed(() => pointY.value - TOOLTIP_GAP < TOOLTIP_HEIGHT)
 
@@ -315,7 +315,7 @@ const chartLabel = computed(() => {
 .trend-chart {
   position: relative;
   width: 100%;
-  /* 窄屏(容器不足 320px)时横向滚动, 而不是压缩 SVG —— 压缩会让坐标与鼠标位置对不上 */
+  /* 窄屏(容器不足 320px)时横向滚动, 而不是压缩 SVG - 压缩会让坐标与鼠标位置对不上 */
   overflow-x: auto;
   overflow-y: hidden;
   --series-pv: var(--primary);

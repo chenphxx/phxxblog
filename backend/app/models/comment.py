@@ -1,4 +1,4 @@
-"""评论模型(游客/注册用户, 支持回复)。"""
+"""评论模型(游客/注册用户, 支持回复)"""
 
 from datetime import datetime
 
@@ -9,7 +9,7 @@ from app.core.database import Base
 
 
 class Comment(Base):
-    """评论表, 状态: 1正常 0隐藏 2回收站。"""
+    """评论表, 状态: 1正常 0隐藏 2回收站"""
 
     __tablename__ = "comments"
     __table_args__ = (

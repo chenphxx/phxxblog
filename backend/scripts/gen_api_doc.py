@@ -1,7 +1,7 @@
-"""生成 docs/api.md。
+"""生成 docs/api.md
 
 路由清单从后端源码提取(复用 dump_routes.py 的解析逻辑), 因此不会与实现漂移;
-各模块的业务约束写在本文件的 MODULE_NOTES 里。
+各模块的业务约束写在本文件的 MODULE_NOTES 里
 
 用法: backend/.venv/Scripts/python.exe scripts/gen_api_doc.py
 """
@@ -12,7 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 BACKEND = Path(__file__).resolve().parents[1]
-DOC = ROOT / "docs" / "api.md"
+DOC = ROOT / "docs" / "接口文档.md"
 
 # 各模块的补充说明(字段级细节以 Swagger 为准, 这里写业务约束)
 MODULE_NOTES: dict[str, str] = {

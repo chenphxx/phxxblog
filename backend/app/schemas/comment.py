@@ -1,4 +1,4 @@
-"""评论模型。"""
+"""评论模型"""
 
 from datetime import datetime
 
@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class CommentIn(BaseModel):
-    """发表评论请求(游客/用户通用)。"""
+    """发表评论请求(游客/用户通用)"""
 
     content: str = Field(min_length=1, max_length=2000)
     parent_id: int | None = None
@@ -15,7 +15,7 @@ class CommentIn(BaseModel):
 
 
 class CommentOut(BaseModel):
-    """评论输出。"""
+    """评论输出"""
 
     model_config = ConfigDict(from_attributes=True)
 

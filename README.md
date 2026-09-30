@@ -6,7 +6,7 @@
 
 ### 环境要求
 
-- Node.js ≥ 22.19(`.nvmrc` 与 CI 用 24, 再低会加载不了 jsdom, 测试跑不起来) 
+- Node.js ≥ 22.19(`.nvmrc` 与 CI 用 24) 
 - Python ≥ 3.10 
 - MySQL 9(本项目使用的是MySQL 9, 其他版本自行测试即可) 
 
@@ -66,32 +66,14 @@ npm install
 npm run dev
 ```
 
-### 运行测试
-
-```bash
-# 后端(pytest + 内存 SQLite)
-cd backend
-pip install -r requirements-dev.txt
-python -m pytest tests -q
-
-# 前端(Vitest + jsdom)
-cd frontend
-npm run test            # 单次
-npm run test:watch      # 监听
-npm run test:coverage   # 覆盖率 -> coverage/index.html
-```
-
-后端测试使用**内存 SQLite**, 不会连接也不会修改实际开发数据库; 前端测试用 jsdom, 
-不发真实请求(接口层整体 mock) 两者都可以随时运行 
-
-一键跑完所有检查(类型检查, 两端测试, 主题令牌一致性, 图标路径): 
+一键跑完所有检查(类型检查, 主题令牌一致性, 图标路径, 格式): 
 
 ```bash
 cd backend
 .venv/Scripts/python.exe scripts/verify_all.py
 ```
 
-CI 见 `.github/workflows/ci.yml`(后端 pytest + 前端类型/测试/主题/图标/构建); 前端构建发布见 `.github/workflows/build-frontend.yml` 
+CI 见 `.github/workflows/ci.yml`(后端静态检查, 前端类型检查/主题/图标/构建); 前端构建发布见 `.github/workflows/build-frontend.yml` 
 
 ### 访问地址
 
@@ -103,28 +85,6 @@ CI 见 `.github/workflows/ci.yml`(后端 pytest + 前端类型/测试/主题/图
 
 前端开发服务器会把 `/api`, `/assets` 以及文档路径 `/docs`, `/redoc`, `/openapi.json` 自动代理到后端(见 `frontend/vite.config.ts`), 因此只需分别启动后端和前端即可联调 
 
-### 常见问题
+## 文档
 
-- **后端启动报数据库连接失败**: 检查 `.env` 中 `PHXXBLOG_DATABASE_URL` 的用户名/密码/端口是否正确, 且 MySQL 服务已启动 
-- **评论显示"未知地区"**: 未下载离线 IP 库, 执行 `python scripts/download_ip2region.py` 
-- **端口被占用**: 后端用 `--port 8001` 换端口; 前端换端口需同步修改 `frontend/vite.config.ts` 里的代理目标 
-
-## WordPress 数据迁移
-
-如果你有 WordPress 导出文件(WXR XML, 如 `assets/wordpress/所有内容.xml`), 可一键迁移文章, 分类, 评论和附件: 
-
-```bash
-cd backend
-python scripts/import_wordpress.py                 # 自动找 assets/wordpress 下最大的 xml
-python scripts/import_wordpress.py --xml 路径.xml --no-download   # 跳过附件下载
-```
-
-迁移规则: 文章正文会从 Gutenberg/HTML 转为 Markdown; 作者账号自动创建(随机密码, 可在后台重置); 可下载的附件保存到 `assets/uploads/wordpress/` 并登记到媒体库, 正文中的旧站图片链接会自动改写为本地地址 
-
-## 开发文档
-
-- [技术架构与实现说明](docs/architecture.md) - 技术栈, 系统架构, 目录职责与各功能的实现方式 
-- [接口文档](docs/api.md) - 全部 74 个接口的路径, 鉴权要求与业务约束 
-- [数据库表结构设计](docs/mysql.md) - 20 张表的字段说明, 完整 DDL 与"表结构演进"约定 
-- [测试与检查说明](docs/testing.md) - 测试分层, 用例清单, 检查脚本与 CI 流水线 
-- [更新日志](CHANGELOG.md) 
+见`docs/` 

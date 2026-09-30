@@ -1,4 +1,4 @@
-"""文章接口: 前台浏览、后台管理、发布流程、点赞、归档。"""
+"""文章接口: 前台浏览, 后台管理, 发布流程, 点赞, 归档"""
 
 from datetime import datetime
 
@@ -45,7 +45,7 @@ router = APIRouter(prefix="/posts", tags=["文章"])
 
 
 def _page_out(items: list[Post], total: int, page: int, page_size: int) -> Page[PostListItem]:
-    """把查询结果组装成统一的分页响应(列表接口的出参结构只在这里定义一次)。"""
+    """把查询结果组装成统一的分页响应(列表接口的出参结构只在这里定义一次)"""
     return Page[PostListItem](
         items=[PostListItem.model_validate(item) for item in items],
         total=total,
@@ -67,7 +67,7 @@ def list_posts(
     keyword: str | None = Query(None, description="关键词(标题/摘要)"),
     db: Session = Depends(get_db),
 ):
-    """前台文章列表(仅已发布)。"""
+    """前台文章列表(仅已发布)"""
     items, total = post_query.public_list(
         db,
         page=page,
@@ -85,7 +85,7 @@ def list_posts(
 
 @router.get("/archive", response_model=dict)
 def archive(db: Session = Depends(get_db)):
-    """归档: 按 年-月 分组展示所有已发布文章。"""
+    """归档: 按 年-月 分组展示所有已发布文章"""
     result = [
         ArchiveGroup(
             year=year,
@@ -107,7 +107,7 @@ def admin_list_posts(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """后台文章管理列表(管理员看全部, 作者只看自己)。"""
+    """后台文章管理列表(管理员看全部, 作者只看自己)"""
     items, total = post_query.admin_list(
         db,
         user=user,
@@ -128,7 +128,7 @@ def export_posts(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """导出文章压缩包(markdown/html, 图片一并打包; 仅作者本人/管理员可导)。"""
+    """导出文章压缩包(markdown/html, 图片一并打包; 仅作者本人/管理员可导)"""
     query = db.query(Post)
     if Perm.POST_MANAGE not in user.permission_codes:
         query = query.filter(Post.author_id == user.id)
@@ -159,7 +159,7 @@ def import_posts(
     user: User = Depends(require_permission(Perm.POST_CREATE)),
     db: Session = Depends(get_db),
 ):
-    """导入文章: 支持 .md 文件或包含 .md 的 zip 压缩包; mode=check 只返回查重结果。"""
+    """导入文章: 支持 .md 文件或包含 .md 的 zip 压缩包; mode=check 只返回查重结果"""
     payload, message = run_import(
         db=db,
         user=user,
@@ -183,7 +183,7 @@ def hot_posts(
     limit: int = Query(7, ge=1, le=20, description="返回条数"),
     db: Session = Depends(get_db),
 ):
-    """热门文章(按浏览量倒序, 仅已发布)。"""
+    """热门文章(按浏览量倒序, 仅已发布)"""
     return ok([PostListItem.model_validate(p) for p in post_query.hot(db, limit)])
 
 
@@ -194,7 +194,7 @@ def get_post(
     user: User | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ):
-    """文章详情(已发布公开, 非公开仅作者/管理员可见)。"""
+    """文章详情(已发布公开, 非公开仅作者/管理员可见)"""
     post = db.get(Post, post_id)
     if post is None:
         raise HTTPException(status_code=404, detail="文章不存在")
@@ -219,7 +219,7 @@ def create_post(
     user: User = Depends(require_permission(Perm.POST_CREATE)),
     db: Session = Depends(get_db),
 ):
-    """新增文章(默认草稿, 可提交审核)。"""
+    """新增文章(默认草稿, 可提交审核)"""
     post = Post(author_id=user.id)
     apply_payload(db, post, data, user, get_client_ip(request))
     db.add(post)
@@ -245,7 +245,7 @@ def update_post(
     user: User = Depends(require_permission(Perm.POST_EDIT)),
     db: Session = Depends(get_db),
 ):
-    """编辑文章。"""
+    """编辑文章"""
     post = db.get(Post, post_id)
     if post is None:
         raise HTTPException(status_code=404, detail="文章不存在")
@@ -273,7 +273,7 @@ def trash_post(
     user: User = Depends(require_permission(Perm.POST_DELETE)),
     db: Session = Depends(get_db),
 ):
-    """删除文章(移入回收站)。"""
+    """删除文章(移入回收站)"""
     post = db.get(Post, post_id)
     if post is None:
         raise HTTPException(status_code=404, detail="文章不存在")
@@ -300,7 +300,7 @@ def force_delete_post(
     user: User = Depends(require_permission(Perm.POST_MANAGE)),
     db: Session = Depends(get_db),
 ):
-    """彻底删除文章。"""
+    """彻底删除文章"""
     post = db.get(Post, post_id)
     if post is None:
         raise HTTPException(status_code=404, detail="文章不存在")
@@ -327,7 +327,7 @@ def restore_post(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """从回收站恢复(恢复为草稿)。"""
+    """从回收站恢复(恢复为草稿)"""
     post = db.get(Post, post_id)
     if post is None or post.status != 4:
         raise HTTPException(status_code=404, detail="文章不存在")
@@ -355,7 +355,7 @@ def change_post_status(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """状态流转: 0草稿 1审核中(提交审核) 2发布 3私密。"""
+    """状态流转: 0草稿 1审核中(提交审核) 2发布 3私密"""
     post = db.get(Post, post_id)
     if post is None:
         raise HTTPException(status_code=404, detail="文章不存在")
@@ -388,7 +388,7 @@ def like_post(
     user: User | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ):
-    """点赞/取消点赞(游客按 IP 去重, 登录用户按账号去重)。"""
+    """点赞/取消点赞(游客按 IP 去重, 登录用户按账号去重)"""
     post = db.get(Post, post_id)
     if post is None:
         raise HTTPException(status_code=404, detail="文章不存在")

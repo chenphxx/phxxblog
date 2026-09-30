@@ -1,10 +1,10 @@
 <!--
-  看板娘本体: 一块固定定位的 canvas, 由 kanbanniang/live2d.js 在其上渲染 Live2D 模型。
+  看板娘本体: 一块固定定位的 canvas, 由 kanbanniang/live2d.js 在其上渲染 Live2D 模型
 
   五条约束:
     1. 运行时(151 KB)与模型都等首屏之后再加载, 不与页面自身的请求抢带宽
     2. 窄屏不展示: 这块浮层在手机上会盖住正文, 也白白多下载一份模型
-    3. 容器 pointer-events: none —— 运行时是在 window 上监听鼠标的, 不需要命中 canvas,
+    3. 容器 pointer-events: none - 运行时是在 window 上监听鼠标的, 不需要命中 canvas,
        因此不必让浮层挡住正文的点击
     4. 拖动直接抓模型本体, 不额外摆一个把手: 命中判定用一张模型轮廓掩膜(见 captureMask),
        按在透明处照旧把点击透给下面的正文
@@ -91,7 +91,7 @@ function reclamp() {
 }
 
 /**
- * @brief 重新生成模型轮廓掩膜。
+ * @brief 重新生成模型轮廓掩膜
  *
  * 运行时的绘制循环跑在 requestAnimationFrame 上, 它这一帧的回调排在前面, 因此我们排进去的
  * 回调跑完时画面还在, 此时把 canvas 拷进 2D canvas 就能读到像素(WebGL 的绘制缓冲默认在合成后清空)
@@ -126,7 +126,7 @@ function captureMask() {
 }
 
 /**
- * @brief 判断指针是否落在模型身上。
+ * @brief 判断指针是否落在模型身上
  * @param x 指针相对浮层左上角的横坐标
  * @param y 指针相对浮层左上角的纵坐标
  * @return 落在模型本体上返回 true; 掩膜取不到时退化成整块浮层都算命中, 保证模型挪得动
@@ -314,7 +314,7 @@ onBeforeUnmount(() => {
   setCursor('')
 })
 
-// 打开时才加载; 关闭时只是隐藏 canvas, 不销毁 —— 运行时持有它的 WebGL 上下文,
+// 打开时才加载; 关闭时只是隐藏 canvas, 不销毁 - 运行时持有它的 WebGL 上下文,
 // 反复销毁重建会消耗浏览器的 WebGL 上下文配额
 watch(
   visible,

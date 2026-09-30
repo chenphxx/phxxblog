@@ -9,8 +9,8 @@ exclude = [
 ]
 
 [lint]
-# 只选能自动拦截缺陷的规则集: pycodestyle 错误类(E4/E7/E9)、pyflakes(F)、
-# 空白类(W)、导入排序(I)、bugbear(B)
+# 只选能自动拦截缺陷的规则集: pycodestyle 错误类(E4/E7/E9), pyflakes(F),
+# 空白类(W), 导入排序(I), bugbear(B)
 select = ["E4", "E7", "E9", "F", "W", "I", "B"]
 ignore = [
   # FastAPI 的 Depends(...) 必须写在默认参数里

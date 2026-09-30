@@ -1,11 +1,11 @@
 <script setup lang="ts">
 /**
- * 媒体预览浮层: 在当前页面上覆盖显示图片 / 视频 / 音频 / PDF / 文本。
+ * 媒体预览浮层: 在当前页面上覆盖显示图片 / 视频 / 音频 / PDF / 文本
  *
  * 为什么不直接用 el-image-viewer + el-dialog 各管一类:
- *   媒体库同一个入口要预览四类文件, 两套浮层会长出两种关闭方式与两套键盘行为。
- *   这里统一成一个浮层: 点遮罩或 Esc 关闭, ← → 在当页媒体之间切换。
- * 渲染方式由 `utils/mediaPreview.ts` 的 previewKind() 判定, 该函数有单测。
+ *   媒体库同一个入口要预览四类文件, 两套浮层会长出两种关闭方式与两套键盘行为
+ *   这里统一成一个浮层: 点遮罩或 Esc 关闭, ← → 在当页媒体之间切换
+ * 渲染方式由 `utils/mediaPreview.ts` 的 previewKind() 判定, 该函数有单测
  */
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { MediaItem } from '@/types'
@@ -43,8 +43,8 @@ async function loadText(item: MediaItem) {
   textContent.value = ''
   try {
     /*
-     * /assets 是公开静态资源, 直接 fetch 即可, 不必走带鉴权的 http 实例。
-     * 内容只通过模板插值输出({{ }}), 会被转义成纯文本, 不会当 HTML 执行。
+     * /assets 是公开静态资源, 直接 fetch 即可, 不必走带鉴权的 http 实例
+     * 内容只通过模板插值输出({{ }}), 会被转义成纯文本, 不会当 HTML 执行
      */
     const res = await fetch(item.url)
     if (!res.ok) throw new Error(String(res.status))
@@ -60,9 +60,9 @@ async function loadText(item: MediaItem) {
 let wasOpen = false
 
 /**
- * 切换条目时重置视图状态。
+ * 切换条目时重置视图状态
  * 另外: 列表变化(如窗口尺寸变化触发重新取数)导致当前下标失效时, 主动通知调用方关闭浮层,
- * 否则会停在一个空白浮层上。
+ * 否则会停在一个空白浮层上
  */
 watch(
   current,
@@ -189,7 +189,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 <style scoped>
 /*
  * 遮罩刻意用深色而不是主题令牌: 预览浮层的遮罩在深浅色下都应当是暗的(与终端面板同理),
- * 它不属于"跟随主题的强调色"。
+ * 它不属于"跟随主题的强调色"
  */
 .media-viewer {
   position: fixed;

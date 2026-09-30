@@ -1,9 +1,9 @@
 /**
- * API 文档鉴权 cookie 工具。
+ * API 文档鉴权 cookie 工具
  *
- * 后端 /docs、/redoc、/openapi.json 仅 admin 角色可访问, 令牌既可从
- * Authorization 头读取, 也可从该 cookie 读取。把 access token 同步到 cookie,
- * 就能在新窗口直接打开文档页面(无需手动携带请求头)。
+ * 后端 /docs, /redoc, /openapi.json 仅 admin 角色可访问, 令牌既可从
+ * Authorization 头读取, 也可从该 cookie 读取. 把 access token 同步到 cookie,
+ * 就能在新窗口直接打开文档页面(无需手动携带请求头)
  */
 export const DOC_TOKEN_COOKIE = 'phxxblog_doc_token'
 

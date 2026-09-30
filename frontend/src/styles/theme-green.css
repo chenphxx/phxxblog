@@ -2,26 +2,26 @@
  * 主题入口
  * ------------------------------------------------------------
  * 这里把所有主题的令牌与增强层一次性引入, 运行时可自由切换
- * (html[data-theme='<id>'], 见 stores/theme.ts 与顶栏的 ThemeSwitcher)。
+ * (html[data-theme='<id>'], 见 stores/theme.ts 与顶栏的 ThemeSwitcher)
  *
  * theme-default.css 提供裸 :root 的浅色令牌, 是新访客(还没选过主题)
- * 看到的那一套, 与 registry.ts 里的 DEFAULT_THEME 一致。
+ * 看到的那一套, 与 registry.ts 里的 DEFAULT_THEME 一致
  *
- * 全部引入的代价很小: 令牌都是普通 CSS 变量, 9 套 gzip 后约 13 KB。
- * 如果只想固定用一套, 注释掉其它 @import, 再删掉 ThemeSwitcher 即可。
+ * 全部引入的代价很小: 令牌都是普通 CSS 变量, 9 套 gzip 后约 13 KB
+ * 如果只想固定用一套, 注释掉其它 @import, 再删掉 ThemeSwitcher 即可
  *
  * 主题的配色请改 src/styles/themes/_source/tokens.mjs, 然后运行:
  *   npm run themes:generate
  * ============================================================ */
 
-/* 原有结构样式(卡片、正文、终端、时间轴、代码块等) */
+/* 原有结构样式(卡片, 正文, 终端, 时间轴, 代码块等) */
 @import './theme.css';
 
 /* ---------- 默认主题的裸 :root 令牌(必须最先加载) ---------- */
 @import './themes/theme-default.css';
 
 /* ---------- 9 套可选主题 ---------- */
-@import './themes/theme-cuanmu.css'; /* 预设      文档站风格（VitePress + Teek 令牌，默认） */
+@import './themes/theme-cuanmu.css'; /* 预设      文档站风格(VitePress + Teek 令牌, 默认) */
 @import './themes/theme-neon.css'; /* 霓虹青柠  荧光青柠 + 硬阴影 */
 @import './themes/theme-moss.css'; /* 苔原手记  苔绿 + 陶土 + 衬线 */
 @import './themes/theme-mist.css'; /* 晨雾青    冷调青绿, 低饱和 */
@@ -33,5 +33,5 @@
 
 /* ---------- 管理后台主题层 ----------
  * 必须放在所有主题之后: 它把 Element Plus 的 --el-color-primary 指向主题令牌,
- * 并统一后台外壳观感, 让后台跟随同一套主题。 */
+ * 并统一后台外壳观感, 让后台跟随同一套主题 */
 @import './admin.css';

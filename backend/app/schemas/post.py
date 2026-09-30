@@ -1,4 +1,4 @@
-"""文章/分类/标签模型。"""
+"""文章/分类/标签模型"""
 
 from datetime import datetime
 
@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class CategoryOut(BaseModel):
-    """分类输出。"""
+    """分类输出"""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -21,7 +21,7 @@ class CategoryOut(BaseModel):
 
 
 class CategoryIn(BaseModel):
-    """分类创建/编辑。"""
+    """分类创建/编辑"""
 
     name: str = Field(min_length=1, max_length=50)
     slug: str = Field(min_length=1, max_length=80)
@@ -32,7 +32,7 @@ class CategoryIn(BaseModel):
 
 
 class TagOut(BaseModel):
-    """标签输出。"""
+    """标签输出"""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -44,7 +44,7 @@ class TagOut(BaseModel):
 
 
 class TagIn(BaseModel):
-    """标签创建/编辑。"""
+    """标签创建/编辑"""
 
     name: str = Field(min_length=1, max_length=50)
     slug: str = Field(min_length=1, max_length=80)
@@ -52,7 +52,7 @@ class TagIn(BaseModel):
 
 
 class PostBase(BaseModel):
-    """文章公共字段。"""
+    """文章公共字段"""
 
     title: str = Field(min_length=1, max_length=200)
     slug: str = Field(default="", max_length=220)
@@ -65,15 +65,15 @@ class PostBase(BaseModel):
 
 
 class PostCreate(PostBase):
-    """新增文章。"""
+    """新增文章"""
 
 
 class PostUpdate(PostBase):
-    """编辑文章。"""
+    """编辑文章"""
 
 
 class PostListItem(BaseModel):
-    """文章列表项。"""
+    """文章列表项"""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -96,7 +96,7 @@ class PostListItem(BaseModel):
 
 
 class UserBrief(BaseModel):
-    """作者简要信息。"""
+    """作者简要信息"""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -110,12 +110,12 @@ PostListItem.model_rebuild()
 
 
 class PostDetail(PostListItem):
-    """文章详情(公开可读)。
+    """文章详情(公开可读)
 
     刻意不含 ip / location: 这两个字段记录的是**保存文章时作者的 IP 与归属地**
-    (见 services/post_write.py 的 apply_payload), 而本接口是匿名可访问的。
-    带上它们等于把站长的真实出口 IP 公开出去。
-    需要这两个字段的管理端请用 PostDetailAdmin。
+    (见 services/post_write.py 的 apply_payload), 而本接口是匿名可访问的
+    带上它们等于把站长的真实出口 IP 公开出去
+    需要这两个字段的管理端请用 PostDetailAdmin
     """
 
     content_md: str
@@ -126,9 +126,9 @@ class PostDetail(PostListItem):
 
 
 class PostDetailAdmin(PostDetail):
-    """管理端文章详情: 在公开字段之外附带作者 IP 与归属地。
+    """管理端文章详情: 在公开字段之外附带作者 IP 与归属地
 
-    仅用于已鉴权的写入接口(新增/修改)的响应。
+    仅用于已鉴权的写入接口(新增/修改)的响应
     """
 
     ip: str | None = None
@@ -136,20 +136,20 @@ class PostDetailAdmin(PostDetail):
 
 
 class PostStatusIn(BaseModel):
-    """状态变更请求(发布/恢复等)。"""
+    """状态变更请求(发布/恢复等)"""
 
     status: int = Field(ge=0, le=4)
 
 
 class LikeResult(BaseModel):
-    """点赞结果。"""
+    """点赞结果"""
 
     liked: bool
     likes_count: int
 
 
 class ArchiveGroup(BaseModel):
-    """归档分组(按年月)。"""
+    """归档分组(按年月)"""
 
     year: int
     month: int

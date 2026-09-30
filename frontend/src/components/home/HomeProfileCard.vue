@@ -6,8 +6,8 @@ import { faviconOf, linkName, onFaviconError } from '@/utils/linkIcon'
 /**
  * @brief 首页左侧的个人资料卡片
  *
- * 内容来自后台设置与分类接口, 自己不取数; 头像点击改成事件抛给首页 —— 头像弹窗改的是
- * 页面级设置(site_avatar), 由首页统一持有更合适。
+ * 内容来自后台设置与分类接口, 自己不取数; 头像点击改成事件抛给首页 - 头像弹窗改的是
+ * 页面级设置(site_avatar), 由首页统一持有更合适
  */
 defineProps<{
   settings: PublicSettings | null

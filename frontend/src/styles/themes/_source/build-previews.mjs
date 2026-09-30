@@ -1,9 +1,9 @@
 /**
- * 生成主题预览页(每套 × 深/浅 + 总览页)。
+ * 生成主题预览页(每套 × 深/浅 + 总览页)
  *
  * 为什么要有这个脚本:
- *   预览必须与真正引入项目的 themes/*.css 完全一致, 否则没有参考价值。
- *   所以这里不在 HTML 里复制样式, 而是把主题 CSS 原样抽出、注入到 demo 脚手架中。
+ *   预览必须与真正引入项目的 themes/*.css 完全一致, 否则没有参考价值
+ *   所以这里不在 HTML 里复制样式, 而是把主题 CSS 原样抽出, 注入到 demo 脚手架中
  *
  * 目录位置: frontend/src/styles/themes/_source/
  * 输出位置: frontend/src/styles/themes/_preview/  (纯产物, 已 gitignore, 可随时重建)
@@ -43,8 +43,8 @@ function sharedBlock(css) {
 }
 
 /**
- * 抽默认主题的裸 :root 块(theme-default.css)。
- * 预览页也要带上它, 否则预览与真实首屏的默认配色不一致。
+ * 抽默认主题的裸 :root 块(theme-default.css)
+ * 预览页也要带上它, 否则预览与真实首屏的默认配色不一致
  */
 function defaultRootBlock() {
   const file = path.join(themeDir, 'theme-default.css')
@@ -57,7 +57,7 @@ function defaultRootBlock() {
   return css.slice(open + 1, end).trim()
 }
 
-/** 抽浅色令牌块 —— 生成格式: html[data-theme='<id>'] { */
+/** 抽浅色令牌块 - 生成格式: html[data-theme='<id>'] { */
 function lightBlock(css, id) {
   const start = css.indexOf(`html[data-theme='${id}'] {`)
   if (start < 0) throw new Error(`找不到浅色令牌块: ${id}`)
@@ -66,7 +66,7 @@ function lightBlock(css, id) {
   return css.slice(open + 1, end).trim()
 }
 
-/** 抽深色令牌块 —— 生成格式: html[data-theme='<id>'].dark { */
+/** 抽深色令牌块 - 生成格式: html[data-theme='<id>'].dark { */
 function darkBlock(css, id) {
   const start = css.indexOf(`html[data-theme='${id}'].dark {`)
   if (start < 0) throw new Error(`找不到深色令牌块: ${id}`)
@@ -580,8 +580,8 @@ for (const t of THEMES) {
  * (index.html 本身是手写模板, 每次重新生成只是刷新里面的数据)
  * ------------------------------------------------------------- */
 /*
- * 总览页: 以 _gallery-template.html 为模板, 注入主题清单后输出 index.html。
- * 模板只有一份, 每次重建都从模板生成, 因此可以直接覆盖输出, 不会累积漂移。
+ * 总览页: 以 _gallery-template.html 为模板, 注入主题清单后输出 index.html
+ * 模板只有一份, 每次重建都从模板生成, 因此可以直接覆盖输出, 不会累积漂移
  */
 const templatePath = path.join(here, '_gallery-template.html')
 const outPath = path.join(outDir, 'index.html')

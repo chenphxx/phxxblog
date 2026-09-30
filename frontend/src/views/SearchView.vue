@@ -17,7 +17,7 @@ const dateRange = ref<[string, string] | null>(null)
 
 /**
  * 分页与取数交给 usePagedList: 三个分支的差异只在"取哪一页", 翻页与"回到第 1 页"
- * 的规则由 composable 统一处理。
+ * 的规则由 composable 统一处理
  */
 const {
   items: posts,
@@ -51,13 +51,13 @@ const {
 })
 
 /**
- * 从 URL 查询参数回填筛选条件并重新检索。
+ * 从 URL 查询参数回填筛选条件并重新检索
  *
  * 为什么必须有这个 watch:
  *   本组件被 SiteLayout 的 <keep-alive include="...SearchView"> 缓存, 因此
  *   在搜索页内点击另一个分类/标签链接时,**组件实例不会重新创建**, setup 与
- *   onMounted 都不会再跑。以前只在 setup 里读一次 route.query, 结果就是
- *   URL 变了、列表还是上一个分类的内容。
+ *   onMounted 都不会再跑. 以前只在 setup 里读一次 route.query, 结果就是
+ *   URL 变了, 列表还是上一个分类的内容
  */
 function syncFromQuery() {
   const q = route.query
@@ -119,14 +119,15 @@ onMounted(async () => {
     <div v-loading="loading" style="margin-top: 20px; min-height: 100px">
       <PostCard v-for="post in posts" :key="post.id" :post="post" />
       <el-empty v-if="!loading && posts.length === 0" description="没有找到相关文章" />
-      <el-pagination
-        v-if="total > pageSize"
-        v-model:current-page="page"
-        :page-size="pageSize"
-        :total="total"
-        layout="prev, pager, next"
-        style="justify-content: center; margin-top: 20px"
-      />
+      <div v-if="total > pageSize" class="pagination-row">
+        <el-pagination
+          v-model:current-page="page"
+          :page-size="pageSize"
+          :total="total"
+          layout="prev, pager, next, total"
+          background
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -140,5 +141,10 @@ onMounted(async () => {
 .search-bar .el-input {
   flex: 1;
   min-width: 220px;
+}
+.pagination-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
 }
 </style>

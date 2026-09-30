@@ -1,13 +1,13 @@
-"""校验设置项的三处定义是否一致(不需要数据库, 只读源码与默认值)。
+"""校验设置项的三处定义是否一致(不需要数据库, 只读源码与默认值)
 
 跑法: backend/.venv/Scripts/python.exe scripts/check_settings_keys.py
 
 为什么需要这个脚本:
-    一个设置项要在四个地方出现 —— 后端的默认值(core/settings_schema.py), 后端
+    一个设置项要在四个地方出现 - 后端的默认值(core/settings_schema.py), 后端
     "对前台公开"的键列表, 前端的类型(frontend/src/types/index.ts 的 PublicSettings)
-    与后台表单(frontend/src/views/admin/SettingsView.vue)。漏改任何一处都不会报错,
-    只会表现为"后台存了但前台读不到"或者"类型里没有这个字段", 靠人眼极难发现。
-    这个脚本把四者的键集合对齐, 挂了 verify_all.py 里一起跑。
+    与后台表单(frontend/src/views/admin/SettingsView.vue). 漏改任何一处都不会报错,
+    只会表现为"后台存了但前台读不到"或者"类型里没有这个字段", 靠人眼极难发现
+    这个脚本把四者的键集合对齐, 挂了 verify_all.py 里一起跑
 """
 
 import re
@@ -38,14 +38,14 @@ problems: list[str] = []
 
 
 def check(condition: bool, message: str) -> None:
-    """记录一条不满足的约束; 全部收集完再退出, 便于一次看到所有问题。"""
+    """记录一条不满足的约束; 全部收集完再退出, 便于一次看到所有问题"""
     print(f"  {'OK  ' if condition else 'FAIL'} {message}")
     if not condition:
         problems.append(message)
 
 
 def interface_keys(source: str, name: str) -> set[str]:
-    """从 TS 源码里取出某个 interface 的顶层字段名(只处理扁平接口)。"""
+    """从 TS 源码里取出某个 interface 的顶层字段名(只处理扁平接口)"""
     match = re.search(rf"export interface {name} \{{(.*?)\n\}}", source, re.S)
     if match is None:
         raise SystemExit(f"  FAIL 在 {TYPES_TS.name} 里找不到 interface {name}")
@@ -77,7 +77,7 @@ check(
     f"PublicSettings 与 PUBLIC_KEYS 完全一致({len(public_settings)} 个)",
 )
 
-# 类型里有、后端没公开的键 -> 前端会拿到 undefined; 后端公开、类型里没有 -> 类型检查看不到
+# 类型里有, 后端没公开的键 -> 前端会拿到 undefined; 后端公开, 类型里没有 -> 类型检查看不到
 missing_in_types = set(PUBLIC_KEYS) - public_settings
 stale_in_types = public_settings - set(PUBLIC_KEYS)
 if missing_in_types or stale_in_types:

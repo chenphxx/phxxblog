@@ -23,8 +23,8 @@ interface RetriableConfig extends AxiosRequestConfig {
 }
 
 /**
- * 独立的 axios 实例, 只用于刷新令牌。
- * 不能复用 rawAxios: 它的响应拦截器会在刷新失败时递归触发登录跳转。
+ * 独立的 axios 实例, 只用于刷新令牌
+ * 不能复用 rawAxios: 它的响应拦截器会在刷新失败时递归触发登录跳转
  */
 const refreshClient = axios.create({ baseURL: '/api/v1', timeout: 20000 })
 
@@ -37,9 +37,9 @@ rawAxios.interceptors.request.use((config) => {
 })
 
 /**
- * 需要登录的前台路由前缀。
- * 这些页面在令牌过期时也要跳登录页, 不能只判断 /admin ——
- * 否则用户在 /write、/diary、/changelog 上会看到错误提示却停在空白页。
+ * 需要登录的前台路由前缀
+ * 这些页面在令牌过期时也要跳登录页, 不能只判断 /admin
+ * 否则用户在 /write, /diary, /changelog 上会看到错误提示却停在空白页
  */
 const PROTECTED_PREFIXES = ['/admin', '/write', '/diary', '/changelog']
 
@@ -73,9 +73,9 @@ async function refreshAccessToken(): Promise<string> {
 }
 
 /**
- * 单飞(single-flight): 页面同时发出多个请求时, 它们几乎必然同时 401。
+ * 单飞(single-flight): 页面同时发出多个请求时, 它们几乎必然同时 401
  * refresh token 是一次性的, 并发刷新会让后到的那次拿到已失效的令牌而整页掉线,
- * 因此这里让所有并发 401 共用同一个刷新 Promise。
+ * 因此这里让所有并发 401 共用同一个刷新 Promise
  */
 let refreshing: Promise<string> | null = null
 
@@ -125,7 +125,7 @@ rawAxios.interceptors.response.use(
     }
 
     // 统一打一条带上下文的警告: 各页面普遍用 try/finally 或空 catch,
-    // 没有这行日志时只会在控制台留下未处理的 rejection, 无法判断是哪个请求失败。
+    // 没有这行日志时只会在控制台留下未处理的 rejection, 无法判断是哪个请求失败
     console.warn(`[api] ${method} ${url} -> ${status ?? 'network'} ${message}`)
 
     if (status === 401) {

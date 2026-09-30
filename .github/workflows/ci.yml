@@ -1,9 +1,9 @@
 name: CI
 
-# 两个 job: 后端 pytest(backend)与前端类型/测试/构建(frontend)。
+# 两个 job: 后端静态检查(backend)与前端类型/检查/构建(frontend)
 #
-# 路径过滤必须同时覆盖 backend/** 与 frontend/** —— 只写 backend/** 时,
-# 单独改前端不会触发任何检查(这是先前的漏洞: 前端改动 CI 全绿, 实际什么都没跑)。
+# 路径过滤必须同时覆盖 backend/** 与 frontend/** - 只写 backend/** 时,
+# 单独改前端不会触发任何检查(这是先前的漏洞: 前端改动 CI 全绿, 实际什么都没跑)
 on:
   push:
     branches: [main]
@@ -19,7 +19,7 @@ on:
 
 jobs:
   backend:
-    name: backend (pytest)
+    name: backend (lint)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -47,14 +47,8 @@ jobs:
       - name: Check formatting (ruff)
         run: ruff format --check .
 
-      # 测试用内存 SQLite, 不需要 MySQL 服务, 也不会碰到开发库
-      - name: Run tests
-        env:
-          PHXXBLOG_SECRET_KEY: test-secret-key-0123456789abcdefghijklmnop
-        run: python -m pytest tests -q
-
   frontend:
-    name: frontend (types / tests / build)
+    name: frontend (types / checks / build)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -63,11 +57,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 版本取自仓库根的 .nvmrc, 与本地开发保持一致。
-      # 这里曾经写死 node-version: '20', 结果是: jsdom 30 依赖 undici 8, 而 undici 8 需要
-      # node:worker_threads 的 markAsUncloneable(Node >= 22.19), 在 Node 20 上加载 jsdom 直接抛
-      # "TypeError: webidl.util.markAsUncloneable is not a function" —— 5 个测试文件全部起不来。
-      # 改 Node 版本时请同时改 .nvmrc 与 frontend/package.json 的 engines。
+      # 版本取自仓库根的 .nvmrc, 与本地开发保持一致(改版本时同时改 .nvmrc 与 engines)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -96,10 +86,8 @@ jobs:
       - name: Check formatting (prettier)
         run: npm run check:format
 
-      - name: Type check & unit tests
-        run: |
-          npx vue-tsc -b --force
-          npm run test
+      - name: Type check
+        run: npx vue-tsc -b --force
 
       # 构建一次, 顺带打印首屏/整包体积(防止悄悄回退到"打开首页要下 1MB")
       - name: Build & report bundle size

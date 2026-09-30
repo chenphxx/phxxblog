@@ -1,4 +1,4 @@
-"""日记模型。"""
+"""日记模型"""
 
 from datetime import date, datetime
 
@@ -9,7 +9,7 @@ from app.core.database import Base
 
 
 class DiaryEntry(Base):
-    """日记表(仅管理员可见/可写)。"""
+    """日记表(仅管理员可见/可写)"""
 
     __tablename__ = "diaries"
 

@@ -1,7 +1,7 @@
-"""从后端源码提取完整的路由清单, 用于生成 docs/api.md 里的接口表。
+"""从后端源码提取完整的路由清单, 用于生成 docs/api.md 里的接口表
 
-只扫描「装饰器 + 函数签名」这一段, 不跨越到下一个接口 ——
-按固定行数窗口扫描会把下一个接口的权限依赖误算进来(已踩过这个坑)。
+只扫描"装饰器 + 函数签名"这一段, 不跨越到下一个接口
+按固定行数窗口扫描会把下一个接口的权限依赖误算进来(已踩过这个坑)
 
 用法:
   python scripts/dump_routes.py            # 写到 stdout
@@ -29,11 +29,11 @@ AUTH_LABELS = [
 
 
 def route_block(lines: list[str], deco_index: int) -> tuple[str, str]:
-    """从装饰器行扫到函数签名结束, 返回 (整段文本, 函数名)。
+    """从装饰器行扫到函数签名结束, 返回 (整段文本, 函数名)
 
     不能只扫签名: 权限依赖有时写在函数名之后换行的参数里(例如
     `data: CategoryIn,\\n user: User = Depends(require_permission(...))`),
-    也不能扫固定行数窗口 —— 那会把下一个接口的依赖算进来。
+    也不能扫固定行数窗口 - 那会把下一个接口的依赖算进来
     """
     end = None
     for j in range(deco_index, min(deco_index + 40, len(lines))):

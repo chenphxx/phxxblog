@@ -2,7 +2,7 @@
  * 主题自检:
  *   1. tokens.mjs 里每套主题的令牌是否齐全
  *   2. 生成出来的 theme-*.css 是否与 tokens.mjs 一致(有没有忘记重新生成)
- *   3. theme-default.css 是否等于默认主题、且只有它写了颜色级裸 :root
+ *   3. theme-default.css 是否等于默认主题, 且只有它写了颜色级裸 :root
  *   4. 深浅两种模式下的关键配色是否满足 WCAG AA(4.5:1)
  *   5. 用渐变装饰的族, 渐变两端是否肉眼可辨
  *   6. 主题之间主色是否过于接近(仅警告)
@@ -103,7 +103,7 @@ if (fail === 0) console.log(`  ok   ${THEMES.length} 个生成文件与数据一
 
 /*
  * theme-default.css 必须等于 THEMES[0] 的浅色令牌:
- * 它承担「新访客第一次打开」的配色, 与 registry.ts 的 DEFAULT_THEME 是一对。
+ * 它承担"新访客第一次打开"的配色, 与 registry.ts 的 DEFAULT_THEME 是一对
  */
 {
   const file = path.join(themeDir, 'theme-default.css')
@@ -118,8 +118,8 @@ if (fail === 0) console.log(`  ok   ${THEMES.length} 个生成文件与数据一
       if (!css.includes(first.light[key])) problems.push(`默认主题浅色 ${key}=${first.light[key]} 未出现`)
     }
     if (!/^:root \{/m.test(css)) problems.push('缺少裸 :root 块')
-    // 其余主题不应再定义颜色令牌级的裸 :root, 否则默认主题会被后加载的覆盖。
-    // 每个主题文件都有一个只放字体/尺寸的共享 :root 块, 那是允许的。
+    // 其余主题不应再定义颜色令牌级的裸 :root, 否则默认主题会被后加载的覆盖
+    // 每个主题文件都有一个只放字体/尺寸的共享 :root 块, 那是允许的
     const withBareRoot = THEMES.filter((t) => {
       const f = path.join(themeDir, `theme-${t.id}.css`)
       if (!fs.existsSync(f)) return false
@@ -154,18 +154,18 @@ for (const t of THEMES) {
       正文: contrast(c.text, c.cardBg),
       次要: contrast(c.muted, c.cardBg),
     }
-    // 图形类: 悬停强调色属于 UI 组件边界, 按 AA 图形对象 3.0 要求。
+    // 图形类: 悬停强调色属于 UI 组件边界, 按 AA 图形对象 3.0 要求
     // 渐变色带是纯装饰元素(站点头部/终端卡片顶部的 1~2px 光带), WCAG 不对装饰设对比度门槛,
-    // 也不该用亮度对比度衡量 —— 何况渐变两端刻意同亮度不同色相。
-    // 这里只校验「两端有可见的色彩差异」, 避免渐变退化成一条纯色。
+    // 也不该用亮度对比度衡量 - 何况渐变两端刻意同亮度不同色相
+    // 这里只校验"两端有可见的色彩差异", 避免渐变退化成一条纯色
     const gfxChecks = {
       hover主色: contrast(c.primaryStrong, c.cardBg),
     }
     const gradVisible = rgbDistance(c.gradFrom, c.gradTo)
     /*
-     * 渐变是否退化成纯色, 只对「用渐变装饰」的族有意义:
-     * soft / editorial 用渐变画文章卡左侧色条, hard 用纯色, 所以都不校验。
-     * minimal(VitePress/Teek 风格)本身不用渐变色带, 同样跳过。
+     * 渐变是否退化成纯色, 只对"用渐变装饰"的族有意义:
+     * soft / editorial 用渐变画文章卡左侧色条, hard 用纯色, 所以都不校验
+     * minimal(VitePress/Teek 风格)本身不用渐变色带, 同样跳过
      */
     const useGradient = t.family === 'soft' || t.family === 'editorial'
     const badGrad = useGradient && gradVisible < 40

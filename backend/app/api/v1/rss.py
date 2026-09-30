@@ -1,4 +1,4 @@
-"""RSS 与 Sitemap(挂载在根路径)。"""
+"""RSS 与 Sitemap(挂载在根路径)"""
 
 from datetime import datetime, timezone
 
@@ -16,7 +16,7 @@ router = APIRouter(tags=["RSS/SEO"])
 
 
 def _aware(value: datetime | None) -> datetime | None:
-    """feedgen 要求带时区信息的 datetime。"""
+    """feedgen 要求带时区信息的 datetime"""
     if value is None:
         return None
     if value.tzinfo is None:
@@ -36,7 +36,7 @@ def _site_desc(db: Session) -> str:
 
 @router.get("/rss.xml", include_in_schema=False)
 def rss_feed(db: Session = Depends(get_db)):
-    """RSS 订阅源。"""
+    """RSS 订阅源"""
     feed = FeedGenerator()
     feed.title(_site_name(db))
     feed.description(_site_desc(db))
@@ -62,7 +62,7 @@ def rss_feed(db: Session = Depends(get_db)):
 
 @router.get("/sitemap.xml", include_in_schema=False)
 def sitemap(db: Session = Depends(get_db)):
-    """SEO 站点地图。"""
+    """SEO 站点地图"""
     posts = db.query(Post).filter(Post.status == 2).order_by(Post.published_at.desc()).all()
     urls = [f"{settings.site_url}/"]
     urls += [f"{settings.site_url}/archive"]

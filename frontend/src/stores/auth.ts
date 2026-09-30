@@ -11,10 +11,10 @@ import {
 } from '@/utils/tokenStorage'
 
 /**
- * 登录状态: 令牌与用户信息, 与 localStorage 同步(key 与读写见 utils/tokenStorage)。
+ * 登录状态: 令牌与用户信息, 与 localStorage 同步(key 与读写见 utils/tokenStorage)
  *
  * accessToken / refreshToken 是 computed 而不是 ref: 静默刷新会直接改写 localStorage,
- * 只有从存储读取才能保证 UI 看到的是最新令牌(见 tokenStorage 的 tokenRevision)。
+ * 只有从存储读取才能保证 UI 看到的是最新令牌(见 tokenStorage 的 tokenRevision)
  */
 export const useAuthStore = defineStore('auth', () => {
   const accessToken = computed(() => getAccessToken())

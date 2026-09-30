@@ -1,14 +1,14 @@
 /**
- * 文章编辑器共享逻辑(WriteView 与 admin/PostEditView)。
+ * 文章编辑器共享逻辑(WriteView 与 admin/PostEditView)
  *
- * 两个视图原本各有一份几乎逐行相同的 `<script setup>`(表单状态、分类/标签联动创建、
- * 封面上传、保存、删除), 差异只有:
+ * 两个视图原本各有一份几乎逐行相同的 `<script setup>`(表单状态, 分类/标签联动创建,
+ * 封面上传, 保存, 删除), 差异只有:
  *  - 点"取消"的去向(博客侧 router.back(), 后台侧回列表)
  *  - 删除确认框的文案
- * 这两点通过 options 注入, 其余逻辑只保留一份实现。
+ * 这两点通过 options 注入, 其余逻辑只保留一份实现
  *
  * 返回值是一个 reactive 对象(内部不使用 ref), 因此视图与 PostFormFields 都可以直接读写
- * `editor.form.title` 这类嵌套字段, 无需 .value。
+ * `editor.form.title` 这类嵌套字段, 无需 .value
  */
 import { onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'

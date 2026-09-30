@@ -1,4 +1,4 @@
-"""后台 Dashboard 汇总接口。"""
+"""后台 Dashboard 汇总接口"""
 
 from datetime import date, timedelta
 
@@ -25,7 +25,7 @@ def dashboard(
     _: User = Depends(require_permission(Perm.STATS_VIEW)),
     db: Session = Depends(get_db),
 ):
-    """Dashboard 数据: 总览(含今日 PV/UV) + 14 天趋势 + 最新文章/评论。"""
+    """Dashboard 数据: 总览(含今日 PV/UV) + 14 天趋势 + 最新文章/评论"""
     start = date.today() - timedelta(days=13)
     trend_rows = (
         db.query(DailyStat).filter(DailyStat.stat_date >= start).order_by(DailyStat.stat_date).all()
@@ -45,8 +45,8 @@ def dashboard(
     ]
     recent_posts = db.query(Post).order_by(Post.created_at.desc()).limit(5).all()
     recent_comments = db.query(Comment).order_by(Comment.created_at.desc()).limit(5).all()
-    # 今日 PV/UV 取当天的按日聚合行; 没有该行说明今天还没有访问记录, 按 0 处理。
-    # 放在这里而不是让前端再打一次 /stats/overview: 仪表盘首屏因此只发 1 个聚合请求。
+    # 今日 PV/UV 取当天的按日聚合行; 没有该行说明今天还没有访问记录, 按 0 处理
+    # 放在这里而不是让前端再打一次 /stats/overview: 仪表盘首屏因此只发 1 个聚合请求
     today_stat = db.query(DailyStat).filter(DailyStat.stat_date == date.today()).first()
     return ok(
         {

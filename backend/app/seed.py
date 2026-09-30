@@ -1,4 +1,4 @@
-"""初始化脚本: 建表、创建权限/角色/管理员、写入默认设置。"""
+"""初始化脚本: 建表, 创建权限/角色/管理员, 写入默认设置"""
 
 import os
 import secrets
@@ -64,7 +64,7 @@ ROLES = {
 
 
 def seed() -> None:
-    """执行初始化。"""
+    """执行初始化"""
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:
@@ -95,9 +95,9 @@ def seed() -> None:
 
         # 3. 管理员账号(仅当没有任何用户时创建)
         if db.query(User).count() == 0:
-            # 初始密码优先取环境变量; 没配就随机生成并打印一次。
-            # 不再硬编码固定的 "admin123456" —— 公开仓库里的默认口令等于没有口令,
-            # 而 seed 往往在部署脚本里跑, 很容易忘记改。
+            # 初始密码优先取环境变量; 没配就随机生成并打印一次
+            # 不再硬编码固定的 "admin123456" - 公开仓库里的默认口令等于没有口令,
+            # 而 seed 往往在部署脚本里跑, 很容易忘记改
             admin_password = os.getenv("PHXXBLOG_ADMIN_PASSWORD") or secrets.token_urlsafe(12)
             admin = User(
                 username="admin",

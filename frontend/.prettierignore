@@ -1,6 +1,5 @@
 # 生成物: 由构建脚本产出, 不参与格式化
 dist/
-coverage/
 src/components.d.ts
 
 # 主题子系统的生成物: 由 generate-themes / build-previews 产出, 格式由生成器决定

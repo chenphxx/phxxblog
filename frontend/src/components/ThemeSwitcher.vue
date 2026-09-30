@@ -145,7 +145,7 @@ html.dark .theme-picker:hover {
   display: flex;
   align-items: center;
   gap: 10px;
-  /* 只显示「色点 + 主题名」, 因此比原来(带描述时 250px)窄很多 */
+  /* 只显示"色点 + 主题名", 因此比原来(带描述时 250px)窄很多 */
   min-width: 160px;
 }
 

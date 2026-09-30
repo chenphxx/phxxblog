@@ -1,4 +1,4 @@
-"""访问统计模型: 明细与按日聚合。"""
+"""访问统计模型: 明细与按日聚合"""
 
 from datetime import date, datetime
 
@@ -9,7 +9,7 @@ from app.core.database import Base
 
 
 class VisitLog(Base):
-    """访问明细表, 用于 PV/UV/来源/浏览器/IP 分析。"""
+    """访问明细表, 用于 PV/UV/来源/浏览器/IP 分析"""
 
     __tablename__ = "visit_logs"
     __table_args__ = (
@@ -34,7 +34,7 @@ class VisitLog(Base):
 
 
 class DailyStat(Base):
-    """按日聚合统计表。"""
+    """按日聚合统计表"""
 
     __tablename__ = "daily_stats"
 

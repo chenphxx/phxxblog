@@ -1,10 +1,10 @@
-"""文章导入导出: Markdown 序列化, 解析, 查重与落库。
+"""文章导入导出: Markdown 序列化, 解析, 查重与落库
 
 为什么单独抽一个模块:
     导入导出原先占 api/v1/posts.py 近 200 行, 与文章 CRUD, 状态流转, 点赞混在一起,
     而它们只在"导入/导出"两个接口里被用到; 导入的解析规则(标题推断, 分类兼容旧格式,
-    状态降级)还需要被测试单独覆盖。这里只放文章自己的规则, 上传文件的拆分与查重流程
-    走 services/import_pipeline.py, 与日记共用。
+    状态降级)还需要被测试单独覆盖. 这里只放文章自己的规则, 上传文件的拆分与查重流程
+    走 services/import_pipeline.py, 与日记共用
 """
 
 import io
@@ -37,7 +37,7 @@ from app.services.post_write import (
 
 
 def to_markdown(post: Post) -> str:
-    """将文章序列化为带 YAML frontmatter 的 Markdown 文本。"""
+    """将文章序列化为带 YAML frontmatter 的 Markdown 文本"""
     pairs: list[tuple[str, object]] = [
         ("title", post.title),
         ("slug", post.slug),
@@ -60,7 +60,7 @@ def to_markdown(post: Post) -> str:
 
 
 def build_zip(posts: list[Post], fmt: str) -> bytes:
-    """把文章打包成 zip 字节流(markdown 或 html), 正文引用的本地图片一并放入。
+    """把文章打包成 zip 字节流(markdown 或 html), 正文引用的本地图片一并放入
 
     @param posts 待导出的文章
     @param fmt markdown 或 html
@@ -89,14 +89,14 @@ def build_zip(posts: list[Post], fmt: str) -> bytes:
 
 
 def rewrite_cover_image(cover: str | None, image_map: dict[str, str]) -> str | None:
-    """改写 frontmatter 中的封面图片路径。"""
+    """改写 frontmatter 中的封面图片路径"""
     if not cover:
         return cover
     return lookup_image(image_map, cover) or cover
 
 
 def import_title(meta: dict, body: str, filename: str) -> str:
-    """推断文章标题: frontmatter -> 首个一级标题 -> 文件名。"""
+    """推断文章标题: frontmatter -> 首个一级标题 -> 文件名"""
     title = str(meta.get("title") or "").strip()
     if not title:
         for line in body.splitlines():
@@ -110,13 +110,13 @@ def import_title(meta: dict, body: str, filename: str) -> str:
 
 
 def existing_title_keys(db: Session) -> set[str]:
-    """已有文章标题的查重键(回收站中的文章不算重复)。"""
+    """已有文章标题的查重键(回收站中的文章不算重复)"""
     rows = db.query(Post.title).filter(Post.status != 4).all()
     return {title_key(str(title)) for (title,) in rows if str(title).strip()}
 
 
 def parse_import(filename: str, content: str) -> dict | None:
-    """解析导入内容, 返回 {content, title}; 识别不出标题返回 None。"""
+    """解析导入内容, 返回 {content, title}; 识别不出标题返回 None"""
     meta, body = parse_frontmatter(content)
     title = import_title(meta, body, filename)
     if not title:
@@ -125,13 +125,13 @@ def parse_import(filename: str, content: str) -> dict | None:
 
 
 def _resolve_import_status(meta: dict, user: User) -> int:
-    """按 frontmatter 的 status 与提交人权限推出实际落库状态。"""
+    """按 frontmatter 的 status 与提交人权限推出实际落库状态"""
     try:
         raw_status = int(str(meta.get("status") or str(STATUS_DRAFT)))
     except (TypeError, ValueError):
         raw_status = STATUS_DRAFT
     # 与新增/修改共用同一条状态规则(见 services/post_write), 差别只在
-    # 越权时的降级目标: 批量导入落"草稿"而不是"审核中"(不宜把导入内容塞进审核队列)。
+    # 越权时的降级目标: 批量导入落"草稿"而不是"审核中"(不宜把导入内容塞进审核队列)
     resolved = resolve_submitted_status(raw_status, user)
     if raw_status in (STATUS_DRAFT, STATUS_REVIEW):
         # 草稿/审核中不需要任何权限, 原样保留
@@ -142,7 +142,7 @@ def _resolve_import_status(meta: dict, user: User) -> int:
 
 
 def _resolve_import_categories(db: Session, meta: dict) -> list[Category]:
-    """解析 frontmatter 里的分类名(兼容旧格式的单值 category)并按需新建。"""
+    """解析 frontmatter 里的分类名(兼容旧格式的单值 category)并按需新建"""
     raw_categories = meta.get("categories")
     if raw_categories is None:
         raw_categories = meta.get("category")
@@ -164,7 +164,7 @@ def _resolve_import_categories(db: Session, meta: dict) -> list[Category]:
 
 
 def _resolve_import_tags(db: Session, meta: dict) -> list[Tag]:
-    """解析 frontmatter 里的标签名并按需新建。"""
+    """解析 frontmatter 里的标签名并按需新建"""
     raw_tags = meta.get("tags") or []
     if isinstance(raw_tags, str):
         raw_tags = [t.strip() for t in raw_tags.strip("[]").split(",") if t.strip()]
@@ -183,7 +183,7 @@ def _resolve_import_tags(db: Session, meta: dict) -> list[Tag]:
 
 
 def _parse_published_at(meta: dict) -> datetime:
-    """解析 frontmatter 的发布日期, 解析失败退回当前时间。"""
+    """解析 frontmatter 的发布日期, 解析失败退回当前时间"""
     date_str = str(meta.get("date") or "").strip()
     for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d"):
         try:
@@ -199,7 +199,7 @@ def create_from_plan(
     plan: dict,
     image_map: dict[str, str] | None = None,
 ) -> tuple[bool, str | None]:
-    """按导入计划创建一篇文章(默认草稿), 返回 (是否导入, 错误信息)。
+    """按导入计划创建一篇文章(默认草稿), 返回 (是否导入, 错误信息)
 
     @param db 数据库会话
     @param user 导入人(作者)

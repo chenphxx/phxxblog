@@ -22,7 +22,7 @@
 | 33娘 | `model/bilibili-live/33/` | 同上 |
 
 上游共 26 个模型(分布在 5 个系列), 这里收了其中 8 个 剩下的 18 个全部属于 `HyperdimensionNeptunia` 系列, 是同一批角色的服装与配色变体, 单套 2 MB 上下, 
-且会跨目录引用兄弟目录的纹理与 `general/` 下的动作, 默认不收录 需要时按下面「新增一个形象」的步骤把引用一起拷进来 
+且会跨目录引用兄弟目录的纹理与 `general/` 下的动作, 默认不收录 需要时按下面"新增一个形象"的步骤把引用一起拷进来 
 
 上面的 8 个之外还有 Miku, 上游没有, 取自另一个来源(见下), 因此本项目共 9 个形象 
 
@@ -33,16 +33,16 @@
 - 目录: `model/miku/`, 模型 json 里原本相对模型目录的路径已改写成本项目运行时的相对路径形式(`model/miku/...`), 并补了取景用的 `layout`(见下) 
 - 上游该包只有 `miku.model.json`(动作组为 `null` 与 `idle`, 无摸头动作), 这里原样保留 
 
-模型版权属于原作者 上游 README 注明「所有模型的版权均属于原作者, 仅供研究学习, 不得用于商业用途」- 这里只做自托管, 未修改任何模型数据 
+模型版权属于原作者 上游 README 注明"所有模型的版权均属于原作者, 仅供研究学习, 不得用于商业用途"- 这里只做自托管, 未修改任何模型数据 
 
 ## 相对上游做的改动
 
-上游把模型基址写死在运行时里, 模型 json 里的纹理也写成 unpkg 绝对地址, 直接搬过来会请求外部 CDN, 与本项目「字体, 编辑器等静态资源一律自托管」的做法冲突 因此只做了这几处本地化处理: 
+上游把模型基址写死在运行时里, 模型 json 里的纹理也写成 unpkg 绝对地址, 直接搬过来会请求外部 CDN, 与本项目"字体, 编辑器等静态资源一律自托管"的做法冲突 因此只做了这几处本地化处理: 
 
 1. `live2d.js` 里唯一一处 `this.modelHomeDir="https://unpkg.com/kanbanniang@0.2.12/"` 改成 `this.modelHomeDir="/kanbanniang/"`, 其余代码未动 
    运行时把模型 json 里的路径统一拼在这个基址后面, 于是 `model/...` 会解析到 `/kanbanniang/model/...` 
 2. 模型 json 里的 `https://unpkg.com/kanbanniang*/` 前缀去掉, 变成相对基址的路径(如 `model/KantaiCollection/murakumo/textures.1024/00.png`) 
-3. `Potion-Maker/Pio`、`Potion-Maker/Tia` 与 `bilibili-live/22`、`bilibili-live/33` 上游 `index.json` 的 `textures` 是空数组(上游靠 `textures.json` 在运行时换装, 这个运行时读不到), 
+3. `Potion-Maker/Pio`, `Potion-Maker/Tia` 与 `bilibili-live/22`, `bilibili-live/33` 上游 `index.json` 的 `textures` 是空数组(上游靠 `textures.json` 在运行时换装, 这个运行时读不到), 
    这里显式补上纹理路径: Pio / Tia 用 `textures/default-costume.png`, 22娘 / 33娘 用上游 `textures.json` 的第一套服装(`texture_00` ~ `texture_03` 各一张) 
 4. Miku 的 `miku.model.json` 里是相对模型目录的路径(`moc/miku.moc` 等), 改写成相对本目录的写法(`model/miku/moc/miku.moc` 等), 并补了取景用的 `layout` 
 

@@ -21,10 +21,10 @@ const {
 
 const STATUS_TEXT: Record<number, string> = { 1: '正常', 0: '隐藏', 2: '回收站' }
 /**
- * 状态 -> el-tag 的 type。
+ * 状态 -> el-tag 的 type
  * 用字面量联合而不是 `Record<number, string>`: el-tag 的 type 只接受
  * 'primary' | 'success' | 'warning' | 'info' | 'danger', 宽泛的 string 会在
- * 模板类型检查时报错(按需引入后组件有了精确类型, 这类问题会暴露出来)。
+ * 模板类型检查时报错(按需引入后组件有了精确类型, 这类问题会暴露出来)
  */
 type TagType = 'primary' | 'success' | 'warning' | 'info' | 'danger'
 const STATUS_TYPE: Record<number, TagType> = { 1: 'success', 0: 'warning', 2: 'info' }
@@ -74,7 +74,7 @@ async function remove(comment: CommentItem) {
         </el-table-column>
         <el-table-column prop="content" label="内容" min-width="220">
           <template #default="{ row }">
-            <!-- 用 router-link 而不是裸 <a> + click: 前者可 Tab 聚焦、可回车触发,
+            <!-- 用 router-link 而不是裸 <a> + click: 前者可 Tab 聚焦, 可回车触发,
                  并且语义上就是"链接"(屏幕阅读器不会把它当普通文本) -->
             <router-link class="comment-link" :to="`/post/${row.post_id}`" :title="`查看文章 #${row.post_id}`">
               {{ row.content }}

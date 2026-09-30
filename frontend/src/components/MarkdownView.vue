@@ -21,8 +21,8 @@ interface HljsLike {
 }
 
 /**
- * 自动识别语言的候选集合(按本站常见程度排序, 相关度相同时取靠前者)。
- * 不直接使用全部语言, 既是为了速度, 也是为了避免长尾语言给出离谱的结果。
+ * 自动识别语言的候选集合(按本站常见程度排序, 相关度相同时取靠前者)
+ * 不直接使用全部语言, 既是为了速度, 也是为了避免长尾语言给出离谱的结果
  */
 const AUTO_LANGS = [
   'c',
@@ -84,11 +84,11 @@ async function waitForHljs(timeout = 3000): Promise<HljsLike | undefined> {
 const LANGUAGE_RE = /(?:^|\s)language-([^\s]+)/
 
 /**
- * 语言特征提示: 命中即采用对应语言(需 highlight.js 已注册该语言)。
+ * 语言特征提示: 命中即采用对应语言(需 highlight.js 已注册该语言)
  *
  * 短代码片段单靠相关度打分并不可靠(例如 Rust 的 `let x: i32 = 1;` 会被判成 ini,
- * PowerShell 的一行命令会被判成别的语言), 这些特征模式可以稳定认出本站常见语言。
- * 顺序即优先级: 同时命中时取靠前的规则。
+ * PowerShell 的一行命令会被判成别的语言), 这些特征模式可以稳定认出本站常见语言
+ * 顺序即优先级: 同时命中时取靠前的规则
  */
 const LANG_HINTS: Array<[RegExp, string]> = [
   // C++: 命名空间 / 标准库 / 模板
@@ -109,12 +109,12 @@ const LANG_HINTS: Array<[RegExp, string]> = [
 ]
 
 /**
- * 用 highlight.js 给代码块挑一个最可能的语言。
+ * 用 highlight.js 给代码块挑一个最可能的语言
  *
  * 不能直接用 hljs.highlightAuto: 它内部按 `ignoreIllegals: false` 打分, 命中非法词法的
  * 语言会被直接丢弃, 于是短小的 C 片段(例如带未闭合字符串的示例)常被误判成 swift /
- * perl / maxima 之类的语言。这里改为逐个候选语言打分(允许非法词法), 取相关度最高者;
- * 相关度为 0 时视为无法识别, 保持纯文本, 避免给普通文字套上乱七八糟的颜色。
+ * perl / maxima 之类的语言. 这里改为逐个候选语言打分(允许非法词法), 取相关度最高者;
+ * 相关度为 0 时视为无法识别, 保持纯文本, 避免给普通文字套上乱七八糟的颜色
  */
 function detectLanguage(instance: HljsLike, code: string): string | undefined {
   for (const [pattern, lang] of LANG_HINTS) {
@@ -139,21 +139,21 @@ function detectLanguage(instance: HljsLike, code: string): string | undefined {
 }
 
 /**
- * 让所有代码块都带上语法高亮。
+ * 让所有代码块都带上语法高亮
  *
  * Vditor 只会高亮带 `language-*` 标注的代码块, 未标注的(例如从 WordPress 导入的
- * 缩进代码块)会被当成 plaintext, 完全没有配色。这里先用 highlight.js 自动识别这些
- * 代码块的语言, 再统一调用 Vditor.highlightRender 重新渲染, 配色与行号一次到位。
+ * 缩进代码块)会被当成 plaintext, 完全没有配色. 这里先用 highlight.js 自动识别这些
+ * 代码块的语言, 再统一调用 Vditor.highlightRender 重新渲染, 配色与行号一次到位
  *
  * 注意: Vditor 取语言用的是 `code.className.replace("language-", "")`, 所以重新渲染前
  * 必须先摘掉上一次渲染留下的 `hljs` / `vditor-linenumber` 类, 否则语言名会解析失败并
- * 退化成 plaintext(表现就是"完全没有高亮")。
+ * 退化成 plaintext(表现就是"完全没有高亮")
  */
 async function highlightCode(root: HTMLDivElement) {
   const instance = await waitForHljs()
   if (!instance) return
   root.querySelectorAll<HTMLElement>('pre > code').forEach((code) => {
-    // 清理上一次渲染的类名与行号节点, 保证语言解析正确、行号不重复
+    // 清理上一次渲染的类名与行号节点, 保证语言解析正确, 行号不重复
     code.classList.remove('hljs', 'vditor-linenumber')
     code.querySelectorAll('.vditor-linenumber__rows, .vditor-linenumber__temp').forEach((node) => node.remove())
     if (LANGUAGE_RE.test(code.className)) return
@@ -167,11 +167,11 @@ async function highlightCode(root: HTMLDivElement) {
 const CODE_FOLD_LINES = 20
 
 /**
- * 已展开的代码块(按代码块序号记录; 主题切换会重新渲染, 借此保持展开状态)。
+ * 已展开的代码块(按代码块序号记录; 主题切换会重新渲染, 借此保持展开状态)
  *
- * 必须在组件作用域内: 以前它定义在模块顶层, 是**跨实例共享**的隐藏状态。
+ * 必须在组件作用域内: 以前它定义在模块顶层, 是**跨实例共享**的隐藏状态
  * 首页的 README 区与文章详情会同时渲染 MarkdownView, 两处都会读写同一个 Set,
- * 于是"展开第 3 个代码块"会同时影响另一个实例。
+ * 于是"展开第 3 个代码块"会同时影响另一个实例
  */
 const expandedBlocks = new Set<number>()
 
@@ -179,8 +179,8 @@ const expandedBlocks = new Set<number>()
 const previewSrc = ref('')
 
 /**
- * 长代码块折叠: 超过 20 行的代码块只展示前 20 行, 点击按钮展开/收起。
- * 折叠时用 max-height 裁剪并隐藏纵向溢出, 不出现滚动条。
+ * 长代码块折叠: 超过 20 行的代码块只展示前 20 行, 点击按钮展开/收起
+ * 折叠时用 max-height 裁剪并隐藏纵向溢出, 不出现滚动条
  */
 function applyCodeFold(root: HTMLDivElement) {
   root.querySelectorAll<HTMLElement>('pre').forEach((pre, index) => {
@@ -226,7 +226,7 @@ function applyCodeFold(root: HTMLDivElement) {
 }
 
 /**
- * 标题文本转锚点片段: 保留中英文与数字, 空格与标点统一压成连字符。
+ * 标题文本转锚点片段: 保留中英文与数字, 空格与标点统一压成连字符
  *
  * @param text 标题纯文本
  * @return 可作为 id 的片段; 全部字符都被过滤掉时返回空串, 由调用方兜底
@@ -239,10 +239,10 @@ function slugify(text: string): string {
 }
 
 /**
- * 给正文标题编锚点并收集目录。
+ * 给正文标题编锚点并收集目录
  *
- * Vditor 渲染出来的标题没有 id, 目录需要的锚点只能自己补。同一篇文章里出现同名标题时
- * 追加 -2 / -3 保证唯一, 否则后一个同名标题的锚点会失效(点击目录跳到第一个)。
+ * Vditor 渲染出来的标题没有 id, 目录需要的锚点只能自己补. 同一篇文章里出现同名标题时
+ * 追加 -2 / -3 保证唯一, 否则后一个同名标题的锚点会失效(点击目录跳到第一个)
  *
  * @param root 正文根节点
  * @return 按文档顺序排列的标题列表
@@ -303,9 +303,9 @@ watch(
 
 /*
  * 主题变化需要重新渲染: 代码高亮的配色是 Vditor 按主题名(vs / vs2015)加载的,
- * 只切 CSS 变量不会让 <code> 里的 hljs token 换色。
- * 用 200ms 去抖合并"连点主题/深浅色"产生的多次触发 —— 每次 render 都会
- * 清空 innerHTML 再整篇重排, 连续触发既浪费又会闪。
+ * 只切 CSS 变量不会让 <code> 里的 hljs token 换色
+ * 用 200ms 去抖合并"连点主题/深浅色"产生的多次触发 - 每次 render 都会
+ * 清空 innerHTML 再整篇重排, 连续触发既浪费又会闪
  */
 let themeRenderTimer: number | undefined
 watch(

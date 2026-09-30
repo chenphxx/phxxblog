@@ -1,11 +1,11 @@
-"""文章查询: 前台/后台列表, 归档, 热门榜单与相邻文章。
+"""文章查询: 前台/后台列表, 归档, 热门榜单与相邻文章
 
 为什么单独抽一个模块:
     这些查询原先都写在 api/v1/posts.py 里, 路由文件同时承担"解析参数, 构造查询,
-    组装响应"三件事, 一个文件里塞了七个不同用途的接口; 查询条件本身又需要被测试
-    单独覆盖(见 tests/test_core_rules.py), 放在路由模块里就只能连着路由函数一起调。
+    组装响应"三件事, 一个文件里塞了七个不同用途的接口; 查询条件本身值得单独维护,
+    放在路由模块里只能连着路由函数一起改
 
-这里只负责"查什么", 统一返回 ORM 对象, 响应模型的组装留给路由层。
+这里只负责"查什么", 统一返回 ORM 对象, 响应模型的组装留给路由层
 """
 
 from datetime import datetime, timedelta
@@ -32,7 +32,7 @@ def public_list(
     end_date: str | None = None,
     keyword: str | None = None,
 ) -> tuple[list[Post], int]:
-    """前台文章列表查询(仅已发布), 返回 (当页文章, 满足条件的总数)。
+    """前台文章列表查询(仅已发布), 返回 (当页文章, 满足条件的总数)
 
     @param db 数据库会话
     @param category 分类ID(多对多关联表筛选)
@@ -83,7 +83,7 @@ def admin_list(
     status: int | None = None,
     keyword: str | None = None,
 ) -> tuple[list[Post], int]:
-    """后台文章管理列表查询(管理员看全部, 作者只看自己), 返回 (当页文章, 总数)。"""
+    """后台文章管理列表查询(管理员看全部, 作者只看自己), 返回 (当页文章, 总数)"""
     query = db.query(Post)
     if Perm.POST_MANAGE not in user.permission_codes:
         query = query.filter(Post.author_id == user.id)
@@ -99,10 +99,10 @@ def admin_list(
 
 
 def month_groups(db: Session) -> list[tuple[int, int, list[Post]]]:
-    """按 年-月 分组返回全部已发布文章, 月份新的在前。
+    """按 年-月 分组返回全部已发布文章, 月份新的在前
 
     没有发布时间的文章(理论上已发布文章都有, 但历史数据可能缺)按创建时间归组,
-    避免它们从归档里凭空消失。
+    避免它们从归档里凭空消失
 
     @return [(年, 月, 该月文章), ...]
     """
@@ -120,9 +120,9 @@ def month_groups(db: Session) -> list[tuple[int, int, list[Post]]]:
 
 
 def hot(db: Session, limit: int = 7) -> list[Post]:
-    """热门文章查询(按浏览量倒序, 仅已发布)。
+    """热门文章查询(按浏览量倒序, 仅已发布)
 
-    浏览量相同时按 id 倒序, 保证多次请求的顺序稳定(否则榜单会随机跳动)。
+    浏览量相同时按 id 倒序, 保证多次请求的顺序稳定(否则榜单会随机跳动)
     """
     return (
         db.query(Post)
@@ -134,9 +134,9 @@ def hot(db: Session, limit: int = 7) -> list[Post]:
 
 
 def neighbors(db: Session, post: Post) -> tuple[Post | None, Post | None]:
-    """查询同一发布序列中紧邻的上一篇(更早)与下一篇(更晚)。
+    """查询同一发布序列中紧邻的上一篇(更早)与下一篇(更晚)
 
-    只在已发布文章之间取邻居, 非已发布文章(草稿预览等)没有"上一篇/下一篇"的语义。
+    只在已发布文章之间取邻居, 非已发布文章(草稿预览等)没有"上一篇/下一篇"的语义
 
     @param db 数据库会话
     @param post 当前文章

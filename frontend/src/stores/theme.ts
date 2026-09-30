@@ -6,11 +6,11 @@ const MODE_KEY = 'blog_theme'
 const STYLE_KEY = 'blog_theme_style'
 
 /**
- * 主题切换时加一层颜色过渡, 避免生硬跳变。
+ * 主题切换时加一层颜色过渡, 避免生硬跳变
  *
  * 用单一 timer 句柄而不是每次 new 一个 setTimeout: 快速连点主题按钮时,
- * 以前会叠加多个未清理的定时器(且可能在组件早已卸载后才摘掉 class)。
- * 新一次切换会取消上一次的清理任务。
+ * 以前会叠加多个未清理的定时器(且可能在组件早已卸载后才摘掉 class)
+ * 新一次切换会取消上一次的清理任务
  */
 let transitionTimer: number | undefined
 
@@ -35,7 +35,7 @@ function readStoredTheme(): ThemeId {
  *   - isDark   深色 / 浅色
  *   - themeId  配色主题(9 套, 见 styles/themes/registry.ts)
  * 两者独立, 共同决定 <html> 上的 .dark 类与 data-theme 属性,
- * CSS 里用 html[data-theme='<id>'].dark 选中对应令牌。
+ * CSS 里用 html[data-theme='<id>'].dark 选中对应令牌
  */
 export const useThemeStore = defineStore('theme', () => {
   const isDark = ref(localStorage.getItem(MODE_KEY) === 'dark')

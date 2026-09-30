@@ -8,8 +8,8 @@ import HotPostsCard from '@/components/HotPostsCard.vue'
  * @brief 首页左侧的热门文章模块
  *
  * 自己负责取数(按浏览量取 7 条)与失败兜底: 属于辅助模块, 失败时保持空列表即可
- * (请求拦截器已经提示过错误), 不让首页其它内容跟着停摆。
- * 首页在 keep-alive 重新激活时调用 refresh() 重取, 因为阅读量会随访问变化。
+ * (请求拦截器已经提示过错误), 不让首页其它内容跟着停摆
+ * 首页在 keep-alive 重新激活时调用 refresh() 重取, 因为阅读量会随访问变化
  */
 const posts = ref<PostItem[]>([])
 

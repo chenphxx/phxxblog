@@ -1,4 +1,4 @@
-"""站内搜索接口。"""
+"""站内搜索接口"""
 
 from datetime import datetime, timedelta
 
@@ -24,7 +24,7 @@ def search(
     end_date: str | None = Query(None, description="发布时间结束 YYYY-MM-DD"),
     db: Session = Depends(get_db),
 ):
-    """全文搜索已发布文章(标题/摘要/正文)。"""
+    """全文搜索已发布文章(标题/摘要/正文)"""
     like = f"%{q}%"
     query = db.query(Post).filter(
         Post.status == 2,

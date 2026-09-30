@@ -1,4 +1,4 @@
-"""操作日志模型。"""
+"""操作日志模型"""
 
 from datetime import datetime
 
@@ -9,7 +9,7 @@ from app.core.database import Base
 
 
 class OperationLog(Base):
-    """操作日志: 记录谁在什么时候改了什么。"""
+    """操作日志: 记录谁在什么时候改了什么"""
 
     __tablename__ = "operation_logs"
     __table_args__ = (

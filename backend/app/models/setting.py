@@ -1,4 +1,4 @@
-"""系统设置模型。"""
+"""系统设置模型"""
 
 from datetime import datetime
 
@@ -9,7 +9,7 @@ from app.core.database import Base
 
 
 class Setting(Base):
-    """键值对形式的系统设置。"""
+    """键值对形式的系统设置"""
 
     __tablename__ = "settings"
 

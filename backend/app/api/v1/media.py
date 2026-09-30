@@ -1,4 +1,4 @@
-"""媒体接口: 上传/列表/删除。"""
+"""媒体接口: 上传/列表/删除"""
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile
 from sqlalchemy.orm import Session
@@ -26,7 +26,7 @@ def upload_file(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """上传文件到 assets/ 目录(登录用户可用, 供文章/评论插入)。"""
+    """上传文件到 assets/ 目录(登录用户可用, 供文章/评论插入)"""
     if not (
         Perm.MEDIA_MANAGE in user.permission_codes or Perm.POST_CREATE in user.permission_codes
     ):
@@ -56,7 +56,7 @@ def list_media(
     _: User = Depends(require_permission(Perm.MEDIA_MANAGE)),
     db: Session = Depends(get_db),
 ):
-    """媒体列表(管理端)。"""
+    """媒体列表(管理端)"""
     query = db.query(Media)
     if media_type:
         query = query.filter(Media.type == media_type)
@@ -84,7 +84,7 @@ def delete_media(
     admin: User = Depends(require_permission(Perm.MEDIA_MANAGE)),
     db: Session = Depends(get_db),
 ):
-    """删除媒体(同时删除磁盘文件)。"""
+    """删除媒体(同时删除磁盘文件)"""
     media = db.get(Media, media_id)
     if media is None:
         raise HTTPException(status_code=404, detail="媒体不存在")

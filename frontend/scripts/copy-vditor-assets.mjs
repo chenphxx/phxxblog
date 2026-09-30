@@ -1,7 +1,7 @@
 /**
  * 将 node_modules/vditor/dist 复制到 public/vditor/dist,
- * 让 Vditor 的 Lute / 图标 / 高亮等资源走本地, 不依赖 unpkg/jsdelivr CDN。
- * 已在 package.json 的 predev / prebuild 中自动执行。
+ * 让 Vditor 的 Lute / 图标 / 高亮等资源走本地, 不依赖 unpkg/jsdelivr CDN
+ * 已在 package.json 的 predev / prebuild 中自动执行
  */
 import { cpSync, existsSync, mkdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'

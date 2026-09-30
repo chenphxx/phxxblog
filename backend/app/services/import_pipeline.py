@@ -1,9 +1,9 @@
-"""导入管线: 文章与日记共用的"上传 -> 解析 -> 查重 -> 落库"流程。
+"""导入管线: 文章与日记共用的"上传 -> 解析 -> 查重 -> 落库"流程
 
 为什么单独抽一个模块:
     文章与日记的导入骨架此前是逐行重复的两份实现, 连"同一份压缩包共用一次图片落盘"
-    的闭包与注释都一样, 真正不同的只有三件事: 怎么解析, 拿什么查重, 怎么落库。
-    两份实现改一处忘一处是迟早的事, 所以把骨架收敛到这里, 差异由调用方以函数注入。
+    的闭包与注释都一样, 真正不同的只有三件事: 怎么解析, 拿什么查重, 怎么落库
+    两份实现改一处忘一处是迟早的事, 所以把骨架收敛到这里, 差异由调用方以函数注入
 """
 
 from datetime import datetime
@@ -40,10 +40,10 @@ def run_import(
     label: PlanFunc,
     create: CreateFunc,
 ) -> tuple[dict, str]:
-    """执行一次导入请求, 返回 (响应数据, 提示文案)。
+    """执行一次导入请求, 返回 (响应数据, 提示文案)
 
     流程: 拆分上传文件 -> 逐个解析 -> 与库中已有内容及本批内容比对查重 ->
-    (仅 check 模式到此为止) -> 按去重策略落库 -> 写操作日志。
+    (仅 check 模式到此为止) -> 按去重策略落库 -> 写操作日志
 
     @param db 数据库会话
     @param user 发起导入的用户(新建记录的归属人)
@@ -71,7 +71,7 @@ def run_import(
             continue
         groups.append((entries, md_files))
 
-    # 先整体解析一遍: 与库中已有内容、本批已出现的内容比对, 得出重复情况
+    # 先整体解析一遍: 与库中已有内容, 本批已出现的内容比对, 得出重复情况
     known_keys = existing_keys()
     plans: list[dict] = []
     for group_index, (_entries, md_files) in enumerate(groups):
@@ -103,7 +103,7 @@ def run_import(
     image_maps: dict[int, dict[str, str]] = {}
 
     def image_map_of(group_index: int) -> dict[str, str]:
-        """同一份压缩包内的多条内容共用一次图片落盘结果。"""
+        """同一份压缩包内的多条内容共用一次图片落盘结果"""
         if group_index not in image_maps:
             entries = groups[group_index][0]
             image_maps[group_index] = (

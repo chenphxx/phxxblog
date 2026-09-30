@@ -138,7 +138,7 @@ onMounted(() => {
   border-right: 1px solid var(--border);
   overflow-y: auto;
 }
-/* 品牌区其余样式(主题色方块、字重、间距)在全局 admin.css 里, 便于与前台统一 */
+/* 品牌区其余样式(主题色方块, 字重, 间距)在全局 admin.css 里, 便于与前台统一 */
 .admin-brand {
   height: 60px;
   display: flex;

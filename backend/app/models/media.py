@@ -1,4 +1,4 @@
-"""媒体/附件模型(图片、视频、文件)。"""
+"""媒体/附件模型(图片, 视频, 文件)"""
 
 from datetime import datetime
 
@@ -9,7 +9,7 @@ from app.core.database import Base
 
 
 class Media(Base):
-    """媒体表, 文件实际存储在 assets/ 目录。"""
+    """媒体表, 文件实际存储在 assets/ 目录"""
 
     __tablename__ = "media"
     __table_args__ = (Index("idx_related", "related_type", "related_id"),)

@@ -1,4 +1,4 @@
-"""v1 路由汇总。"""
+"""v1 路由汇总"""
 
 from fastapi import APIRouter
 

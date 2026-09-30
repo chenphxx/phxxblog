@@ -1,14 +1,14 @@
 /**
- * 测量首屏(首屏 HTML 直接引到的资源)与整包的体积。
+ * 测量首屏(首屏 HTML 直接引到的资源)与整包的体积
  *
  * 为什么需要它: docs/architecture.md 的部署一节要给出"未压缩 / gzip 后"的具体数字,
- * 而肉眼估算是不可靠的 —— 之前文档里写着 780 KB, 实际优化后主 chunk 已经降到 45 KB,
- * 数字失真会让"要不要开 gzip"这类决策失去依据。
+ * 而肉眼估算是不可靠的 - 之前文档里写着 780 KB, 实际优化后主 chunk 已经降到 45 KB,
+ * 数字失真会让"要不要开 gzip"这类决策失去依据
  *
  * 口径:
  *   首屏 = dist/index.html 里的 <script type="module"> + <link rel="modulepreload">
- *          + <link rel="stylesheet"> 指向的文件(即浏览器渲染首屏前必须下载的资源)。
- *   整包 = dist 下所有 .js / .css / .html 文件之和(不含 vditor/ 与 fonts/ 这类按需资源)。
+ *          + <link rel="stylesheet"> 指向的文件(即浏览器渲染首屏前必须下载的资源)
+ *   整包 = dist 下所有 .js / .css / .html 文件之和(不含 vditor/ 与 fonts/ 这类按需资源)
  *
  * 用法: node scripts/measure-first-paint.mjs   (需先 npm run build)
  */

@@ -9,33 +9,33 @@ import { mediaGridMetrics } from '@/utils/mediaGrid'
 import { usePagedList } from '@/composables/usePagedList'
 
 /**
- * 选中项存 id 而不是对象。
+ * 选中项存 id 而不是对象
  * el-checkbox 的值类型是标量(string | number | boolean), 传对象会被类型拒绝
- * (且运行时的勾选态比较也不可靠); 用 id 数组既符合它的设计, 也避免重复持有对象。
+ * (且运行时的勾选态比较也不可靠); 用 id 数组既符合它的设计, 也避免重复持有对象
  */
 const selected = ref<number[]>([])
 const uploading = ref(false)
 
 /*
  * 每页数量不能写死: 媒体库是"铺满一屏"的栅格(height 由 calc(100vh - N) 固定),
- * 一屏能放下的格子数随窗口宽度/高度变化。写死 12 个时, 一屏能放 40 个却只渲染 12 个,
- * 剩下的位置空着而下一页已经存在 —— 表现为"明明还有很多空位却翻页了"。
- * 所以每页数量跟着栅格容量走(列 × 行), 具体换算见 utils/mediaGrid.ts(有单测)。
+ * 一屏能放下的格子数随窗口宽度/高度变化. 写死 12 个时, 一屏能放 40 个却只渲染 12 个,
+ * 剩下的位置空着而下一页已经存在 - 表现为"明明还有很多空位却翻页了"
+ * 所以每页数量跟着栅格容量走(列 × 行), 具体换算见 utils/mediaGrid.ts(有单测)
  */
 const gridRef = ref<HTMLElement | null>(null)
 const pageSize = ref(12)
 /**
- * 卡片行高。
- * 不能用 CSS 的 `1fr`: 行会被拉伸填满容器, 末页只剩一行时这一行就占满整屏。
- * 改成按容器高度均分给"算出来的行数", 整页仍然铺满, 少一行时下面的格子留空。
+ * 卡片行高
+ * 不能用 CSS 的 `1fr`: 行会被拉伸填满容器, 末页只剩一行时这一行就占满整屏
+ * 改成按容器高度均分给"算出来的行数", 整页仍然铺满, 少一行时下面的格子留空
  */
 const rowHeight = ref(210)
 let observer: ResizeObserver | null = null
 
 /**
- * 列表分页与取数。
+ * 列表分页与取数
  * autoLoad 关掉: 挂载时要先量一次栅格容量(它决定每页数量), 再按真实容量取数据,
- * 否则首屏会先按默认的 12 个取一次、再按真实容量重取一次。
+ * 否则首屏会先按默认的 12 个取一次, 再按真实容量重取一次
  */
 const { items, total, page, loading, load, reset } = usePagedList<MediaItem>({
   pageSize,
@@ -144,7 +144,7 @@ async function removeSelected() {
 const previewIndex = ref<number | null>(null)
 
 onMounted(() => {
-  // 先量一次再取数据: 避免首屏先按默认 12 个取回来、再按真实容量重取一次
+  // 先量一次再取数据: 避免首屏先按默认 12 个取回来, 再按真实容量重取一次
   const metrics = gridMetrics()
   if (metrics) {
     pageSize.value = metrics.capacity
@@ -192,10 +192,10 @@ onBeforeUnmount(() => {
         @keydown.space.self.prevent="previewIndex = i"
       >
         <!--
-          选中态存 id(:value 绑 id, 与 el-checkbox 的值类型一致)。
+          选中态存 id(:value 绑 id, 与 el-checkbox 的值类型一致)
           这里对 v-model 做一次断言: Element Plus 运行时的 isChecked 明确支持
           "modelValue 是数组" 的用法(见 use-checkbox-status.mjs), 但发布的 .d.ts 把
-          modelValue 收窄成了标量, 因此类型上必须放行 —— 断言只影响这一处。
+          modelValue 收窄成了标量, 因此类型上必须放行 - 断言只影响这一处
         -->
         <el-checkbox v-model="selected as never" :value="media.id" class="media-check" @click.stop />
         <div class="media-preview">
@@ -239,7 +239,7 @@ onBeforeUnmount(() => {
 /*
  * 栅格高度按"标题行 + 工具条行"占掉的高度反推:
  * 工具条从标题行里独立出来之后多占了一行(约 48px), 所以这里从 -210px 调到 -258px,
- * 否则整页会多出一条滚动条。
+ * 否则整页会多出一条滚动条
  */
 .media-grid {
   display: grid;

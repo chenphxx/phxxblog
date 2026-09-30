@@ -1,9 +1,9 @@
 /**
- * 访问趋势看板的区间计算与区间汇总。
+ * 访问趋势看板的区间计算与区间汇总
  *
  * 为什么单独抽成纯函数:
- *   看板要同时算出「本期区间」「上一个等长区间」两份数据(用于环比), 还要按区间做 KPI 汇总。
- *   这些计算散在视图里既容易算错, 又无法测试(视图组件没有测试环境)。
+ *   看板要同时算出"本期区间""上一个等长区间"两份数据(用于环比), 还要按区间做 KPI 汇总
+ *   这些计算散在视图里既容易算错, 又无法测试(视图组件没有测试环境)
  */
 import type { TrendPoint } from '@/types'
 
@@ -25,9 +25,9 @@ export const QUICK_RANGES: { key: QuickRangeKey; label: string }[] = [
 export const TREND_MAX_DAYS = 366
 
 /**
- * 把 Date 格式化为 `YYYY-MM-DD`。
+ * 把 Date 格式化为 `YYYY-MM-DD`
  *
- * 不用 `toISOString().slice(0, 10)`: 它按 UTC 取日期, 东八区的 00:00~08:00 会被算成前一天。
+ * 不用 `toISOString().slice(0, 10)`: 它按 UTC 取日期, 东八区的 00:00~08:00 会被算成前一天
  *
  * @param d 待格式化的日期
  * @return 本地时区的 `YYYY-MM-DD`
@@ -37,10 +37,10 @@ export function formatDay(d: Date): string {
 }
 
 /**
- * 解析 `YYYY-MM-DD` 为**本地零点**的 Date。
+ * 解析 `YYYY-MM-DD` 为**本地零点**的 Date
  *
  * `new Date('2026-09-14')` 会按 UTC 解析(结果是本地 08:00), 再与本地零点相减会差一天,
- * 所以这里显式拆出年月日交给 Date 构造函数。
+ * 所以这里显式拆出年月日交给 Date 构造函数
  *
  * @param value `YYYY-MM-DD`
  * @return 本地零点日期
@@ -56,9 +56,9 @@ export function addDays(d: Date, days: number): Date {
 }
 
 /**
- * 两个日期之间相差的天数(含首尾)。
+ * 两个日期之间相差的天数(含首尾)
  *
- * 用 UTC 归一化后的「天序号」相减, 避免夏令时切换那天出现 23/25 小时导致算少一天。
+ * 用 UTC 归一化后的"天序号"相减, 避免夏令时切换那天出现 23/25 小时导致算少一天
  *
  * @return 天数, 起始日晚于结束日时返回 0
  */
@@ -68,7 +68,7 @@ export function spanDays(start: Date, end: Date): number {
 }
 
 /**
- * 计算快捷区间的起止日期。
+ * 计算快捷区间的起止日期
  *
  * @param key 快捷区间标识
  * @param today 基准日期, 默认今天(注入以便测试)
@@ -107,7 +107,7 @@ export function resolveQuickRange(key: QuickRangeKey, today = new Date()): [stri
 }
 
 /**
- * 本期区间紧邻的前一个等长区间。
+ * 本期区间紧邻的前一个等长区间
  *
  * @param start 本期起始日 `YYYY-MM-DD`
  * @param end 本期结束日 `YYYY-MM-DD`
@@ -152,7 +152,7 @@ export function summarize(points: TrendPoint[]): TrendKpi {
 }
 
 /**
- * 环比增长百分比。
+ * 环比增长百分比
  *
  * @param current 本期总量
  * @param previous 上期总量, 传 null 表示没有上期数据

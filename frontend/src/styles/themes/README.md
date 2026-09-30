@@ -10,8 +10,8 @@
 字母 / 数字 / 符号统一使用 **Cascadia Code**(自托管 latin 子集, 见 `src/styles/fonts.css`): 
 
 ```css
---font-sans: 'Cascadia Code', 'Cascadia Mono', ui-monospace, 'PingFang SC', 'Microsoft YaHei', …;
---font-mono: 'Cascadia Code', 'Cascadia Mono', 'JetBrains Mono', ui-monospace, Consolas, …;
+--font-sans: 'Cascadia Code', 'Cascadia Mono', ui-monospace, 'PingFang SC', 'Microsoft YaHei', ...;
+--font-mono: 'Cascadia Code', 'Cascadia Mono', 'JetBrains Mono', ui-monospace, Consolas, ...;
 ```
 
 Cascadia Code 不含中文字形, 因此中文会自动回退到后面的系统字体(PingFang SC / 微软雅黑), 中文排版质量不受影响 - 得到的效果是"西文数字符号等宽, 中文标准无衬线" 
@@ -81,8 +81,8 @@ npm run themes:preview     # 生成到 src/styles/themes/_preview/
 
 ```
 stores/theme.ts
-  themeId      当前主题 id，持久化在 blog_theme_style
-  isDark       深色模式，持久化在 blog_theme
+  themeId      当前主题 id, 持久化在 blog_theme_style
+  isDark       深色模式, 持久化在 blog_theme
   setTheme(id) 换主题
   toggle()     换深浅
 ```
@@ -97,7 +97,7 @@ stores/theme.ts
 :root {
   --el-color-primary: var(--primary);
   --el-color-primary-light-3: color-mix(in srgb, var(--primary) 70%, var(--card-bg));
-  /* …以及边框/文字/填充色全套 */
+  /* ...以及边框/文字/填充色全套 */
 }
 ```
 
@@ -109,7 +109,7 @@ stores/theme.ts
 
 ```
 src/styles/themes/_source/
-  tokens.mjs                                        ← 唯一事实来源（每套的浅色/深色令牌）
+  tokens.mjs                                        ← 唯一事实来源(每套的浅色/深色令牌)
   template.css                                      ← 令牌文件骨架
   enhance.base.css                                  ← 增强层公共部分
   enhance-{soft,hard,editorial,minimal}.css         ← 四族的差异部分
@@ -150,16 +150,16 @@ npm run themes:preview    # 生成 18 个预览页 + 总览
 
 ```
 src/styles/
-  theme.css                    原有结构样式（卡片、正文、终端、时间轴、代码块）
-  theme-green.css              主题入口：theme.css + theme-default.css + 9 套主题 + admin.css
-  admin.css                    后台主题层（Element Plus 主色 → 主题令牌）
+  theme.css                    原有结构样式(卡片, 正文, 终端, 时间轴, 代码块)
+  theme-green.css              主题入口: theme.css + theme-default.css + 9 套主题 + admin.css
+  admin.css                    后台主题层(Element Plus 主色 → 主题令牌)
   fonts.css                    自托管 Cascadia Code
   themes/
-    theme-default.css          默认主题的裸 :root 令牌（生成物）
-    theme-<id>.css             ×9，生成物，勿手改
-    registry.ts                主题清单（生成物），供下拉菜单与类型使用
-    _source/                   主题源与脚本（见上）
-    _preview/                  预览产物（不入库，可重建）
+    theme-default.css          默认主题的裸 :root 令牌(生成物)
+    theme-<id>.css             ×9, 生成物, 勿手改
+    registry.ts                主题清单(生成物), 供下拉菜单与类型使用
+    _source/                   主题源与脚本(见上)
+    _preview/                  预览产物(不入库, 可重建)
 ```
 
 ## 与项目原有实现的改动点

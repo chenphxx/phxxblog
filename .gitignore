@@ -7,7 +7,7 @@ backend/.venv/
 # Python
 __pycache__/
 *.py[cod]
-.pytest_cache/
+*venv*
 
 # 环境与本地配置(忽略 .env 及其变体, 保留可提交的示例文件)
 .env*
@@ -32,3 +32,6 @@ backend/data/*.xdb
 
 # 本地验证产物(截图等, 非源码)
 output/
+
+# AI
+AGENTS.md

@@ -17,10 +17,10 @@ import { usePagedList } from '@/composables/usePagedList'
 /**
  * @brief 前台首页
  *
- * 只持有页面级数据与布局: 站点设置(含头像弹窗), 分类, 文章列表与分页。
+ * 只持有页面级数据与布局: 站点设置(含头像弹窗), 分类, 文章列表与分页
  * 辅助模块(个人资料以外的热门文章, 终端会话, 历史上的今天, 发布记录)各自取数与转圈,
  * 因此任何一个慢接口都不会再把整页按在加载态; 模块开关只在模板里判断一处, 关掉的模块
- * 不挂载也就不会发请求。模块实例通过模板 ref 暴露 refresh(), 由 onActivated 统一重取。
+ * 不挂载也就不会发请求. 模块实例通过模板 ref 暴露 refresh(), 由 onActivated 统一重取
  */
 
 const settings = ref<PublicSettings | null>(null)
@@ -31,8 +31,8 @@ const auth = useAuthStore()
 const isAdmin = computed(() => auth.user?.role_codes.includes('admin'))
 
 /**
- * 首页文章分页: 每页 10 篇, 第 1 页即最近 10 篇。
- * autoLoad 关掉是因为要与站点设置的请求一起发(见 onMounted), 便于统一收尾。
+ * 首页文章分页: 每页 10 篇, 第 1 页即最近 10 篇
+ * autoLoad 关掉是因为要与站点设置的请求一起发(见 onMounted), 便于统一收尾
  */
 const {
   items: posts,
@@ -91,9 +91,9 @@ watch(page, () => {
   postsAnchor.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 })
 
-// keep-alive 缓存下, 从后台修改设置/发布文章后返回首页要刷新。
-// 注意: 以前这里只重取 settings, 文章列表/totalPosts/latestPost 仍是旧数据 ——
-// 而终端卡片里的 `ls posts | wc -l` 与"最新一篇"恰恰是首页最显眼的模块。
+// keep-alive 缓存下, 从后台修改设置/发布文章后返回首页要刷新
+// 注意: 以前这里只重取 settings, 文章列表/totalPosts/latestPost 仍是旧数据
+// 而终端卡片里的 `ls posts | wc -l` 与"最新一篇"恰恰是首页最显眼的模块
 let firstActivate = true
 onActivated(async () => {
   // onMounted 会先跑一次, 首次激活不必重复请求

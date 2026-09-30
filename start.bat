@@ -18,6 +18,21 @@ pause
 exit /b 1
 :backend_ok
 
+rem Python 可执行文件存在不代表可用: 创建 venv 的解释器被卸载后, 它只剩一个空壳
+"backend\.venv\Scripts\python.exe" --version >nul 2>nul
+if not errorlevel 1 goto :backend_ready
+echo [ERROR] Backend virtual environment is broken.
+echo The Python interpreter that created it no longer exists.
+echo Rebuild it with:
+echo     cd backend
+echo     rmdir /s /q .venv
+echo     python -m venv .venv
+echo     .venv\Scripts\python.exe -m pip install -r requirements.txt
+echo.
+pause
+exit /b 1
+:backend_ready
+
 if exist "frontend\node_modules" goto :frontend_ok
 echo [ERROR] Frontend dependencies not found.
 echo Please run:  cd frontend  ^&^&  npm install

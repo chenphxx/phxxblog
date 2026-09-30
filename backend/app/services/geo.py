@@ -1,7 +1,7 @@
-"""IP 归属地查询服务(离线 ip2region)。
+"""IP 归属地查询服务(离线 ip2region)
 
 数据文件: backend/data/ip2region_v4.xdb, 可用
-`python scripts/download_ip2region.py` 下载; 缺失时优雅降级为空字符串。
+`python scripts/download_ip2region.py` 下载; 缺失时优雅降级为空字符串
 """
 
 from functools import lru_cache
@@ -13,7 +13,7 @@ _searcher = None
 
 
 def _get_searcher():
-    """懒加载 xdb 检索器(整库载入内存, 查询最快)。"""
+    """懒加载 xdb 检索器(整库载入内存, 查询最快)"""
     global _searcher
     if _searcher is not None:
         return _searcher
@@ -37,7 +37,7 @@ def _get_searcher():
 
 
 def format_region(region: str) -> str:
-    """把 ip2region 返回的原始串格式化为 省市区 文案。
+    """把 ip2region 返回的原始串格式化为 省市区 文案
 
     原始格式: 国家|省份|城市|ISP|国家代码, 如:
       "中国|江苏省|南京市|0|CN"      -> "江苏省南京市"
@@ -83,7 +83,7 @@ def format_region(region: str) -> str:
 
 @lru_cache(maxsize=4096)
 def resolve_location(ip: str) -> str:
-    """根据 IP 查询归属地, 返回省市区文案(失败返回空串)。"""
+    """根据 IP 查询归属地, 返回省市区文案(失败返回空串)"""
     if not ip:
         return ""
     searcher = _get_searcher()

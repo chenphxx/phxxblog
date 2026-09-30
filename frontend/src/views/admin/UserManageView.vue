@@ -11,9 +11,9 @@ const auth = useAuthStore()
 const roles = ref<Role[]>([])
 const keyword = ref('')
 /**
- * 列表分页与取数。
+ * 列表分页与取数
  * 角色列表跟着每次加载一起取: 用户对话框要选角色, 只在挂载时取一次的话,
- * 在别处改过角色后这里拿到的还是旧的。
+ * 在别处改过角色后这里拿到的还是旧的
  */
 const {
   items: users,

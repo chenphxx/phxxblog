@@ -1,19 +1,19 @@
-"""系统设置的键与默认值(后端唯一定义处)。
+"""系统设置的键与默认值(后端唯一定义处)
 
 为什么单独抽一个模块:
-    同一份默认值以前写在两处 —— seed.py 的 DEFAULT_SETTINGS(带描述, 初始化数据库用)
-    与 api/v1/settings.py 的 DEFAULTS(库里缺行时兜底) —— 并且已经漂移过:
+    同一份默认值以前写在两处 - seed.py 的 DEFAULT_SETTINGS(带描述, 初始化数据库用)
+    与 api/v1/settings.py 的 DEFAULTS(库里缺行时兜底) - 并且已经漂移过:
     tech_tags 在 seed 里是 ["Python", "Vue", "FastAPI", "MySQL"], 在兜底里是
     "Python, Vue, FastAPI"(个数与格式都不一样), 而 /settings/public 会把逗号串
-    兜底解析成数组, 所以这个差异在界面上完全看不出来。
-    现在默认值只有这一份, 初始化脚本与路由都从这里取, 新增设置项时后端只需改本文件。
+    兜底解析成数组, 所以这个差异在界面上完全看不出来
+    现在默认值只有这一份, 初始化脚本与路由都从这里取, 新增设置项时后端只需改本文件
 
     PUBLIC_KEYS 与 BOOL_KEYS 仍然显式列出, 不从默认值反推:
       - PUBLIC_KEYS 决定哪些键对前台公开, 属于安全边界, 必须逐个显式增删
       - BOOL_KEYS 无法可靠推断("默认值是 1" 不等于"这是个布尔开关")
 
 前端的对应契约在 frontend/src/types/index.ts 的 PublicSettings;
-两侧是否一致由 scripts/check_settings_keys.py 校验(已挂进 verify_all.py)。
+两侧是否一致由 scripts/check_settings_keys.py 校验(已挂进 verify_all.py)
 """
 
 # 键 -> (默认值, 说明); 说明会在初始化数据库时写入 settings.description

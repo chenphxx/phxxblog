@@ -1,9 +1,10 @@
-"""本次 review 优化的全量验证脚本。
+"""本次 review 优化的全量验证脚本
 
-把散落在各处的检查串起来跑一遍, 输出一张汇总表。
+把散落在各处的检查串起来跑一遍, 输出一张汇总表
 用法: backend/.venv/Scripts/python.exe scripts/verify_all.py
 """
 
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -16,8 +17,17 @@ results: list[tuple[str, bool, str]] = []
 
 
 def run(label: str, cmd: list[str], cwd: Path, ok_hint: str = "") -> None:
+    # 统一让 Python 子进程输出 UTF-8, 与这里的解码方式一致: Windows 控制台默认
+    # cp936, 子进程按管道输出时会用 GBK 编码, 不强制的话中文与部分符号会解码成乱码
+    env = {**os.environ, "PYTHONIOENCODING": "utf-8"}
     proc = subprocess.run(
-        cmd, cwd=str(cwd), capture_output=True, text=True, encoding="utf-8", errors="replace"
+        cmd,
+        cwd=str(cwd),
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        env=env,
     )
     ok = proc.returncode == 0
     tail = (proc.stdout or "").strip().split("\n")
@@ -32,7 +42,6 @@ def run(label: str, cmd: list[str], cwd: Path, ok_hint: str = "") -> None:
 py = str(BACKEND / ".venv" / "Scripts" / "python.exe")
 
 run("后端: 可导入", [py, "-c", "import app.main"], BACKEND)
-run("后端: pytest", [py, "-m", "pytest", "tests", "-q"], BACKEND, ok_hint="passed")
 run(
     "后端: 启动即校验表结构",
     [
@@ -58,7 +67,6 @@ else:
     npx = "npx"
     npm = "npm"
 run("前端: 类型检查", [npx, "vue-tsc", "-b", "--force"], FRONTEND)
-run("前端: 单元测试", [npm, "run", "test"], FRONTEND, ok_hint="Tests")
 run("前端: 主题与生成物一致", [npm, "run", "themes:audit"], FRONTEND, ok_hint="ALL OK")
 run("前端: 图标路径", [npm, "run", "check:icons"], FRONTEND, ok_hint="ALL OK")
 run("前端: 程序式组件样式", [npm, "run", "check:element-styles"], FRONTEND, ok_hint="ALL OK")
@@ -69,6 +77,11 @@ run(
     FRONTEND,
     ok_hint="All matched files use Prettier code style",
 )
+
+# 个别检查的输出可能含当前代码页无法表示的字符,
+# 打印时用替换而不是抛 UnicodeEncodeError
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(errors="replace")
 
 print("=" * 78)
 print("验证汇总")

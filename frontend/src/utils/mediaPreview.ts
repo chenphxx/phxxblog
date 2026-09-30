@@ -1,8 +1,8 @@
 /**
- * 媒体在线预览的方式判定。
+ * 媒体在线预览的方式判定
  *
- * 后端把图片/视频/音频分别存成 image/video/audio, 其余(pdf、office、压缩包、文本…)统一是 `file`,
- * 所以文档类必须再按扩展名细分。判定结果决定预览浮层渲染什么, 单独抽出来便于单测。
+ * 后端把图片/视频/音频分别存成 image/video/audio, 其余(pdf, office, 压缩包, 文本...)统一是 `file`,
+ * 所以文档类必须再按扩展名细分. 判定结果决定预览浮层渲染什么, 单独抽出来便于单测
  */
 import type { MediaItem } from '@/types'
 
@@ -16,11 +16,11 @@ export const MAX_TEXT_PREVIEW = 256 * 1024
 const TEXT_EXTS = ['.txt', '.md', '.csv', '.json']
 
 /**
- * 判定一个媒体的预览方式。
+ * 判定一个媒体的预览方式
  *
  * pdf 交给浏览器内置阅读器(iframe 直接指向文件); txt/md/csv/json 读取内容后用 <pre> 展示
  * (内容通过文本插值输出, 不会被当成 HTML 执行); 其余(office/压缩包等)浏览器无法渲染, 返回
- * unsupported, 浮层只提供下载。
+ * unsupported, 浮层只提供下载
  *
  * @param item 媒体(只需 type / original_name / size)
  * @return 预览方式; 文本类超过 MAX_TEXT_PREVIEW 时同样返回 unsupported

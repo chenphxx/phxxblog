@@ -36,7 +36,7 @@ function readStoredPosition(): KanbanniangPosition | null {
  *   - enabled  访客自己是否展示, 默认展示(关掉后由浏览器记住, 下次访问不再出现)
  *   - modelId  当前形象(见 kanbanniang/registry.ts)
  *   - position 拖动后的浮层坐标(相对视口左上角), null 表示未拖动过, 仍停在默认的左下角
- * 与主题一样属于访客自己的外观偏好, 只存在 localStorage, 不下发到后端。
+ * 与主题一样属于访客自己的外观偏好, 只存在 localStorage, 不下发到后端
  */
 export const useKanbanniangStore = defineStore('kanbanniang', () => {
   // 默认不展示: 等公开配置回来再决定, 免得后台关掉时还去下载运行时与模型

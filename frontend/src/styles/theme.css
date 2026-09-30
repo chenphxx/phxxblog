@@ -32,11 +32,11 @@
 
   /* 字体 */
   /*
-   * 字母 / 数字 / 符号统一用 Cascadia Code。
+   * 字母 / 数字 / 符号统一用 Cascadia Code
    * Cascadia Code 不含中文字形, 中文会自动回退到后面的系统字体
-   * (PingFang SC / 微软雅黑), 所以中文排版不受影响。
+   * (PingFang SC / 微软雅黑), 所以中文排版不受影响
    * 注意: 这两项与 src/styles/themes/_source/template.css 里的同名令牌保持一致,
-   * 主题 CSS 是按主题分文件生成的, 每个文件都会写入这份定义。
+   * 主题 CSS 是按主题分文件生成的, 每个文件都会写入这份定义
    */
   --font-sans:
     'Cascadia Code', 'Cascadia Mono', ui-monospace, 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', 'Helvetica Neue',
@@ -193,8 +193,8 @@ a:hover {
   filter: saturate(1.2);
 }
 
-/* 带图标的标签(分类/标签/阅读量…): 图标与文字对齐, 图标略淡不抢戏。
-   放全局是因为 PostCard / PostDetailView / HomeView 都会用到。 */
+/* 带图标的标签(分类/标签/阅读量...): 图标与文字对齐, 图标略淡不抢戏
+   放全局是因为 PostCard / PostDetailView / HomeView 都会用到 */
 .chip-icon {
   gap: 4px;
   padding: 1px 9px;
@@ -204,7 +204,7 @@ a:hover {
   opacity: 0.85;
 }
 
-/* 带图标的普通元信息(字数/时长/日期…) */
+/* 带图标的普通元信息(字数/时长/日期...) */
 .meta-item {
   display: inline-flex;
   align-items: center;
@@ -252,7 +252,7 @@ a:hover {
 }
 
 /*
- * 目录跳转时不要被 sticky 顶栏盖住标题: 顶栏高约 60px, 再留一点余量。
+ * 目录跳转时不要被 sticky 顶栏盖住标题: 顶栏高约 60px, 再留一点余量
  * (目录锚点由 MarkdownView 在渲染后写到标题的 id 上)
  */
 .markdown-body h1,
@@ -306,14 +306,14 @@ a:hover {
 }
 
 /*
- * 正文与 Vditor 预览区的字体必须显式覆盖。
+ * 正文与 Vditor 预览区的字体必须显式覆盖
  *
  * Vditor 自带样式里的 `.vditor-reset`(见 vditor/dist/index.css)写的是硬编码字体栈
- * ("Helvetica Neue", …, "Microsoft Yahei", sans-serif), 并不引用 var(--font-sans)。
+ * ("Helvetica Neue", ..., "Microsoft Yahei", sans-serif), 并不引用 var(--font-sans)
  * 它是 class 选择器(特异性 0,1,0), 高于 body 的类型选择器(0,0,1),
  * 因此 MarkdownView 的根节点 <div class="markdown-body vditor-reset"> 里
- * 所有文字都会走 Vditor 的字体 —— 表现为"主题换了字体但正文没变"。
- * 这里用同样的 class 特异性、但更晚加载(主题入口 @import theme.css 在前)把它压回去。
+ * 所有文字都会走 Vditor 的字体 - 表现为"主题换了字体但正文没变"
+ * 这里用同样的 class 特异性, 但更晚加载(主题入口 @import theme.css 在前)把它压回去
  */
 .markdown-body,
 .vditor-reset {
@@ -340,9 +340,9 @@ a:hover {
 }
 
 /*
- * 覆盖 Vditor 的代码块字号(85%), 让代码块字号跟随 pre。
+ * 覆盖 Vditor 的代码块字号(85%), 让代码块字号跟随 pre
  * 注意 .vditor-reset code:not(.hljs):not(.highlight-chroma) 优先级更高, 必须一并覆盖:
- * Vditor 的高亮是异步给 code 加 hljs 类的, 否则代码块会先小后大跳动一下。
+ * Vditor 的高亮是异步给 code 加 hljs 类的, 否则代码块会先小后大跳动一下
  */
 .markdown-body.vditor-reset pre > code,
 .markdown-body.vditor-reset pre > code:not(.hljs):not(.highlight-chroma) {
@@ -391,20 +391,20 @@ a:hover {
 }
 
 /*
- * 编辑器(IR 模式)里的代码块与正文对齐成同一张卡片。
+ * 编辑器(IR 模式)里的代码块与正文对齐成同一张卡片
  *
  * 光标不在代码块内时, Vditor 只渲染这份高亮预览(.vditor-ir__preview), 里面的 <code>
- * 除了 hljs 主题给的纯色背景外没有任何装饰 —— 没有边框、圆角与内边距, 字号也停在
+ * 除了 hljs 主题给的纯色背景外没有任何装饰 - 没有边框, 圆角与内边距, 字号也停在
  * Vditor 的 85%, 于是写作页的代码块看起来像一条扁平的灰底纹, 与文章正文里的代码块
- * 完全两个样。这里复用正文用的令牌(--code-block-bg 与 hljs 的 vs/vs2015 背景同色、
- * --border、--radius), 让"写作时看到的"与"发布后看到的"一致。
+ * 完全两个样. 这里复用正文用的令牌(--code-block-bg 与 hljs 的 vs/vs2015 背景同色,
+ * --border, --radius), 让"写作时看到的"与"发布后看到的"一致
  *
  * 两点约束:
  *   1. 不要覆盖 .vditor-linenumber 的 padding-left(4em, 带 !important): 那是行号槽,
- *      覆盖后行号会和代码叠在一起; 它按 em 计算, 会跟着这里的字号一起变化。
+ *      覆盖后行号会和代码叠在一起; 它按 em 计算, 会跟着这里的字号一起变化
  *   2. 只改这一处, 不要去动原文容器(.vditor-ir__marker--pre)的 display:
  *      Vditor 的展开/收起与光标定位都依赖它自己的 inline/inline-block 切换,
- *      改成 block 会让编辑态的排版散掉。
+ *      改成 block 会让编辑态的排版散掉
  */
 .vditor-ir .vditor-ir__preview code {
   background: var(--code-block-bg);
@@ -417,15 +417,15 @@ a:hover {
 }
 
 /*
- * 编辑区外观: 去掉 Vditor 自带的 1px 边框, 背景透出下层(写作页里就是卡片底色)。
+ * 编辑区外观: 去掉 Vditor 自带的 1px 边框, 背景透出下层(写作页里就是卡片底色)
  *
- * Vditor 给编辑区(IR 模式的 pre.vditor-reset)、预览区与工具栏都带了底色变量
+ * Vditor 给编辑区(IR 模式的 pre.vditor-reset), 预览区与工具栏都带了底色变量
  * (--panel-background-color / --textarea-background-color / --toolbar-background-color,
- * 深色下是 #24292e / #2f363d / #1d2125), 工具栏还额外有一条 border-bottom。
+ * 深色下是 #24292e / #2f363d / #1d2125), 工具栏还额外有一条 border-bottom
  * 这几处与本站主题的卡片底色都不一致: 深色下编辑区会明显比周围亮一块,
- * 浅色下则在编辑区上方压出一条灰带与一条分割线, 看起来像"编辑框外面还套了个框"。
- * 这里把背景一律改为 transparent、文字颜色交给主题令牌 --text, 与所在的卡片同色。
- * :focus 态必须一并覆盖: Vditor 在编辑区获得焦点时会把背景换成 --textarea-background-color。
+ * 浅色下则在编辑区上方压出一条灰带与一条分割线, 看起来像"编辑框外面还套了个框"
+ * 这里把背景一律改为 transparent, 文字颜色交给主题令牌 --text, 与所在的卡片同色
+ * :focus 态必须一并覆盖: Vditor 在编辑区获得焦点时会把背景换成 --textarea-background-color
  */
 .vditor {
   border: none;
@@ -445,7 +445,7 @@ a:hover {
 
 /*
  * 全屏时编辑器要盖住整屏, .vditor 必须自带底色:
- * 编辑区背景是透明的, 只加 vditor--fullscreen 的话下层页面(表单)会直接透出来。
+ * 编辑区背景是透明的, 只加 vditor--fullscreen 的话下层页面(表单)会直接透出来
  */
 .vditor.vditor--fullscreen {
   background-color: var(--card-bg);
@@ -457,9 +457,9 @@ a:hover {
 }
 
 /*
- * 编辑态(原文展开)的代码块也套同一张卡片, 免得"写的时候一条灰底纹、发出去一张卡片"。
- * 挂在外层节点上而不是原文容器上: 原文容器的 display 由 Vditor 自己切换, 动它会散架。
- * 左侧内边距对齐预览态的行号槽(4em + 1px 边框), 光标进出代码块时文字不会左右跳。
+ * 编辑态(原文展开)的代码块也套同一张卡片, 免得"写的时候一条灰底纹, 发出去一张卡片"
+ * 挂在外层节点上而不是原文容器上: 原文容器的 display 由 Vditor 自己切换, 动它会散架
+ * 左侧内边距对齐预览态的行号槽(4em + 1px 边框), 光标进出代码块时文字不会左右跳
  */
 .vditor-ir .vditor-ir__node--expand[data-type='code-block'] {
   background: var(--code-block-bg);
@@ -469,9 +469,9 @@ a:hover {
 }
 
 /*
- * 卡片里的原文不要再叠一层 Vditor 的"行内代码"底色与内边距, 否则卡片里像又嵌了一块灰条。
+ * 卡片里的原文不要再叠一层 Vditor 的"行内代码"底色与内边距, 否则卡片里像又嵌了一块灰条
  * 那层样式来自 .vditor-reset code:not(.hljs):not(.highlight-chroma)(编辑器里所有行内代码共用),
- * 所以这里必须带上同样的 :not() 才压得住它。字号与预览态取平, 光标进出时文字不会跳。
+ * 所以这里必须带上同样的 :not() 才压得住它. 字号与预览态取平, 光标进出时文字不会跳
  */
 .vditor-ir .vditor-ir__node--expand .vditor-ir__marker--pre code:not(.hljs):not(.highlight-chroma) {
   background: transparent;

@@ -1,4 +1,4 @@
-"""链接预览服务: 抓取网页标题/描述/封面图。"""
+"""链接预览服务: 抓取网页标题/描述/封面图"""
 
 import re
 
@@ -11,7 +11,7 @@ def _extract_meta(html: str, pattern: str) -> str | None:
 
 
 def fetch_link_preview(url: str) -> dict:
-    """请求目标页面并提取 og 元信息, 失败时返回基础信息。"""
+    """请求目标页面并提取 og 元信息, 失败时返回基础信息"""
     try:
         resp = requests.get(url, timeout=5, headers={"User-Agent": "Mozilla/5.0"})
         resp.raise_for_status()

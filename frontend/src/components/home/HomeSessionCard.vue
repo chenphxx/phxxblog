@@ -11,7 +11,7 @@ import { formatDateTime } from '@/utils/datetime'
  * @brief 首页的终端会话卡片(招牌元素)
  *
  * 自己负责"一言"的取数, 刷新与复制; 文章总数与"最新一篇"是页面文章列表的数据,
- * 由首页传进来, 避免为了终端里的两行输出再查一次文章接口。
+ * 由首页传进来, 避免为了终端里的两行输出再查一次文章接口
  */
 defineProps<{
   settings: PublicSettings | null

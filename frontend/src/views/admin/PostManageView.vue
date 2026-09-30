@@ -51,8 +51,8 @@ const io = useImportExport({
 
 const STATUS_TEXT = ['草稿', '审核中', '已发布', '私密', '回收站']
 /**
- * 文章状态 -> el-tag 的 type。
- * 用字面量联合而非 string: el-tag 的 type 只接受固定几个值(见 CommentManageView 同样处理)。
+ * 文章状态 -> el-tag 的 type
+ * 用字面量联合而非 string: el-tag 的 type 只接受固定几个值(见 CommentManageView 同样处理)
  */
 type TagType = 'primary' | 'success' | 'warning' | 'info' | 'danger'
 const STATUS_TYPE: Record<number, TagType> = { 0: 'info', 1: 'warning', 2: 'success', 3: 'danger', 4: 'info' }

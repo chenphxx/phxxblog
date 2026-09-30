@@ -1,10 +1,10 @@
 <script setup lang="ts">
 /**
- * 文章表单字段(标题/别名/摘要/分类/标签/可见性/封面/正文)。
+ * 文章表单字段(标题/别名/摘要/分类/标签/可见性/封面/正文)
  *
  * WriteView 与 admin/PostEditView 共用: 状态由 usePostEditor 持有并通过 editor 传入,
- * 本组件只负责渲染与事件转发, 不持有任何表单状态。
- * editor 是稳定的 reactive 对象, 因此这里直接引用 props.editor 而不是解构。
+ * 本组件只负责渲染与事件转发, 不持有任何表单状态
+ * editor 是稳定的 reactive 对象, 因此这里直接引用 props.editor 而不是解构
  */
 import { ref } from 'vue'
 import type { PostEditorState } from '@/composables/usePostEditor'
@@ -16,10 +16,10 @@ const editor = props.editor
 const contentEditor = ref<InstanceType<typeof VditorEditor> | null>(null)
 
 /**
- * 取正文的"当前真相"并写回表单。
+ * 取正文的"当前真相"并写回表单
  *
  * 保存前必须调用: 中文输入法组字期间 Vditor 不回调 input, v-model 可能落后于编辑器,
- * 直接用 form.content_md 会丢掉最后输入的内容(见 VditorEditor.getValue 的说明)。
+ * 直接用 form.content_md 会丢掉最后输入的内容(见 VditorEditor.getValue 的说明)
  */
 function syncContent() {
   const value = contentEditor.value?.getValue()
@@ -122,10 +122,10 @@ defineExpose({ syncContent })
 }
 
 /*
- * 表单本身参与"铺满高度": 写作页会把卡片拉满视口(见 WriteView), 这里让表单纵向铺开、
- * 由正文(最后一个表单项)吃掉剩余高度, 多出来的高度归编辑器而不是变成卡片里的一块空白。
- * 外层不是 flex 容器时(如后台文章编辑页)这些声明不生效, 表单项仍按内容排布。
- * el-form-item 内部的 .el-form-item__content 属于 Element Plus 自己的模板, 必须用 :deep。
+ * 表单本身参与"铺满高度": 写作页会把卡片拉满视口(见 WriteView), 这里让表单纵向铺开,
+ * 由正文(最后一个表单项)吃掉剩余高度, 多出来的高度归编辑器而不是变成卡片里的一块空白
+ * 外层不是 flex 容器时(如后台文章编辑页)这些声明不生效, 表单项仍按内容排布
+ * el-form-item 内部的 .el-form-item__content 属于 Element Plus 自己的模板, 必须用 :deep
  */
 .el-form {
   display: flex;

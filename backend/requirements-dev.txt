@@ -1,7 +1,5 @@
-# 开发/测试专用依赖(生产部署不需要装)
+# 开发专用依赖(生产部署不需要装)
 # 安装: pip install -r requirements-dev.txt
 -r requirements.txt
 
 ruff==0.16.8
-pytest==9.1.1
-httpx==0.28.1

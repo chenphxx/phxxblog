@@ -1,4 +1,4 @@
-"""用户/角色/权限模型。"""
+"""用户/角色/权限模型"""
 
 from datetime import datetime
 
@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class UserOut(BaseModel):
-    """用户信息输出。"""
+    """用户信息输出"""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -25,7 +25,7 @@ class UserOut(BaseModel):
 
 
 class UserCreate(BaseModel):
-    """创建用户(管理端)。"""
+    """创建用户(管理端)"""
 
     username: str = Field(min_length=3, max_length=50)
     email: EmailStr
@@ -35,7 +35,7 @@ class UserCreate(BaseModel):
 
 
 class UserUpdate(BaseModel):
-    """编辑用户(管理端)。"""
+    """编辑用户(管理端)"""
 
     username: str | None = Field(default=None, min_length=3, max_length=50)
     nickname: str | None = Field(default=None, max_length=50)
@@ -49,13 +49,13 @@ class UserUpdate(BaseModel):
 
 
 class PasswordResetIn(BaseModel):
-    """重置密码(管理员操作)。"""
+    """重置密码(管理员操作)"""
 
     password: str = Field(min_length=6, max_length=64)
 
 
 class RoleOut(BaseModel):
-    """角色信息输出。"""
+    """角色信息输出"""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -67,7 +67,7 @@ class RoleOut(BaseModel):
 
 
 class RoleIn(BaseModel):
-    """角色创建/编辑。"""
+    """角色创建/编辑"""
 
     name: str = Field(min_length=1, max_length=50)
     code: str = Field(min_length=1, max_length=50)
@@ -76,7 +76,7 @@ class RoleIn(BaseModel):
 
 
 class PermissionOut(BaseModel):
-    """权限信息输出。"""
+    """权限信息输出"""
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -1,4 +1,4 @@
-"""系统设置接口。"""
+"""系统设置接口"""
 
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
@@ -17,7 +17,7 @@ router = APIRouter(prefix="/settings", tags=["设置"])
 
 @router.get("/public", response_model=dict)
 def public_settings(db: Session = Depends(get_db)):
-    """前台公开配置(首页展示用)。"""
+    """前台公开配置(首页展示用)"""
     rows = db.query(Setting).filter(Setting.setting_key.in_(PUBLIC_KEYS)).all()
     data = {row.setting_key: row.setting_value for row in rows}
     result = {key: data.get(key, DEFAULTS.get(key, "")) for key in PUBLIC_KEYS}
@@ -42,7 +42,7 @@ def admin_settings(
     _: User = Depends(require_permission(Perm.SETTING_MANAGE)),
     db: Session = Depends(get_db),
 ):
-    """后台全部设置。"""
+    """后台全部设置"""
     rows = db.query(Setting).order_by(Setting.setting_key).all()
     return ok({row.setting_key: row.setting_value for row in rows})
 
@@ -54,7 +54,7 @@ def update_settings(
     admin: User = Depends(require_permission(Perm.SETTING_MANAGE)),
     db: Session = Depends(get_db),
 ):
-    """批量更新设置(键值对)。"""
+    """批量更新设置(键值对)"""
     for key, value in data.items():
         if isinstance(value, (list, dict)):
             import json

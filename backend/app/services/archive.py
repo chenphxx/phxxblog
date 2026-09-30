@@ -1,6 +1,6 @@
-"""导入导出通用工具: frontmatter 解析、zip 打包与正文图片改写。
+"""导入导出通用工具: frontmatter 解析, zip 打包与正文图片改写
 
-文章与日记的导入导出共用这里的实现, 避免两处逻辑漂移。
+文章与日记的导入导出共用这里的实现, 避免两处逻辑漂移
 """
 
 import io
@@ -25,7 +25,7 @@ IMPORT_IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".bmp", "
 def split_import_archive(
     name: str, raw: bytes
 ) -> tuple[list[tuple[str, str]], list[tuple[str, bytes]], str | None]:
-    """拆分导入文件, 返回 (md 文件列表, 压缩包内全部条目, 错误信息)。"""
+    """拆分导入文件, 返回 (md 文件列表, 压缩包内全部条目, 错误信息)"""
     if name.lower().endswith(".zip"):
         try:
             with zipfile.ZipFile(io.BytesIO(raw)) as zf:
@@ -51,7 +51,7 @@ _HTML_IMAGE_RE = re.compile(r'(<img[^>]*\bsrc=")([^"]+)(")')
 
 
 def normalize_content(text: str) -> str:
-    """归一化正文用于查重: 忽略空白差异, 图片地址只保留文件名。"""
+    """归一化正文用于查重: 忽略空白差异, 图片地址只保留文件名"""
     body = _MD_IMAGE_RE.sub(lambda m: "](" + m.group(1).rsplit("/", 1)[-1] + ")", text or "")
     body = _HTML_IMAGE_RE.sub(
         lambda m: m.group(1) + m.group(2).rsplit("/", 1)[-1] + m.group(3), body
@@ -60,17 +60,17 @@ def normalize_content(text: str) -> str:
 
 
 def title_key(title: str) -> str:
-    """标题查重键(忽略大小写与首尾空白)。"""
+    """标题查重键(忽略大小写与首尾空白)"""
     return (title or "").strip().lower()
 
 
 def normalize_rel(path: str) -> str:
-    """归一化相对路径: 统一斜杠、去掉 ./ 与开头斜杠。"""
+    """归一化相对路径: 统一斜杠, 去掉 ./ 与开头斜杠"""
     return path.replace("\\", "/").lstrip("./").strip()
 
 
 def collect_uploaded_images(text: str) -> list[str]:
-    """提取文本中 /assets/... 图片 URL。"""
+    """提取文本中 /assets/... 图片 URL"""
     urls: list[str] = []
     for match in _IMAGE_URL_RE.finditer(text or ""):
         url = match.group(0)
@@ -80,7 +80,7 @@ def collect_uploaded_images(text: str) -> list[str]:
 
 
 def image_url_to_path(url: str) -> Path | None:
-    """将 /assets/... URL 映射为服务器上的图片文件路径。"""
+    """将 /assets/... URL 映射为服务器上的图片文件路径"""
     assets_root = (PROJECT_ROOT / "assets").resolve()
     candidate = (PROJECT_ROOT / url.lstrip("/")).resolve()
     if candidate.is_file() and assets_root in candidate.parents:
@@ -94,7 +94,7 @@ def pack_images(
     text_for_images: str,
     folder: str,
 ) -> str:
-    """把正文引用的上传图片写进压缩包的 folder/ 下, 并把 URL 改写为包内相对路径。"""
+    """把正文引用的上传图片写进压缩包的 folder/ 下, 并把 URL 改写为包内相对路径"""
     for url in collect_uploaded_images(text_for_images):
         path = image_url_to_path(url)
         if path is None:
@@ -108,7 +108,7 @@ def pack_images(
 
 
 def save_import_images(entries: list[tuple[str, bytes]], date_dir: str) -> dict[str, str]:
-    """把压缩包中的图片保存到 uploads/import/<date_dir>/, 返回 相对路径 -> URL 映射。"""
+    """把压缩包中的图片保存到 uploads/import/<date_dir>/, 返回 相对路径 -> URL 映射"""
     image_map: dict[str, str] = {}
     uploads_root = (Path(settings.upload_dir) / "import" / date_dir).resolve()
     for name, data in entries:
@@ -131,7 +131,7 @@ def save_import_images(entries: list[tuple[str, bytes]], date_dir: str) -> dict[
 
 
 def lookup_image(image_map: dict[str, str], path: str | None) -> str | None:
-    """按完整相对路径或文件名查找已导入图片的 URL。"""
+    """按完整相对路径或文件名查找已导入图片的 URL"""
     if not path:
         return None
     norm = normalize_rel(path)
@@ -139,7 +139,7 @@ def lookup_image(image_map: dict[str, str], path: str | None) -> str | None:
 
 
 def rewrite_import_images(text: str, image_map: dict[str, str]) -> str:
-    """把导入文本中的相对图片路径改写为服务器 URL。"""
+    """把导入文本中的相对图片路径改写为服务器 URL"""
     if not image_map or not text:
         return text
 
@@ -157,7 +157,7 @@ def rewrite_import_images(text: str, image_map: dict[str, str]) -> str:
 
 
 def parse_frontmatter(content: str) -> tuple[dict, str]:
-    """解析 Markdown 头部的 YAML frontmatter, 返回 (元信息, 正文)。"""
+    """解析 Markdown 头部的 YAML frontmatter, 返回 (元信息, 正文)"""
     if not content.startswith("---"):
         return {}, content
     end = content.find("\n---", 3)
@@ -189,7 +189,7 @@ def parse_frontmatter(content: str) -> tuple[dict, str]:
 
 
 def frontmatter_lines(pairs: list[tuple[str, object]]) -> list[str]:
-    """生成 YAML frontmatter 行(字符串加引号保证可被 JSON 解析还原)。"""
+    """生成 YAML frontmatter 行(字符串加引号保证可被 JSON 解析还原)"""
     lines = ["---"]
     for key, value in pairs:
         if isinstance(value, (str, list)):
@@ -201,7 +201,7 @@ def frontmatter_lines(pairs: list[tuple[str, object]]) -> list[str]:
 
 
 def unique_slug(db: Session, model, slug: str) -> str:
-    """保证 slug 唯一(重名时追加 -1, -2 ...)。"""
+    """保证 slug 唯一(重名时追加 -1, -2 ...)"""
     base = slug
     index = 1
     while db.query(model).filter(model.slug == slug).first():

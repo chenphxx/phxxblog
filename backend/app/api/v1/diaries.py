@@ -1,4 +1,4 @@
-"""日记接口(仅管理员)。"""
+"""日记接口(仅管理员)"""
 
 import io
 import re
@@ -34,7 +34,7 @@ _DATE_PREFIX_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})")
 
 
 def _diary_to_markdown(entry: DiaryEntry) -> str:
-    """将日记序列化为带 YAML frontmatter 的 Markdown 文本。"""
+    """将日记序列化为带 YAML frontmatter 的 Markdown 文本"""
     lines = frontmatter_lines(
         [
             ("date", entry.entry_date.strftime("%Y-%m-%d")),
@@ -47,7 +47,7 @@ def _diary_to_markdown(entry: DiaryEntry) -> str:
 
 
 def _diary_to_html(entry: DiaryEntry) -> str:
-    """将日记序列化为完整 HTML 文档。"""
+    """将日记序列化为完整 HTML 文档"""
     content = entry.content_html or render_markdown(entry.content_md)
     return (
         "<!DOCTYPE html>\n<html lang='zh-CN'>\n<head>\n<meta charset='utf-8'>\n"
@@ -56,7 +56,7 @@ def _diary_to_html(entry: DiaryEntry) -> str:
 
 
 def _parse_diary_date(value: object) -> date | None:
-    """解析日期, 支持 YYYY-MM-DD 与 YYYY-MM-DD HH:MM:SS。"""
+    """解析日期, 支持 YYYY-MM-DD 与 YYYY-MM-DD HH:MM:SS"""
     text = str(value or "").strip()
     for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d"):
         try:
@@ -67,7 +67,7 @@ def _parse_diary_date(value: object) -> date | None:
 
 
 def _parse_diary_datetime(value: object) -> datetime | None:
-    """解析 created_at(YYYY-MM-DD HH:MM:SS), 解析失败返回 None。"""
+    """解析 created_at(YYYY-MM-DD HH:MM:SS), 解析失败返回 None"""
     text = str(value or "").strip()
     try:
         return datetime.strptime(text, "%Y-%m-%d %H:%M:%S")
@@ -76,7 +76,7 @@ def _parse_diary_datetime(value: object) -> datetime | None:
 
 
 def _parse_diary_import(filename: str, content: str) -> dict | None:
-    """解析导入内容, 返回 {body, entry_date, created_at}; 正文为空返回 None。"""
+    """解析导入内容, 返回 {body, entry_date, created_at}; 正文为空返回 None"""
     meta, body = parse_frontmatter(content)
     body = body.strip()
     if not body:
@@ -98,7 +98,7 @@ def _create_diary(
     plan: dict,
     image_map: dict[str, str] | None = None,
 ) -> DiaryEntry:
-    """按解析结果创建一条日记, 并把正文中的图片相对路径改写为可访问地址。"""
+    """按解析结果创建一条日记, 并把正文中的图片相对路径改写为可访问地址"""
     body = rewrite_import_images(plan["body"], image_map or {}).strip()
     entry = DiaryEntry(
         user_id=user.id,
@@ -114,13 +114,13 @@ def _create_diary(
 
 
 def _existing_diary_keys(db: Session) -> set[str]:
-    """已有日记正文的查重键。"""
+    """已有日记正文的查重键"""
     rows = db.query(DiaryEntry.content_md).all()
     return {normalize_content(str(content)) for (content,) in rows if content}
 
 
 def _diary_import_label(plan: dict) -> str:
-    """重复提示用的日记摘要: 日期 + 正文前 20 个字。"""
+    """重复提示用的日记摘要: 日期 + 正文前 20 个字"""
     preview = re.sub(r"\s+", " ", plan["body"]).strip()[:20]
     return f"{plan['entry_date']} · {preview}"
 
@@ -132,7 +132,7 @@ def list_diaries(
     user: User = Depends(require_permission(Perm.DIARY_MANAGE)),
     db: Session = Depends(get_db),
 ):
-    """日记列表(按日期倒序)。"""
+    """日记列表(按日期倒序)"""
     query = db.query(DiaryEntry).order_by(
         DiaryEntry.entry_date.desc(), DiaryEntry.created_at.desc()
     )
@@ -148,7 +148,7 @@ def export_diaries(
     user: User = Depends(require_permission(Perm.DIARY_MANAGE)),
     db: Session = Depends(get_db),
 ):
-    """导出日记压缩包(markdown/html, 正文引用的图片一并打包; 仅管理员)。"""
+    """导出日记压缩包(markdown/html, 正文引用的图片一并打包; 仅管理员)"""
     query = db.query(DiaryEntry)
     if ids:
         id_list = [int(i) for i in ids.split(",") if i.strip().isdigit()]
@@ -198,10 +198,10 @@ def import_diaries(
     user: User = Depends(require_permission(Perm.DIARY_MANAGE)),
     db: Session = Depends(get_db),
 ):
-    """导入日记: 支持 .md 文件或包含 .md 的 zip 压缩包; mode=check 只返回查重结果。"""
+    """导入日记: 支持 .md 文件或包含 .md 的 zip 压缩包; mode=check 只返回查重结果"""
 
     def _create(plan: dict, image_map: dict[str, str] | None) -> tuple[bool, str | None]:
-        """落库一条日记: 解析通过的计划项总是导入成功, 不产生错误信息。"""
+        """落库一条日记: 解析通过的计划项总是导入成功, 不产生错误信息"""
         _create_diary(db, user, plan, image_map)
         return True, None
 
@@ -230,7 +230,7 @@ def create_diary(
     user: User = Depends(require_permission(Perm.DIARY_MANAGE)),
     db: Session = Depends(get_db),
 ):
-    """新增日记。"""
+    """新增日记"""
     entry = DiaryEntry(
         user_id=user.id,
         content_md=data.content_md,
@@ -259,7 +259,7 @@ def update_diary(
     user: User = Depends(require_permission(Perm.DIARY_MANAGE)),
     db: Session = Depends(get_db),
 ):
-    """编辑日记。"""
+    """编辑日记"""
     entry = db.get(DiaryEntry, diary_id)
     if entry is None:
         raise HTTPException(status_code=404, detail="日记不存在")
@@ -287,7 +287,7 @@ def delete_diary(
     user: User = Depends(require_permission(Perm.DIARY_MANAGE)),
     db: Session = Depends(get_db),
 ):
-    """删除日记。"""
+    """删除日记"""
     entry = db.get(DiaryEntry, diary_id)
     if entry is None:
         raise HTTPException(status_code=404, detail="日记不存在")

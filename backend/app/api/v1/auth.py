@@ -1,4 +1,4 @@
-"""认证接口: 注册/登录/刷新/注销/个人信息/密码/邮箱。"""
+"""认证接口: 注册/登录/刷新/注销/个人信息/密码/邮箱"""
 
 from datetime import datetime, timedelta
 
@@ -35,7 +35,7 @@ router = APIRouter(prefix="/auth", tags=["认证"])
 
 
 def _issue_tokens(db: Session, user: User, request: Request) -> TokenPair:
-    """签发访问令牌与刷新令牌, 并将刷新令牌会话写入数据库。"""
+    """签发访问令牌与刷新令牌, 并将刷新令牌会话写入数据库"""
     access_token = create_access_token(user.id, extra={"username": user.username})
     refresh_token = generate_refresh_token()
     db.execute(
@@ -53,11 +53,11 @@ def _issue_tokens(db: Session, user: User, request: Request) -> TokenPair:
 
 @router.post("/register", response_model=dict)
 def register(data: RegisterIn, request: Request, db: Session = Depends(get_db)):
-    """注册账号, 默认赋予 author 角色, 注册成功后直接登录。
+    """注册账号, 默认赋予 author 角色, 注册成功后直接登录
 
     默认关闭(settings.allow_register): 注册即获得 author 角色 -> 拥有上传权限,
-    而上传目录与站点同源托管, 因此公开注册等于把上传能力开放给任何访客。
-    个人博客请在 .env 里保持 PHXXBLOG_ALLOW_REGISTER=false。
+    而上传目录与站点同源托管, 因此公开注册等于把上传能力开放给任何访客
+    个人博客请在 .env 里保持 PHXXBLOG_ALLOW_REGISTER=false
     """
     if not settings.allow_register:
         raise HTTPException(status_code=403, detail="本站未开放注册")
@@ -92,7 +92,7 @@ def register(data: RegisterIn, request: Request, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=dict)
 def login(data: LoginIn, request: Request, db: Session = Depends(get_db)):
-    """登录, 支持用户名或邮箱。带失败次数限流。"""
+    """登录, 支持用户名或邮箱. 带失败次数限流"""
     client_ip = get_client_ip(request)
     # 按 "IP + 账号" 限流: 只按 IP 会误伤同一出口的多个用户, 只按账号则可被拿来锁别人
     _login_limiter.check(f"{client_ip}:{data.username}")
@@ -117,7 +117,7 @@ def login(data: LoginIn, request: Request, db: Session = Depends(get_db)):
 
 @router.post("/refresh", response_model=dict)
 def refresh_token(data: RefreshIn, request: Request, db: Session = Depends(get_db)):
-    """刷新访问令牌, 同时轮换刷新令牌。"""
+    """刷新访问令牌, 同时轮换刷新令牌"""
     token_hash = hash_token(data.refresh_token)
     row = (
         db.execute(
@@ -143,7 +143,7 @@ def refresh_token(data: RefreshIn, request: Request, db: Session = Depends(get_d
 
 @router.post("/logout", response_model=dict)
 def logout(data: RefreshIn, db: Session = Depends(get_db)):
-    """注销登录, 吊销刷新令牌。"""
+    """注销登录, 吊销刷新令牌"""
     db.execute(
         refresh_tokens.update()
         .where(refresh_tokens.c.token_hash == hash_token(data.refresh_token))
@@ -155,7 +155,7 @@ def logout(data: RefreshIn, db: Session = Depends(get_db)):
 
 @router.get("/me", response_model=dict)
 def me(user: User = Depends(get_current_user)):
-    """获取当前登录用户信息。"""
+    """获取当前登录用户信息"""
     return ok(UserOut.model_validate(user))
 
 
@@ -166,7 +166,7 @@ def change_password(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    """修改密码。"""
+    """修改密码"""
     if not verify_password(data.old_password, user.password_hash):
         raise HTTPException(status_code=400, detail="原密码错误")
     user.password_hash = hash_password(data.new_password)
@@ -182,7 +182,7 @@ def change_email(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    """修改邮箱。"""
+    """修改邮箱"""
     if db.query(User).filter(User.email == str(data.email), User.id != user.id).first():
         raise HTTPException(status_code=400, detail="邮箱已被使用")
     user.email = str(data.email)
@@ -198,7 +198,7 @@ def update_profile(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    """修改用户名/昵称。"""
+    """修改用户名/昵称"""
     if data.username and data.username != user.username:
         if db.query(User).filter(User.username == data.username).first():
             raise HTTPException(status_code=400, detail="用户名已存在")

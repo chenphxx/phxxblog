@@ -4,7 +4,7 @@ import { faviconOf, linkName, onFaviconError } from '@/utils/linkIcon'
 /**
  * @brief 首页左侧的常用网站卡片
  *
- * 只在管理员访问时由首页渲染(站长自己用的快捷入口), 自身不取数。
+ * 只在管理员访问时由首页渲染(站长自己用的快捷入口), 自身不取数
  */
 defineProps<{ links: { name: string; url: string }[] }>()
 </script>

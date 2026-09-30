@@ -1,4 +1,4 @@
-"""评论接口: 前台发表/查看, 后台管理。"""
+"""评论接口: 前台发表/查看, 后台管理"""
 
 from datetime import datetime
 
@@ -22,10 +22,10 @@ router = APIRouter(tags=["评论"])
 
 
 def _build_tree(items: list[Comment]) -> list[CommentOut]:
-    """把平铺评论按 parent_id 组装成树。
+    """把平铺评论按 parent_id 组装成树
 
     注意: model_validate 会读取 ORM 的 replies 关系, 必须先清空,
-    否则子评论会被关系装载一次、循环又追加一次, 造成重复。
+    否则子评论会被关系装载一次, 循环又追加一次, 造成重复
     """
     nodes: dict[int, CommentOut] = {}
     for comment in items:
@@ -43,10 +43,10 @@ def _build_tree(items: list[Comment]) -> list[CommentOut]:
 
 
 def _can_manage_comment(comment: Comment, user: User | None, ip: str) -> tuple[bool, bool]:
-    """判断当前请求能否编辑/删除评论(有管理权限/作者本人/同 IP 游客)。
+    """判断当前请求能否编辑/删除评论(有管理权限/作者本人/同 IP 游客)
 
-    管理能力用权限码 comment:manage 判断, 而不是角色名 —— 角色 code 可被后台修改,
-    用 `"admin" in role_codes` 会在改名后静默失效。
+    管理能力用权限码 comment:manage 判断, 而不是角色名 - 角色 code 可被后台修改,
+    用 `"admin" in role_codes` 会在改名后静默失效
     """
     if user is not None:
         if Perm.COMMENT_MANAGE in user.permission_codes or user.id == comment.user_id:
@@ -65,7 +65,7 @@ def list_comments(
     user: User | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ):
-    """文章评论列表(公开, 按时间正序组装成树)。"""
+    """文章评论列表(公开, 按时间正序组装成树)"""
     if db.get(Post, post_id) is None:
         raise HTTPException(status_code=404, detail="文章不存在")
     ip = get_client_ip(request)
@@ -88,7 +88,7 @@ def create_comment(
     user: User | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ):
-    """发表评论(游客需提供昵称, 登录用户自动使用账号信息)。"""
+    """发表评论(游客需提供昵称, 登录用户自动使用账号信息)"""
     post = db.get(Post, post_id)
     if post is None or post.status != 2:
         raise HTTPException(status_code=404, detail="文章不存在")
@@ -143,7 +143,7 @@ def admin_list_comments(
     _: User = Depends(require_permission(Perm.COMMENT_MANAGE)),
     db: Session = Depends(get_db),
 ):
-    """后台评论管理列表。"""
+    """后台评论管理列表"""
     query = db.query(Comment)
     if status is not None:
         query = query.filter(Comment.status == status)
@@ -174,7 +174,7 @@ def update_comment(
     user: User | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ):
-    """编辑评论内容(管理员/作者本人/同 IP 游客)。"""
+    """编辑评论内容(管理员/作者本人/同 IP 游客)"""
     comment = db.get(Comment, comment_id)
     if comment is None:
         raise HTTPException(status_code=404, detail="评论不存在")
@@ -203,7 +203,7 @@ def update_comment_status(
     admin: User = Depends(require_permission(Perm.COMMENT_MANAGE)),
     db: Session = Depends(get_db),
 ):
-    """修改评论状态(管理员: 隐藏/显示/回收站)。"""
+    """修改评论状态(管理员: 隐藏/显示/回收站)"""
     comment = db.get(Comment, comment_id)
     if comment is None:
         raise HTTPException(status_code=404, detail="评论不存在")
@@ -228,7 +228,7 @@ def delete_comment(
     user: User | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ):
-    """删除评论(管理员/作者本人/同 IP 游客, 级联删除回复)。"""
+    """删除评论(管理员/作者本人/同 IP 游客, 级联删除回复)"""
     comment = db.get(Comment, comment_id)
     if comment is None:
         raise HTTPException(status_code=404, detail="评论不存在")

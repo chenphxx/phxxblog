@@ -1,5 +1,5 @@
-// ESLint 扁平配置: 只管"能自动拦截的错误", 格式交给 Prettier(eslint-config-prettier 关闭冲突规则)。
-// 类型检查由 vue-tsc 负责, 这里不启用 typescript-eslint 的类型感知规则(那需要 project 配置, 会明显变慢)。
+// ESLint 扁平配置: 只管"能自动拦截的错误", 格式交给 Prettier(eslint-config-prettier 关闭冲突规则)
+// 类型检查由 vue-tsc 负责, 这里不启用 typescript-eslint 的类型感知规则(那需要 project 配置, 会明显变慢)
 import js from '@eslint/js'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
@@ -10,7 +10,6 @@ export default [
   {
     ignores: [
       'dist/**',
-      'coverage/**',
       // 由 unplugin-vue-components 生成
       'src/components.d.ts',
       // 主题子系统的生成物(生成器自己写出来的, 格式由生成器决定)

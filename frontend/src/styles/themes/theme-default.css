@@ -1,9 +1,9 @@
 /* ============================================================
  * 默认主题: 预设 (Preset)
- * 新访客(未在 localStorage 里存过主题)看到的就是这一套。
+ * 新访客(未在 localStorage 里存过主题)看到的就是这一套
  * 下面的裸 :root 浅色令牌属于它; 其余主题只写
- * html[data-theme='<id>'], 两者互不覆盖。
- * 想换默认主题: 把 tokens.mjs 里想用的那套挪到 THEMES 数组第一位。
+ * html[data-theme='<id>'], 两者互不覆盖
+ * 想换默认主题: 把 tokens.mjs 里想用的那套挪到 THEMES 数组第一位
  * ============================================================ */
 
 :root {
@@ -11,9 +11,9 @@
   --code-fold-height: 420px;
 
   /*
-   * 字体: 字母 / 数字 / 符号统一用 Cascadia Code。
+   * 字体: 字母 / 数字 / 符号统一用 Cascadia Code
    * Cascadia Code 不含中文字形, 中文会自动回退到后面的系统字体
-   * (PingFang SC / 微软雅黑), 中文排版质量不受影响。
+   * (PingFang SC / 微软雅黑), 中文排版质量不受影响
    */
   --font-sans: 'Cascadia Code', 'Cascadia Mono', ui-monospace, 'PingFang SC', 'Microsoft YaHei',
     'Segoe UI', 'Helvetica Neue', Arial, sans-serif;

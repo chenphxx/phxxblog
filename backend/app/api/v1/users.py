@@ -1,4 +1,4 @@
-"""用户/角色/权限管理接口。"""
+"""用户/角色/权限管理接口"""
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import or_
@@ -33,7 +33,7 @@ def list_users(
     _: User = Depends(require_permission(Perm.USER_MANAGE)),
     db: Session = Depends(get_db),
 ):
-    """用户列表(管理端)。"""
+    """用户列表(管理端)"""
     query = db.query(User)
     if keyword:
         like = f"%{keyword}%"
@@ -61,7 +61,7 @@ def create_user(
     _: User = Depends(require_permission(Perm.USER_MANAGE)),
     db: Session = Depends(get_db),
 ):
-    """创建用户。"""
+    """创建用户"""
     if db.query(User).filter(User.username == data.username).first():
         raise HTTPException(status_code=400, detail="用户名已存在")
     if db.query(User).filter(User.email == data.email).first():
@@ -98,7 +98,7 @@ def update_user(
     admin: User = Depends(require_permission(Perm.USER_MANAGE)),
     db: Session = Depends(get_db),
 ):
-    """编辑用户。"""
+    """编辑用户"""
     user = db.get(User, user_id)
     if user is None:
         raise HTTPException(status_code=404, detail="用户不存在")
@@ -133,7 +133,7 @@ def reset_password(
     admin: User = Depends(require_permission(Perm.USER_MANAGE)),
     db: Session = Depends(get_db),
 ):
-    """重置用户密码。"""
+    """重置用户密码"""
     user = db.get(User, user_id)
     if user is None:
         raise HTTPException(status_code=404, detail="用户不存在")
@@ -159,7 +159,7 @@ def delete_user(
     admin: User = Depends(require_permission(Perm.USER_MANAGE)),
     db: Session = Depends(get_db),
 ):
-    """删除用户(不允许删除自己)。"""
+    """删除用户(不允许删除自己)"""
     if user_id == admin.id:
         raise HTTPException(status_code=400, detail="不能删除自己")
     user = db.get(User, user_id)
@@ -188,7 +188,7 @@ def list_roles(
     _: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """角色列表(含权限码)。"""
+    """角色列表(含权限码)"""
     roles = db.query(Role).all()
     return ok(
         [
@@ -211,7 +211,7 @@ def create_role(
     admin: User = Depends(require_permission(Perm.ROLE_MANAGE)),
     db: Session = Depends(get_db),
 ):
-    """创建角色。"""
+    """创建角色"""
     if db.query(Role).filter(Role.code == data.code).first():
         raise HTTPException(status_code=400, detail="角色代码已存在")
     role = Role(name=data.name, code=data.code, description=data.description)
@@ -239,7 +239,7 @@ def update_role(
     admin: User = Depends(require_permission(Perm.ROLE_MANAGE)),
     db: Session = Depends(get_db),
 ):
-    """编辑角色及其权限。"""
+    """编辑角色及其权限"""
     role = db.get(Role, role_id)
     if role is None:
         raise HTTPException(status_code=404, detail="角色不存在")
@@ -267,7 +267,7 @@ def delete_role(
     admin: User = Depends(require_permission(Perm.ROLE_MANAGE)),
     db: Session = Depends(get_db),
 ):
-    """删除角色。"""
+    """删除角色"""
     role = db.get(Role, role_id)
     if role is None:
         raise HTTPException(status_code=404, detail="角色不存在")
@@ -292,6 +292,6 @@ def list_permissions(
     _: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """权限列表。"""
+    """权限列表"""
     perms = db.query(Permission).order_by(Permission.code).all()
     return ok([PermissionOut.model_validate(p) for p in perms])

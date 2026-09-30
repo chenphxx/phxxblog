@@ -1,5 +1,5 @@
 /**
- * 导入 / 导出共享逻辑(admin/PostManageView 与 DiaryView)。
+ * 导入 / 导出共享逻辑(admin/PostManageView 与 DiaryView)
  *
  * 两个页面的导入导出流程完全同构, 只有四处不同, 都通过 options 注入:
  *  - 调的接口(文章 / 日记)
@@ -8,7 +8,7 @@
  *  - 导入完成后的刷新(文章要重置页码, 日记直接重载)
  *
  * 返回值是 reactive 对象(内部不使用 ref), 视图与 ImportExportDialogs 可以直接读写
- * `io.importDialog` 这类字段, 无需 .value。
+ * `io.importDialog` 这类字段, 无需 .value
  */
 import { reactive } from 'vue'
 import { ElMessage } from 'element-plus'

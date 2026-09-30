@@ -1,10 +1,10 @@
-"""User-Agent 解析(轻量正则实现)。"""
+"""User-Agent 解析(轻量正则实现)"""
 
 import re
 
 
 def parse_user_agent(user_agent: str | None) -> dict:
-    """从 UA 字符串解析浏览器/操作系统/设备类型。"""
+    """从 UA 字符串解析浏览器/操作系统/设备类型"""
     ua = user_agent or ""
     ua_lower = ua.lower()
 

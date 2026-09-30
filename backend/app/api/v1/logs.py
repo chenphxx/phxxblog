@@ -1,4 +1,4 @@
-"""操作日志接口。"""
+"""操作日志接口"""
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
@@ -25,7 +25,7 @@ def list_logs(
     _: User = Depends(require_permission(Perm.LOG_VIEW)),
     db: Session = Depends(get_db),
 ):
-    """操作日志列表(可按用户/模块/动作筛选)。"""
+    """操作日志列表(可按用户/模块/动作筛选)"""
     query = db.query(OperationLog)
     if user_id:
         query = query.filter(OperationLog.user_id == user_id)

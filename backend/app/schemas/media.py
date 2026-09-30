@@ -1,4 +1,4 @@
-"""媒体模型。"""
+"""媒体模型"""
 
 from datetime import datetime
 
@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict
 
 
 class MediaOut(BaseModel):
-    """媒体信息输出。"""
+    """媒体信息输出"""
 
     model_config = ConfigDict(from_attributes=True)
 

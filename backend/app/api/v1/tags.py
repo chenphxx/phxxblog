@@ -1,4 +1,4 @@
-"""标签接口。"""
+"""标签接口"""
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import func
@@ -17,7 +17,7 @@ router = APIRouter(prefix="/tags", tags=["标签"])
 
 
 def _post_counts(db: Session) -> dict[int, int]:
-    """一次 GROUP BY 取回所有标签的已发布文章数, 避免逐个 COUNT(n+1)。"""
+    """一次 GROUP BY 取回所有标签的已发布文章数, 避免逐个 COUNT(n+1)"""
     rows = (
         db.query(post_tags.c.tag_id, func.count(Post.id))
         .join(post_tags, post_tags.c.post_id == Post.id)
@@ -29,7 +29,7 @@ def _post_counts(db: Session) -> dict[int, int]:
 
 
 def _tag_out(tag: Tag, counts: dict[int, int]) -> TagOut:
-    """组装标签输出(含文章数)。"""
+    """组装标签输出(含文章数)"""
     return TagOut(
         id=tag.id,
         name=tag.name,
@@ -41,7 +41,7 @@ def _tag_out(tag: Tag, counts: dict[int, int]) -> TagOut:
 
 @router.get("", response_model=dict)
 def list_tags(db: Session = Depends(get_db)):
-    """标签列表(公开)。"""
+    """标签列表(公开)"""
     tags = db.query(Tag).order_by(Tag.id).all()
     counts = _post_counts(db)
     return ok([_tag_out(t, counts) for t in tags])
@@ -54,7 +54,7 @@ def create_tag(
     _: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """新增标签。"""
+    """新增标签"""
     if db.query(Tag).filter(Tag.name == data.name).first():
         raise HTTPException(status_code=400, detail="标签名已存在")
     tag = Tag(**data.model_dump())
@@ -81,7 +81,7 @@ def update_tag(
     _: User = Depends(require_permission(Perm.POST_MANAGE)),
     db: Session = Depends(get_db),
 ):
-    """编辑标签。"""
+    """编辑标签"""
     tag = db.get(Tag, tag_id)
     if tag is None:
         raise HTTPException(status_code=404, detail="标签不存在")
@@ -107,7 +107,7 @@ def delete_tag(
     _: User = Depends(require_permission(Perm.POST_MANAGE)),
     db: Session = Depends(get_db),
 ):
-    """删除标签。"""
+    """删除标签"""
     tag = db.get(Tag, tag_id)
     if tag is None:
         raise HTTPException(status_code=404, detail="标签不存在")

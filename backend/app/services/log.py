@@ -1,4 +1,4 @@
-"""操作日志服务。"""
+"""操作日志服务"""
 
 from fastapi import Request
 from sqlalchemy.orm import Session
@@ -19,7 +19,7 @@ def write_operation_log(
     target_id: int | None = None,
     detail: dict | None = None,
 ) -> OperationLog:
-    """写入一条操作日志。"""
+    """写入一条操作日志"""
     log = OperationLog(
         user_id=user.id if user else None,
         username=user.username if user else None,

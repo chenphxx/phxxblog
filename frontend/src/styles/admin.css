@@ -2,13 +2,13 @@
  * 管理后台主题层
  * ------------------------------------------------------------
  * 后台原本大量依赖 Element Plus 的默认蓝色(--el-color-primary),
- * 与前台的主题令牌是两套体系, 换主题时后台跟不上。
+ * 与前台的主题令牌是两套体系, 换主题时后台跟不上
  * 这个文件做两件事:
  *   1. 把 Element Plus 的主色令牌指向主题令牌, 全后台自动跟随
  *   2. 统一后台外壳(侧边栏/顶栏/菜单/卡片)的观感, 与前台一致
  *
  * 依赖顺序: 必须在主题令牌(theme-default.css / theme-*.css)之后加载,
- * 见 styles/theme-green.css 的 @import 顺序。
+ * 见 styles/theme-green.css 的 @import 顺序
  * ============================================================ */
 
 /* ---------- 1. Element Plus 主色跟随主题 ---------- */
@@ -43,17 +43,17 @@
 }
 
 /*
- * 语义色(成功 / 警告 / 危险 / 信息)同样跟随主题。
+ * 语义色(成功 / 警告 / 危险 / 信息)同样跟随主题
  *
  * Element Plus 只在 :root 里写死了这四套色板与各自的 light-1..9 色阶, 主题文件只覆盖了主色,
- * 于是"删除 / 警告 / 提示"这类语义按钮在 9 套主题、深浅两种模式下都是同一套固定的绿红黄 ——
- * 换主题时它们不跟着变。主操作按钮(写文章页的"发布", 后台的"保存")不用 success, 走 type="primary",
- * 由各主题文件里的 .el-button--primary 规则取主题主色, 与主题的身份色保持一致。
+ * 于是"删除 / 警告 / 提示"这类语义按钮在 9 套主题, 深浅两种模式下都是同一套固定的绿红黄
+ * 换主题时它们不跟着变. 主操作按钮(写文章页的"发布", 后台的"保存")不用 success, 走 type="primary",
+ * 由各主题文件里的 .el-button--primary 规则取主题主色, 与主题的身份色保持一致
  *
- * 这里把语义色指向主题的 --ok / --warn / --danger / --muted, 色阶用 color-mix 与卡片底色、
- * 正文色推导, 与上面主色的做法保持一致。
+ * 这里把语义色指向主题的 --ok / --warn / --danger / --muted, 色阶用 color-mix 与卡片底色,
+ * 正文色推导, 与上面主色的做法保持一致
  * 选择器写 html:root 而不是 :root: 组件样式是运行时按需注入的, 可能晚于本文件, 同特异性下
- * 后加载的会覆盖先加载的(EP 深色变量用的 html.dark 也是同一档特异性)。
+ * 后加载的会覆盖先加载的(EP 深色变量用的 html.dark 也是同一档特异性)
  */
 html:root {
   --el-color-success: var(--ok);
@@ -98,11 +98,11 @@ html:root {
 }
 
 /*
- * 纯色语义按钮的文字色改用页面底色。
+ * 纯色语义按钮的文字色改用页面底色
  *
- * 主题的 --ok / --warn / --danger 在浅色下是深色、深色下是亮色(它们同时是正文用的前景色),
+ * 主题的 --ok / --warn / --danger 在浅色下是深色, 深色下是亮色(它们同时是正文用的前景色),
  * 配上对应的底色文字在两种模式下对比度都够; Element Plus 固定用白字, 深色主题下亮色按钮上
- * 的白字会看不清。文字色是按钮自己的变量, 一并覆盖 hover / active / disabled 三个状态。
+ * 的白字会看不清. 文字色是按钮自己的变量, 一并覆盖 hover / active / disabled 三个状态
  */
 html:root .el-button--success:not(.is-plain):not(.is-text):not(.is-link),
 html:root .el-button--warning:not(.is-plain):not(.is-text):not(.is-link),
@@ -230,7 +230,7 @@ html:root .el-button--info:not(.is-plain):not(.is-text):not(.is-link) {
   color: var(--muted);
 }
 
-/* 顶栏左侧的「返回前台」入口 */
+/* 顶栏左侧的"返回前台"入口 */
 .back-home {
   display: inline-flex;
   align-items: center;
@@ -276,13 +276,13 @@ html:root .el-button--info:not(.is-plain):not(.is-text):not(.is-link) {
  *   h2(独占一行) → .admin-toolbar [ 左 .admin-toolbar-filters | 右 .admin-toolbar-actions ]
  *
  * 三条硬性约束:
- *   1. 标题永远单独一行, 操作按钮不进标题行 —— 否则标题行的按钮与下一行的按钮
+ *   1. 标题永远单独一行, 操作按钮不进标题行 - 否则标题行的按钮与下一行的按钮
  *      会被看成一列, 而且 space-between 会把搜索框和自己的按钮推开;
  *   2. 右组用 margin-left: auto 靠右, 因此页面上没有筛选控件时按钮也不会跑到左边;
- *   3. 右组内顺序固定为「搜索框 + 搜索按钮 → 普通操作 → 主操作(primary) → 危险操作(danger)」。
+ *   3. 右组内顺序固定为"搜索框 + 搜索按钮 → 普通操作 → 主操作(primary) → 危险操作(danger)"
  *
  * 标题的间距由本文件顶部的 `.admin-main > div > h2:first-child` 统一提供,
- * 所以视图里不要再给 h2 写 margin。
+ * 所以视图里不要再给 h2 写 margin
  */
 .admin-toolbar {
   display: flex;
@@ -292,7 +292,7 @@ html:root .el-button--info:not(.is-plain):not(.is-text):not(.is-link) {
   margin-bottom: 16px;
 }
 
-/* 筛选/范围类控件(状态页签、关键字输入…) */
+/* 筛选/范围类控件(状态页签, 关键字输入...) */
 .admin-toolbar-filters {
   display: flex;
   align-items: center;
@@ -311,7 +311,7 @@ html:root .el-button--info:not(.is-plain):not(.is-text):not(.is-link) {
 
 /*
  * 工具条里的输入框固定宽度: el-input 自身是 width: 100%, 在 flex 行里会撑满剩余空间,
- * 把"搜索"按钮推到很远的地方(这正是文章管理页按钮错位的成因)。
+ * 把"搜索"按钮推到很远的地方(这正是文章管理页按钮错位的成因)
  */
 .admin-toolbar .el-input {
   width: 220px;

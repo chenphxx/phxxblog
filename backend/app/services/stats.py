@@ -1,4 +1,4 @@
-"""访问统计服务: 记录访问明细并按日聚合。"""
+"""访问统计服务: 记录访问明细并按日聚合"""
 
 from datetime import date, datetime
 
@@ -19,7 +19,7 @@ def record_visit(
     post: Post | None = None,
     url: str | None = None,
 ) -> None:
-    """记录一次访问: 写明细、累加 PV, 首次访客累加 UV, 文章访问累加阅读量。"""
+    """记录一次访问: 写明细, 累加 PV, 首次访客累加 UV, 文章访问累加阅读量"""
     ip = get_client_ip(request)
     ua_info = parse_user_agent(request.headers.get("user-agent"))
     today = date.today()
@@ -49,8 +49,8 @@ def record_visit(
     if post:
         # 阅读量是高频写入, 但它不该改变文章的"最后更新时间": 直接给 ORM 属性自增会触发
         # Post.updated_at 的 onupdate, 把更新时间顶成当前时间(详情页的"最后更新于"
-        # 于是永远显示现在)。改用显式 UPDATE 并带上原值, 覆盖 onupdate 要写入的当前时间;
-        # 会话是 expire_on_commit=False, 所以靠这条 UPDATE 同步内存中的 views。
+        # 于是永远显示现在). 改用显式 UPDATE 并带上原值, 覆盖 onupdate 要写入的当前时间;
+        # 会话是 expire_on_commit=False, 所以靠这条 UPDATE 同步内存中的 views
         db.execute(
             update(Post)
             .where(Post.id == post.id)

@@ -1,10 +1,10 @@
 /**
- * 由同目录的 tokens.mjs 生成前端主题 CSS。
+ * 由同目录的 tokens.mjs 生成前端主题 CSS
  *
  * 为什么要有生成器:
- *   主题一多, 每套手写 400 行 CSS 既重复又会漂移(改一处忘一处)。
- *   这里把「与主题无关的结构」抽成模板, 只让令牌数据变化, 保证各套主题的
- *   增强层完全一致、只有配色与圆角/阴影/动效参数不同。
+ *   主题一多, 每套手写 400 行 CSS 既重复又会漂移(改一处忘一处)
+ *   这里把"与主题无关的结构"抽成模板, 只让令牌数据变化, 保证各套主题的
+ *   增强层完全一致, 只有配色与圆角/阴影/动效参数不同
  *
  * 目录位置: frontend/src/styles/themes/_source/
  * 输出位置: 上一级目录(frontend/src/styles/themes/theme-<id>.css 与 registry.ts)
@@ -58,7 +58,7 @@ const ORDERED_KEYS = [
 ]
 
 /**
- * 按 Element Plus 的混合规则, 从一个十六进制主色推导整套 --el-color-* 色阶。
+ * 按 Element Plus 的混合规则, 从一个十六进制主色推导整套 --el-color-* 色阶
  * EP 默认: light-N = mix(white, primary, N*10%), dark-2 = mix(black, primary, 20%)
  */
 function mix(hexA, hexB, weightB) {
@@ -246,8 +246,8 @@ const FAMILY_VALUES = {
     RISE_DUR: '460ms',
   },
   /**
-   * minimal: 文档站气质(VitePress / Teek, 即 cuanmu.com 的风格)。
-   * 只做很轻的反馈: 细边框、极淡阴影、颜色过渡, 不使用位移与硬阴影。
+   * minimal: 文档站气质(VitePress / Teek, 即 cuanmu.com 的风格)
+   * 只做很轻的反馈: 细边框, 极淡阴影, 颜色过渡, 不使用位移与硬阴影
    */
   minimal: {
     POST_BAR_W: '2px',
@@ -306,7 +306,7 @@ function renderHeader(t) {
  * 主题: ${t.name} (${t.en})
  * ${t.desc}
  * ------------------------------------------------------------
- * 本文件由 src/styles/themes/_source/generate-themes.mjs 生成, 请勿手改。
+ * 本文件由 src/styles/themes/_source/generate-themes.mjs 生成, 请勿手改
  * 改配色/圆角请改 _source/tokens.mjs, 然后重新运行:
  *   npm run themes:generate
  *
@@ -317,18 +317,18 @@ function renderHeader(t) {
 /* ---------------------------------------------------------------
  * 默认主题的令牌写进裸 :root
  * 这样多套主题里只有默认那套占着 :root, 新访客(还没选过主题)
- * 看到的就是它, 不存在"谁在后面谁覆盖"的问题。
+ * 看到的就是它, 不存在"谁在后面谁覆盖"的问题
  *
- * 这里同时写入共享令牌(字体、代码折叠高度), 让该文件自成一体:
- * 就算不加载任何 theme-<id>.css, 页面也有完整可用的字体与配色。
+ * 这里同时写入共享令牌(字体, 代码折叠高度), 让该文件自成一体:
+ * 就算不加载任何 theme-<id>.css, 页面也有完整可用的字体与配色
  * ------------------------------------------------------------- */
 const defaultTheme = THEMES[0]
 const defaultRoot = `/* ============================================================
  * 默认主题: ${defaultTheme.name} (${defaultTheme.en})
- * 新访客(未在 localStorage 里存过主题)看到的就是这一套。
+ * 新访客(未在 localStorage 里存过主题)看到的就是这一套
  * 下面的裸 :root 浅色令牌属于它; 其余主题只写
- * html[data-theme='<id>'], 两者互不覆盖。
- * 想换默认主题: 把 tokens.mjs 里想用的那套挪到 THEMES 数组第一位。
+ * html[data-theme='<id>'], 两者互不覆盖
+ * 想换默认主题: 把 tokens.mjs 里想用的那套挪到 THEMES 数组第一位
  * ============================================================ */
 
 :root {
@@ -336,9 +336,9 @@ const defaultRoot = `/* ========================================================
   --code-fold-height: 420px;
 
   /*
-   * 字体: 字母 / 数字 / 符号统一用 Cascadia Code。
+   * 字体: 字母 / 数字 / 符号统一用 Cascadia Code
    * Cascadia Code 不含中文字形, 中文会自动回退到后面的系统字体
-   * (PingFang SC / 微软雅黑), 中文排版质量不受影响。
+   * (PingFang SC / 微软雅黑), 中文排版质量不受影响
    */
   --font-sans: 'Cascadia Code', 'Cascadia Mono', ui-monospace, 'PingFang SC', 'Microsoft YaHei',
     'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
@@ -374,8 +374,8 @@ for (const t of THEMES) {
 
 // 主题清单: 前端下拉菜单与类型都用它
 const registry = `/**
- * 主题清单 —— 由 src/styles/themes/_source/generate-themes.mjs 生成, 请勿手改。
- * 改主题请改 _source/tokens.mjs 后运行 npm run themes:generate。
+ * 主题清单 - 由 src/styles/themes/_source/generate-themes.mjs 生成, 请勿手改
+ * 改主题请改 _source/tokens.mjs 后运行 npm run themes:generate
  */
 
 export type ThemeId =

@@ -40,8 +40,8 @@ function save(targetStatus?: number) {
 <style scoped>
 /*
  * 与前台写作页一致: 卡片吃掉主内容区的剩余高度(表单与编辑器再逐层吃掉卡片里的剩余高度,
- * 见 PostFormFields / VditorEditor), 打开新建文章时正文编辑框就是铺满的, 不用手动拉。
- * 内容变长时按内容继续变高, 由 .admin-main 负责滚动。
+ * 见 PostFormFields / VditorEditor), 打开新建文章时正文编辑框就是铺满的, 不用手动拉
+ * 内容变长时按内容继续变高, 由 .admin-main 负责滚动
  */
 .edit-page {
   display: flex;

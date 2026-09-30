@@ -1,4 +1,4 @@
-"""访问统计接口: 埋点、总览、趋势、来源分析。"""
+"""访问统计接口: 埋点, 总览, 趋势, 来源分析"""
 
 from datetime import date, datetime, timedelta
 
@@ -24,7 +24,7 @@ router = APIRouter(prefix="/stats", tags=["统计"])
 
 
 class TrackIn(BaseModel):
-    """访问埋点请求。"""
+    """访问埋点请求"""
 
     url: str | None = None
     post_id: int | None = None
@@ -32,7 +32,7 @@ class TrackIn(BaseModel):
 
 @router.post("/track", response_model=dict)
 def track(data: TrackIn, request: Request, db: Session = Depends(get_db)):
-    """前台页面访问埋点(公开)。"""
+    """前台页面访问埋点(公开)"""
     post = db.get(Post, data.post_id) if data.post_id else None
     record_visit(db, request=request, post=post, url=data.url)
     return ok(message="ok")
@@ -43,7 +43,7 @@ def overview(
     _: User = Depends(require_permission(Perm.STATS_VIEW)),
     db: Session = Depends(get_db),
 ):
-    """统计总览: 文章/访问量/评论/用户/点赞。"""
+    """统计总览: 文章/访问量/评论/用户/点赞"""
     total_views = db.query(func.sum(Post.views)).scalar() or 0
     return ok(
         {
@@ -72,7 +72,7 @@ def trend(
     _: User = Depends(require_permission(Perm.STATS_VIEW)),
     db: Session = Depends(get_db),
 ):
-    """访问趋势: 日(默认近两周, 可自定义区间)/月(近12月)/年(近6年) 聚合。"""
+    """访问趋势: 日(默认近两周, 可自定义区间)/月(近12月)/年(近6年) 聚合"""
     rows = db.query(DailyStat).order_by(DailyStat.stat_date).all()
     stat_map = {row.stat_date: row for row in rows}
     result = []
@@ -133,7 +133,7 @@ def visits(
     _: User = Depends(require_permission(Perm.STATS_VIEW)),
     db: Session = Depends(get_db),
 ):
-    """访问明细(IP/省市区/设备/浏览器/系统/来源/时间)。"""
+    """访问明细(IP/省市区/设备/浏览器/系统/来源/时间)"""
     query = db.query(VisitLog)
     if days:
         query = query.filter(VisitLog.visit_time >= datetime.now() - timedelta(days=days))
@@ -176,7 +176,7 @@ def contributions(
     year: int | None = Query(None, ge=2000, le=2100, description="指定年份(返回整年数据)"),
     db: Session = Depends(get_db),
 ):
-    """GitHub 风格贡献数据: 近 N 周或指定年份每天的发布数量。"""
+    """GitHub 风格贡献数据: 近 N 周或指定年份每天的发布数量"""
     if year:
         start = date(year, 1, 1)
         days = 366 if (year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)) else 365
@@ -215,7 +215,7 @@ def sources(
     _: User = Depends(require_permission(Perm.STATS_VIEW)),
     db: Session = Depends(get_db),
 ):
-    """访问来源/浏览器/设备/操作系统分析。"""
+    """访问来源/浏览器/设备/操作系统分析"""
 
     def top(column, limit=10):
         return [

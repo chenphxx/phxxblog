@@ -1,11 +1,11 @@
 <script setup lang="ts">
 /**
- * 元信息小图标。
+ * 元信息小图标
  *
  * 为什么不用 @element-plus/icons-vue:
- *   这里用的都是 12~14px 的元信息图标(日历/眼睛/标签…), EP 图标是为按钮设计的 1em 方形,
- *   在等宽字体的元信息行里基线不好对齐。内联 SVG 可以精确控制尺寸、描边粗细,
- *   并且 fill/stroke 用 currentColor, 自动跟随任意主题的 --muted / --primary。
+ *   这里用的都是 12~14px 的元信息图标(日历/眼睛/标签...), EP 图标是为按钮设计的 1em 方形,
+ *   在等宽字体的元信息行里基线不好对齐. 内联 SVG 可以精确控制尺寸, 描边粗细,
+ *   并且 fill/stroke 用 currentColor, 自动跟随任意主题的 --muted / --primary
  */
 const props = withDefaults(
   defineProps<{
@@ -34,7 +34,7 @@ export type IconName =
   | 'external'
   | 'hash'
 
-/** 路径数据: 统一 24x24 视口、描边风格, 与站内其它图标一致 */
+/** 路径数据: 统一 24x24 视口, 描边风格, 与站内其它图标一致 */
 const PATHS: Record<IconName, string> = {
   calendar: 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z',
   clock: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20ZM12 6v6l4 2',

@@ -43,8 +43,8 @@ const canEdit = computed(() => {
 })
 
 /**
- * 加载右侧栏的热门文章。
- * 属于辅助模块, 失败时保持空列表即可(请求拦截器已经提示过错误)。
+ * 加载右侧栏的热门文章
+ * 属于辅助模块, 失败时保持空列表即可(请求拦截器已经提示过错误)
  */
 async function loadHotPosts() {
   try {
@@ -55,8 +55,8 @@ async function loadHotPosts() {
 }
 
 /**
- * 同步目录高亮: 取最后一个已经滚过顶栏的标题。
- * 不用"视口内第一个", 否则滚动到两个标题之间时高亮会来回跳。
+ * 同步目录高亮: 取最后一个已经滚过顶栏的标题
+ * 不用"视口内第一个", 否则滚动到两个标题之间时高亮会来回跳
  */
 function syncActiveHeading() {
   if (!toc.value.length) return
@@ -81,8 +81,8 @@ function onScroll() {
 }
 
 /**
- * 点击目录跳转到对应标题。
- * 用 scrollIntoView 而不是改 location.hash —— 本项目用 hash 路由, 改 hash 会被当成路由跳转。
+ * 点击目录跳转到对应标题
+ * 用 scrollIntoView 而不是改 location.hash - 本项目用 hash 路由, 改 hash 会被当成路由跳转
  */
 function scrollToHeading(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -280,7 +280,7 @@ onBeforeUnmount(() => {
   flex-direction: column;
   gap: 2px;
   margin-top: 10px;
-  /* 目录过长时在卡片内滚动, 否则 sticky 的右栏会被撑出视野、底部永远够不到 */
+  /* 目录过长时在卡片内滚动, 否则 sticky 的右栏会被撑出视野, 底部永远够不到 */
   max-height: min(52vh, 420px);
   overflow-y: auto;
 }
