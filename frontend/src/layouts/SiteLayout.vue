@@ -63,7 +63,9 @@ onMounted(async () => {
           <span class="brand-host">@blog</span><span class="brand-path">:~$</span>
         </router-link>
         <nav class="site-nav">
-          <router-link to="/">首页</router-link>
+          <!-- 首页是父路由的默认子路由, 记录路径与父路由相同, Vue Router 会把它当作任意子路由的
+               active 记录, 因此这里关掉默认的前缀匹配, 只在精确命中首页时套用激活样式 -->
+          <router-link to="/" active-class="" exact-active-class="router-link-active">首页</router-link>
           <router-link to="/archive">归档</router-link>
           <router-link to="/search">全部文章</router-link>
           <template v-if="hasToken">
