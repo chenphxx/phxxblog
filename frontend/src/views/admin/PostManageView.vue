@@ -6,6 +6,7 @@ import { postApi } from '@/api'
 import type { PostItem } from '@/types'
 import { formatDateTime } from '@/utils/datetime'
 import MetaIcon from '@/components/MetaIcon.vue'
+import ListPager from '@/components/ListPager.vue'
 import ImportExportDialogs from '@/components/ImportExportDialogs.vue'
 import { useImportExport } from '@/composables/useImportExport'
 import { usePagedList } from '@/composables/usePagedList'
@@ -253,14 +254,7 @@ async function batchForceDelete() {
           </template>
         </el-table-column>
       </el-table>
-      <el-pagination
-        v-if="total > pageSize"
-        v-model:current-page="page"
-        :page-size="pageSize"
-        :total="total"
-        layout="prev, pager, next, total"
-        style="justify-content: center; margin-top: 16px"
-      />
+      <ListPager v-model:page="page" :page-size="pageSize" :total="total" />
     </div>
 
     <ImportExportDialogs

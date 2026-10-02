@@ -5,7 +5,7 @@
  * 为什么不直接用 el-image-viewer + el-dialog 各管一类:
  *   媒体库同一个入口要预览四类文件, 两套浮层会长出两种关闭方式与两套键盘行为
  *   这里统一成一个浮层: 点遮罩或 Esc 关闭, ← → 在当页媒体之间切换
- * 渲染方式由 `utils/mediaPreview.ts` 的 previewKind() 判定, 该函数有单测
+ * 渲染方式由 `utils/mediaPreview.ts` 的 previewKind() 判定
  */
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { MediaItem } from '@/types'

@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { userApi } from '@/api'
 import type { Role, User } from '@/types'
+import ListPager from '@/components/ListPager.vue'
 import { useAuthStore } from '@/stores/auth'
 import { usePagedList } from '@/composables/usePagedList'
 
@@ -166,14 +167,7 @@ async function resetPassword() {
           </template>
         </el-table-column>
       </el-table>
-      <el-pagination
-        v-if="total > pageSize"
-        v-model:current-page="page"
-        :page-size="pageSize"
-        :total="total"
-        layout="prev, pager, next, total"
-        style="justify-content: center; margin-top: 16px"
-      />
+      <ListPager v-model:page="page" :page-size="pageSize" :total="total" />
     </div>
 
     <el-dialog v-model="dialog" :title="form.id ? '编辑用户' : '新增用户'" width="480px">

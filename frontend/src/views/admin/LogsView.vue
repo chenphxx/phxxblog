@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { logApi } from '@/api'
 import type { OperationLog } from '@/types'
+import ListPager from '@/components/ListPager.vue'
 import { usePagedList } from '@/composables/usePagedList'
 
 const moduleFilter = ref('')
@@ -60,14 +61,7 @@ const {
           <template #default="{ row }">{{ row.created_at.replace('T', ' ') }}</template>
         </el-table-column>
       </el-table>
-      <el-pagination
-        v-if="total > pageSize"
-        v-model:current-page="page"
-        :page-size="pageSize"
-        :total="total"
-        layout="prev, pager, next, total"
-        style="justify-content: center; margin-top: 16px"
-      />
+      <ListPager v-model:page="page" :page-size="pageSize" :total="total" />
     </div>
   </div>
 </template>

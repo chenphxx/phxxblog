@@ -4,6 +4,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { mediaApi } from '@/api'
 import type { MediaItem } from '@/types'
 import MediaPreview from '@/components/MediaPreview.vue'
+import ListPager from '@/components/ListPager.vue'
 import { formatFileSize } from '@/utils/format'
 import { mediaGridMetrics } from '@/utils/mediaGrid'
 import { usePagedList } from '@/composables/usePagedList'
@@ -15,49 +16,41 @@ import { usePagedList } from '@/composables/usePagedList'
  */
 const selected = ref<number[]>([])
 const uploading = ref(false)
+/** 类型筛选(image/video/audio/file), 空值表示全部; 取值与 `/media` 的 `type` 参数一致 */
+const typeFilter = ref('')
 
 /*
- * 每页数量不能写死: 媒体库是"铺满一屏"的栅格(height 由 calc(100vh - N) 固定),
- * 一屏能放下的格子数随窗口宽度/高度变化. 写死 12 个时, 一屏能放 40 个却只渲染 12 个,
- * 剩下的位置空着而下一页已经存在 - 表现为"明明还有很多空位却翻页了"
- * 所以每页数量跟着栅格容量走(列 × 行), 具体换算见 utils/mediaGrid.ts(有单测)
+ * 每页条数不能写死: 一行的格子数随容器宽度变化, 每页条数 = 列数 × 固定的 10 行,
+ * 由 utils/mediaGrid.ts 按容器宽度换算
+ * 写死成常数时, 窗口一宽就会出现"明明还有很多空位却已经翻页"
  */
 const gridRef = ref<HTMLElement | null>(null)
 const pageSize = ref(12)
-/**
- * 卡片行高
- * 不能用 CSS 的 `1fr`: 行会被拉伸填满容器, 末页只剩一行时这一行就占满整屏
- * 改成按容器高度均分给"算出来的行数", 整页仍然铺满, 少一行时下面的格子留空
- */
-const rowHeight = ref(210)
 let observer: ResizeObserver | null = null
 
 /**
  * 列表分页与取数
  * autoLoad 关掉: 挂载时要先量一次栅格容量(它决定每页数量), 再按真实容量取数据,
- * 否则首屏会先按默认的 12 个取一次, 再按真实容量重取一次
+ * 否则首屏会先按默认的 12 个取一次, 再按每页真实条数重取一次
  */
 const { items, total, page, loading, load, reset } = usePagedList<MediaItem>({
   pageSize,
   autoLoad: false,
-  fetch: (page, size) => mediaApi.list({ page, page_size: size }),
+  fetch: (page, size) => mediaApi.list({ page, page_size: size, type: typeFilter.value || undefined }),
 })
 
-/** 量一次栅格: 一屏能放下的格子数与每行应有的高度; 量不到尺寸时返回 null */
+/** 量一次栅格宽度换算出每页条数; 量不到宽度(尚未布局)时返回 null */
 function gridMetrics() {
   const el = gridRef.value
   if (!el) return null
-  const { width, height } = el.getBoundingClientRect()
-  return mediaGridMetrics(width, height)
+  return mediaGridMetrics(el.getBoundingClientRect().width)
 }
 
-/** 容器尺寸变化: 行高每次都要跟着改, 只有一屏容量变了才需要重新取数据 */
+/** 容器宽度变化: 列数变了每页条数就要跟着变, 并回到第 1 页重新取数 */
 function onGridResize() {
   const metrics = gridMetrics()
-  if (!metrics) return
-  rowHeight.value = metrics.rowHeight
-  if (metrics.capacity === pageSize.value) return
-  // 容量变了要回到第 1 页: 否则页码对应的区间会整体错位, 末页还可能越界取到空数据
+  if (!metrics || metrics.capacity === pageSize.value) return
+  // 每页条数变了要回到第 1 页: 否则页码对应的区间会整体错位, 末页还可能越界取到空数据
   pageSize.value = metrics.capacity
   reset()
 }
@@ -146,10 +139,7 @@ const previewIndex = ref<number | null>(null)
 onMounted(() => {
   // 先量一次再取数据: 避免首屏先按默认 12 个取回来, 再按真实容量重取一次
   const metrics = gridMetrics()
-  if (metrics) {
-    pageSize.value = metrics.capacity
-    rowHeight.value = metrics.rowHeight
-  }
+  if (metrics) pageSize.value = metrics.capacity
   load()
   if (typeof ResizeObserver === 'undefined' || !gridRef.value) return
   observer = new ResizeObserver(onGridResize)
@@ -167,6 +157,21 @@ onBeforeUnmount(() => {
     <h2>媒体库</h2>
 
     <div class="admin-toolbar">
+      <div class="admin-toolbar-filters">
+        <el-select
+          v-model="typeFilter"
+          size="small"
+          placeholder="按类型筛选"
+          clearable
+          style="width: 150px"
+          @change="reset()"
+        >
+          <el-option label="图片" value="image" />
+          <el-option label="视频" value="video" />
+          <el-option label="音频" value="audio" />
+          <el-option label="其他文件" value="file" />
+        </el-select>
+      </div>
       <div class="admin-toolbar-actions">
         <el-button size="small" @click="selectAll">全选</el-button>
         <el-button size="small" @click="invertSelect">反选</el-button>
@@ -179,7 +184,7 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <div ref="gridRef" v-loading="loading" class="media-grid" :style="{ '--media-grid-row-height': `${rowHeight}px` }">
+    <div ref="gridRef" v-loading="loading" class="media-grid">
       <!-- 点卡片任意位置预览; 勾选框与操作按钮上的点击不冒泡到这里 -->
       <div
         v-for="(media, i) in items"
@@ -219,14 +224,7 @@ onBeforeUnmount(() => {
 
     <MediaPreview v-model:index="previewIndex" :items="items" @close="previewIndex = null" @download="downloadMedia" />
 
-    <el-pagination
-      v-if="total > pageSize"
-      v-model:current-page="page"
-      :page-size="pageSize"
-      :total="total"
-      layout="prev, pager, next, total"
-      style="justify-content: center; margin-top: 16px"
-    />
+    <ListPager v-model:page="page" :page-size="pageSize" :total="total" />
   </div>
 </template>
 
@@ -236,17 +234,11 @@ onBeforeUnmount(() => {
   flex-direction: column;
   min-height: calc(100vh - 100px);
 }
-/*
- * 栅格高度按"标题行 + 工具条行"占掉的高度反推:
- * 工具条从标题行里独立出来之后多占了一行(约 48px), 所以这里从 -210px 调到 -258px,
- * 否则整页会多出一条滚动条
- */
 .media-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  /* 行高由 gridMetrics() 按容器高度均分后写进 CSS 变量(见 <script>) */
-  grid-auto-rows: var(--media-grid-row-height, 210px);
-  height: calc(100vh - 258px);
+  /* 行高固定: 一页固定 10 行, 放不下的部分由后台主内容区滚动 */
+  grid-auto-rows: 210px;
   gap: 16px;
 }
 .media-item {

@@ -4,6 +4,7 @@ import { ElMessage } from 'element-plus'
 import { categoryApi, mediaApi, postApi, settingsApi } from '@/api'
 import type { Category, PostItem, PublicSettings } from '@/types'
 import PostCard from '@/components/PostCard.vue'
+import ListPager from '@/components/ListPager.vue'
 import MarkdownView from '@/components/MarkdownView.vue'
 import HomeProfileCard from '@/components/home/HomeProfileCard.vue'
 import HomeSiteLinksCard from '@/components/home/HomeSiteLinksCard.vue'
@@ -176,15 +177,7 @@ onMounted(async () => {
           <div v-loading="postsLoading" style="min-height: 120px">
             <PostCard v-for="post in posts" :key="post.id" :post="post" />
             <el-empty v-if="!postsLoading && posts.length === 0" description="还没有发布文章" />
-            <div v-if="totalPosts > pageSize" class="pagination-row">
-              <el-pagination
-                v-model:current-page="page"
-                :page-size="pageSize"
-                :total="totalPosts"
-                layout="prev, pager, next, total"
-                background
-              />
-            </div>
+            <ListPager v-model:page="page" :page-size="pageSize" :total="totalPosts" />
           </div>
         </section>
       </main>
@@ -252,11 +245,6 @@ onMounted(async () => {
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--muted);
-}
-.pagination-row {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
 }
 .posts-head {
   display: flex;

@@ -2,6 +2,7 @@
 import { postApi } from '@/api'
 import type { PostItem } from '@/types'
 import PostCard from '@/components/PostCard.vue'
+import ListPager from '@/components/ListPager.vue'
 import { usePagedList } from '@/composables/usePagedList'
 
 const {
@@ -28,15 +29,7 @@ const {
     <div v-loading="loading" style="margin-top: 16px; min-height: 200px">
       <PostCard v-for="post in posts" :key="post.id" :post="post" />
       <el-empty v-if="!loading && posts.length === 0" description="暂无文章" />
-      <div v-if="total > pageSize" class="pagination-row">
-        <el-pagination
-          v-model:current-page="page"
-          :page-size="pageSize"
-          :total="total"
-          layout="prev, pager, next, total"
-          background
-        />
-      </div>
+      <ListPager v-model:page="page" :page-size="pageSize" :total="total" />
     </div>
   </div>
 </template>
@@ -52,10 +45,5 @@ const {
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--muted);
-}
-.pagination-row {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
 }
 </style>

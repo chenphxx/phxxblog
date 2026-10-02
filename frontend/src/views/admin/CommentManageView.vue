@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { commentApi } from '@/api'
 import type { CommentItem } from '@/types'
+import ListPager from '@/components/ListPager.vue'
 import { usePagedList } from '@/composables/usePagedList'
 
 const statusFilter = ref<number | undefined>(undefined)
@@ -114,14 +115,7 @@ async function remove(comment: CommentItem) {
           </template>
         </el-table-column>
       </el-table>
-      <el-pagination
-        v-if="total > pageSize"
-        v-model:current-page="page"
-        :page-size="pageSize"
-        :total="total"
-        layout="prev, pager, next, total"
-        style="justify-content: center; margin-top: 16px"
-      />
+      <ListPager v-model:page="page" :page-size="pageSize" :total="total" />
     </div>
   </div>
 </template>

@@ -69,6 +69,7 @@ declare module 'vue' {
     Kanbanniang: typeof import('./components/Kanbanniang.vue')['default']
     KanbanniangSwitcher: typeof import('./components/KanbanniangSwitcher.vue')['default']
     LinkCard: typeof import('./components/LinkCard.vue')['default']
+    ListPager: typeof import('./components/ListPager.vue')['default']
     MarkdownView: typeof import('./components/MarkdownView.vue')['default']
     MediaPreview: typeof import('./components/MediaPreview.vue')['default']
     MetaIcon: typeof import('./components/MetaIcon.vue')['default']

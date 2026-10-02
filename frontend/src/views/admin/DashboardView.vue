@@ -6,6 +6,7 @@ import { statsApi } from '@/api'
 import type { CommentItem, PostItem, TrendPoint, VisitItem } from '@/types'
 import TrendChart from '@/components/TrendChart.vue'
 import MetaIcon, { type IconName } from '@/components/MetaIcon.vue'
+import ListPager from '@/components/ListPager.vue'
 import {
   QUICK_RANGES,
   TREND_MAX_DAYS,
@@ -314,14 +315,7 @@ onMounted(async () => {
           <template #default="{ row }">{{ row.referer || '-' }}</template>
         </el-table-column>
       </el-table>
-      <el-pagination
-        v-if="visitsTotal > visitsPageSize"
-        v-model:current-page="visitsPage"
-        :page-size="visitsPageSize"
-        :total="visitsTotal"
-        layout="prev, pager, next, total"
-        style="justify-content: center; margin-top: 12px"
-      />
+      <ListPager v-model:page="visitsPage" :page-size="visitsPageSize" :total="visitsTotal" />
     </div>
 
     <el-row :gutter="16" style="margin-top: 20px">
