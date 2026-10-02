@@ -11,10 +11,16 @@
     PUBLIC_KEYS 与 BOOL_KEYS 仍然显式列出, 不从默认值反推:
       - PUBLIC_KEYS 决定哪些键对前台公开, 属于安全边界, 必须逐个显式增删
       - BOOL_KEYS 无法可靠推断("默认值是 1" 不等于"这是个布尔开关")
+      - ADMIN_ONLY_KEYS 是只在后台可编辑、不向前台公开的键, 同样显式列出
 
 前端的对应契约在 frontend/src/types/index.ts 的 PublicSettings;
 两侧是否一致由 scripts/check_settings_keys.py 校验(已挂进 verify_all.py)
 """
+
+# 单文件上传上限的设置键(值以 MB 为单位)与可配置范围
+UPLOAD_SIZE_KEY = "max_upload_size_mb"
+MIN_UPLOAD_SIZE_MB = 1
+MAX_UPLOAD_SIZE_MB = 2048
 
 # 键 -> (默认值, 说明); 说明会在初始化数据库时写入 settings.description
 DEFAULT_SETTINGS: dict[str, tuple[str, str]] = {
@@ -69,6 +75,13 @@ PUBLIC_KEYS = [
     "footer_text",
 ]
 
+# 只在后台可编辑、不向前台公开的配置键(需要出现在后台表单里)
+# 这些键不写入 DEFAULT_SETTINGS/seed: 它们的默认值来自环境变量等运行时配置
+# (如上传上限跟随 PHXXBLOG_MAX_UPLOAD_SIZE), 一旦被 seed 写库就会反过来覆盖环境变量
+ADMIN_ONLY_KEYS = [
+    UPLOAD_SIZE_KEY,
+]
+
 # 布尔型开关: 1/true/yes/on 视为开启
 BOOL_KEYS = (
     "show_readme",
@@ -77,3 +90,27 @@ BOOL_KEYS = (
     "show_session",
     "show_kanbanniang",
 )
+
+
+def parse_upload_size_mb(raw: object) -> int | None:
+    """把一个设置值解析成单文件上传上限(MB)
+
+    @param raw 设置值(数据库中按字符串存储)
+    @return 合法时返回 MB 数, 非法或超出可配置范围时返回 None
+    """
+    text = str(raw if raw is not None else "").strip()
+    if not text.isdigit():
+        return None
+    value = int(text)
+    if value < MIN_UPLOAD_SIZE_MB or value > MAX_UPLOAD_SIZE_MB:
+        return None
+    return value
+
+
+def format_upload_size_mb(size_bytes: int) -> int:
+    """把字节数换算成表单/设置值使用的整数 MB
+
+    @param size_bytes 字节数
+    @return 换算后的整数 MB(不小于 MIN_UPLOAD_SIZE_MB)
+    """
+    return max(MIN_UPLOAD_SIZE_MB, size_bytes // (1024 * 1024))

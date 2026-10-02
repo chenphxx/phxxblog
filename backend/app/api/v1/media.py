@@ -12,7 +12,7 @@ from app.models.user import User
 from app.schemas.common import Page
 from app.schemas.media import MediaOut
 from app.services.log import write_operation_log
-from app.services.upload import resolve_upload_file, save_upload
+from app.services.upload import resolve_max_upload_size, resolve_upload_file, save_upload
 
 router = APIRouter(prefix="/media", tags=["媒体"])
 
@@ -31,7 +31,7 @@ def upload_file(
         Perm.MEDIA_MANAGE in user.permission_codes or Perm.POST_CREATE in user.permission_codes
     ):
         raise HTTPException(status_code=403, detail="无上传权限")
-    info = save_upload(file)
+    info = save_upload(file, resolve_max_upload_size(db))
     media = Media(uploader_id=user.id, related_type=related_type, related_id=related_id, **info)
     db.add(media)
     db.commit()

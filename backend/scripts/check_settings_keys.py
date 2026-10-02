@@ -8,6 +8,10 @@
     与后台表单(frontend/src/views/admin/SettingsView.vue). 漏改任何一处都不会报错,
     只会表现为"后台存了但前台读不到"或者"类型里没有这个字段", 靠人眼极难发现
     这个脚本把四者的键集合对齐, 挂了 verify_all.py 里一起跑
+
+    只在后台可编辑的键(ADMIN_ONLY_KEYS, 如上传上限)不向前台公开, 因此不出现在
+    PublicSettings 里, 只校验"出现在后台表单里"; 它们也不写 seed 默认值(默认值
+    来自环境变量等运行时配置), 避免初始化时把环境变量配置覆盖掉
 """
 
 import re
@@ -20,6 +24,7 @@ ROOT = BACKEND.parent
 sys.path.insert(0, str(BACKEND))
 
 from app.core.settings_schema import (  # noqa: E402
+    ADMIN_ONLY_KEYS,
     BOOL_KEYS,
     DEFAULT_SETTINGS,
     DEFAULTS,
@@ -66,6 +71,14 @@ check(
     set(BOOL_KEYS) <= set(PUBLIC_KEYS),
     "BOOL_KEYS 只包含对外公开的键",
 )
+check(
+    set(ADMIN_ONLY_KEYS).isdisjoint(DEFAULTS),
+    "ADMIN_ONLY_KEYS 不写入 seed 默认值(避免覆盖 PHXXBLOG_* 环境变量)",
+)
+check(
+    set(ADMIN_ONLY_KEYS).isdisjoint(PUBLIC_KEYS),
+    "ADMIN_ONLY_KEYS 不与 PUBLIC_KEYS 重叠",
+)
 
 print()
 print("前端: 类型与后台表单")
@@ -84,7 +97,7 @@ if missing_in_types or stale_in_types:
     print(f"       类型里缺少: {sorted(missing_in_types)}")
     print(f"       类型里多余: {sorted(stale_in_types)}")
 
-# 后台表单可以编辑的键 = 公开键 - 这里明确排除的那些
+# 后台表单可以编辑的键 = 公开键 + 后台专用键 - 这里明确排除的那些
 NOT_IN_FORM = {
     # 头像不在系统设置里改: 首页直接点头像即可上传(见 HomeView), 但键仍对外公开
     "site_avatar",
@@ -93,8 +106,11 @@ form_match = re.search(r"const form = ref\(\{(.*?)\n\}\)", view_src, re.S)
 if form_match is None:
     raise SystemExit("  FAIL 在 SettingsView.vue 里找不到 form 定义")
 form_keys = set(re.findall(r"^\s{2}(\w+):", form_match.group(1), re.M))
-expected_form = set(PUBLIC_KEYS) - NOT_IN_FORM
-check(form_keys == expected_form, f"后台表单的字段与公开键一致(除 {sorted(NOT_IN_FORM)})")
+expected_form = (set(PUBLIC_KEYS) | set(ADMIN_ONLY_KEYS)) - NOT_IN_FORM
+check(
+    form_keys == expected_form,
+    f"后台表单的字段与公开键 + 后台专用键一致(除 {sorted(NOT_IN_FORM)})",
+)
 if form_keys != expected_form:
     print(f"       表单里缺少: {sorted(expected_form - form_keys)}")
     print(f"       表单里多余: {sorted(form_keys - expected_form)}")

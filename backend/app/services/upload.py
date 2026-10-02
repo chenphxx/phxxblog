@@ -19,8 +19,11 @@ from pathlib import Path
 from typing import Final
 
 from fastapi import HTTPException, UploadFile
+from sqlalchemy.orm import Session
 
 from app.core.config import PROJECT_ROOT, settings
+from app.core.settings_schema import UPLOAD_SIZE_KEY, parse_upload_size_mb
+from app.models.setting import Setting
 
 # ---------------------------------------------------------------- 类型白名单
 
@@ -106,8 +109,30 @@ def _check_magic(header: bytes, suffix: str) -> None:
         raise HTTPException(status_code=400, detail="文件内容与扩展名 .webp 不匹配")
 
 
-def save_upload(file: UploadFile) -> dict:
-    """保存上传文件, 返回 {original_name, filename, path, url, mime_type, size, type}"""
+def resolve_max_upload_size(db: Session) -> int:
+    """当前生效的单文件上传上限(字节)
+
+    优先取后台"系统设置"里的上传上限(键 UPLOAD_SIZE_KEY); 缺行或值非法时
+    回退到 PHXXBLOG_MAX_UPLOAD_SIZE 配置(默认 100MB)
+
+    @param db 请求级数据库会话
+    @return 单文件大小上限, 单位字节
+    """
+    row = db.get(Setting, UPLOAD_SIZE_KEY)
+    if row is not None:
+        mb = parse_upload_size_mb(row.setting_value)
+        if mb is not None:
+            return mb * 1024 * 1024
+    return settings.max_upload_size
+
+
+def save_upload(file: UploadFile, max_size: int) -> dict:
+    """保存上传文件, 返回 {original_name, filename, path, url, mime_type, size, type}
+
+    @param file 待保存的上传文件
+    @param max_size 单文件大小上限(字节), 超过即返回 413 并删除半成品
+    @return 落盘后的媒体信息
+    """
     original_name = file.filename or "unnamed"
     suffix = Path(original_name).suffix.lower()
 
@@ -130,7 +155,7 @@ def save_upload(file: UploadFile) -> dict:
     with target.open("wb") as f:
         while chunk := file.file.read(1024 * 1024):
             size += len(chunk)
-            if size > settings.max_upload_size:
+            if size > max_size:
                 f.close()
                 target.unlink(missing_ok=True)
                 raise HTTPException(status_code=413, detail="文件超过大小限制")

@@ -38,6 +38,11 @@ const README_ROWS = 20
 /** README 文本域的最小行数(空内容时也不至于只剩一条缝) */
 const README_MIN_ROWS = 3
 
+/** 单文件上传上限(MB)的可配置范围与默认值, 与后端 core/settings_schema.py 保持一致 */
+const UPLOAD_SIZE_MIN_MB = 1
+const UPLOAD_SIZE_MAX_MB = 2048
+const UPLOAD_SIZE_DEFAULT_MB = 100
+
 const form = ref({
   site_name: '',
   site_title: '',
@@ -56,6 +61,7 @@ const form = ref({
   social_links: [] as LinkRow[],
   website_links: [] as LinkRow[],
   beian_info: [] as LinkRow[],
+  max_upload_size_mb: UPLOAD_SIZE_DEFAULT_MB,
 })
 /** 最近一次载入/保存后的表单快照, 与当前表单对比即可判断是否有未保存的修改 */
 const snapshot = ref(JSON.stringify(form.value))
@@ -172,6 +178,7 @@ async function load() {
     social_links: parseArray<LinkRow[]>(data.social_links, []),
     website_links: parseArray<LinkRow[]>(data.website_links, []),
     beian_info: parseArray<LinkRow[]>(data.beian_info, []),
+    max_upload_size_mb: Number(data.max_upload_size_mb) || UPLOAD_SIZE_DEFAULT_MB,
   }
   readmeExpanded.value = false
   snapshot.value = currentSnapshot()
@@ -199,6 +206,7 @@ async function save() {
       show_history: form.value.show_history ? '1' : '0',
       show_session: form.value.show_session ? '1' : '0',
       show_kanbanniang: form.value.show_kanbanniang ? '1' : '0',
+      max_upload_size_mb: Number(form.value.max_upload_size_mb) || UPLOAD_SIZE_DEFAULT_MB,
     }
     await settingsApi.update(payload)
     snapshot.value = currentSnapshot()
@@ -376,6 +384,26 @@ onMounted(load)
           </el-form-item>
         </el-form>
       </div>
+
+      <div class="card">
+        <h3>上传 <span class="vis-badge is-admin">仅管理员可见</span></h3>
+        <p class="muted section-hint">限制单次上传文件的体积, 全站所有上传入口共用这个上限</p>
+        <el-form label-position="top">
+          <el-form-item label="单文件上传大小上限(MB)">
+            <el-input-number
+              v-model="form.max_upload_size_mb"
+              :min="UPLOAD_SIZE_MIN_MB"
+              :max="UPLOAD_SIZE_MAX_MB"
+              :step="10"
+              :precision="0"
+              controls-position="right"
+            />
+            <div class="muted form-hint">
+              可设置 {{ UPLOAD_SIZE_MIN_MB }} ~ {{ UPLOAD_SIZE_MAX_MB }} MB, 超出即上传失败
+            </div>
+          </el-form-item>
+        </el-form>
+      </div>
     </div>
   </div>
 </template>
@@ -498,6 +526,7 @@ onMounted(load)
 }
 /* 字段下方的补充说明: 统一字号, 不再写内联样式 */
 .form-hint {
+  width: 100%;
   font-size: 12px;
   line-height: 1.6;
 }

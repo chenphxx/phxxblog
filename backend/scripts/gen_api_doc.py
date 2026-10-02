@@ -37,7 +37,8 @@ MODULE_NOTES: dict[str, str] = {
     "导入的 frontmatter 与文章导入共用同一套解析(`services/archive.py`) ",
     "媒体": "整组接口需 `media:manage`; 上传有**扩展名白名单**与图片文件头校验, "
     "拒绝 .svg/.html/.js 等可执行文档(上传目录与站点同源, 否则等于开放 XSS); "
-    "单文件上限见 `PHXXBLOG_MAX_UPLOAD_SIZE`(默认 100MB), 超限返回 413 并删除半成品文件 ",
+    "单文件上限默认见 `PHXXBLOG_MAX_UPLOAD_SIZE`(默认 100MB), 后台系统设置页可按 MB 覆盖, "
+    "超限返回 413 并删除半成品文件 ",
     "看板": "后台首页聚合数据; 需 `stats:view` `trend` 为近 14 天 `{date, pv, uv}`(与 `/stats/trend` 字段名不同) `overview` 含今日 `today_pv`/`today_uv` ",
     "统计": "`/stats/track` 由前台埋点调用(公开); "
     "其余为后台统计, 需 `stats:view` 自定义区间的天数上限为 366 天 ",
