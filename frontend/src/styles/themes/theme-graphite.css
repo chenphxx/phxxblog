@@ -1,524 +1,93 @@
 /* ============================================================
  * 主题: 石墨 (Graphite Brass)
- * 石墨灰配黄铜点缀, 中性克制, 适合以文字和图片为主的博客
+ * 石墨灰品牌色, 中性克制, 适合以文字和图片为主的博客
+ * 切换方式: html[data-theme='graphite'] (见 stores/theme.ts), 深色再加 .dark
  * ------------------------------------------------------------
  * 本文件由 src/styles/themes/_source/generate-themes.mjs 生成, 请勿手改
- * 改配色/圆角请改 _source/tokens.mjs, 然后重新运行:
+ * 改配色请改 _source/tokens.mjs, 改结构令牌请改 _source/derive.mjs, 然后运行:
  *   npm run themes:generate
- *
- * 切换方式: html[data-theme='graphite'] (见 stores/theme.ts), 深色再加 .dark
  * ============================================================ */
 
-/* ---------------- 与主题模式无关的共享令牌 ---------------- */
-:root {
-  /* 超过 20 行的代码块折叠后的高度(MarkdownView 会覆盖这个值) */
-  --code-fold-height: 420px;
-
-  /*
-   * 字体: 字母 / 数字 / 符号统一用 Cascadia Code
-   *
-   * Cascadia Code 不含中文字形, 所以中文字符会自动回退到后面的系统字体
-   * (PingFang SC / 微软雅黑), 中文排版质量不受影响 - 这正是想要的效果:
-   * 西文数字符号是等宽代码字体, 中文仍是标准无衬线
-   */
-  --font-sans: 'Cascadia Code', 'Cascadia Mono', ui-monospace, 'PingFang SC', 'Microsoft YaHei',
-    'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-  --font-mono: 'Cascadia Code', 'Cascadia Mono', 'JetBrains Mono', ui-monospace, 'SFMono-Regular',
-    Consolas, 'Liberation Mono', monospace;
-}
-
-/* ---------------- 浅色 ---------------- */
-/* 这里刻意不写裸 :root - 多套主题都写 :root 的话后者会盖掉前者,
-   "默认主题"就无法确定. 默认主题的浅色令牌由生成器单独写进 :root */
 html[data-theme='graphite'] {
-  --bg: #f6f5f3;
+  --bg: #eeeeec;
   --card-bg: #ffffff;
-  --text: #24211d;
-  --muted: #6f6a62;
-  --border: #e8e4dd;
-  --border-strong: #cdc7bc;
+  --text: #171717;
+  --muted: #6b6b6b;
+  --border: #e6e6e6;
+  --border-strong: #d4d4d4;
   --primary: #414951;
-  --primary-strong: #2d3238;
-  --primary-weak: #f0f0f1;
+  --primary-strong: #33393f;
+  --primary-weak: #ecedee;
   --on-primary: #ffffff;
-  --link: #383f46;
-  --code-bg: #efedea;
+  --link: #414951;
+  --code-bg: #f2f2f2;
   --code-block-bg: #ffffff;
-  --ok: #2f7048;
-  --warn: #8a6412;
-  --danger: #a8483c;
-  --ring: rgba(65, 73, 81, 0.26);
-  --grad-from: #c2a878;
-  --grad-to: #6d6a60;
-  --term-bg: #131414;
-  --term-border: #26282a;
-  --term-text: #dedbd6;
-  --term-dim: #8a857c;
-  --term-accent: #cdb07a;
-  --term-prompt: #f2f0ec;
-  --cell-0: #ededee;
-  --cell-1: #caccce;
-  --cell-2: #a8adb3;
-  --cell-3: #858f99;
-  --cell-4: #66737f;
+  --ok: #18794e;
+  --warn: #8a5a1f;
+  --danger: #b8272c;
+  --ring: #4149514d;
+  --grad-from: #84898e;
+  --grad-to: #414951;
+  --term-bg: #121212;
+  --term-border: #2b2b2b;
+  --term-text: #e6e6e6;
+  --term-dim: #909090;
+  --term-accent: #82868d;
+  --term-prompt: #fafafa;
+  --cell-0: #ececec;
+  --cell-1: #cdcfd0;
+  --cell-2: #a4a8ab;
+  --cell-3: #787d83;
+  --cell-4: #414951;
 
---radius: 8px;
---radius-sm: 8px;
---radius-lg: 8px;
---radius-pill: 999px;
---shadow: 0 1px 2px rgba(16, 45, 32, 0.04), 0 8px 24px -14px rgba(16, 45, 32, 0.18);
---shadow-hover: 0 4px 10px -4px var(--ring), 0 22px 40px -22px rgba(16, 45, 32, 0.28);
---ease: cubic-bezier(0.22, 0.72, 0.28, 1);
---dur: 280ms;
---accent-grad: linear-gradient(135deg, var(--grad-from), var(--grad-to));
-
-/* Element Plus 主色对齐(色阶由主色推导, 保证 EP 组件与主题一致) */
---el-color-primary: #414951;
---el-color-primary-light-3: #7a8085;
---el-color-primary-light-5: #a0a4a8;
---el-color-primary-light-7: #c6c8cb;
---el-color-primary-light-8: #d9dbdc;
---el-color-primary-light-9: #ecedee;
---el-color-primary-dark-2: #343a41;
---el-border-radius-base: 10px;
---el-border-radius-small: 8px;
---el-border-radius-round: 999px;
---el-bg-color: #ffffff;
---el-bg-color-overlay: #ffffff;
---el-fill-color: #f6f5f3;
---el-fill-color-light: color-mix(in srgb, #f6f5f3 60%, #ffffff);
---el-fill-color-lighter: color-mix(in srgb, #f6f5f3 30%, #ffffff);
---el-text-color-primary: #24211d;
---el-text-color-regular: color-mix(in srgb, #24211d 78%, #6f6a62);
---el-text-color-secondary: #6f6a62;
---el-border-color: #cdc7bc;
---el-border-color-light: #e8e4dd;
---el-border-color-lighter: color-mix(in srgb, #e8e4dd 60%, #ffffff);
+  /* Element Plus 主色色阶由品牌色推导, 组件与主题保持一致 */
+  --el-color-primary: #414951;
+  --el-color-primary-light-3: #7a8085;
+  --el-color-primary-light-5: #a0a4a8;
+  --el-color-primary-light-7: #c6c8cb;
+  --el-color-primary-light-8: #d9dbdc;
+  --el-color-primary-light-9: #ecedee;
+  --el-color-primary-dark-2: #343a41;
 }
 
-/* ---------------- 深色 ---------------- */
 html[data-theme='graphite'].dark {
-  --bg: #141617;
-  --card-bg: #1e2022;
-  --text: #ecebe9;
-  --muted: #aeaaa3;
-  --border: #2e3033;
-  --border-strong: #43474b;
+  --bg: #161718;
+  --card-bg: #262728;
+  --text: #ededed;
+  --muted: #a3a3a3;
+  --border: #2c2c2c;
+  --border-strong: #3c3c3c;
   --primary: #a6adb5;
-  --primary-strong: #c2c7cc;
-  --primary-weak: #252b31;
-  --on-primary: #0e1720;
-  --link: #b1b8be;
-  --code-bg: #181a1b;
-  --code-block-bg: #212224;
-  --ok: #86cbab;
-  --warn: #d2bc89;
-  --danger: #da958b;
-  --ring: rgba(166, 173, 181, 0.28);
-  --grad-from: #abb6ba;
-  --grad-to: #797a91;
-  --term-bg: #0e0f10;
-  --term-border: #27292b;
-  --term-text: #dedcd8;
-  --term-dim: #738596;
-  --term-accent: #89add2;
-  --term-prompt: #f3f3f1;
-  --cell-0: #232629;
-  --cell-1: #41474e;
-  --cell-2: #5f6b77;
-  --cell-3: #818f9d;
-  --cell-4: #adb8c2;
+  --primary-strong: #b6bcc2;
+  --primary-weak: #3a3c3f;
+  --on-primary: #141414;
+  --link: #a6adb5;
+  --code-bg: #333435;
+  --code-block-bg: #1e1e1e;
+  --ok: #5cc98d;
+  --warn: #dfb167;
+  --danger: #ef8073;
+  --ring: #a6adb54d;
+  --grad-from: #6c7076;
+  --grad-to: #a6adb5;
+  --term-bg: #0c0c0c;
+  --term-border: #272727;
+  --term-text: #e6e6e6;
+  --term-dim: #8b8b8b;
+  --term-accent: #a6adb5;
+  --term-prompt: #fafafa;
+  --cell-0: #262626;
+  --cell-1: #3d3e40;
+  --cell-2: #5c5f62;
+  --cell-3: #7d8287;
+  --cell-4: #a6adb5;
 
---radius: 8px;
---radius-sm: 8px;
---radius-lg: 8px;
---radius-pill: 999px;
---shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 12px 32px -20px rgba(0, 0, 0, 0.7);
---shadow-hover: 0 6px 14px -6px var(--ring), 0 26px 46px -26px rgba(0, 0, 0, 0.8);
---ease: cubic-bezier(0.22, 0.72, 0.28, 1);
---dur: 280ms;
---accent-grad: linear-gradient(135deg, var(--grad-from), var(--grad-to));
-
-/* Element Plus 主色对齐(色阶由主色推导, 保证 EP 组件与主题一致) */
---el-color-primary: #a6adb5;
---el-color-primary-light-3: #c1c6cb;
---el-color-primary-light-5: #d3d6da;
---el-color-primary-light-7: #e4e6e9;
---el-color-primary-light-8: #edeff0;
---el-color-primary-light-9: #f6f7f8;
---el-color-primary-dark-2: #858a91;
---el-border-radius-base: 10px;
---el-border-radius-small: 8px;
---el-border-radius-round: 999px;
---el-bg-color: #1e2022;
---el-bg-color-overlay: #1e2022;
---el-fill-color: #141617;
---el-fill-color-light: color-mix(in srgb, #141617 60%, #1e2022);
---el-fill-color-lighter: color-mix(in srgb, #141617 30%, #1e2022);
---el-text-color-primary: #ecebe9;
---el-text-color-regular: color-mix(in srgb, #ecebe9 78%, #aeaaa3);
---el-text-color-secondary: #aeaaa3;
---el-border-color: #43474b;
---el-border-color-light: #2e3033;
---el-border-color-lighter: color-mix(in srgb, #2e3033 60%, #1e2022);
-}
-
-/* ============================================================
- * 增强层
- * ============================================================ */
-
-/* ============================================================
- * 增强层: 编辑细线族 (editorial)
- * 中庸圆角, 极淡阴影, 衬线标题. 悬停只在标题下浮出一条细线
- * 占位符由 _source/generate-themes.mjs 替换
- * ============================================================ */
-
-/* ---------- 链接/强调文字统一走 --link, 保证对比度 ---------- */
-a {
-  color: var(--link);
-}
-
-/* ---------- 卡片 ---------- */
-.card {
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease),
-    border-color var(--dur) var(--ease), background-color 0.35s var(--ease);
-}
-
-.card:hover {
-  border-color: var(--border-strong);
-  box-shadow: var(--shadow-hover);
-}
-
-/* ---------- 文章卡 ---------- */
-.post-card {
-  position: relative;
-  overflow: hidden;
-  border-radius: var(--radius);
-}
-
-.post-card::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: linear-gradient(to bottom, var(--grad-from), var(--grad-to));
-  transform: scaleY(0);
-  transform-origin: top;
-  transition: transform var(--dur) var(--ease), width var(--dur) var(--ease),
-    box-shadow var(--dur) var(--ease);
-}
-
-.post-card:hover::before {
-  transform: scaleY(1);
-}
-
-.post-title a {
-  transition: color var(--dur) var(--ease);
-}
-
-.post-title a:hover {
-  color: var(--primary);
-}
-
-/* ---------- 小标签 ---------- */
-.chip {
-  border-radius: var(--radius-pill);
-  padding: 2px 10px;
-  transition: transform var(--dur) var(--ease), filter var(--dur) var(--ease),
-    border-color var(--dur) var(--ease);
-}
-
-.chip:hover {
-  transform: translateY(-1px);
-  filter: saturate(1.25);
-}
-
-/* ---------- 按钮 ---------- */
-.el-button {
-  font-family: var(--font-sans);
-  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease),
-    background-color var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease);
-}
-
-.el-button--primary:not(.is-text):not(.is-link) {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: var(--on-primary);
-  box-shadow: 0 8px 18px -14px var(--ring);
-}
-
-.el-button--primary:not(.is-text):not(.is-link):hover,
-.el-button--primary:not(.is-text):not(.is-link):focus-visible {
-  background: var(--primary-strong);
-  border-color: var(--primary-strong);
-  transform: translateY(-1px);
-  box-shadow: 0 8px 18px -14px var(--ring);
-}
-
-.el-button--primary:not(.is-text):not(.is-link):active {
-  transform: none;
-}
-
-.el-button.is-circle {
-  border-radius: var(--radius-sm);
-}
-
-.el-button:not(.is-circle):not(.is-round) {
-  border-radius: var(--radius-sm);
-}
-
-/* ---------- 输入框: 聚焦光环 ---------- */
-.el-input__wrapper,
-.el-textarea__inner,
-.el-select__wrapper {
-  border-radius: var(--radius-sm);
-  transition: box-shadow var(--dur) var(--ease), background-color var(--dur) var(--ease);
-}
-
-.el-input__wrapper.is-focus,
-.el-select__wrapper.is-focused {
-  box-shadow: 0 0 0 1px var(--primary) inset, 0 0 0 4px var(--ring);
-}
-
-/* ---------- 分页 ---------- */
-.el-pagination.is-background .el-pager li {
-  border-radius: var(--radius-sm);
-  transition: transform var(--dur) var(--ease), background-color var(--dur) var(--ease);
-}
-
-.el-pagination.is-background .el-pager li:not(.is-active):hover {
-  transform: translateY(-1px);
-}
-
-.el-pagination.is-background .el-pager li.is-active {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: var(--on-primary);
-}
-
-/* ---------- 消息 / 弹窗 / 下拉 ---------- */
-.el-message {
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-hover);
-}
-
-.el-message-box,
-.el-dialog,
-.el-dropdown__popper,
-.el-popper.is-light {
-  border-radius: var(--radius);
-}
-
-.el-dialog {
-  box-shadow: var(--shadow-hover);
-}
-
-/* ---------- 站点头部与导航 ---------- */
-.site-header {
-  transition: box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease);
-}
-
-.site-nav a {
-  border-radius: 0;
-  color: var(--muted);
-  transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease);
-}
-
-.site-nav a:hover {
-  background: transparent;
-  color: var(--text);
-}
-
-.site-nav a.router-link-active {
-  background: transparent;
-  color: var(--primary-strong);
-  font-weight: 600;
-}
-
-/* 导航细下划线(编辑族用线条而不是色块) */
-.site-nav a {
-  position: relative;
-}
-
-.site-nav a::after {
-  content: '';
-  position: absolute;
-  left: 10px;
-  right: 10px;
-  bottom: 2px;
-  height: 1px;
-  background: currentColor;
-  transform: scaleX(0);
-  transition: transform var(--dur) var(--ease);
-}
-
-.site-nav a:hover::after,
-.site-nav a.router-link-active::after {
-  transform: scaleX(1);
-}
-
-.site-brand {
-  transition: opacity var(--dur) var(--ease);
-}
-
-.site-brand:hover {
-  opacity: 0.86;
-}
-
-/* ---------- 终端卡片 ---------- */
-.term-card {
-  position: relative;
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: var(--shadow);
-}
-
-
-
-/* ---------- 归档时间轴 ---------- */
-.timeline-item::before {
-  transition: box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease),
-    border-color var(--dur) var(--ease);
-}
-
-.timeline-item:hover::before {
-  box-shadow: none;
-  transform: scale(1.15);
-}
-
-/* ---------- 正文 ---------- */
-.markdown-body a {
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
-  text-decoration-color: color-mix(in srgb, var(--primary) 55%, transparent);
-  transition: color var(--dur) var(--ease), text-decoration-color var(--dur) var(--ease);
-}
-
-.markdown-body a:hover {
-  text-decoration-color: var(--primary);
-}
-
-
-
-/* ---------- 入场动画与主题过渡 ---------- */
-@keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-/*
- * 填充模式用 backwards 而不是 both
- * both/forwards 会让动画结束后仍把 transform 留在效果栈里(计算值是一单位矩阵而不是 none),
- * 于是 .site-main 的直接子元素(.page-container)就成了 position: fixed 的定位基准:
- * 容器内的弹窗会相对整页高的容器居中, 而不是相对视口居中
- * 首页点头像弹出的头像弹窗曾因此落在页面下方
- * to 帧的 opacity/transform 就是元素的自然值, 所以 backwards 的视觉效果与 both 一致
- */
-.site-main > * {
-  animation: fade-up 460ms var(--ease) backwards;
-}
-
-/* 切换主题/深浅色时让颜色平滑过渡, 不闪白 */
-html.theme-transition,
-html.theme-transition *,
-html.theme-transition *::before,
-html.theme-transition *::after {
-  transition: background-color 320ms var(--ease), border-color 320ms var(--ease),
-    color 320ms var(--ease), fill 320ms var(--ease) !important;
-}
-
-/* ---------- 尊重系统减少动态效果偏好 ---------- */
-@media (prefers-reduced-motion: reduce) {
-  .site-main > *,
-  .post-card,
-  .card,
-  .el-button,
-  .timeline-item:hover::before {
-    animation: none !important;
-    transform: none !important;
-  }
-}
-
-/* ---------- 编辑族专有: 悬停只做很轻的抬升 ---------- */
-.post-card:hover {
-  transform: translateY(-2px);
-}
-
-/* ---------- 衬线标题, 刊物感 ---------- */
-.profile-name,
-.posts-title,
-.post-title,
-.markdown-body h1,
-.markdown-body h2,
-.markdown-body h3,
-.markdown-body h4,
-.site-links-card h3 {
-  font-family: var(--font-serif, Georgia, 'Songti SC', serif);
-  letter-spacing: 0;
-  font-weight: 600;
-}
-
-/* ---------- 文章卡: 悬停时标题下方浮现一条细线 ---------- */
-.post-card .post-title {
-  display: inline-block;
-  position: relative;
-  line-height: 1.5;
-}
-
-.post-card .post-title::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -2px;
-  height: 1px;
-  background: var(--primary);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform var(--dur) var(--ease);
-}
-
-.post-card:hover .post-title::after {
-  transform: scaleX(1);
-}
-
-/* 左侧色条在编辑族不参与(改由标题细线表达) */
-.post-card::before {
-  display: none;
-}
-
-/* ---------- 列表分隔用虚线, 更轻 ---------- */
-.post-card + .post-card {
-  border-top-style: dashed;
-}
-
-/* ---------- 站点头部: 导航细下划线 ---------- */
-.site-header::after {
-  display: none;
-}
-
-/* ---------- 归档时间轴: 节点改成白芯色环 ---------- */
-.timeline-item::before {
-  background: var(--card-bg);
-  border: 2px solid var(--primary);
-  box-shadow: none;
-}
-
-/* ---------- 编辑区: 引用块用主色淡底 ---------- */
-.markdown-body {
-  line-height: 1.9;
-}
-
-.markdown-body blockquote {
-  background: color-mix(in srgb, var(--primary) 7%, transparent);
+  /* Element Plus 主色色阶由品牌色推导, 组件与主题保持一致 */
+  --el-color-primary: #a6adb5;
+  --el-color-primary-light-3: #c1c6cb;
+  --el-color-primary-light-5: #d3d6da;
+  --el-color-primary-light-7: #e4e6e9;
+  --el-color-primary-light-8: #edeff0;
+  --el-color-primary-light-9: #f6f7f8;
+  --el-color-primary-dark-2: #858a91;
 }

@@ -21,9 +21,9 @@
   --el-color-primary-light-9: color-mix(in srgb, var(--primary) 10%, var(--card-bg));
   --el-color-primary-dark-2: var(--primary-strong);
 
-  --el-border-radius-base: var(--radius-sm);
-  --el-border-radius-small: calc(var(--radius-sm) - 2px);
-  --el-border-radius-round: 999px;
+  --el-border-radius-base: var(--radius-control);
+  --el-border-radius-small: calc(var(--radius-control) - 2px);
+  --el-border-radius-round: var(--radius-pill);
 
   --el-bg-color: var(--card-bg);
   --el-bg-color-overlay: var(--card-bg);
@@ -127,21 +127,21 @@ html:root .el-button--info:not(.is-plain):not(.is-text):not(.is-link) {
   width: 28px;
   height: 28px;
   flex-shrink: 0;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   background: linear-gradient(140deg, var(--grad-from), var(--grad-to));
 }
 
 /* 侧边栏菜单: 选中态用主题色淡底 + 主题色文字, 悬停用代码底色 */
 .admin-aside .el-menu {
   border-right: 0;
-  padding: 8px;
+  padding: 10px;
 }
 
 .admin-aside .el-menu-item {
-  height: 42px;
-  line-height: 42px;
+  height: 46px;
+  line-height: 46px;
   margin-bottom: 2px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   color: var(--muted);
   transition:
     background-color var(--dur) var(--ease),
@@ -149,14 +149,18 @@ html:root .el-button--info:not(.is-plain):not(.is-text):not(.is-link) {
 }
 
 .admin-aside .el-menu-item:hover {
-  background: var(--code-bg);
+  background: var(--card-bg);
   color: var(--text);
 }
 
+/* 选中态与前台侧栏一致: 白色胶囊 + 极淡投影, 不用高饱和色块 */
 .admin-aside .el-menu-item.is-active {
-  background: var(--primary-weak);
-  color: var(--link);
+  background: var(--card-bg);
+  color: var(--text);
   font-weight: 600;
+  box-shadow:
+    0 1px 2px rgba(17, 17, 17, 0.04),
+    0 10px 24px -18px rgba(17, 17, 17, 0.4);
 }
 
 .admin-aside .el-menu-item.is-active .el-icon {
@@ -165,29 +169,38 @@ html:root .el-button--info:not(.is-plain):not(.is-text):not(.is-link) {
 
 /* 顶栏: 与前台 sticky header 同样的毛玻璃与细分割线 */
 .admin-header {
-  height: 60px;
+  height: 64px;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  background: color-mix(in srgb, var(--card-bg) 86%, transparent);
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
 }
 
 /* 主内容区留白与标题节奏, 与前台 .page-container 对齐 */
 .admin-main {
-  padding: 20px 24px 32px;
+  padding: 24px 28px 40px;
 }
 
 .admin-main > div > h2:first-child,
 .admin-main > h2:first-child {
-  margin: 0 0 16px;
-  font-size: 20px;
-  letter-spacing: -0.01em;
+  margin: 0 0 20px;
+  font-size: 26px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
 }
 
 /* ---------- 3. 后台卡片与表格 ---------- */
 
-/* 后台的表单/表格密集, 半径收小一档, 避免过于圆润 */
+/* 后台以表格与表单为主, 面板圆角比前台略收一点, 但仍然保持柔和 */
 .admin-main .card {
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-card);
+}
+
+/* 面板标题: 各页的 <h3> 统一节奏(标题在卡片里独占一行) */
+.admin-main .card > h3:first-child {
+  margin: 0 0 var(--space-5);
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
 }
 
 .admin-main .el-table {
@@ -201,9 +214,9 @@ html:root .el-button--info:not(.is-plain):not(.is-text):not(.is-link) {
 }
 
 .admin-main .el-table th.el-table__cell {
-  font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 600;
+  color: var(--muted);
 }
 
 .admin-main .el-table td.el-table__cell,
@@ -254,14 +267,14 @@ html:root .el-button--info:not(.is-plain):not(.is-text):not(.is-link) {
 /* ---------- 4. 后台登录页 ---------- */
 .login-page {
   background:
-    radial-gradient(760px 420px at 12% -8%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 62%),
-    radial-gradient(620px 380px at 92% 6%, color-mix(in srgb, var(--grad-to) 12%, transparent), transparent 58%),
+    radial-gradient(760px 420px at 12% -8%, color-mix(in srgb, var(--primary) 7%, transparent), transparent 62%),
+    radial-gradient(620px 380px at 92% 6%, color-mix(in srgb, var(--grad-to) 6%, transparent), transparent 58%),
     var(--bg);
 }
 
 .login-card {
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-hover);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-float);
 }
 
 .login-header h2 {
@@ -329,5 +342,5 @@ html:root .el-button--info:not(.is-plain):not(.is-text):not(.is-link) {
   margin-bottom: 12px;
   background: var(--code-bg);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-control);
 }

@@ -34,12 +34,13 @@ defineProps<{ links: { name: string; url: string }[] }>()
 
 <style scoped>
 .site-links-card {
-  padding: 16px;
+  padding: var(--space-5);
   text-align: left;
 }
 .site-links-card h3 {
-  margin: 0 0 12px;
+  margin: 0 0 var(--space-3);
   font-size: 15px;
+  font-weight: 600;
 }
 .site-link {
   display: flex;
@@ -47,11 +48,11 @@ defineProps<{ links: { name: string; url: string }[] }>()
   gap: 8px;
   padding: 6px 0;
   color: var(--text);
-  font-size: 14px;
+  font-size: 13.5px;
   text-decoration: none;
 }
 .site-link:hover {
-  color: var(--primary);
+  color: var(--link);
 }
 .site-link-icon {
   width: 20px;

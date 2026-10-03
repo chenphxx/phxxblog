@@ -40,12 +40,12 @@ const canvasSize = computed(() => kb.current.canvas ?? DEFAULT_CANVAS)
 const canvasStyle = computed(() => ({ width: `${canvasSize.value.width}px`, height: `${canvasSize.value.height}px` }))
 
 const root = ref<HTMLElement | null>(null)
-/** 当前浮层坐标, null 表示未拖动过, 停在 CSS 的默认位置(左下角) */
+/** 当前浮层坐标, null 表示未拖动过, 停在 CSS 的默认位置(右下角) */
 const pos = ref<KanbanniangPosition | null>(kb.position)
 const dragging = ref(false)
-/** 浮层被拖走后由内联样式接管定位, 同时把 CSS 的 bottom 让出来 */
+/** 浮层被拖走后由内联样式接管定位, 同时把 CSS 的 right / bottom 让出来 */
 const posStyle = computed(() =>
-  pos.value ? { left: `${pos.value.x}px`, top: `${pos.value.y}px`, bottom: 'auto' } : undefined,
+  pos.value ? { left: `${pos.value.x}px`, top: `${pos.value.y}px`, right: 'auto', bottom: 'auto' } : undefined,
 )
 
 /** 候选拖动: 按下的鼠标位置 + 浮层当时的左上角 */
@@ -67,9 +67,12 @@ let unsubscribe: (() => void) | undefined
 let stopResize: (() => void) | undefined
 let disposed = false
 
-/** 顶栏是 sticky 且层级高于浮层, 浮层顶到那里就再也抓不回来, 这里给它让出这段高度 */
+/**
+ * 窄屏顶栏是 sticky 且层级(60)低于浮层(90), 浮层顶到那里会被盖住不好抓,
+ * 这里给它让出这段高度; 宽屏没有顶栏(导航在侧栏里), 返回 0
+ */
 function headerHeight(): number {
-  return document.querySelector('.site-header')?.getBoundingClientRect().height || 0
+  return document.querySelector('.app-topbar')?.getBoundingClientRect().height || 0
 }
 
 /** 把坐标收进可视范围, 免得浮层被拖到抓不回来的地方(窗口缩小后同样靠它拉回来) */
@@ -354,9 +357,10 @@ watch(() => kb.modelId, switchModel)
 <style scoped>
 .kanbanniang {
   position: fixed;
-  left: 0;
+  /* 默认停在右下角: 左下角现在是侧栏底部(主题与看板娘开关), 不能被浮层压住 */
+  right: 0;
   bottom: 0;
-  /* 低于顶栏(100)与 Element Plus 的浮层(2000+), 高于正文 */
+  /* 低于 Element Plus 的浮层(2000+), 高于正文与侧栏(80) */
   z-index: 90;
   line-height: 0;
   /* 运行时在 window 上监听鼠标, 不需要命中 canvas: 不让这块浮层挡住正文的点击与选区 */

@@ -1,0 +1,270 @@
+/* ============================================================
+ * 应用外壳 (桌面侧栏 + 灰画布 + 可滚动主内容区)
+ * ------------------------------------------------------------
+ * 桌面端: 固定宽度侧栏 + 主内容区, 页面底色是浅灰画布, 内容承载在白色面板里
+ * 移动端(<1024px): 侧栏变成抽屉, 顶部保留一条细导航条
+ *
+ * 这里只写外壳与导航, 页面内部的面板/列表/排版在 theme.css
+ * ============================================================ */
+
+:root {
+  /* 侧栏宽度: 参考稿的量级, 只此一处 */
+  --sidebar-w: 248px;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+/* ---------- 侧栏 ---------- */
+.app-sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-6) var(--space-4) var(--space-5);
+  background: var(--bg);
+  /* 侧栏与主内容区同底色, 靠留白与内容本身分层, 不画分割线; 内容过宽时只在自己内部滚 */
+  overflow-x: hidden;
+  overflow-y: auto;
+  z-index: 80;
+}
+
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 var(--space-3);
+}
+
+.app-brand:hover {
+  text-decoration: none;
+}
+
+.app-brand-mark {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: var(--radius-control);
+  background: linear-gradient(140deg, var(--grad-from), var(--grad-to));
+}
+
+.app-brand-name {
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-brand-bio {
+  margin: var(--space-3) 0 0;
+  padding: 0 var(--space-3);
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ---------- 导航 ---------- */
+.app-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.app-nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-control);
+  color: var(--muted);
+  font-size: 14px;
+  transition:
+    background-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+
+.app-nav a:hover {
+  background: var(--card-bg);
+  color: var(--text);
+  text-decoration: none;
+}
+
+/* 选中态是一枚白色圆角胶囊(深色下是提亮一档的卡片色), 不用高饱和色块 */
+.app-nav a.router-link-active {
+  background: var(--card-bg);
+  color: var(--text);
+  font-weight: 600;
+  box-shadow:
+    0 1px 2px rgba(17, 17, 17, 0.04),
+    0 10px 24px -18px rgba(17, 17, 17, 0.4);
+}
+
+.app-nav .nav-icon {
+  font-size: 17px;
+  color: currentColor;
+  opacity: 0.9;
+  flex-shrink: 0;
+}
+
+.app-nav-divider {
+  height: 1px;
+  margin: var(--space-3) var(--space-3);
+  background: var(--border);
+}
+
+/* 次级导航(写文章/管理后台/登录)比主导航轻一档 */
+.app-nav-secondary a {
+  height: 40px;
+  font-size: 13.5px;
+}
+
+.app-sidebar-foot {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  /* 侧栏较窄时两组控件主动换行, 不允许溢出(否则会出现横向滚动条) */
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-3) 0;
+  border-top: 1px solid var(--border);
+}
+
+/* 两组控件都可以被压窄: 名称过长时省略, 不撑破侧栏 */
+.app-sidebar-foot > * {
+  min-width: 0;
+}
+
+.app-sidebar-foot :deep(.theme-bar),
+.app-sidebar-foot :deep(.kb-bar) {
+  flex-wrap: wrap;
+}
+
+.app-sidebar-foot :deep(.theme-picker),
+.app-sidebar-foot :deep(.kb-picker) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.app-sidebar-foot :deep(.picker-name) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- 主内容区 ---------- */
+.app-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.site-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.app-drawer-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: color-mix(in srgb, var(--text) 40%, transparent);
+  border: 0;
+  padding: 0;
+}
+
+/* ---------- 移动端顶栏 ---------- */
+.app-topbar {
+  display: none;
+  align-items: center;
+  gap: var(--space-3);
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  padding: 10px var(--space-4);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+}
+
+.app-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.app-menu-btn:hover {
+  color: var(--primary);
+  border-color: var(--border-strong);
+}
+
+.app-topbar-brand {
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-topbar-brand:hover {
+  text-decoration: none;
+}
+
+/* ---------- 窄屏: 侧栏转抽屉 ---------- */
+@media (max-width: 1023px) {
+  .app-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .app-topbar {
+    display: flex;
+  }
+
+  .app-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    height: 100%;
+    width: min(300px, 84vw);
+    transform: translateX(-100%);
+    transition: transform var(--dur) var(--ease);
+    box-shadow: var(--shadow-float);
+    background: var(--bg);
+  }
+
+  .app-sidebar.is-open {
+    transform: none;
+  }
+}
+
+/* 没有抽屉需求时(宽屏)给它一个明确的收起点 */
+@media (min-width: 1024px) {
+  .app-sidebar {
+    transform: none;
+  }
+}

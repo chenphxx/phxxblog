@@ -16,7 +16,7 @@ defineProps<{ posts: PostItem[] }>()
 
 <template>
   <aside v-if="posts.length" class="card hot-card">
-    <p class="eyebrow">hot — 热门文章</p>
+    <p class="eyebrow">热门文章</p>
     <ol class="hot-list">
       <li v-for="(item, index) in posts" :key="item.id" class="hot-item">
         <span class="hot-rank" :class="{ 'is-top': index < 3 }">{{ index + 1 }}</span>
@@ -43,35 +43,31 @@ defineProps<{ posts: PostItem[] }>()
   align-items: center;
   gap: 8px;
   padding: 7px 0;
-  border-bottom: 1px dashed var(--border);
+  border-bottom: 1px solid var(--border);
 }
 .hot-item:last-child {
   border-bottom: none;
 }
 .hot-rank {
   flex-shrink: 0;
-  width: 20px;
-  height: 20px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  background: var(--code-bg);
+  width: 18px;
+  display: inline-block;
   color: var(--muted);
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
 }
 /* 前三名给一点强调, 与站内彩色标签用同一套配色语言 */
 .hot-rank.is-top {
-  background: var(--primary-weak);
-  color: var(--primary);
-  font-weight: 700;
+  color: var(--link);
+  font-weight: 600;
 }
 .hot-link {
   flex: 1;
   min-width: 0;
   color: var(--text);
-  font-size: 13.5px;
+  font-size: 13px;
   line-height: 1.5;
   /* 标题过长时截断, 保证右侧阅读量始终对齐 */
   overflow: hidden;
@@ -79,7 +75,7 @@ defineProps<{ posts: PostItem[] }>()
   white-space: nowrap;
 }
 .hot-link:hover {
-  color: var(--primary);
+  color: var(--link);
   text-decoration: none;
 }
 .hot-views {

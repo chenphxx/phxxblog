@@ -45,7 +45,7 @@ defineExpose({ refresh })
 
 <template>
   <section v-loading="loading" class="card section-card">
-    <p class="eyebrow" style="margin-bottom: 12px">activity — 文章发布记录</p>
+    <p class="eyebrow" style="margin-bottom: 12px">文章发布记录</p>
     <ContributionsChart :points="points" :years="years" :year="year" @update:year="year = $event" />
   </section>
 </template>

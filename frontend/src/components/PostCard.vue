@@ -1,9 +1,19 @@
 <script setup lang="ts">
 import type { PostItem } from '@/types'
 import MetaIcon from '@/components/MetaIcon.vue'
-import { chipStyle, LIKES_COLOR, VIEWS_COLOR } from '@/utils/chipColor'
+import { chipStyle } from '@/utils/chipColor'
 import { formatDateTime } from '@/utils/datetime'
 
+/**
+ * @brief 文章列表行
+ *
+ * 列表页(首页/全部文章/搜索)共用: 一条文章就是一行, 由外层面板的细分隔线组织,
+ * 不再每篇文章单独套一张浮起的卡片
+ *
+ * 视觉权重: 标题 > 摘要 > 元信息; 阅读量/点赞只作为弱化的辅助信息, 不抢标题
+ *
+ * @param post 文章列表项
+ */
 defineProps<{ post: PostItem }>()
 
 const STATUS_TEXT: Record<number, string> = {
@@ -16,11 +26,11 @@ const STATUS_TEXT: Record<number, string> = {
 </script>
 
 <template>
-  <article class="card post-card">
+  <article class="post-card">
     <div class="post-head">
-      <h2 class="post-title">
+      <h3 class="post-title">
         <router-link :to="`/post/${post.id}`">{{ post.title }}</router-link>
-      </h2>
+      </h3>
       <el-tag v-if="post.status !== 2" size="small" type="warning" class="status-tag">
         {{ STATUS_TEXT[post.status] }}
       </el-tag>
@@ -28,6 +38,8 @@ const STATUS_TEXT: Record<number, string> = {
     <p v-if="post.summary" class="post-summary">{{ post.summary }}</p>
 
     <div class="post-meta">
+      <span class="num post-date">{{ formatDateTime(post.published_at || post.created_at) }}</span>
+
       <router-link
         v-for="cat in post.categories"
         :key="cat.id"
@@ -39,10 +51,6 @@ const STATUS_TEXT: Record<number, string> = {
         <span>{{ cat.name }}</span>
       </router-link>
 
-      <span class="meta-item">
-        <MetaIcon name="file" />
-        <span>约 {{ post.word_count }} 字</span>
-      </span>
       <span class="meta-item">
         <MetaIcon name="clock" />
         <span>{{ post.reading_minutes }} 分钟</span>
@@ -59,16 +67,11 @@ const STATUS_TEXT: Record<number, string> = {
         <span>{{ tag.name }}</span>
       </router-link>
 
-      <span class="meta-item">
-        <MetaIcon name="calendar" />
-        <span>{{ formatDateTime(post.published_at || post.created_at) }}</span>
-      </span>
-
-      <span class="chip chip-icon" :style="chipStyle('views', VIEWS_COLOR)">
+      <span class="meta-item post-stat">
         <MetaIcon name="eye" />
         <span>{{ post.views }}</span>
       </span>
-      <span class="chip chip-icon" :style="chipStyle('likes', LIKES_COLOR)">
+      <span class="meta-item post-stat">
         <MetaIcon name="thumb" />
         <span>{{ post.likes_count }}</span>
       </span>
@@ -77,72 +80,83 @@ const STATUS_TEXT: Record<number, string> = {
 </template>
 
 <style scoped>
+/* 行本身不带背景与边框: 分隔线由相邻行的 border-top 提供, 贴合外层面板 */
 .post-card {
-  margin-bottom: 14px;
-  padding: 18px 20px;
-  transition:
-    border-color 0.15s ease,
-    transform 0.15s ease;
+  padding: var(--space-5) var(--space-3);
+  border-radius: var(--radius-control);
+  transition: background-color var(--dur) var(--ease);
 }
+
+.post-card + .post-card {
+  border-top: 1px solid var(--border);
+}
+
 .post-card:hover {
-  border-color: var(--border-strong);
-  transform: translateY(-1px);
+  background: var(--code-bg);
 }
+
 .post-head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
 }
+
 .post-title {
   margin: 0;
-  font-size: 17px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   line-height: 1.45;
 }
+
 .post-title a {
   color: var(--text);
+  transition: color var(--dur) var(--ease);
 }
+
 .post-title a:hover {
-  color: var(--primary);
+  color: var(--link);
   text-decoration: none;
 }
+
 .status-tag {
   flex-shrink: 0;
-  margin-top: 2px;
+  margin-top: 3px;
 }
+
 .post-summary {
-  margin: 6px 0 10px;
+  margin: 8px 0 12px;
   color: var(--muted);
-  font-size: 13.5px;
-  line-height: 1.65;
+  font-size: 14.5px;
+  line-height: 1.75;
+  /* 摘要最多两行, 保证列表节奏一致 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
+
 .post-meta {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
-  font-family: var(--font-mono);
-  font-size: 11.5px;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.post-date {
   color: var(--muted);
 }
-/* 带图标的元信息: 图标与文字基线对齐, 图标略淡以免抢戏 */
-.meta-item {
-  display: inline-flex;
-  align-items: center;
+
+/* 阅读量/点赞: 不加底色, 权重低于分类与标签 */
+.post-stat {
   gap: 4px;
-  white-space: nowrap;
 }
-.meta-item .meta-icon {
+
+.post-stat .meta-icon {
   opacity: 0.75;
-}
-/* 带图标的彩色标签: 沿用 chipStyle 的配色, 只加图标与间距 */
-.chip-icon {
-  gap: 4px;
-  padding: 2px 9px;
-}
-.chip-icon .meta-icon {
-  opacity: 0.85;
 }
 </style>

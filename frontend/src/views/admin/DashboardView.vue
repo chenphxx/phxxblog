@@ -58,10 +58,38 @@ const router = useRouter()
  * 这样换主题时后台的强调色会跟着变(旧代码写死 GitHub 蓝/红/绿/黄, 换主题后很突兀)
  */
 const cards = [
-  { key: 'posts', label: '文章数', icon: 'file' as IconName, color: 'var(--primary)', to: '/admin/posts' },
-  { key: 'views', label: '总访问量', icon: 'eye' as IconName, color: 'var(--grad-to)', scroll: 'visits-section' },
-  { key: 'comments', label: '评论数', icon: 'hash' as IconName, color: 'var(--ok)', to: '/admin/comments' },
-  { key: 'users', label: '用户数', icon: 'user' as IconName, color: 'var(--warn)', to: '/admin/users' },
+  {
+    key: 'posts',
+    label: '文章数',
+    hint: '含草稿与回收站',
+    icon: 'file' as IconName,
+    color: 'var(--primary)',
+    to: '/admin/posts',
+  },
+  {
+    key: 'views',
+    label: '总访问量',
+    hint: '全站累计阅读',
+    icon: 'eye' as IconName,
+    color: 'var(--grad-to)',
+    scroll: 'visits-section',
+  },
+  {
+    key: 'comments',
+    label: '评论数',
+    hint: '含待审核回复',
+    icon: 'hash' as IconName,
+    color: 'var(--ok)',
+    to: '/admin/comments',
+  },
+  {
+    key: 'users',
+    label: '用户数',
+    hint: '含管理员账号',
+    icon: 'user' as IconName,
+    color: 'var(--warn)',
+    to: '/admin/users',
+  },
 ]
 
 /**
@@ -187,10 +215,11 @@ onMounted(async () => {
       <el-col v-for="card in cards" :key="card.key" :xs="12" :sm="6">
         <div class="card stat-card clickable" :style="{ '--stat-color': card.color }" @click="onCardClick(card)">
           <div class="stat-head">
-            <span class="stat-label muted">{{ card.label }}</span>
+            <span class="stat-label">{{ card.label }}</span>
             <span class="stat-icon"><MetaIcon :name="card.icon" size="16" /></span>
           </div>
           <div class="stat-value">{{ overview[card.key] ?? 0 }}</div>
+          <div class="stat-hint">{{ card.hint }}</div>
         </div>
       </el-col>
     </el-row>
@@ -367,17 +396,15 @@ onMounted(async () => {
 /* 数据卡片: 用主题强调色做淡底图标, 数字用正文色, 不再写死颜色 */
 .stat-card {
   margin-bottom: 16px;
-  padding: 14px 16px;
+  padding: var(--space-5);
 }
 .clickable {
   cursor: pointer;
   transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease,
-    border-color 0.15s ease;
+    box-shadow var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
 }
 .clickable:hover {
-  transform: translateY(-2px);
   border-color: var(--border-strong);
   box-shadow: var(--shadow-hover);
 }
@@ -388,24 +415,33 @@ onMounted(async () => {
   gap: 8px;
 }
 .stat-label {
-  font-size: 13px;
+  font-size: 14px;
+  color: var(--muted);
 }
 .stat-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-sm);
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-control);
   color: var(--stat-color, var(--primary));
   background: color-mix(in srgb, var(--stat-color, var(--primary)) 14%, transparent);
 }
 .stat-value {
-  font-size: 30px;
-  font-weight: 700;
-  line-height: 1.2;
-  margin-top: 8px;
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin-top: var(--space-4);
+  font-variant-numeric: tabular-nums;
   color: var(--text);
+}
+/* 大数字配一句说明, 让指标有口径而不是只有数字 */
+.stat-hint {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12.5px;
 }
 .trend-header {
   display: flex;
@@ -422,7 +458,7 @@ onMounted(async () => {
   gap: 6px 12px;
 }
 .trend-today {
-  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 .trend-today b {
   color: var(--text);
@@ -462,21 +498,19 @@ onMounted(async () => {
   min-width: 92px;
 }
 .kpi-label {
-  font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
-  letter-spacing: 0.02em;
 }
 .kpi-value {
-  font-family: var(--font-mono);
-  font-size: 21px;
-  font-weight: 700;
+  font-size: 22px;
+  font-weight: 600;
   line-height: 1.25;
+  font-variant-numeric: tabular-nums;
   color: var(--text);
 }
 .kpi-delta {
-  font-family: var(--font-mono);
   font-size: 11px;
+  font-variant-numeric: tabular-nums;
 }
 .kpi-delta em {
   font-style: normal;

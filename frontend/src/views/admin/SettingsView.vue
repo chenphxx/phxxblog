@@ -467,12 +467,12 @@ onMounted(load)
   flex: 0 0 32px;
   width: 32px;
   height: 32px;
-  border-radius: 4px;
+  border-radius: var(--radius-chip);
   object-fit: contain;
 }
 /* 未设置图标时占位, 避免这一行的高度随有无图标跳动 */
 .icon-preview--empty {
-  border: 1px dashed var(--border-strong);
+  border: 1px solid var(--border-strong);
   background: var(--code-bg);
 }
 

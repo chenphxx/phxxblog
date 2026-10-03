@@ -37,7 +37,7 @@ defineExpose({ refresh })
 <template>
   <section class="card history-card">
     <div class="history-head">
-      <p class="eyebrow">history — 程序员历史上的今天</p>
+      <p class="eyebrow">历史上的今天</p>
       <el-button size="small" circle :loading="loading" :icon="Refresh" title="刷新" @click="refresh" />
     </div>
     <template v-if="events.length">
@@ -90,7 +90,7 @@ defineExpose({ refresh })
   display: flex;
   gap: 12px;
   padding: 10px 0;
-  border-bottom: 1px dashed var(--border);
+  border-bottom: 1px solid var(--border);
 }
 .history-event:last-child {
   border-bottom: none;
