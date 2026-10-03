@@ -34,7 +34,8 @@ MODULE_NOTES: dict[str, str] = {
     "标签": "列表公开; 写操作需 `post:manage` ",
     "评论": "游客可评论(按 IP 归属, 只能编辑/删除自己的游客评论); "
     "列表与创建为可选登录; 管理列表 `GET /comments/admin` 与状态变更需 `comment:manage`; "
-    "编辑/删除自身评论走 `_can_manage_comment` 判定, 故标注为可选登录 ",
+    "编辑/删除自身评论走 `_can_manage_comment` 判定, 故标注为可选登录 "
+    "删除某条评论会连同它的所有回复一起删除 ",
     "日记": "整组接口需 `diary:manage`; 导入/导出支持 zip 与 markdown, "
     "导入的 frontmatter 与文章导入共用同一套解析(`services/archive.py`) ",
     "媒体": "整组接口需 `media:manage`; 上传有**扩展名白名单**与图片文件头校验, "

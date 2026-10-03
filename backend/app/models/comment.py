@@ -41,4 +41,9 @@ class Comment(Base):
     parent: Mapped["Comment | None"] = relationship(
         remote_side="Comment.id", back_populates="replies", lazy="joined"
     )
-    replies: Mapped[list["Comment"]] = relationship(back_populates="parent", lazy="selectin")
+    # replies 带 delete-orphan: 删除某条评论时连同它的所有回复一起删除
+    # (只用外键的 ON DELETE CASCADE 不够 - replies 是 selectin 预加载的,
+    #  ORM 会先把 replies.parent_id 置空, 回复就变成顶层评论留下来了)
+    replies: Mapped[list["Comment"]] = relationship(
+        back_populates="parent", lazy="selectin", cascade="all, delete-orphan"
+    )
