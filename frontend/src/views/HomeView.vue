@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onActivated, onMounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { categoryApi, mediaApi, postApi, settingsApi } from '@/api'
-import type { Category, PostItem, PublicSettings } from '@/types'
+import { categoryApi, mediaApi, postApi, settingsApi, tagApi } from '@/api'
+import type { Category, PostItem, PublicSettings, Tag } from '@/types'
 import PostCard from '@/components/PostCard.vue'
 import ListPager from '@/components/ListPager.vue'
 import MarkdownView from '@/components/MarkdownView.vue'
@@ -18,8 +18,11 @@ import { usePagedList } from '@/composables/usePagedList'
 /**
  * @brief 前台首页
  *
- * 只持有页面级数据与布局: 站点设置(含头像弹窗), 分类, 文章列表与分页
- * 辅助模块(个人资料以外的热门文章, 终端会话, 历史上的今天, 发布记录)各自取数与转圈,
+ * 信息层级: 个人介绍(含文章/分类/标签三个指标) → 终端会话 → 关于 → 最新文章 → 发布记录,
+ * 右侧栏放次级模块(热门文章/常用网站/历史上的今天); 文章列表始终是页面的主体
+ *
+ * 只持有页面级数据与布局: 站点设置(含头像弹窗), 分类/标签, 文章列表与分页
+ * 辅助模块(热门文章, 终端会话, 历史上的今天, 发布记录)各自取数与转圈,
  * 因此任何一个慢接口都不会再把整页按在加载态; 模块开关只在模板里判断一处, 关掉的模块
  * 不挂载也就不会发请求. 模块实例通过模板 ref 暴露 refresh(), 由 onActivated 统一重取
  */
@@ -27,6 +30,7 @@ import { usePagedList } from '@/composables/usePagedList'
 const settings = ref<PublicSettings | null>(null)
 const latestPost = ref<PostItem | null>(null)
 const categories = ref<Category[]>([])
+const tags = ref<Tag[]>([])
 const loading = ref(true)
 const auth = useAuthStore()
 const isAdmin = computed(() => auth.user?.role_codes.includes('admin'))
@@ -94,7 +98,7 @@ watch(page, () => {
 
 // keep-alive 缓存下, 从后台修改设置/发布文章后返回首页要刷新
 // 注意: 以前这里只重取 settings, 文章列表/totalPosts/latestPost 仍是旧数据
-// 而终端卡片里的 `ls posts | wc -l` 与"最新一篇"恰恰是首页最显眼的模块
+// 而终端卡片里的文章总数与"最新一篇"恰恰是首页要用到的数据
 let firstActivate = true
 onActivated(async () => {
   // onMounted 会先跑一次, 首次激活不必重复请求
@@ -103,9 +107,14 @@ onActivated(async () => {
     return
   }
   try {
-    const [settingData, categoryData] = await Promise.all([settingsApi.public(), categoryApi.list()])
+    const [settingData, categoryData, tagData] = await Promise.all([
+      settingsApi.public(),
+      categoryApi.list(),
+      tagApi.list(),
+    ])
     settings.value = settingData
     categories.value = categoryData
+    tags.value = tagData
     await Promise.all([
       // 回到第 1 页, 保证能看到最新文章
       resetPosts(),
@@ -122,9 +131,14 @@ onActivated(async () => {
 
 onMounted(async () => {
   try {
-    const [settingData, categoryData] = await Promise.all([settingsApi.public(), categoryApi.list()])
+    const [settingData, categoryData, tagData] = await Promise.all([
+      settingsApi.public(),
+      categoryApi.list(),
+      tagApi.list(),
+    ])
     settings.value = settingData
     categories.value = categoryData
+    tags.value = tagData
     await loadPosts()
   } finally {
     loading.value = false
@@ -134,21 +148,32 @@ onMounted(async () => {
 
 <template>
   <div v-loading="loading" class="page-container home-page">
-    <div class="home-grid">
-      <!-- 左侧: 个人资料 + 常用网站 -->
-      <div class="home-left">
-        <HomeProfileCard :settings="settings" :categories="categories" @open-avatar="openAvatar" />
+    <div class="home-layout">
+      <div class="home-main">
+        <!-- 个人介绍 + 内容概览(参考稿里"概览面板"的位置) -->
+        <section class="panel">
+          <HomeProfileCard :settings="settings" :categories="categories" @open-avatar="openAvatar" />
 
-        <!-- 热门文章(位于个人信息与常用网站之间) -->
-        <HomeHotPostsCard ref="hotPostsRef" />
+          <div class="home-metrics">
+            <div class="metric">
+              <p class="metric-label">文章</p>
+              <p class="metric-value">{{ totalPosts }}</p>
+              <p class="metric-hint">已发布内容</p>
+            </div>
+            <div class="metric">
+              <p class="metric-label">分类</p>
+              <p class="metric-value">{{ categories.length }}</p>
+              <p class="metric-hint">内容分类</p>
+            </div>
+            <div class="metric">
+              <p class="metric-label">标签</p>
+              <p class="metric-value">{{ tags.length }}</p>
+              <p class="metric-hint">主题标签</p>
+            </div>
+          </div>
+        </section>
 
-        <!-- 常用网站(仅管理员可见, 位于个人信息下方) -->
-        <HomeSiteLinksCard v-if="isAdmin && settings?.website_links?.length" :links="settings.website_links" />
-      </div>
-
-      <!-- 右侧: 终端会话 + 内容区块 -->
-      <main class="home-main">
-        <!-- 模块开关只在这里判断: 关掉的模块不挂载, 也就不会去请求接口 -->
+        <!-- 终端会话: 个性化模块, 缩短后放在个人介绍下方 -->
         <HomeSessionCard
           v-if="settings && settings.show_session !== false"
           ref="sessionRef"
@@ -157,30 +182,37 @@ onMounted(async () => {
           :latest-post="latestPost"
         />
 
-        <HomeHistoryCard v-if="settings && settings.show_history !== false" ref="historyRef" />
-
-        <section v-if="settings?.show_readme !== false && settings?.site_readme" class="card section-card">
-          <p class="eyebrow" style="margin-bottom: 10px">readme — 关于</p>
+        <!-- 主页 README(关于) -->
+        <section v-if="settings?.show_readme !== false && settings?.site_readme" class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">关于</h2>
+          </div>
           <MarkdownView :content="settings.site_readme" />
         </section>
 
-        <HomeContributionsSection v-if="settings && settings.show_contributions !== false" ref="contributionsRef" />
-
-        <section ref="postsAnchor" class="home-posts">
-          <div class="posts-head">
-            <div>
-              <p class="eyebrow" style="margin-bottom: 4px">posts — 全部文章</p>
-              <h2 class="posts-title">全部文章</h2>
-            </div>
-            <span class="count-label">共 {{ totalPosts }} 篇</span>
+        <!-- 最新文章: 首页的主体 -->
+        <section ref="postsAnchor" class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">最新文章</h2>
+            <router-link to="/search" class="panel-link">查看全部 →</router-link>
           </div>
-          <div v-loading="postsLoading" style="min-height: 120px">
+          <div v-loading="postsLoading" class="posts-list">
             <PostCard v-for="post in posts" :key="post.id" :post="post" />
             <el-empty v-if="!postsLoading && posts.length === 0" description="还没有发布文章" />
-            <ListPager v-model:page="page" :page-size="pageSize" :total="totalPosts" />
           </div>
+          <ListPager v-model:page="page" :page-size="pageSize" :total="totalPosts" />
         </section>
-      </main>
+
+        <!-- 发布记录(热力图需要整行宽度, 放在主列底部) -->
+        <HomeContributionsSection v-if="settings && settings.show_contributions !== false" ref="contributionsRef" />
+      </div>
+
+      <!-- 右侧栏: 次级模块 -->
+      <aside class="home-aside">
+        <HomeHotPostsCard ref="hotPostsRef" />
+        <HomeSiteLinksCard v-if="isAdmin && settings?.website_links?.length" :links="settings.website_links" />
+        <HomeHistoryCard v-if="settings && settings.show_history !== false" ref="historyRef" />
+      </aside>
     </div>
 
     <!-- 头像大图/更换 -->
@@ -190,7 +222,7 @@ onMounted(async () => {
           :src="avatarUrl || undefined"
           :preview-src-list="avatarUrl ? [avatarUrl] : []"
           fit="contain"
-          style="width: 220px; height: 220px; border-radius: 12px"
+          style="width: 220px; height: 220px; border-radius: var(--radius-card)"
         >
           <template #error>
             <div
@@ -219,55 +251,67 @@ onMounted(async () => {
     </el-dialog>
   </div>
 </template>
+
 <style scoped>
-.home-grid {
+.home-layout {
   display: grid;
-  grid-template-columns: 260px 1fr;
-  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: var(--space-6);
   align-items: start;
 }
-.home-left {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  position: sticky;
-  top: 76px;
-}
+
 .home-main {
   min-width: 0;
-}
-.home-posts {
-  margin-top: 28px;
-  /* 站点头部是 sticky 的, 翻页滚动时留出间距 */
-  scroll-margin-top: 84px;
-}
-.count-label {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--muted);
-}
-.posts-head {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-.posts-title {
-  margin: 0;
-  font-size: 20px;
-  letter-spacing: -0.01em;
-}
-.section-card {
-  margin-top: 20px;
+  flex-direction: column;
+  gap: var(--space-6);
 }
 
-@media (max-width: 900px) {
-  .home-grid {
-    grid-template-columns: 1fr;
+.home-aside {
+  position: sticky;
+  top: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* 三个指标: 只靠间距分组, 不画分隔线(资料卡片保持干净的整块白) */
+.home-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-6) var(--space-8);
+  margin-top: var(--space-8);
+}
+
+.panel-link {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.panel-link:hover {
+  color: var(--link);
+  text-decoration: none;
+}
+
+/* 文章列表紧贴面板标题, 行的内边距已经提供留白 */
+.posts-list {
+  min-height: 80px;
+}
+
+@media (max-width: 1100px) {
+  .home-layout {
+    grid-template-columns: minmax(0, 1fr);
   }
-  .home-left {
+
+  .home-aside {
     position: static;
+  }
+}
+
+@media (max-width: 640px) {
+  .home-metrics {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-6);
   }
 }
 </style>

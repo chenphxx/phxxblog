@@ -25,8 +25,8 @@ onMounted(() => {
     width: '100%',
     value: props.modelValue,
     height: props.height,
-    // 全屏层级必须高于站点头部(.site-header 的 z-index: 100), 否则全屏后
-    // 编辑器的工具栏会被头部盖住, 既看不见也点不到(无法退出全屏)
+    // 全屏层级必须高于站点外壳(侧栏 80 / 窄屏顶栏 60 / 看板娘 90), 否则全屏后
+    // 编辑器的工具栏会被顶栏盖住, 既看不见也点不到(无法退出全屏)
     fullscreen: { index: 1000 },
     theme: theme.isDark ? 'dark' : 'classic',
     mode: 'ir',

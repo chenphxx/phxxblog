@@ -35,6 +35,12 @@ async function login() {
 
 <template>
   <div class="login-page">
+    <!-- 登录页也要能回到前台: 直接落在 /admin/login 时没有其它出口 -->
+    <router-link to="/" class="login-back">
+      <span aria-hidden="true">←</span>
+      返回前台
+    </router-link>
+
     <div class="login-card card">
       <div class="login-header">
         <h2>博客管理后台</h2>
@@ -62,12 +68,46 @@ async function login() {
 
 <style scoped>
 .login-page {
+  position: relative;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 16px;
 }
+
+/* 左上角的返回入口: 与卡片同级, 不参与卡片内的纵向排版 */
+.login-back {
+  position: absolute;
+  top: var(--space-6);
+  left: var(--space-6);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-chip);
+  background: var(--card-bg);
+  color: var(--muted);
+  font-size: 13px;
+  transition:
+    color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
+}
+
+.login-back:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+  text-decoration: none;
+}
+
+@media (max-width: 640px) {
+  .login-back {
+    top: var(--space-4);
+    left: var(--space-4);
+  }
+}
+
 .login-card {
   width: 380px;
   max-width: 100%;

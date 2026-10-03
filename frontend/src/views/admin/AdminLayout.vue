@@ -63,7 +63,7 @@ onMounted(() => {
 
 <template>
   <el-container class="admin-layout">
-    <el-aside width="220px" class="admin-aside">
+    <el-aside width="240px" class="admin-aside">
       <div class="admin-brand">博客管理</div>
       <el-menu :default-active="activeMenu" router background-color="transparent">
         <el-menu-item index="/admin/dashboard">
@@ -134,20 +134,19 @@ onMounted(() => {
   overflow: hidden;
 }
 .admin-aside {
-  background: var(--card-bg);
-  border-right: 1px solid var(--border);
+  background: var(--bg);
+  /* 与前台侧栏一致: 不画分割线, 靠留白与选中态分层 */
   overflow-y: auto;
+  overflow-x: hidden;
 }
 /* 品牌区其余样式(主题色方块, 字重, 间距)在全局 admin.css 里, 便于与前台统一 */
 .admin-brand {
-  height: 60px;
+  height: 64px;
   display: flex;
   align-items: center;
   padding: 0 18px;
   font-weight: 700;
-  font-size: 17px;
-  font-family: var(--font-mono);
-  border-bottom: 1px solid var(--border);
+  font-size: 16px;
   color: var(--text);
 }
 .admin-header {

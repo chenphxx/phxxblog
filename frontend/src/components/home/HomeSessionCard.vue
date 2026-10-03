@@ -4,11 +4,13 @@ import { ElMessage } from 'element-plus'
 import { CopyDocument, Refresh } from '@element-plus/icons-vue'
 import { miscApi } from '@/api'
 import type { PostItem, PublicSettings } from '@/types'
-import MetaIcon from '@/components/MetaIcon.vue'
-import { formatDateTime } from '@/utils/datetime'
+import { formatDate } from '@/utils/datetime'
 
 /**
- * @brief 首页的终端会话卡片(招牌元素)
+ * @brief 首页的终端会话(个性化模块, 不是首页的视觉主体)
+ *
+ * 只保留三段输出: 我是谁 / 有多少篇文章与最新一篇 / 一句一言, 高度约为原版的一半,
+ * 并且放在个人介绍之后, 不再抢占首屏焦点
  *
  * 自己负责"一言"的取数, 刷新与复制; 文章总数与"最新一篇"是页面文章列表的数据,
  * 由首页传进来, 避免为了终端里的两行输出再查一次文章接口
@@ -84,45 +86,40 @@ defineExpose({ refresh })
         {{ settings?.site_name || 'phxxblog' }}<span v-if="settings?.site_bio"> — {{ settings.site_bio }}</span>
       </p>
       <p class="term-line"><span class="term-prompt">$</span> ls posts | wc -l</p>
-      <p class="term-out">{{ totalPosts }}</p>
-      <p class="term-line"><span class="term-prompt">$</span> tail -n 1 posts/latest</p>
-      <p v-if="latestPost" class="term-out">
-        <router-link :to="`/post/${latestPost.id}`" class="term-link">
-          <MetaIcon name="calendar" />
-          <span>{{ formatDateTime(latestPost.published_at || latestPost.created_at) }}</span>
+      <p class="term-out">
+        <span class="term-num">{{ totalPosts }}</span>
+        <template v-if="latestPost">
           <span class="term-sep">·</span>
-          <span>{{ latestPost.title }}</span>
-        </router-link>
+          <router-link :to="`/post/${latestPost.id}`" class="term-link" :title="latestPost.title">
+            <span class="term-dim">{{ formatDate(latestPost.published_at || latestPost.created_at) }}</span>
+            <span>{{ latestPost.title }}</span>
+          </router-link>
+        </template>
       </p>
-      <p v-else class="term-out">暂无文章</p>
       <p class="term-line"><span class="term-prompt">$</span> say</p>
-      <p class="term-out">{{ saying || '一言加载中...' }}</p>
-      <p class="term-line"><span class="term-prompt">$</span><span class="term-cursor" aria-hidden="true" /></p>
+      <p class="term-out">{{ saying || '一言加载中...' }}<span class="term-cursor" aria-hidden="true" /></p>
     </div>
   </section>
 </template>
 
 <style scoped>
-/* ---------- 终端会话卡片(招牌元素) ---------- */
 .term-card {
-  margin-bottom: 20px;
   background: var(--term-bg);
   border: 1px solid var(--term-border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-panel);
   overflow: hidden;
 }
 .term-head {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
+  gap: 7px;
+  padding: 8px 14px;
   border-bottom: 1px solid var(--term-border);
-  background: color-mix(in srgb, var(--term-bg) 82%, #0d1b22);
 }
 .term-dot {
-  width: 11px;
-  height: 11px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -137,11 +134,9 @@ defineExpose({ refresh })
 }
 .term-title {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 11.5px;
   color: var(--term-dim);
   flex: 1;
-  text-align: center;
-  margin-right: 58px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -155,20 +150,23 @@ defineExpose({ refresh })
   --el-button-bg-color: transparent;
   --el-button-border-color: var(--term-border);
   --el-button-text-color: var(--term-dim);
-  /* 悬停底色由终端令牌推导, 跟随主题而不是写死 #16222b */
+  /* 悬停底色由终端令牌推导, 跟随主题而不是写死颜色 */
   --el-button-hover-bg-color: color-mix(in srgb, var(--term-bg) 78%, var(--term-accent));
   --el-button-hover-border-color: color-mix(in srgb, var(--term-border) 55%, var(--term-accent));
   --el-button-hover-text-color: var(--term-text);
 }
 .term-body {
-  padding: 16px 20px 18px;
+  padding: 12px 16px 14px;
   font-family: var(--font-mono);
-  font-size: 13.5px;
-  line-height: 1.75;
+  font-size: 12.5px;
+  line-height: 1.6;
 }
 .term-line {
-  margin: 8px 0 0;
+  margin: 6px 0 0;
   color: var(--term-prompt);
+}
+.term-line:first-child {
+  margin-top: 0;
 }
 .term-prompt {
   color: var(--term-accent);
@@ -176,30 +174,35 @@ defineExpose({ refresh })
   user-select: none;
 }
 .term-out {
-  margin: 0 0 2px 20px;
+  margin: 0 0 0 18px;
   color: var(--term-text);
   overflow-wrap: anywhere;
 }
+.term-num {
+  color: var(--term-accent);
+}
+.term-sep {
+  margin: 0 6px;
+  color: var(--term-dim);
+}
+.term-dim {
+  color: var(--term-dim);
+  margin-right: 6px;
+}
 .term-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
   color: var(--term-text);
   text-decoration: underline;
   text-underline-offset: 3px;
-  text-decoration-color: color-mix(in srgb, var(--term-text) 45%, transparent);
+  text-decoration-color: color-mix(in srgb, var(--term-text) 40%, transparent);
 }
 .term-link:hover {
-  color: #ffffff;
-}
-.term-sep {
-  color: var(--term-dim);
+  text-decoration-color: currentColor;
 }
 .term-cursor {
   display: inline-block;
-  width: 8px;
-  height: 15px;
-  margin-left: 2px;
+  width: 7px;
+  height: 13px;
+  margin-left: 3px;
   vertical-align: -2px;
   background: var(--term-accent);
   animation: term-blink 1.1s steps(2, start) infinite;

@@ -86,53 +86,76 @@ onMounted(async () => {
 
 <template>
   <div class="page-container">
-    <p class="eyebrow" style="margin: 0 0 4px">posts — 全部文章</p>
-    <h1 style="margin: 0 0 16px">全部文章</h1>
-
-    <div class="search-bar">
-      <el-input
-        v-model="keyword"
-        placeholder="输入关键词搜索文章..."
-        :prefix-icon="Search"
-        clearable
-        @keyup.enter="reset()"
-        @clear="reset()"
-      />
-      <el-select v-model="categoryId" placeholder="按分类筛选" clearable style="width: 180px" @change="reset()">
-        <el-option v-for="cat in categories" :key="cat.id" :label="`${cat.name} (${cat.post_count})`" :value="cat.id" />
-      </el-select>
-      <el-select v-model="tagId" placeholder="按标签筛选" clearable style="width: 180px" @change="reset()">
-        <el-option v-for="tag in tags" :key="tag.id" :label="`#${tag.name} (${tag.post_count})`" :value="tag.id" />
-      </el-select>
-      <el-date-picker
-        v-model="dateRange"
-        type="daterange"
-        value-format="YYYY-MM-DD"
-        range-separator="至"
-        start-placeholder="开始日期"
-        end-placeholder="结束日期"
-        style="width: 260px"
-        @change="reset()"
-      />
-      <el-button type="primary" @click="reset()">搜索</el-button>
+    <div class="page-head">
+      <div>
+        <h1 class="page-title">全部文章</h1>
+        <p class="page-subtitle">按关键词, 分类, 标签或时间范围查找</p>
+      </div>
+      <span class="count-label num">共 {{ total }} 篇</span>
     </div>
 
-    <div v-loading="loading" style="margin-top: 20px; min-height: 100px">
-      <PostCard v-for="post in posts" :key="post.id" :post="post" />
-      <el-empty v-if="!loading && posts.length === 0" description="没有找到相关文章" />
+    <section class="panel">
+      <div class="search-bar">
+        <el-input
+          v-model="keyword"
+          placeholder="输入关键词搜索文章..."
+          :prefix-icon="Search"
+          clearable
+          @keyup.enter="reset()"
+          @clear="reset()"
+        />
+        <el-select v-model="categoryId" placeholder="按分类筛选" clearable style="width: 180px" @change="reset()">
+          <el-option
+            v-for="cat in categories"
+            :key="cat.id"
+            :label="`${cat.name} (${cat.post_count})`"
+            :value="cat.id"
+          />
+        </el-select>
+        <el-select v-model="tagId" placeholder="按标签筛选" clearable style="width: 180px" @change="reset()">
+          <el-option v-for="tag in tags" :key="tag.id" :label="`#${tag.name} (${tag.post_count})`" :value="tag.id" />
+        </el-select>
+        <el-date-picker
+          v-model="dateRange"
+          type="daterange"
+          value-format="YYYY-MM-DD"
+          range-separator="至"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          style="width: 260px"
+          @change="reset()"
+        />
+        <el-button type="primary" @click="reset()">搜索</el-button>
+      </div>
+
+      <div v-loading="loading" class="posts-list">
+        <PostCard v-for="post in posts" :key="post.id" :post="post" />
+        <el-empty v-if="!loading && posts.length === 0" description="没有找到相关文章" />
+      </div>
       <ListPager v-model:page="page" :page-size="pageSize" :total="total" />
-    </div>
+    </section>
   </div>
 </template>
 
 <style scoped>
+/* 筛选区是面板的头部: 与结果列表之间用一条细线分隔 */
 .search-bar {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+  padding-bottom: var(--space-5);
+  margin-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border);
 }
 .search-bar .el-input {
   flex: 1;
   min-width: 220px;
+}
+.count-label {
+  font-size: 13px;
+  color: var(--muted);
+}
+.posts-list {
+  min-height: 120px;
 }
 </style>

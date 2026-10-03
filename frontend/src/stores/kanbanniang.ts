@@ -35,7 +35,7 @@ function readStoredPosition(): KanbanniangPosition | null {
  *   - allowed  后台的全站开关(系统设置 - 前台展示), 关掉后前台完全不出现看板娘
  *   - enabled  访客自己是否展示, 默认展示(关掉后由浏览器记住, 下次访问不再出现)
  *   - modelId  当前形象(见 kanbanniang/registry.ts)
- *   - position 拖动后的浮层坐标(相对视口左上角), null 表示未拖动过, 仍停在默认的左下角
+ *   - position 拖动后的浮层坐标(相对视口左上角), null 表示未拖动过, 仍停在默认的右下角
  * 与主题一样属于访客自己的外观偏好, 只存在 localStorage, 不下发到后端
  */
 export const useKanbanniangStore = defineStore('kanbanniang', () => {
@@ -61,7 +61,7 @@ export const useKanbanniangStore = defineStore('kanbanniang', () => {
     localStorage.setItem(MODEL_KEY, id)
   }
 
-  /** @brief 记录浮层位置, 传 null 表示回到默认的左下角 */
+  /** @brief 记录浮层位置, 传 null 表示回到默认的右下角 */
   function setPosition(next: KanbanniangPosition | null) {
     position.value = next
     if (next) localStorage.setItem(POSITION_KEY, `${next.x},${next.y}`)

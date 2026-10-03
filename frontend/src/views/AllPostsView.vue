@@ -18,32 +18,30 @@ const {
 
 <template>
   <div class="page-container">
-    <div class="posts-header">
+    <div class="page-head">
       <div>
-        <p class="eyebrow" style="margin: 0 0 4px">posts — 全部文章</p>
-        <h1 style="margin: 0">全部文章</h1>
+        <h1 class="page-title">全部文章</h1>
+        <p class="page-subtitle">按发布时间排序, 每页 10 篇</p>
       </div>
-      <span class="count-label">共 {{ total }} 篇</span>
+      <span class="count-label num">共 {{ total }} 篇</span>
     </div>
 
-    <div v-loading="loading" style="margin-top: 16px; min-height: 200px">
-      <PostCard v-for="post in posts" :key="post.id" :post="post" />
-      <el-empty v-if="!loading && posts.length === 0" description="暂无文章" />
+    <section class="panel">
+      <div v-loading="loading" class="posts-list">
+        <PostCard v-for="post in posts" :key="post.id" :post="post" />
+        <el-empty v-if="!loading && posts.length === 0" description="暂无文章" />
+      </div>
       <ListPager v-model:page="page" :page-size="pageSize" :total="total" />
-    </div>
+    </section>
   </div>
 </template>
 
 <style scoped>
-.posts-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-}
 .count-label {
-  font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
+}
+.posts-list {
+  min-height: 200px;
 }
 </style>

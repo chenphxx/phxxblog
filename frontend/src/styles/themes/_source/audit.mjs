@@ -1,10 +1,11 @@
 /**
- * 主题自检:
- *   1. tokens.mjs 里每套主题的令牌是否齐全
- *   2. 生成出来的 theme-*.css 是否与 tokens.mjs 一致(有没有忘记重新生成)
+ * 主题自检
+ *
+ *   1. tokens.mjs 的输入是否完整(每套主题两模式都要有 primary 与 bg), 推导出的颜色令牌是否齐全
+ *   2. 生成出来的 theme-*.css / base.css 是否与数据一致(有没有忘记重新生成)
  *   3. theme-default.css 是否等于默认主题, 且只有它写了颜色级裸 :root
- *   4. 深浅两种模式下的关键配色是否满足 WCAG AA(4.5:1)
- *   5. 用渐变装饰的族, 渐变两端是否肉眼可辨
+ *   4. 深浅两种模式下的关键配色是否满足 WCAG AA(4.5:1), 装饰渐变两端是否肉眼可辨
+ *   5. 结构令牌(间距/圆角/字体)是否只出现在 base.css 一处, 主题文件里不再带头尾
  *   6. 主题之间主色是否过于接近(仅警告)
  *
  * 用法: npm run themes:audit
@@ -12,66 +13,60 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { THEMES, COLOR_KEYS } from './tokens.mjs'
+import { THEMES } from './tokens.mjs'
+import { COLOR_KEYS, STRUCTURE_TOKENS, contrast, deriveMode, relLum, rgbDistance, toRgb } from './derive.mjs'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 // 产物就在 _source 的上一级
 const themeDir = path.resolve(here, '..')
 const repo = path.resolve(here, '../../../..')
 
+const isHex = (v) => /^#[0-9a-fA-F]{3,8}$/.test(v)
+
 let fail = 0
 
-/* ---------- WCAG 对比度 ---------- */
-function relLum(hex) {
-  const m = hex.replace('#', '')
-  const full =
-    m.length === 3
-      ? m
-          .split('')
-          .map((c) => c + c)
-          .join('')
-      : m
-  const ch = [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16) / 255)
-  const lin = ch.map((v) => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)))
-  return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2]
-}
-function contrast(a, b) {
-  const l1 = relLum(a)
-  const l2 = relLum(b)
-  return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05)
-}
-/** 两个颜色的 RGB 欧氏距离, 用来判断是否肉眼可辨(与亮度无关) */
-function rgbDistance(a, b) {
-  const toRgb = (h) => [0, 2, 4].map((i) => parseInt(h.replace('#', '').slice(i, i + 2), 16))
-  const x = toRgb(a)
-  const y = toRgb(b)
-  return Math.sqrt(x.reduce((s, v, i) => s + (v - y[i]) ** 2, 0))
-}
-
-/* ---------- 1) 令牌齐全 ---------- */
+/* ---------- 1) 输入与推导后的令牌 ---------- */
 console.log('=== 1. 令牌齐全性 ===')
+const derived = new Map()
 for (const t of THEMES) {
   for (const mode of ['light', 'dark']) {
-    const missing = COLOR_KEYS.filter((k) => !t[mode][k])
+    const input = t[mode]
+    if (!input || !input.primary || !input.bg) {
+      fail++
+      console.log(`  FAIL ${t.id}.${mode} 缺少 primary / bg`)
+      continue
+    }
+    if (!isHex(input.primary) || !isHex(input.bg)) {
+      fail++
+      console.log(`  FAIL ${t.id}.${mode} 品牌色或画布色不是十六进制: ${input.primary} / ${input.bg}`)
+      continue
+    }
+
+    const tokens = deriveMode(t, mode)
+    derived.set(`${t.id}.${mode}`, tokens)
+
+    const missing = COLOR_KEYS.filter((k) => !tokens[k])
     if (missing.length) {
       fail++
-      console.log(`  FAIL ${t.id}.${mode} 缺: ${missing.join(', ')}`)
+      console.log(`  FAIL ${t.id}.${mode} 推导后缺: ${missing.join(', ')}`)
     }
-    // 颜色格式
-    const badHex = COLOR_KEYS.filter((k) => {
-      const v = t[mode][k]
-      return v && !/^#[0-9a-fA-F]{3,8}$/.test(v) && !/^rgba?\(/.test(v)
-    })
+    const badHex = COLOR_KEYS.filter((k) => tokens[k] && !isHex(tokens[k]))
     if (badHex.length) {
       fail++
-      console.log(`  FAIL ${t.id}.${mode} 颜色格式异常: ${badHex.map((k) => k + '=' + t[mode][k]).join(', ')}`)
+      console.log(`  FAIL ${t.id}.${mode} 颜色格式异常: ${badHex.map((k) => k + '=' + tokens[k]).join(', ')}`)
     }
   }
 }
-if (fail === 0) console.log(`  ok   ${THEMES.length} 套 × 2 模式 = ${THEMES.length * 2} 组令牌全部齐全`)
+if (fail === 0) {
+  console.log(`  ok   ${THEMES.length} 套 × 2 模式 = ${THEMES.length * 2} 组令牌全部齐全`)
+}
 
 /* ---------- 2) 生成文件与数据一致 ---------- */
 console.log('\n=== 2. 生成文件与 tokens.mjs 一致性 ===')
+
+/** 结构令牌不该出现在主题文件里(它们只在 base.css) */
+const STRUCTURE_PROBES = ['--font-sans', '--radius-panel', '--radius-card', '--space-4', '--shadow-panel']
+
 for (const t of THEMES) {
   const file = path.join(themeDir, `theme-${t.id}.css`)
   if (!fs.existsSync(file)) {
@@ -84,15 +79,16 @@ for (const t of THEMES) {
   const leftovers = css.match(/@@[A-Z_]+@@/g)
   if (leftovers) problems.push('未替换占位符 ' + [...new Set(leftovers)].join(','))
 
-  // 抽查两种模式的关键令牌值是否写进去了
   for (const mode of ['light', 'dark']) {
-    for (const key of ['primary', 'bg', 'text']) {
-      if (!css.includes(t[mode][key])) problems.push(`${mode}.${key}=${t[mode][key]} 未出现`)
+    const tokens = derived.get(`${t.id}.${mode}`)
+    for (const key of ['primary', 'bg', 'text', 'link', 'onPrimary']) {
+      if (tokens && !css.includes(tokens[key])) problems.push(`${mode}.${key}=${tokens[key]} 未出现`)
     }
   }
   if (!css.includes(`html[data-theme='${t.id}'].dark {`)) problems.push('深色选择器缺失')
   if (!css.includes(`html[data-theme='${t.id}'] {`)) problems.push('浅色选择器缺失')
-  if (!css.includes(`--radius: ${t.radius};`)) problems.push('圆角未写入')
+  const leaked = STRUCTURE_PROBES.filter((name) => css.includes(name))
+  if (leaked.length) problems.push('主题文件里出现了结构令牌: ' + leaked.join(', '))
 
   if (problems.length) {
     fail++
@@ -100,6 +96,30 @@ for (const t of THEMES) {
   }
 }
 if (fail === 0) console.log(`  ok   ${THEMES.length} 个生成文件与数据一致`)
+
+/* base.css: 结构令牌与字体只在这里出现 */
+{
+  const file = path.join(themeDir, 'base.css')
+  const problems = []
+  if (!fs.existsSync(file)) {
+    problems.push('缺少 base.css')
+  } else {
+    const css = fs.readFileSync(file, 'utf8')
+    const missing = STRUCTURE_TOKENS.filter(([name]) => !css.includes(`${name}:`)).map(([name]) => name)
+    if (missing.length) problems.push('缺结构令牌: ' + missing.join(', '))
+    if (!css.includes('--font-sans:') || !css.includes('--font-mono:')) problems.push('缺字体令牌')
+    for (const mode of ['light', 'dark']) {
+      const tokens = derived.get(`${THEMES[0].id}.${mode}`)
+      if (css.includes(tokens.primary)) problems.push('base.css 里不应出现主题颜色令牌')
+    }
+  }
+  if (problems.length) {
+    fail++
+    console.log('  FAIL base.css: ' + problems.join(' | '))
+  } else {
+    console.log('  ok   base.css 结构令牌齐全, 且不含主题颜色')
+  }
+}
 
 /*
  * theme-default.css 必须等于 THEMES[0] 的浅色令牌:
@@ -114,12 +134,12 @@ if (fail === 0) console.log(`  ok   ${THEMES.length} 个生成文件与数据一
   } else {
     const css = fs.readFileSync(file, 'utf8')
     const first = THEMES[0]
+    const tokens = derived.get(`${first.id}.light`)
     for (const key of ['primary', 'bg', 'text', 'link', 'onPrimary']) {
-      if (!css.includes(first.light[key])) problems.push(`默认主题浅色 ${key}=${first.light[key]} 未出现`)
+      if (!css.includes(tokens[key])) problems.push(`默认主题浅色 ${key}=${tokens[key]} 未出现`)
     }
     if (!/^:root \{/m.test(css)) problems.push('缺少裸 :root 块')
-    // 其余主题不应再定义颜色令牌级的裸 :root, 否则默认主题会被后加载的覆盖
-    // 每个主题文件都有一个只放字体/尺寸的共享 :root 块, 那是允许的
+    /* 其余主题文件不应再定义颜色令牌级的裸 :root, 否则默认主题会被后加载的覆盖 */
     const withBareRoot = THEMES.filter((t) => {
       const f = path.join(themeDir, `theme-${t.id}.css`)
       if (!fs.existsSync(f)) return false
@@ -146,37 +166,34 @@ console.log('\n=== 3. 配色对比度 (文字类需 >= 4.5, 图形/渐变需 >= 
 console.log('  主题'.padEnd(20) + '模式   链接   主按钮  正文   次要  hover主色  渐变两端(RGB距离)')
 for (const t of THEMES) {
   for (const mode of ['light', 'dark']) {
-    const c = t[mode]
-    // 文字类: 必须达到 AA 4.5
+    const c = derived.get(`${t.id}.${mode}`)
+    if (!c) continue
+
+    /* 文字类: 必须达到 AA 4.5 */
     const textChecks = {
       链接: contrast(c.link, c.cardBg),
       主按钮: contrast(c.onPrimary, c.primary),
       正文: contrast(c.text, c.cardBg),
       次要: contrast(c.muted, c.cardBg),
     }
-    // 图形类: 悬停强调色属于 UI 组件边界, 按 AA 图形对象 3.0 要求
-    // 渐变色带是纯装饰元素(站点头部/终端卡片顶部的 1~2px 光带), WCAG 不对装饰设对比度门槛,
-    // 也不该用亮度对比度衡量 - 何况渐变两端刻意同亮度不同色相
-    // 这里只校验"两端有可见的色彩差异", 避免渐变退化成一条纯色
+    /* 图形类: 悬停强调色是 UI 组件边界, 按 AA 图形对象 3.0 要求 */
     const gfxChecks = {
       hover主色: contrast(c.primaryStrong, c.cardBg),
     }
-    const gradVisible = rgbDistance(c.gradFrom, c.gradTo)
     /*
-     * 渐变是否退化成纯色, 只对"用渐变装饰"的族有意义:
-     * soft / editorial 用渐变画文章卡左侧色条, hard 用纯色, 所以都不校验
-     * minimal(VitePress/Teek 风格)本身不用渐变色带, 同样跳过
+     * 装饰渐变只用在品牌标记这类小面积图形上, WCAG 不对装饰设对比度门槛,
+     * 这里只校验"两端有可见的色彩差异", 避免渐变退化成一条纯色
      */
-    const useGradient = t.family === 'soft' || t.family === 'editorial'
-    const badGrad = useGradient && gradVisible < 40
+    const gradVisible = rgbDistance(c.gradFrom, c.gradTo)
     const badText = Object.entries(textChecks).filter(([, v]) => v < 4.5)
     const badGfx = Object.entries(gfxChecks).filter(([, v]) => v < 3)
+    const badGrad = gradVisible < 40
     if (badText.length || badGfx.length || badGrad) fail++
 
     const cells = [
       ...Object.values(textChecks).map((v) => v.toFixed(2).padStart(6)),
       contrast(c.primaryStrong, c.cardBg).toFixed(2).padStart(9),
-      (useGradient ? gradVisible.toFixed(0) : '—').padStart(9),
+      gradVisible.toFixed(0).padStart(9),
     ].join(' ')
 
     console.log(
@@ -200,23 +217,32 @@ for (const t of THEMES) {
 
 /* ---------- 4) 主题间重复度(避免两套看起来一样) ---------- */
 console.log('\n=== 4. 主题可辨识度(浅色主色两两距离) ===')
-function toRgb(h) {
-  const m = h.replace('#', '')
-  return [0, 2, 4].map((i) => parseInt(m.slice(i, i + 2), 16))
-}
 let tooClose = 0
-for (let i = 0; i < THEMES.length; i++) {
-  for (let j = i + 1; j < THEMES.length; j++) {
+for (let i = 0; i < THEMES.length; i += 1) {
+  for (let j = i + 1; j < THEMES.length; j += 1) {
     const a = toRgb(THEMES[i].light.primary)
     const b = toRgb(THEMES[j].light.primary)
     const d = Math.sqrt(a.reduce((s, v, k) => s + (v - b[k]) ** 2, 0))
     if (d < 28) {
-      tooClose++
+      tooClose += 1
       console.log(`  WARN ${THEMES[i].name} 与 ${THEMES[j].name} 的浅色主色很接近 (距离 ${d.toFixed(0)})`)
     }
   }
 }
 if (tooClose === 0) console.log('  ok   任意两套主题的浅色主色都有明显区分')
+
+/* ---------- 5) 明暗反转是否合理(深色主色通常更亮) ---------- */
+console.log('\n=== 5. 深浅两套品牌色 ===')
+let flat = 0
+for (const t of THEMES) {
+  const lightLum = relLum(t.light.primary)
+  const darkLum = relLum(t.dark.primary)
+  if (darkLum <= lightLum) {
+    flat += 1
+    console.log(`  WARN ${t.name} 的深色品牌色不比浅色更亮, 深色模式下按钮可能偏闷`)
+  }
+}
+if (flat === 0) console.log('  ok   每套主题的深色品牌色都更亮, 深色模式下仍能辨认')
 
 console.log(fail === 0 ? '\nALL OK' : `\nFAILURES: ${fail}`)
 process.exit(fail === 0 ? 0 : 1)

@@ -267,7 +267,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   background: var(--code-bg);
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   overflow: hidden;
   margin-bottom: 8px;
 }

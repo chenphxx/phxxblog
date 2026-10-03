@@ -1,116 +1,10 @@
 /* ============================================================
-   主题令牌: 开发者工作台 (petrol ink on cool paper / workbench night)
-   浅色默认, 深色通过 html.dark 切换
-   ============================================================ */
-:root {
-  /* 基础色板 */
-  --bg: #f3f5f7;
-  --card-bg: #ffffff;
-  --text: #1f2937;
-  --muted: #667085;
-  --border: #e3e8ee;
-  --border-strong: #d3dae2;
-  --primary: #0e7490;
-  --primary-strong: #155e75;
-  --primary-weak: #e6f4f8;
-  --code-bg: #eef1f4;
-  /* 代码块背景对齐 VSCode 浅色主题 */
-  --code-block-bg: #ffffff;
-  --ok: #15803d;
-  --warn: #b45309;
-  --danger: #b91c1c;
-  --shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
-  --radius: 6px;
-
-  /* 终端面板(两种模式下都保持深色, 像真实终端) */
-  --term-bg: #0b1016;
-  --term-border: #1f2933;
-  --term-text: #9fe8d9;
-  --term-dim: #5b6b78;
-  --term-accent: #34d399;
-  --term-prompt: #e2e8f0;
-
-  /* 字体 */
-  /*
-   * 字母 / 数字 / 符号统一用 Cascadia Code
-   * Cascadia Code 不含中文字形, 中文会自动回退到后面的系统字体
-   * (PingFang SC / 微软雅黑), 所以中文排版不受影响
-   * 注意: 这两项与 src/styles/themes/_source/template.css 里的同名令牌保持一致,
-   * 主题 CSS 是按主题分文件生成的, 每个文件都会写入这份定义
-   */
-  --font-sans:
-    'Cascadia Code', 'Cascadia Mono', ui-monospace, 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', 'Helvetica Neue',
-    Arial, sans-serif;
-  --font-mono:
-    'Cascadia Code', 'Cascadia Mono', 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono',
-    monospace;
-
-  /* Element Plus 主色对齐 */
-  --el-color-primary: #0e7490;
-  --el-color-primary-light-3: #58a6bd;
-  --el-color-primary-light-5: #8cc4d4;
-  --el-color-primary-light-7: #c0dce4;
-  --el-color-primary-light-8: #d8e8ee;
-  --el-color-primary-light-9: #ebf4f7;
-  --el-color-primary-dark-2: #0b5f77;
-  --el-border-radius-base: 6px;
-  --el-bg-color: #ffffff;
-  --el-bg-color-overlay: #ffffff;
-  --el-fill-color: #f3f5f7;
-  --el-fill-color-light: #f5f7f9;
-  --el-fill-color-lighter: #f8fafb;
-  --el-text-color-primary: #1f2937;
-  --el-text-color-regular: #3d4a5c;
-  --el-text-color-secondary: #667085;
-  --el-border-color: #d3dae2;
-  --el-border-color-light: #e3e8ee;
-  --el-border-color-lighter: #e9edf1;
-}
-
-html.dark {
-  --bg: #0f141a;
-  --card-bg: #161d26;
-  --text: #e6edf3;
-  --muted: #8b98a5;
-  --border: #28303a;
-  --border-strong: #35404d;
-  --primary: #2dd4bf;
-  --primary-strong: #5eead4;
-  --primary-weak: #12312e;
-  --code-bg: #121922;
-  /* 代码块背景对齐 VSCode 深色主题 */
-  --code-block-bg: #1e1e1e;
-  --ok: #4ade80;
-  --warn: #fbbf24;
-  --danger: #f87171;
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.5);
-
-  --term-bg: #070b10;
-  --term-border: #1c2731;
-  --term-text: #7ee0c9;
-  --term-dim: #51616e;
-  --term-accent: #34d399;
-  --term-prompt: #d7e2ea;
-
-  --el-color-primary: #2dd4bf;
-  --el-color-primary-light-3: #57dfcf;
-  --el-color-primary-light-5: #82e8dc;
-  --el-color-primary-light-7: #acf1e9;
-  --el-color-primary-light-8: #c1f5ee;
-  --el-color-primary-light-9: #d5f9f4;
-  --el-color-primary-dark-2: #24aa9a;
-  --el-bg-color: #161d26;
-  --el-bg-color-overlay: #1c242f;
-  --el-fill-color: #1a222c;
-  --el-fill-color-light: #1d2631;
-  --el-fill-color-lighter: #212b37;
-  --el-text-color-primary: #e6edf3;
-  --el-text-color-regular: #c3cdd6;
-  --el-text-color-secondary: #8b98a5;
-  --el-border-color: #35404d;
-  --el-border-color-light: #28303a;
-  --el-border-color-lighter: #232c36;
-}
+ * 结构与组件样式 (Soft Minimal)
+ * ------------------------------------------------------------
+ * 这里只写与颜色无关的结构: 布局, 面板, 列表, 排版, 交互状态
+ * 颜色令牌来自 themes/(base.css + theme-<id>.css), 由 _source 生成
+ * 视觉基调: 浅灰画布 + 白色大面板 + 大量留白 + 细分隔线, 少用卡片嵌套
+ * ============================================================ */
 
 * {
   box-sizing: border-box;
@@ -127,15 +21,16 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
-  font-size: 15px;
+  font-size: 15.5px;
   line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
   transition:
     background-color 0.25s ease,
     color 0.25s ease;
 }
 
 a {
-  color: var(--primary);
+  color: var(--link);
   text-decoration: none;
 }
 
@@ -147,97 +42,221 @@ a:hover {
 :focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
 }
 
 ::selection {
-  background: var(--primary-weak);
+  background: color-mix(in srgb, var(--primary) 22%, transparent);
   color: var(--text);
 }
 
-/* ---------- 通用布局 ---------- */
-.page-container {
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 28px 20px 40px;
-}
-
-.card {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 20px;
+/* ---------- 排版层级 ---------- */
+h1,
+h2,
+h3 {
+  letter-spacing: -0.015em;
 }
 
 .muted {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 13.5px;
 }
 
-/* 分类/标签彩色小标签(背景色由 utils/chipColor.ts 计算) */
-.chip {
-  display: inline-flex;
-  align-items: center;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  padding: 1px 8px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  line-height: 1.75;
-  white-space: nowrap;
-}
-
-.chip:hover {
-  text-decoration: none;
-  filter: saturate(1.2);
-}
-
-/* 带图标的标签(分类/标签/阅读量...): 图标与文字对齐, 图标略淡不抢戏
-   放全局是因为 PostCard / PostDetailView / HomeView 都会用到 */
-.chip-icon {
-  gap: 4px;
-  padding: 1px 9px;
-}
-
-.chip-icon .meta-icon {
-  opacity: 0.85;
+/* 区块小标题: 以前是"// 注释"风格的等宽标签, 改成克制的说明文字 */
+.eyebrow {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.04em;
 }
 
 /* 带图标的普通元信息(字数/时长/日期...) */
 .meta-item {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   white-space: nowrap;
 }
 
 .meta-item .meta-icon {
-  opacity: 0.75;
+  opacity: 0.72;
 }
 
-/* 代码注释式小标签: // 区块标题 */
-.eyebrow {
+/* 数字型信息用等宽字体对齐位数(日期, 字数, 计数) */
+.num {
   font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--muted);
-  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
 }
 
-.eyebrow::before {
-  content: '// ';
-  color: var(--primary);
+/* ---------- 页面容器 ---------- */
+.page-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-10) var(--space-16);
+}
+
+@media (max-width: 900px) {
+  .page-container {
+    padding: var(--space-5) var(--space-4) var(--space-12);
+  }
+}
+
+/* 页面标题区: 标题与主面板之间靠留白分区, 不用边框 */
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.page-title {
+  margin: 0;
+  font-size: clamp(30px, 3.4vw, 38px);
+  font-weight: 650;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+.page-subtitle {
+  margin: var(--space-2) 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* ---------- 面板 ---------- */
+/* 页面分区用大面板承载, 面板内部靠间距与细分隔线组织, 不要层层嵌套卡片 */
+.card {
+  background: var(--card-bg);
+  border: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-panel);
+  padding: var(--space-6);
+}
+
+.panel {
+  background: var(--card-bg);
+  border: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-panel);
+  padding: var(--space-8);
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.panel-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+/* 面板内的列表行: 只用一条细线分隔, 不再每行一张卡片 */
+.list-row {
+  display: block;
+  padding: var(--space-5) 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.list-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.list-row:first-child {
+  padding-top: 0;
+}
+
+.list-row-link {
+  color: inherit;
+}
+
+.list-row-link:hover {
+  text-decoration: none;
+}
+
+/* 指标(首页/后台的概览数字) */
+.metric {
+  min-width: 0;
+}
+
+.metric-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.metric-value {
+  margin: var(--space-3) 0 0;
+  font-size: clamp(32px, 4vw, 44px);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-hint {
+  margin: var(--space-2) 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.divider {
+  height: 1px;
+  border: 0;
+  margin: var(--space-6) 0;
+  background: var(--border);
+}
+
+/* ---------- 分类/标签 ---------- */
+/* 背景色由 utils/chipColor.ts 计算(低饱和淡底), 这里只管形状 */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-chip);
+  padding: 2px 9px;
+  font-size: 12px;
+  line-height: 1.7;
+  white-space: nowrap;
+  transition:
+    background-color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+
+.chip:hover {
+  text-decoration: none;
+}
+
+/* 带图标的标签(分类/标签/阅读量...): 图标与文字对齐, 图标略淡不抢戏 */
+.chip-icon {
+  gap: 5px;
+  padding: 2px 10px;
+}
+
+.chip-icon .meta-icon {
+  opacity: 0.8;
 }
 
 /* ---------- 文章正文 ---------- */
 .markdown-body {
-  background: var(--card-bg);
-  padding: 28px 32px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  font-size: 16px;
+  /* 正文本身不带面板: 承载它的外层已是白色面板(文章页 / 首页"关于") */
+  background: transparent;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  font-size: 16.5px;
   line-height: 1.85;
-  color: var(--text);
+  color: color-mix(in srgb, var(--text) 92%, var(--muted));
   overflow-wrap: break-word;
 }
 
@@ -246,13 +265,13 @@ a:hover {
 .markdown-body h3,
 .markdown-body h4 {
   color: var(--text);
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-weight: 650;
+  letter-spacing: -0.02em;
   line-height: 1.35;
 }
 
 /*
- * 目录跳转时不要被 sticky 顶栏盖住标题: 顶栏高约 60px, 再留一点余量
+ * 目录跳转时不要被顶部条盖住标题: 顶栏/侧栏留一点余量
  * (目录锚点由 MarkdownView 在渲染后写到标题的 id 上)
  */
 .markdown-body h1,
@@ -283,17 +302,24 @@ a:hover {
 }
 
 .markdown-body a {
-  color: var(--primary);
+  color: var(--link);
   text-decoration: underline;
+  text-decoration-thickness: 1px;
   text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, var(--primary) 45%, transparent);
+  transition: text-decoration-color var(--dur) var(--ease);
+}
+
+.markdown-body a:hover {
+  text-decoration-color: var(--primary);
 }
 
 .markdown-body blockquote {
   margin: 1em 0;
-  padding: 2px 16px;
-  border-left: 3px solid var(--primary);
-  background: var(--primary-weak);
-  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 4px 18px;
+  border-left: 2px solid var(--primary);
+  background: color-mix(in srgb, var(--primary) 5%, transparent);
+  border-radius: 0 var(--radius-control) var(--radius-control) 0;
   color: var(--muted);
 }
 
@@ -302,7 +328,7 @@ a:hover {
   font-size: 0.88em;
   background: var(--code-bg);
   padding: 0.15em 0.4em;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
 /*
@@ -331,12 +357,12 @@ a:hover {
 .markdown-body pre {
   background: var(--code-block-bg);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-control);
   padding: 16px;
   overflow-x: auto;
   font-family: var(--font-mono);
-  font-size: 15px;
-  line-height: 1.65;
+  font-size: 14.5px;
+  line-height: 1.7;
 }
 
 /*
@@ -371,12 +397,12 @@ a:hover {
   width: 100%;
   margin: -1px 0 1em;
   padding: 7px 0;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: 12px;
   color: var(--muted);
   background: var(--code-block-bg);
   border: 1px solid var(--border);
-  border-radius: 0 0 var(--radius) var(--radius);
+  border-radius: 0 0 var(--radius-control) var(--radius-control);
   cursor: pointer;
 }
 .markdown-body .code-fold-toggle:hover {
@@ -390,6 +416,7 @@ a:hover {
   font-style: italic;
 }
 
+/* ---------- 编辑器(Vditor)外观 ---------- */
 /*
  * 编辑器(IR 模式)里的代码块与正文对齐成同一张卡片
  *
@@ -397,7 +424,7 @@ a:hover {
  * 除了 hljs 主题给的纯色背景外没有任何装饰 - 没有边框, 圆角与内边距, 字号也停在
  * Vditor 的 85%, 于是写作页的代码块看起来像一条扁平的灰底纹, 与文章正文里的代码块
  * 完全两个样. 这里复用正文用的令牌(--code-block-bg 与 hljs 的 vs/vs2015 背景同色,
- * --border, --radius), 让"写作时看到的"与"发布后看到的"一致
+ * --border, --radius-control), 让"写作时看到的"与"发布后看到的"一致
  *
  * 两点约束:
  *   1. 不要覆盖 .vditor-linenumber 的 padding-left(4em, 带 !important): 那是行号槽,
@@ -409,10 +436,10 @@ a:hover {
 .vditor-ir .vditor-ir__preview code {
   background: var(--code-block-bg);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-control);
   font-family: var(--font-mono);
-  font-size: 15px;
-  line-height: 1.65;
+  font-size: 14.5px;
+  line-height: 1.7;
   padding: 14px 16px;
 }
 
@@ -464,7 +491,7 @@ a:hover {
 .vditor-ir .vditor-ir__node--expand[data-type='code-block'] {
   background: var(--code-block-bg);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-control);
   padding: 14px 16px 14px 61px;
 }
 
@@ -477,15 +504,15 @@ a:hover {
   background: transparent;
   border: none;
   padding: 0;
-  font-size: 15px;
-  line-height: 1.65;
+  font-size: 14.5px;
+  line-height: 1.7;
 }
 
 .markdown-body table {
   border-collapse: collapse;
   width: 100%;
   margin: 1em 0;
-  font-size: 14.5px;
+  font-size: 15px;
 }
 
 .markdown-body th,
@@ -496,11 +523,12 @@ a:hover {
 
 .markdown-body th {
   background: var(--code-bg);
+  font-weight: 600;
 }
 
 .markdown-body img {
   max-width: 100%;
-  border-radius: var(--radius);
+  border-radius: var(--radius-control);
 }
 
 .markdown-body hr {
@@ -509,118 +537,145 @@ a:hover {
   margin: 2em 0;
 }
 
-/* ---------- 站点头部 ---------- */
-.site-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: color-mix(in srgb, var(--card-bg) 88%, transparent);
-  border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(10px);
-}
-
-.site-header-inner {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 10px 20px;
+/* ---------- 站脚 ---------- */
+.site-footer {
+  margin-top: auto;
+  padding: var(--space-6) var(--space-10) var(--space-8);
+  border-top: 1px solid var(--border);
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 24px;
+  gap: 6px;
+  text-align: center;
 }
 
-.site-brand {
-  font-family: var(--font-mono);
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text);
-  white-space: nowrap;
-}
-
-.site-brand:hover {
-  text-decoration: none;
-}
-
-.brand-path {
-  color: var(--primary);
-}
-
-.site-nav {
-  display: flex;
-  gap: 4px;
-  flex: 1;
-  overflow-x: auto;
-}
-
-.site-nav a {
-  font-family: var(--font-mono);
-  font-size: 13px;
+.site-footer a {
   color: var(--muted);
-  padding: 6px 10px;
-  border-radius: 4px;
-  white-space: nowrap;
-  transition:
-    color 0.15s ease,
-    background-color 0.15s ease;
+  font-size: 12.5px;
 }
 
-.site-nav a:hover {
+.site-footer a:hover {
   color: var(--text);
-  background: var(--code-bg);
-  text-decoration: none;
 }
 
-.site-nav a.router-link-active {
-  color: var(--primary);
-  background: var(--primary-weak);
-  font-weight: 700;
+.site-footer .footer-meta {
+  color: var(--muted);
+  font-size: 12.5px;
 }
 
-/* ---------- 归档时间轴 ---------- */
-.timeline {
-  position: relative;
-  padding-left: 24px;
-}
-
-.timeline::before {
-  content: '';
-  position: absolute;
-  left: 8px;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: var(--border-strong);
-}
-
-.timeline-item {
-  position: relative;
-  margin-bottom: 28px;
-}
-
-.timeline-item::before {
-  content: '';
-  position: absolute;
-  left: -22px;
-  top: 6px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--primary);
-  border: 2px solid var(--card-bg);
-  box-shadow: 0 0 0 2px var(--primary);
+.site-footer .footer-icp {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-4);
 }
 
 /* ---------- Element Plus 细节对齐 ---------- */
-.el-tag {
-  font-family: var(--font-mono);
-  letter-spacing: 0.02em;
-}
-
 .el-button {
   font-family: var(--font-sans);
+  border-radius: var(--radius-control);
+  transition:
+    background-color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
+
+.el-button--primary:not(.is-text):not(.is-link) {
+  color: var(--on-primary);
+  box-shadow: none;
+}
+
+.el-button--primary:not(.is-text):not(.is-link):hover,
+.el-button--primary:not(.is-text):not(.is-link):focus-visible {
+  box-shadow: 0 8px 18px -12px var(--ring);
+}
+
+.el-button.is-circle,
+.el-button:not(.is-circle):not(.is-round) {
+  border-radius: var(--radius-control);
+}
+
+.el-input__wrapper,
+.el-textarea__inner,
+.el-select__wrapper {
+  border-radius: var(--radius-control);
+  transition:
+    box-shadow var(--dur) var(--ease),
+    background-color var(--dur) var(--ease);
+}
+
+.el-input__wrapper.is-focus,
+.el-select__wrapper.is-focused {
+  box-shadow:
+    0 0 0 1px var(--primary) inset,
+    0 0 0 4px var(--ring);
+}
+
+.el-pagination.is-background .el-pager li {
+  border-radius: var(--radius-control);
+  transition: background-color var(--dur) var(--ease);
+}
+
+.el-pagination.is-background .el-pager li.is-active {
+  color: var(--on-primary);
 }
 
 .el-message {
-  border-radius: var(--radius);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-float);
+}
+
+.el-message-box,
+.el-dialog,
+.el-dropdown__popper,
+.el-popper.is-light {
+  border-radius: var(--radius-card);
+}
+
+.el-dialog {
+  box-shadow: var(--shadow-float);
+}
+
+.el-tag {
+  font-size: 12px;
+  border-radius: var(--radius-chip);
+}
+
+/* ---------- 入场动画与主题过渡 ---------- */
+/*
+ * 全局只有这一个入场动画: 轻微上移淡入, 不做位移/缩放的花样
+ *
+ * 填充模式必须用 backwards 而不是 both: both/forwards 会让动画结束后仍把 transform
+ * 留在效果栈里(计算值是一单位矩阵而不是 none), 于是 .site-main 的直接子元素
+ * (.page-container)就成了 position: fixed 的定位基准 - 容器里的弹窗会相对"整页高"的
+ * 容器居中, 而不是相对视口居中(首页头像弹窗曾因此落在页面下方)
+ */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.site-main > * {
+  animation: fade-up 320ms var(--ease) backwards;
+}
+
+/* 切换主题/深浅色时让颜色平滑过渡, 不闪白 */
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition:
+    background-color 320ms var(--ease),
+    border-color 320ms var(--ease),
+    color 320ms var(--ease),
+    fill 320ms var(--ease) !important;
 }
 
 /* 尊重系统减少动态效果偏好 */
@@ -634,5 +689,8 @@ a:hover {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+  .site-main > * {
+    animation: none !important;
   }
 }

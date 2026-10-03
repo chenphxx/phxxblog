@@ -132,7 +132,24 @@ onBeforeUnmount(() => {
     <template v-if="post">
       <div class="post-column">
         <div class="post-main">
-          <article class="post-detail">
+          <!-- 窄屏放不下右侧目录: 折叠一份放在正文上方 -->
+          <details v-if="toc.length" class="toc-inline">
+            <summary>目录</summary>
+            <div class="toc-nav">
+              <button
+                v-for="heading in toc"
+                :key="heading.id"
+                type="button"
+                class="toc-link"
+                :class="[`toc-lv${heading.level}`, { 'is-active': heading.id === activeHeading }]"
+                @click="scrollToHeading(heading.id)"
+              >
+                {{ heading.text }}
+              </button>
+            </div>
+          </details>
+
+          <article class="panel post-detail">
             <div class="post-topbar">
               <button class="back-link" @click="goBack">← 返回</button>
               <el-button v-if="canEdit" size="small" @click="$router.push(`/write/${post.id}`)">编辑</el-button>
@@ -219,7 +236,7 @@ onBeforeUnmount(() => {
 
         <aside class="post-aside">
           <nav v-if="toc.length" class="card toc-card" aria-label="文章目录">
-            <p class="eyebrow">toc — 目录</p>
+            <p class="eyebrow">目录</p>
             <div class="toc-nav">
               <button
                 v-for="heading in toc"
@@ -245,23 +262,26 @@ onBeforeUnmount(() => {
 <style scoped>
 .post-column {
   display: grid;
-  /* 正文列 + 右侧栏(目录/热门文章); minmax(0, 1fr) 防止长代码/长链接把正文列撑宽 */
-  grid-template-columns: minmax(0, 1fr) 280px;
-  gap: 24px;
-  max-width: 1180px;
+  /* 阅读列收窄到 820px(正文实际宽度约 760px), 右侧是目录与热门文章 */
+  grid-template-columns: minmax(0, 820px) 260px;
+  gap: var(--space-6);
+  max-width: 1140px;
   margin: 0 auto;
   align-items: start;
 }
 .post-main {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
 }
 /* 右侧栏跟随滚动: 目录在正文上方, 热门文章在下方 */
 .post-aside {
   position: sticky;
-  top: 76px;
+  top: var(--space-6);
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-5);
 }
 /* 窄屏放不下两栏: 收成单列并隐藏右侧栏, 正文本身不依赖它 */
 @media (max-width: 1100px) {
@@ -272,14 +292,34 @@ onBeforeUnmount(() => {
     display: none;
   }
 }
+
+/* 窄屏的折叠目录: 宽屏由右侧栏承担, 这里整体不渲染 */
+.toc-inline {
+  display: none;
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+  border-radius: var(--radius-card);
+  background: var(--card-bg);
+}
+.toc-inline summary {
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+@media (max-width: 1100px) {
+  .toc-inline {
+    display: block;
+  }
+}
 .toc-card {
-  padding: 16px 18px;
+  padding: var(--space-4) var(--space-5);
 }
 .toc-nav {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  margin-top: 10px;
+  margin-top: var(--space-3);
   /* 目录过长时在卡片内滚动, 否则 sticky 的右栏会被撑出视野, 底部永远够不到 */
   max-height: min(52vh, 420px);
   overflow-y: auto;
@@ -287,10 +327,9 @@ onBeforeUnmount(() => {
 .toc-link {
   display: block;
   width: 100%;
-  padding: 4px 8px;
+  padding: 5px 9px;
   border: none;
-  border-left: 2px solid transparent;
-  border-radius: 0 4px 4px 0;
+  border-radius: var(--radius-chip);
   background: transparent;
   color: var(--muted);
   font-size: 13px;
@@ -306,13 +345,12 @@ onBeforeUnmount(() => {
     border-color 0.15s ease;
 }
 .toc-link:hover {
-  color: var(--primary);
-  background: var(--primary-weak);
+  color: var(--text);
+  background: var(--code-bg);
 }
 .toc-link.is-active {
-  border-left-color: var(--primary);
-  background: var(--primary-weak);
-  color: var(--primary);
+  background: var(--code-bg);
+  color: var(--text);
   font-weight: 600;
 }
 /* 按标题层级缩进(h1/h2 不缩进) */
@@ -332,15 +370,14 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
+  margin-bottom: var(--space-4);
 }
 .back-link {
-  font-family: var(--font-mono);
   font-size: 13px;
   color: var(--muted);
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-chip);
   padding: 5px 12px;
   cursor: pointer;
   transition:
@@ -348,26 +385,25 @@ onBeforeUnmount(() => {
     border-color 0.15s ease;
 }
 .back-link:hover {
-  color: var(--primary);
-  border-color: var(--primary);
+  color: var(--text);
+  border-color: var(--border-strong);
 }
 .post-detail-title {
-  font-size: 32px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.3;
-  margin: 0 0 16px;
+  font-size: clamp(28px, 3.4vw, 34px);
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+  margin: 0 0 var(--space-4);
 }
 .post-detail-meta {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   flex-wrap: wrap;
-  margin-bottom: 22px;
-  padding-bottom: 16px;
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-4);
   border-bottom: 1px solid var(--border);
-  font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 12.5px;
   color: var(--muted);
 }
 .meta-item {
@@ -375,56 +411,53 @@ onBeforeUnmount(() => {
 }
 /* 正文上方的摘要(仅当作者填写摘要时展示) */
 .post-detail-summary {
-  margin: 0 0 20px;
-  padding: 10px 16px;
-  border-left: 3px solid var(--primary);
-  background: var(--primary-weak);
-  border-radius: 0 var(--radius) var(--radius) 0;
+  margin: 0 0 var(--space-6);
+  padding: var(--space-4) var(--space-5);
+  background: var(--code-bg);
+  border-radius: var(--radius-control);
   color: var(--muted);
-  font-size: 14.5px;
-  line-height: 1.75;
+  font-size: 15px;
+  line-height: 1.8;
 }
 .like-btn {
   margin-left: auto;
 }
 .post-cover {
   width: 100%;
-  border-radius: var(--radius);
-  margin-bottom: 20px;
-  max-height: 400px;
+  border-radius: var(--radius-control);
+  margin-bottom: var(--space-6);
+  max-height: 420px;
   object-fit: cover;
-  border: 1px solid var(--border);
 }
 .post-footer {
-  margin-top: 28px;
-  padding-top: 16px;
+  margin-top: var(--space-8);
+  padding-top: var(--space-5);
   border-top: 1px solid var(--border);
 }
 .post-updated {
-  margin: 0 0 14px;
+  margin: 0 0 var(--space-4);
   text-align: right;
-  font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 12.5px;
   color: var(--muted);
 }
 .post-nav {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: var(--space-3);
 }
 .post-nav-card {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   min-width: 0;
-  padding: 10px 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--card-bg);
-  transition: border-color 0.15s ease;
+  padding: var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: var(--code-bg);
+  transition: background-color var(--dur) var(--ease);
 }
 .post-nav-card:hover {
-  border-color: var(--primary);
+  background: var(--primary-weak);
   text-decoration: none;
 }
 /* 没有相邻文章的一侧不渲染卡片, 用 grid-column 保证"下一篇"始终落在右侧 */
@@ -436,8 +469,7 @@ onBeforeUnmount(() => {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-family: var(--font-mono);
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--muted);
 }
 .post-nav-card.is-next .post-nav-label {
@@ -445,13 +477,14 @@ onBeforeUnmount(() => {
 }
 .post-nav-title {
   color: var(--text);
-  font-size: 14px;
+  font-size: 14.5px;
+  font-weight: 500;
   line-height: 1.5;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .post-nav-card:hover .post-nav-title {
-  color: var(--primary);
+  color: var(--link);
 }
 </style>
