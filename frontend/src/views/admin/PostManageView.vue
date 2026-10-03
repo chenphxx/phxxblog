@@ -288,16 +288,6 @@ async function batchForceDelete() {
 .th-icon .meta-icon {
   opacity: 0.7;
 }
-.batch-bar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  margin-bottom: 12px;
-  background: var(--code-bg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-}
 .op-row {
   display: flex;
   align-items: center;

@@ -7,6 +7,7 @@ import ListPager from '@/components/ListPager.vue'
 import { usePagedList } from '@/composables/usePagedList'
 
 const statusFilter = ref<number | undefined>(undefined)
+const selected = ref<CommentItem[]>([])
 /** 列表分页与取数; 换筛选条件时调 reset() 回到第 1 页 */
 const {
   items: comments,
@@ -37,9 +38,51 @@ async function setStatus(comment: CommentItem, status: number) {
 }
 
 async function remove(comment: CommentItem) {
-  await ElMessageBox.confirm('确定删除该评论及其回复吗?', '确认', { type: 'warning' })
+  await ElMessageBox.confirm('确定删除该评论及其回复吗? 该操作不可恢复!', '危险操作', {
+    type: 'error',
+    confirmButtonText: '删除',
+  })
   await commentApi.remove(comment.id)
   ElMessage.success('删除成功')
+  load()
+}
+
+function onSelectionChange(rows: CommentItem[]) {
+  selected.value = rows
+}
+
+async function batchSetStatus(status: number, label: string) {
+  if (!selected.value.length) return
+  await ElMessageBox.confirm(`将选中的 ${selected.value.length} 条评论${label}吗?`, '确认', {
+    type: 'warning',
+  })
+  for (const comment of selected.value) {
+    try {
+      await commentApi.updateStatus(comment.id, status)
+    } catch {
+      // 忽略单条失败, 继续处理其余评论
+    }
+  }
+  ElMessage.success(`批量${label}完成`)
+  selected.value = []
+  load()
+}
+
+async function batchRemove() {
+  if (!selected.value.length) return
+  await ElMessageBox.confirm(`删除选中的 ${selected.value.length} 条评论及其回复? 该操作不可恢复!`, '危险操作', {
+    type: 'error',
+    confirmButtonText: '删除',
+  })
+  for (const comment of selected.value) {
+    try {
+      await commentApi.remove(comment.id)
+    } catch {
+      // 忽略单条失败, 继续处理其余评论
+    }
+  }
+  ElMessage.success('批量删除完成')
+  selected.value = []
   load()
 }
 </script>
@@ -60,7 +103,15 @@ async function remove(comment: CommentItem) {
     </div>
 
     <div class="card">
-      <el-table v-loading="loading" :data="comments">
+      <div v-if="selected.length" class="batch-bar">
+        <span class="muted">已选 {{ selected.length }} 条</span>
+        <el-button size="small" type="success" @click="batchSetStatus(1, '显示')">显示</el-button>
+        <el-button size="small" type="warning" @click="batchSetStatus(0, '隐藏')">隐藏</el-button>
+        <el-button size="small" type="info" @click="batchSetStatus(2, '移入回收站')">移入回收站</el-button>
+        <el-button size="small" type="danger" @click="batchRemove">删除</el-button>
+      </div>
+      <el-table v-loading="loading" :data="comments" @selection-change="onSelectionChange">
+        <el-table-column type="selection" width="45" />
         <el-table-column prop="id" label="ID" width="70" />
         <el-table-column label="评论人" width="120">
           <template #default="{ row }">

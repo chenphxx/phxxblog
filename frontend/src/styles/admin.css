@@ -316,3 +316,18 @@ html:root .el-button--info:not(.is-plain):not(.is-text):not(.is-link) {
 .admin-toolbar .el-input {
   width: 220px;
 }
+
+/*
+ * 列表页的批量操作条: 勾选了行之后出现在表格上方
+ * 文章管理与评论管理共用同一套样式, 不要再在各自视图里各写一份
+ */
+.batch-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
