@@ -44,14 +44,22 @@ from app.services.stats import record_visit
 router = APIRouter(prefix="/posts", tags=["文章"])
 
 
-def _page_out(items: list[Post], total: int, page: int, page_size: int) -> Page[PostListItem]:
-    """把查询结果组装成统一的分页响应(列表接口的出参结构只在这里定义一次)"""
-    return Page[PostListItem](
-        items=[PostListItem.model_validate(item) for item in items],
-        total=total,
-        page=page,
-        page_size=page_size,
-    )
+def _page_out(
+    items: list[Post],
+    total: int,
+    page: int,
+    page_size: int,
+    comment_counts: dict[int, int] | None = None,
+) -> Page[PostListItem]:
+    """把查询结果组装成统一的分页响应(列表接口的出参结构只在这里定义一次)
+
+    @param comment_counts 文章ID到评论数的映射, 只有后台列表传; 不传时该字段为 null
+    """
+    result = [PostListItem.model_validate(item) for item in items]
+    if comment_counts is not None:
+        for item in result:
+            item.comment_count = comment_counts.get(item.id, 0)
+    return Page[PostListItem](items=result, total=total, page=page, page_size=page_size)
 
 
 @router.get("", response_model=dict)
@@ -116,7 +124,8 @@ def admin_list_posts(
         status=status,
         keyword=keyword,
     )
-    return ok(_page_out(items, total, page, page_size))
+    counts = post_query.comment_counts(db, [item.id for item in items])
+    return ok(_page_out(items, total, page, page_size, counts))
 
 
 @router.get("/export", response_model=None)

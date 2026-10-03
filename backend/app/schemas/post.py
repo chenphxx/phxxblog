@@ -85,6 +85,9 @@ class PostListItem(BaseModel):
     status: int
     views: int
     likes_count: int
+    # 评论数只在后台列表填充(见 api/v1/posts.py 的 _page_out), 其他列表为 None:
+    # 前台列表不展示评论数, 不做这次额外统计
+    comment_count: int | None = None
     word_count: int = 0
     reading_minutes: int = 0
     published_at: datetime | None = None

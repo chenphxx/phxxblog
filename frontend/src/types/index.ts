@@ -65,6 +65,8 @@ export interface PostItem {
   status: number
   views: number
   likes_count: number
+  /** 评论数, 仅后台文章列表返回(用于彻底删除前的提示) */
+  comment_count?: number | null
   word_count: number
   reading_minutes: number
   published_at?: string | null

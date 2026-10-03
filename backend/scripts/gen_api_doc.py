@@ -23,6 +23,8 @@ MODULE_NOTES: dict[str, str] = {
     "无 `post:publish` 者提交 status=2 会被**静默降级**为审核中(作者提交发布请求不该收到报错), "
     "而状态流转接口 `PATCH /posts/{id}/status` 对越权直接返回 403 "
     "私密/回收站内容对无权者返回 404 而非 403, 不暴露存在性 "
+    "管理端列表 `GET /posts/admin` 额外返回每篇文章的 `comment_count`, 用于删除前提示; "
+    "`DELETE /posts/{id}/force` 会连同该文章的评论与点赞一起删除(外键 ON DELETE CASCADE) "
     "分类与标签都是多选: 请求用 `category_ids` / `tag_ids` 传列表, 每次都按提交值**整体覆盖**(传空数组即清空全部关联); "
     "响应里的 `categories` / `tags` 也是列表, 按分类筛选 `/posts?category=` 命中该分类的任一文章 "
     "\n>"

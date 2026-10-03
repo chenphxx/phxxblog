@@ -135,6 +135,9 @@ class Post(Base):
     #                     全量评论行与点赞行 - 纯浪费
     #                     用 raise 而不是 select: 一旦有人真的误用会立刻报错,
     #                     而不是悄悄退化成 N+1. 真需要时用 selectinload() 显式加载
+    #                     两者都带 passive_deletes: 删除文章时把子行的清理交给外键的
+    #                     ON DELETE CASCADE. 否则 ORM 会先把 comments.post_id /
+    #                     post_likes.post_id 置空, 而这两列都是 NOT NULL, 删除直接失败
     author: Mapped["User"] = relationship("User", back_populates="posts", lazy="joined")
     # order_by 让同一篇文章的分类按后台的排序字段展示, 避免顺序随查询变化
     categories: Mapped[list[Category]] = relationship(
@@ -143,8 +146,12 @@ class Post(Base):
         order_by=lambda: [Category.sort_order, Category.id],
     )
     tags: Mapped[list[Tag]] = relationship(secondary=post_tags, lazy="selectin")
-    comments: Mapped[list["Comment"]] = relationship(back_populates="post", lazy="raise")
-    likes: Mapped[list["PostLike"]] = relationship(back_populates="post", lazy="raise")
+    comments: Mapped[list["Comment"]] = relationship(
+        back_populates="post", lazy="raise", passive_deletes=True
+    )
+    likes: Mapped[list["PostLike"]] = relationship(
+        back_populates="post", lazy="raise", passive_deletes=True
+    )
 
     @property
     def word_count(self) -> int:

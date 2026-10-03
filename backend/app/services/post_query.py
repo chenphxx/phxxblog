@@ -14,6 +14,7 @@ from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
 from app.core.permissions import Perm
+from app.models.comment import Comment
 from app.models.post import Category, Post, Tag
 from app.models.user import User
 from app.services.post_write import STATUS_PUBLISHED
@@ -96,6 +97,26 @@ def admin_list(
         query.order_by(Post.updated_at.desc()).offset((page - 1) * page_size).limit(page_size).all()
     )
     return items, total
+
+
+def comment_counts(db: Session, post_ids: list[int]) -> dict[int, int]:
+    """统计一组文章的评论数(后台列表用), 返回 {文章ID: 评论数}
+
+    一次 GROUP BY 取回当页所有文章的计数, 避免逐篇 COUNT 产生 N+1
+
+    @param db 数据库会话
+    @param post_ids 当页文章ID列表
+    @return 文章ID到评论数的映射, 没有评论的文章不出现在结果里
+    """
+    if not post_ids:
+        return {}
+    rows = (
+        db.query(Comment.post_id, func.count(Comment.id))
+        .filter(Comment.post_id.in_(post_ids))
+        .group_by(Comment.post_id)
+        .all()
+    )
+    return {post_id: count for post_id, count in rows}
 
 
 def month_groups(db: Session) -> list[tuple[int, int, list[Post]]]:

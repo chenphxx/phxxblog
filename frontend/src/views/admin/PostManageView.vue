@@ -79,7 +79,10 @@ async function restore(post: PostItem) {
 }
 
 async function forceDelete(post: PostItem) {
-  await ElMessageBox.confirm(`彻底删除《${post.title}》? 该操作不可恢复!`, '危险操作', {
+  // 文章有评论时提前说明评论会一起删掉, 而不是让用户以为只删文章
+  const commentHint =
+    (post.comment_count ?? 0) > 0 ? ` 该文章已有 ${post.comment_count} 条评论, 删除文章会连同评论一并删除。` : ''
+  await ElMessageBox.confirm(`彻底删除《${post.title}》? 该操作不可恢复!${commentHint}`, '危险操作', {
     type: 'error',
     confirmButtonText: '彻底删除',
   })
@@ -133,10 +136,16 @@ async function batchTrash() {
 
 async function batchForceDelete() {
   if (!selected.value.length) return
-  await ElMessageBox.confirm(`彻底删除选中的 ${selected.value.length} 篇文章? 该操作不可恢复!`, '危险操作', {
-    type: 'error',
-    confirmButtonText: '彻底删除',
-  })
+  const hasComments = selected.value.some((post) => (post.comment_count ?? 0) > 0)
+  const commentHint = hasComments ? ' 其中带评论的文章, 评论会一并删除。' : ''
+  await ElMessageBox.confirm(
+    `彻底删除选中的 ${selected.value.length} 篇文章? 该操作不可恢复!${commentHint}`,
+    '危险操作',
+    {
+      type: 'error',
+      confirmButtonText: '彻底删除',
+    },
+  )
   for (const post of selected.value) {
     try {
       await postApi.forceDelete(post.id)
