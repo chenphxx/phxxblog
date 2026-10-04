@@ -108,7 +108,7 @@ defineExpose({ syncContent })
       </div>
     </el-form-item>
 
-    <el-form-item label="正文(Markdown, 支持图片/视频/附件/代码高亮)">
+    <el-form-item class="content-field" label="正文(Markdown, 支持图片/视频/附件/代码高亮)">
       <VditorEditor ref="contentEditor" v-model="editor.form.content_md" />
     </el-form-item>
   </el-form>
@@ -126,6 +126,10 @@ defineExpose({ syncContent })
  * 由正文(最后一个表单项)吃掉剩余高度, 多出来的高度归编辑器而不是变成卡片里的一块空白
  * 外层不是 flex 容器时(如后台文章编辑页)这些声明不生效, 表单项仍按内容排布
  * el-form-item 内部的 .el-form-item__content 属于 Element Plus 自己的模板, 必须用 :deep
+ *
+ * 这里必须用 .content-field 这个类而不是 :last-child: "是否公开可见"那一项在它所在的
+ * el-row 里也是最后一个 el-col, 用 :last-child 会连它一起变成纵向 flex, 它的 content
+ * 又带 align-items: center, 结果 72px 宽的开关被水平居中, 看起来像缩进错位
  */
 .el-form {
   display: flex;
@@ -133,8 +137,8 @@ defineExpose({ syncContent })
   flex: 1;
 }
 
-.el-form-item:last-child,
-.el-form-item:last-child :deep(.el-form-item__content) {
+.content-field,
+.content-field :deep(.el-form-item__content) {
   display: flex;
   flex-direction: column;
   flex: 1;
