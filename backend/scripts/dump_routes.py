@@ -1,7 +1,10 @@
-"""从后端源码提取完整的路由清单, 用于生成 docs/接口文档.md 里的接口表
+"""从后端模块源码提取完整的路由清单, 用于生成 docs/接口文档.md 里的接口表
 
 只扫描"装饰器 + 函数签名"这一段, 不跨越到下一个接口
 按固定行数窗口扫描会把下一个接口的权限依赖误算进来(已踩过这个坑)
+
+扫描范围: app/modules/<模块 id>/ 下的接口文件(router.py 或模块自己的拆分文件),
+跳过 __init__.py 与 spec.py(元数据里没有接口)
 
 用法:
   python scripts/dump_routes.py            # 写到 stdout
@@ -13,7 +16,17 @@ import re
 import sys
 from pathlib import Path
 
-API_DIR = Path(__file__).resolve().parents[1] / "app" / "api" / "v1"
+MODULES_DIR = Path(__file__).resolve().parents[1] / "app" / "modules"
+SKIP_FILES = {"__init__.py", "spec.py"}
+
+
+def route_files() -> list[Path]:
+    """列出所有可能定义接口的模块文件
+
+    @return 排序后的文件列表(路径形如 app/modules/<模块 id>/router.py)
+    """
+    return sorted(path for path in MODULES_DIR.glob("*/*.py") if path.name not in SKIP_FILES)
+
 
 DECORATOR = re.compile(r'@router\.(get|post|put|patch|delete)\(\s*"([^"]*)"', re.I)
 PREFIX = re.compile(r'APIRouter\([^)]*prefix="([^"]*)"', re.S)
@@ -67,7 +80,7 @@ def main() -> None:
         pass
 
     rows = []
-    for path in sorted(API_DIR.glob("*.py")):
+    for path in route_files():
         src = path.read_text(encoding="utf-8")
         prefix = (PREFIX.search(src) or [None, ""])[1]
         tag = (TAG.search(src) or [None, path.stem])[1]
@@ -84,7 +97,7 @@ def main() -> None:
                     "path": (prefix + m.group(2)) or "/",
                     "auth": detect_auth(block),
                     "func": func,
-                    "file": path.name,
+                    "file": f"{path.parent.name}/{path.name}",
                 }
             )
 

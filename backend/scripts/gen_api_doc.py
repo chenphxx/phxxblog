@@ -149,7 +149,7 @@ def load_dump_routes():
 
 def collect_rows(dump_routes) -> list[dict]:
     rows: list[dict] = []
-    for path in sorted(dump_routes.API_DIR.glob("*.py")):
+    for path in dump_routes.route_files():
         src = path.read_text(encoding="utf-8")
         prefix = (dump_routes.PREFIX.search(src) or [None, ""])[1]
         tag = (dump_routes.TAG.search(src) or [None, path.stem])[1]

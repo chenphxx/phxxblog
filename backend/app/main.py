@@ -9,12 +9,12 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.api.v1 import api_router, root_module_routers
 from app.core.config import settings
 from app.core.database import Base, check_schema, engine, ensure_schema_version_table
 from app.core.middleware import restrict_assets_to_admin, restrict_docs_to_admin
 from app.modules import build_registry
 from app.modules.deps import require_module
+from app.modules.router import api_router, root_module_routers
 
 # 导入定义清单并做一致性校验(幂等): 路由装配与接口文档都依赖注册表
 build_registry()
@@ -98,7 +98,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
 
 # ---------- 路由 ----------
 
-# /api/v1/** 全部由模块注册表装配(见 app/api/v1/__init__.py)
+# /api/v1/** 全部由模块注册表装配(见 app/modules/router.py)
 app.include_router(api_router)
 
 # 挂在根路径的模块路由(RSS / Sitemap): 同样受模块开关约束

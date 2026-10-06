@@ -1,12 +1,15 @@
 """模块元数据定义
 
 一个"模块"就是一项可以被整体启用/禁用, 并且可以带自己配置的能力. 模块只描述
-元数据与它占用的资源(路由, 权限码, 配置项), 不关心实现放在哪里:
+元数据与它占用的资源(路由, 权限码, 配置项), 实现放在模块自己的包目录里:
 
-  - 新模块: 实现直接写在 app/modules/<id>/ 下, 由该模块自己的 router 对外提供接口
-  - 老模块: 实现仍在 app/api/v1/*.py, 这里只声明元数据并引用它的 router
+    app/modules/<模块 id>/
+      __init__.py   导入即注册(`from .spec import SPEC`)
+      spec.py       元数据与它引用的 router
+      router.py     接口实现(接口多的模块可以再拆文件, 由 spec 汇总成 routers)
 
-两种形态对调用方完全一致, 因此可以按需逐个把老功能搬到新结构, 不必一次性大搬迁
+共享的基础设施不跟着搬: models(数据库实体), schemas(接口契约), services(业务逻辑),
+core(配置/安全/权限)统一留在 app/ 下, 模块通过 import 使用它们
 """
 
 from dataclasses import dataclass, field
