@@ -10,12 +10,14 @@ import CommentSection from '@/components/CommentSection.vue'
 import HotPostsCard from '@/components/HotPostsCard.vue'
 import MetaIcon from '@/components/MetaIcon.vue'
 import { useAuthStore } from '@/stores/auth'
+import { useModulesStore } from '@/stores/modules'
 import { chipStyle, LIKES_COLOR, VIEWS_COLOR } from '@/utils/chipColor'
 import { formatDateTime } from '@/utils/datetime'
 
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
+const modules = useModulesStore()
 const post = ref<PostDetail | null>(null)
 const liked = ref(false)
 const loading = ref(true)
@@ -117,8 +119,11 @@ async function toggleLike() {
 
 watch(() => route.params.id, load)
 onMounted(() => {
-  load()
-  loadHotPosts()
+  // 先拿模块开关: 评论模块被禁用时不再挂载评论区(避免发出注定 404 的请求)
+  modules.load().then(() => {
+    load()
+    loadHotPosts()
+  })
   window.addEventListener('scroll', onScroll, { passive: true })
 })
 onBeforeUnmount(() => {
@@ -231,7 +236,7 @@ onBeforeUnmount(() => {
             </footer>
           </article>
 
-          <CommentSection :post-id="post.id" />
+          <CommentSection v-if="modules.isEnabled('comments')" :post-id="post.id" />
         </div>
 
         <aside class="post-aside">

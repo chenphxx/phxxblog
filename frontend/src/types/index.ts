@@ -299,3 +299,57 @@ export interface HistoryEvent {
   source?: string
   url?: string
 }
+
+/** 模块配置项的类型(决定后台用什么控件渲染) */
+export type ModuleSettingKind = 'bool' | 'int' | 'text' | 'json'
+
+/** 模块的一项配置(后端 app/modules 里的 ModuleSetting) */
+export interface ModuleSettingSpec {
+  key: string
+  name: string
+  description: string
+  kind: ModuleSettingKind
+  minimum: number | null
+  maximum: number | null
+  /** 是否随公开接口下发(前台可见) */
+  public: boolean
+  value: boolean | number | string
+}
+
+/** 单个模块的完整信息(后台"模块管理"用) */
+export interface ModuleInfo {
+  id: string
+  name: string
+  description: string
+  category: string
+  /** 核心模块不能在后台禁用 */
+  locked: boolean
+  default_enabled: boolean
+  /** 是否被显式打开 */
+  enabled: boolean
+  /** 是否真正可用(启用且依赖链上的模块都启用) */
+  available: boolean
+  /** 当前被禁用的依赖 */
+  disabled_dependencies: string[]
+  depends_on: string[]
+  permissions: string[]
+  api_prefix: string
+  has_backend: boolean
+  frontend_only: boolean
+  settings: ModuleSettingSpec[]
+}
+
+/** 模块清单响应(后台) */
+export interface ModuleAdminData {
+  modules: ModuleInfo[]
+  /** 分类键 -> 展示名 */
+  categories: Record<string, string>
+}
+
+/** 前台公开的模块状态 */
+export interface PublicModuleState {
+  /** 当前可用的模块 id */
+  ids: string[]
+  /** 模块 id -> 公开配置 */
+  config: Record<string, Record<string, boolean | number | string>>
+}

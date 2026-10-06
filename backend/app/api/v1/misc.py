@@ -1,9 +1,5 @@
-"""杂项接口: 更新日志等"""
+"""杂项接口: 更新日志(仅管理员)"""
 
-import json
-from datetime import date
-
-import requests
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -13,7 +9,6 @@ from app.core.database import get_db
 from app.core.deps import require_permission
 from app.core.permissions import Perm
 from app.core.response import ok
-from app.models.setting import Setting
 from app.models.user import User
 
 router = APIRouter(prefix="/misc", tags=["其他"])
@@ -46,72 +41,3 @@ def update_changelog(
     path = PROJECT_ROOT / "CHANGELOG.md"
     path.write_text(data.content, encoding="utf-8")
     return ok(message="更新日志已保存")
-
-
-# 一言缓存存在 settings 表里: 同一天内所有访客共用一条, 每天只真正请求一次外部接口
-SAYING_CACHE_KEY = "saying_cache"
-
-
-def _read_saying_cache(db: Session) -> dict:
-    """读取一言缓存(格式: {"date": "YYYY-MM-DD", "text": "..."}), 解析失败返回空"""
-    row = db.get(Setting, SAYING_CACHE_KEY)
-    if not row:
-        return {}
-    try:
-        data = json.loads(row.setting_value)
-    except (json.JSONDecodeError, TypeError):
-        return {}
-    return data if isinstance(data, dict) else {}
-
-
-@router.get("/saying", response_model=dict)
-def saying(force: bool = False, db: Session = Depends(get_db)):
-    """一言(随机语录): 代理 uapis.cn 接口, 避免前端跨域
-
-    默认每天只刷新一次(结果缓存在 settings 表), 前端手动点"换一句"时传 force=true 强制刷新
-    """
-    today = date.today().isoformat()
-    cache = _read_saying_cache(db)
-    if not force and cache.get("date") == today and cache.get("text"):
-        return ok({"text": cache["text"], "cached": True})
-    try:
-        resp = requests.get("https://uapis.cn/api/v1/saying", timeout=10)
-        resp.raise_for_status()
-        data = resp.json()
-        text = (data.get("text") or "").strip()
-    except Exception:
-        text = ""
-    if not text:
-        # 拉取失败时退回旧缓存(可能不是今天的), 避免页面空白
-        return ok({"text": cache.get("text", ""), "cached": bool(cache.get("text"))})
-    row = db.get(Setting, SAYING_CACHE_KEY)
-    value = json.dumps({"date": today, "text": text}, ensure_ascii=False)
-    if row:
-        row.setting_value = value
-    else:
-        db.add(
-            Setting(
-                setting_key=SAYING_CACHE_KEY,
-                setting_value=value,
-                description="一言每日缓存(自动维护)",
-            )
-        )
-    db.commit()
-    return ok({"text": text, "cached": False})
-
-
-@router.get("/history/programmer-today", response_model=dict)
-def programmer_history_today():
-    """程序员历史上的今天(公开): 代理 uapis.cn 接口, 避免前端跨域"""
-    try:
-        resp = requests.get("https://uapis.cn/api/v1/history/programmer/today", timeout=15)
-        resp.raise_for_status()
-        data = resp.json()
-        return ok(
-            {
-                "date": data.get("date") or "",
-                "events": data.get("events") or [],
-            }
-        )
-    except Exception:
-        return ok({"date": "", "events": []})

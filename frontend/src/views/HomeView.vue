@@ -13,6 +13,7 @@ import HomeSessionCard from '@/components/home/HomeSessionCard.vue'
 import HomeHistoryCard from '@/components/home/HomeHistoryCard.vue'
 import HomeContributionsSection from '@/components/home/HomeContributionsSection.vue'
 import { useAuthStore } from '@/stores/auth'
+import { useModulesStore } from '@/stores/modules'
 import { usePagedList } from '@/composables/usePagedList'
 
 /**
@@ -33,6 +34,7 @@ const categories = ref<Category[]>([])
 const tags = ref<Tag[]>([])
 const loading = ref(true)
 const auth = useAuthStore()
+const modules = useModulesStore()
 const isAdmin = computed(() => auth.user?.role_codes.includes('admin'))
 
 /**
@@ -131,6 +133,8 @@ onActivated(async () => {
 
 onMounted(async () => {
   try {
+    // 先拿模块开关: 终端卡片/历史上的今天/发布记录都要按它决定是否渲染
+    await modules.load()
     const [settingData, categoryData, tagData] = await Promise.all([
       settingsApi.public(),
       categoryApi.list(),
@@ -175,7 +179,7 @@ onMounted(async () => {
 
         <!-- 终端会话: 个性化模块, 缩短后放在个人介绍下方 -->
         <HomeSessionCard
-          v-if="settings && settings.show_session !== false"
+          v-if="settings && settings.show_session !== false && modules.isEnabled('saying')"
           ref="sessionRef"
           :settings="settings"
           :total-posts="totalPosts"
@@ -194,7 +198,7 @@ onMounted(async () => {
         <section ref="postsAnchor" class="panel">
           <div class="panel-head">
             <h2 class="panel-title">最新文章</h2>
-            <router-link to="/search" class="panel-link">查看全部 →</router-link>
+            <router-link v-if="modules.isEnabled('search')" to="/search" class="panel-link">查看全部 →</router-link>
           </div>
           <div v-loading="postsLoading" class="posts-list">
             <PostCard v-for="post in posts" :key="post.id" :post="post" />
@@ -204,14 +208,20 @@ onMounted(async () => {
         </section>
 
         <!-- 发布记录(热力图需要整行宽度, 放在主列底部) -->
-        <HomeContributionsSection v-if="settings && settings.show_contributions !== false" ref="contributionsRef" />
+        <HomeContributionsSection
+          v-if="settings && settings.show_contributions !== false && modules.isEnabled('stats')"
+          ref="contributionsRef"
+        />
       </div>
 
       <!-- 右侧栏: 次级模块 -->
       <aside class="home-aside">
         <HomeHotPostsCard ref="hotPostsRef" />
         <HomeSiteLinksCard v-if="isAdmin && settings?.website_links?.length" :links="settings.website_links" />
-        <HomeHistoryCard v-if="settings && settings.show_history !== false" ref="historyRef" />
+        <HomeHistoryCard
+          v-if="settings && settings.show_history !== false && modules.isEnabled('history')"
+          ref="historyRef"
+        />
       </aside>
     </div>
 

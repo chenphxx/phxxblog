@@ -12,11 +12,14 @@ import type {
   ImportResult,
   LinkPreview,
   MediaItem,
+  ModuleAdminData,
+  ModuleInfo,
   OperationLog,
   Page,
   PostDetail,
   PostDetailAdmin,
   PostItem,
+  PublicModuleState,
   PublicSettings,
   Role,
   Tag,
@@ -176,6 +179,14 @@ export const settingsApi = {
   public: () => http.get<PublicSettings>('/settings/public'),
   all: () => http.get<Record<string, string>>('/settings'),
   update: (data: Record<string, unknown>) => http.put<null>('/settings', data),
+}
+
+/** 模块管理: 公开接口给前台决定注册哪些页面, 后台接口用于启停与配置 */
+export const modulesApi = {
+  public: () => http.get<PublicModuleState>('/modules'),
+  admin: () => http.get<ModuleAdminData>('/modules/admin'),
+  update: (modules: Record<string, { enabled?: boolean; settings?: Record<string, unknown> }>) =>
+    http.put<{ modules: ModuleInfo[] }>('/modules/admin', { modules }),
 }
 
 /** 搜索 */

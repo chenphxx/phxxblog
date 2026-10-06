@@ -11,8 +11,26 @@ from app.core.config import settings
 from app.core.database import get_db
 from app.models.post import Post
 from app.models.setting import Setting
+from app.modules.registry import registry
+from app.modules.state import module_config
 
 router = APIRouter(tags=["RSS/SEO"])
+
+# RSS 最多包含多少篇最新文章: 模块配置(module.rss.post_limit)优先, 没配置时用它
+DEFAULT_POST_LIMIT = 50
+
+
+def _post_limit(db: Session) -> int:
+    """取 RSS 的文章条数上限(模块配置)
+
+    @param db: 数据库会话
+    @return 条数上限
+    """
+    spec = registry.get("rss")
+    if spec is None:
+        return DEFAULT_POST_LIMIT
+    value = module_config(db, spec).get("post_limit")
+    return int(value) if isinstance(value, int) else DEFAULT_POST_LIMIT
 
 
 def _aware(value: datetime | None) -> datetime | None:
@@ -44,7 +62,11 @@ def rss_feed(db: Session = Depends(get_db)):
     feed.language("zh-CN")
 
     posts = (
-        db.query(Post).filter(Post.status == 2).order_by(Post.published_at.desc()).limit(50).all()
+        db.query(Post)
+        .filter(Post.status == 2)
+        .order_by(Post.published_at.desc())
+        .limit(_post_limit(db))
+        .all()
     )
     for post in posts:
         entry = feed.add_entry()

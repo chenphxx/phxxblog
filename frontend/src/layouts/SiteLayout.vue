@@ -1,23 +1,15 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import {
-  Clock,
-  Collection,
-  Document,
-  EditPen,
-  HomeFilled,
-  Menu,
-  Notebook,
-  Setting,
-  User,
-} from '@element-plus/icons-vue'
+import { Menu, Setting, User } from '@element-plus/icons-vue'
 import Kanbanniang from '@/components/Kanbanniang.vue'
 import KanbanniangSwitcher from '@/components/KanbanniangSwitcher.vue'
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue'
 import { settingsApi, statsApi } from '@/api'
+import { FRONT_NAV_ITEMS } from '@/modules/registry'
 import { useAuthStore } from '@/stores/auth'
 import { useKanbanniangStore } from '@/stores/kanbanniang'
+import { useModulesStore } from '@/stores/modules'
 import type { PublicSettings } from '@/types'
 
 /**
@@ -31,6 +23,7 @@ import type { PublicSettings } from '@/types'
 
 const auth = useAuthStore()
 const kanbanniang = useKanbanniangStore()
+const modules = useModulesStore()
 const route = useRoute()
 const hasToken = computed(() => !!auth.accessToken)
 const isAdmin = computed(() => auth.user?.role_codes.includes('admin'))
@@ -52,6 +45,27 @@ const beianList = computed(() => (settings.value?.beian_info ?? []).filter((b) =
 /** 页脚无任何内容时整体不渲染 */
 const hasFooter = computed(() => beianList.value.length > 0 || !!footerText.value)
 
+/**
+ * 侧栏导航: 由模块注册表生成, 再按登录状态与模块开关过滤
+ *
+ * 这样"某个模块被禁用后导航里不再出现它的入口"是自动的, 布局本身不需要知道有哪些模块
+ *
+ * @param group primary 主导航 / secondary 次级导航
+ * @returns 需要渲染的导航项
+ */
+function visibleNav(group: 'primary' | 'secondary') {
+  return FRONT_NAV_ITEMS.filter((item) => {
+    if ((item.group ?? 'primary') !== group) return false
+    if (item.requiresAuth && !hasToken.value) return false
+    if (item.adminOnly && !isAdmin.value) return false
+    if (item.gated !== false && item.moduleId && !modules.isEnabled(item.moduleId)) return false
+    return true
+  })
+}
+
+const primaryNav = computed(() => visibleNav('primary'))
+const secondaryNav = computed(() => visibleNav('secondary'))
+
 /** 切换路由后收起抽屉(窄屏点完导航就该看到内容) */
 watch(
   () => route.fullPath,
@@ -61,8 +75,12 @@ watch(
 )
 
 onMounted(async () => {
-  // 页面访问埋点(PV/UV)
-  statsApi.track({ url: location.hash || '/' }).catch(() => {})
+  // 站点设置与模块开关一起取: 首页各模块的展示条件要用到两者
+  await modules.load()
+  // 页面访问埋点(PV/UV): 统计模块被禁用时不再产生请求
+  if (modules.isEnabled('stats')) {
+    statsApi.track({ url: location.hash || '/' }).catch(() => {})
+  }
   try {
     settings.value = await settingsApi.public()
     // 后台的看板娘总开关(系统设置 - 前台展示), 关掉后前台不加载也不展示
@@ -105,53 +123,41 @@ onMounted(async () => {
       <p v-if="settings?.site_bio" class="app-brand-bio">{{ settings.site_bio }}</p>
 
       <nav class="app-nav" aria-label="主导航">
-        <!-- 首页是父路由的默认子路由, 记录路径与父路由相同, Vue Router 会把它当作任意子路由的
-             active 记录, 因此这里关掉默认的前缀匹配, 只在精确命中首页时套用激活样式 -->
-        <router-link to="/" active-class="" exact-active-class="router-link-active">
-          <el-icon class="nav-icon"><HomeFilled /></el-icon>
-          <span>首页</span>
-        </router-link>
-        <router-link to="/search">
-          <el-icon class="nav-icon"><Document /></el-icon>
-          <span>全部文章</span>
-        </router-link>
-        <router-link to="/archive">
-          <el-icon class="nav-icon"><Collection /></el-icon>
-          <span>归档</span>
+        <!-- 导航项来自模块注册表: 首页是父路由的默认子路由, 记录路径与父路由相同,
+             Vue Router 会把它当作任意子路由的 active 记录, 因此对 exact 的入口关掉
+             默认的前缀匹配, 只在精确命中时才套用激活样式 -->
+        <router-link
+          v-for="item in primaryNav"
+          :key="item.to"
+          :to="item.to"
+          :active-class="item.exact ? '' : 'router-link-active'"
+          exact-active-class="router-link-active"
+        >
+          <el-icon v-if="item.icon" class="nav-icon"><component :is="item.icon" /></el-icon>
+          <span>{{ item.label }}</span>
         </router-link>
       </nav>
 
       <div class="app-nav-divider" />
 
-      <nav v-if="hasToken" class="app-nav app-nav-secondary" aria-label="创作与后台">
-        <router-link to="/write">
-          <el-icon class="nav-icon"><EditPen /></el-icon>
-          <span>写文章</span>
+      <nav class="app-nav app-nav-secondary" aria-label="创作与后台">
+        <router-link v-for="item in secondaryNav" :key="item.to" :to="item.to">
+          <el-icon v-if="item.icon" class="nav-icon"><component :is="item.icon" /></el-icon>
+          <span>{{ item.label }}</span>
         </router-link>
-        <template v-if="isAdmin">
-          <router-link to="/changelog">
-            <el-icon class="nav-icon"><Clock /></el-icon>
-            <span>更新日志</span>
-          </router-link>
-          <router-link to="/diary">
-            <el-icon class="nav-icon"><Notebook /></el-icon>
-            <span>日记</span>
-          </router-link>
-        </template>
         <router-link to="/admin">
           <el-icon class="nav-icon"><Setting /></el-icon>
           <span>管理后台</span>
         </router-link>
-      </nav>
-      <nav v-else class="app-nav app-nav-secondary" aria-label="登录">
-        <router-link to="/admin/login">
+        <!-- 未登录时给一个入口: 这条与模块无关, 由布局自己渲染 -->
+        <router-link v-if="!hasToken" to="/admin/login">
           <el-icon class="nav-icon"><User /></el-icon>
           <span>登录</span>
         </router-link>
       </nav>
 
       <div class="app-sidebar-foot">
-        <KanbanniangSwitcher />
+        <KanbanniangSwitcher v-if="modules.isEnabled('kanbanniang')" />
         <ThemeSwitcher />
       </div>
     </aside>
@@ -178,7 +184,7 @@ onMounted(async () => {
       </footer>
     </div>
 
-    <!-- 看板娘: 固定浮层, 只在后台之外的前台布局里挂载 -->
-    <Kanbanniang />
+    <!-- 看板娘: 固定浮层, 只在后台之外的前台布局里挂载; 模块禁用时连运行时都不加载 -->
+    <Kanbanniang v-if="modules.isEnabled('kanbanniang')" />
   </div>
 </template>

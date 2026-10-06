@@ -2,23 +2,14 @@
 import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
-import {
-  Avatar,
-  ChatDotRound,
-  Collection,
-  DataAnalysis,
-  Document,
-  HomeFilled,
-  Notebook,
-  Picture,
-  Setting,
-  Tickets,
-  User,
-} from '@element-plus/icons-vue'
+import { HomeFilled, Notebook } from '@element-plus/icons-vue'
+import { ADMIN_NAV_ITEMS } from '@/modules/registry'
 import { useAuthStore } from '@/stores/auth'
+import { useModulesStore } from '@/stores/modules'
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue'
 
 const auth = useAuthStore()
+const modules = useModulesStore()
 const router = useRouter()
 const route = useRoute()
 
@@ -28,6 +19,19 @@ const activeMenu = computed(() => {
 })
 
 const isAdmin = computed(() => auth.user?.role_codes.includes('admin'))
+
+/**
+ * 后台菜单: 由模块注册表生成, 再按模块开关与管理员身份过滤
+ *
+ * 模块被禁用时对应菜单项直接消失, 布局不需要知道系统里有哪些模块
+ */
+const menuItems = computed(() =>
+  ADMIN_NAV_ITEMS.filter((item) => {
+    if (item.adminOnly && !isAdmin.value) return false
+    if (item.gated !== false && item.moduleId && !modules.isEnabled(item.moduleId)) return false
+    return true
+  }),
+)
 
 /** 新窗口打开后端 API 文档(仅 admin 可访问) */
 function openDocs() {
@@ -45,6 +49,8 @@ async function logout() {
 }
 
 onMounted(() => {
+  // 先拿模块开关, 菜单才能正确过滤(拿不到时按"全部可用"处理)
+  modules.load()
   // 已有令牌但本地无用户信息时, 从后端拉取
   if (!auth.user && auth.accessToken) {
     auth.fetchMe().catch(() => {})
@@ -66,32 +72,9 @@ onMounted(() => {
     <el-aside width="240px" class="admin-aside">
       <div class="admin-brand">博客管理</div>
       <el-menu :default-active="activeMenu" router background-color="transparent">
-        <el-menu-item index="/admin/dashboard">
-          <el-icon><DataAnalysis /></el-icon><span>仪表盘</span>
-        </el-menu-item>
-        <el-menu-item index="/admin/posts">
-          <el-icon><Document /></el-icon><span>文章管理</span>
-        </el-menu-item>
-        <el-menu-item index="/admin/categories">
-          <el-icon><Collection /></el-icon><span>分类标签</span>
-        </el-menu-item>
-        <el-menu-item index="/admin/comments">
-          <el-icon><ChatDotRound /></el-icon><span>评论管理</span>
-        </el-menu-item>
-        <el-menu-item index="/admin/media">
-          <el-icon><Picture /></el-icon><span>媒体库</span>
-        </el-menu-item>
-        <el-menu-item v-if="isAdmin" index="/admin/users">
-          <el-icon><User /></el-icon><span>用户管理</span>
-        </el-menu-item>
-        <el-menu-item v-if="isAdmin" index="/admin/settings">
-          <el-icon><Setting /></el-icon><span>系统设置</span>
-        </el-menu-item>
-        <el-menu-item v-if="isAdmin" index="/admin/logs">
-          <el-icon><Tickets /></el-icon><span>操作日志</span>
-        </el-menu-item>
-        <el-menu-item index="/admin/profile">
-          <el-icon><Avatar /></el-icon><span>个人资料</span>
+        <el-menu-item v-for="item in menuItems" :key="item.to" :index="item.to">
+          <el-icon v-if="item.icon"><component :is="item.icon" /></el-icon>
+          <span>{{ item.label }}</span>
         </el-menu-item>
       </el-menu>
     </el-aside>

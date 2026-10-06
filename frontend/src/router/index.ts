@@ -1,4 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
+import { ADMIN_MODULE_ROUTES, CORE_ADMIN_ROUTES, FRONT_MODULE_ROUTES } from '@/modules/registry'
+import { useModulesStore } from '@/stores/modules'
 import { getAccessToken } from '@/utils/tokenStorage'
 
 // 记录离开页面时的滚动位置, 返回时恢复
@@ -24,35 +26,10 @@ const router = createRouter({
       path: '/',
       component: () => import('@/layouts/SiteLayout.vue'),
       children: [
+        // 首页属于布局自身: 即使模块全被禁用, 站点也要有一个可访问的落地页
         { path: '', name: 'home', component: () => import('@/views/HomeView.vue') },
-        { path: 'post/:id', name: 'post-detail', component: () => import('@/views/PostDetailView.vue') },
-        { path: 'archive', name: 'archive', component: () => import('@/views/ArchiveView.vue') },
-        { path: 'posts', name: 'all-posts', component: () => import('@/views/AllPostsView.vue') },
-        { path: 'search', name: 'search', component: () => import('@/views/SearchView.vue') },
-        {
-          path: 'write',
-          name: 'write',
-          component: () => import('@/views/WriteView.vue'),
-          meta: { requiresAuth: true },
-        },
-        {
-          path: 'write/:id',
-          name: 'write-edit',
-          component: () => import('@/views/WriteView.vue'),
-          meta: { requiresAuth: true },
-        },
-        {
-          path: 'changelog',
-          name: 'changelog',
-          component: () => import('@/views/ChangelogView.vue'),
-          meta: { requiresAuth: true },
-        },
-        {
-          path: 'diary',
-          name: 'diary',
-          component: () => import('@/views/DiaryView.vue'),
-          meta: { requiresAuth: true },
-        },
+        // 其余页面由模块注册表提供(见 modules/registry.ts)
+        ...FRONT_MODULE_ROUTES,
       ],
     },
     {
@@ -64,30 +41,29 @@ const router = createRouter({
       path: '/admin',
       component: () => import('@/views/admin/AdminLayout.vue'),
       meta: { requiresAuth: true },
-      children: [
-        { path: '', redirect: '/admin/dashboard' },
-        { path: 'dashboard', name: 'admin-dashboard', component: () => import('@/views/admin/DashboardView.vue') },
-        { path: 'posts', name: 'admin-posts', component: () => import('@/views/admin/PostManageView.vue') },
-        { path: 'posts/new', name: 'admin-post-new', component: () => import('@/views/admin/PostEditView.vue') },
-        { path: 'posts/:id/edit', name: 'admin-post-edit', component: () => import('@/views/admin/PostEditView.vue') },
-        { path: 'categories', name: 'admin-categories', component: () => import('@/views/admin/CategoryTagView.vue') },
-        { path: 'comments', name: 'admin-comments', component: () => import('@/views/admin/CommentManageView.vue') },
-        { path: 'media', name: 'admin-media', component: () => import('@/views/admin/MediaManageView.vue') },
-        { path: 'users', name: 'admin-users', component: () => import('@/views/admin/UserManageView.vue') },
-        { path: 'settings', name: 'admin-settings', component: () => import('@/views/admin/SettingsView.vue') },
-        { path: 'logs', name: 'admin-logs', component: () => import('@/views/admin/LogsView.vue') },
-        { path: 'profile', name: 'admin-profile', component: () => import('@/views/admin/ProfileView.vue') },
-      ],
+      children: [{ path: '', redirect: '/admin/dashboard' }, ...ADMIN_MODULE_ROUTES, ...CORE_ADMIN_ROUTES],
     },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
 })
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   if (to.meta.requiresAuth && !getAccessToken()) {
     return { name: 'admin-login', query: { redirect: to.fullPath } }
   }
-  return true
+
+  // 模块开关: 页面属于某个模块时, 先确认该模块当前可用
+  const moduleId = to.meta.module as string | undefined
+  if (!moduleId) {
+    return true
+  }
+  const modules = useModulesStore()
+  await modules.load()
+  if (modules.isEnabled(moduleId)) {
+    return true
+  }
+  // 模块被禁用: 后台页面回落到"个人资料"(它不属于任何模块), 前台回首页
+  return { path: to.path.startsWith('/admin') ? '/admin/profile' : '/' }
 })
 
 export default router
