@@ -25,6 +25,7 @@ import {
   DataAnalysis,
   Document,
   EditPen,
+  Grid,
   Notebook,
   Picture,
   Setting,
@@ -108,6 +109,15 @@ export const MODULES: FrontModule[] = [
     adminNav: [{ to: '/admin/categories', label: '分类标签', icon: Collection }],
     adminRoutes: [
       { path: 'categories', name: 'admin-categories', component: () => import('@/views/admin/CategoryTagView.vue') },
+    ],
+  },
+  {
+    id: 'modules',
+    name: '模块管理',
+    description: '启用/禁用模块并维护模块配置',
+    adminNav: [{ to: '/admin/modules', label: '模块管理', icon: Grid, adminOnly: true }],
+    adminRoutes: [
+      { path: 'modules', name: 'admin-modules', component: () => import('@/views/admin/ModuleManageView.vue') },
     ],
   },
   {
