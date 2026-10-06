@@ -223,8 +223,14 @@ onMounted(load)
   <div>
     <h2>系统设置</h2>
 
+    <!-- 页眉与其它后台页保持一致: h2 独占一行, 下面是"左侧说明 + 右侧操作"的工具条 -->
     <div class="admin-toolbar settings-toolbar">
-      <span v-if="dirty" class="muted">有未保存的修改</span>
+      <div class="admin-toolbar-filters">
+        <span class="muted">
+          <template v-if="dirty">有未保存的修改</template>
+          <template v-else>所有修改都已保存</template>
+        </span>
+      </div>
       <div class="admin-toolbar-actions">
         <el-button type="primary" :loading="saving" @click="save">保存设置</el-button>
       </div>
@@ -421,9 +427,10 @@ onMounted(load)
   top: -20px;
   z-index: 2;
   margin-bottom: 16px;
-  padding: 12px 0 14px;
+  /* 吸顶时用页面底色盖住下方内容; 平时与普通工具条无异(不要边框, 否则页眉看起来像一条横杆) */
   background: var(--bg);
-  border-bottom: 1px solid var(--border);
+  padding-top: 12px;
+  padding-bottom: 12px;
 }
 
 /* 每张卡片一个配置域, 卡片间距与个人资料页保持一致 */

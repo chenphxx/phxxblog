@@ -215,6 +215,13 @@ onMounted(load)
   margin-bottom: 16px;
 }
 
+/* 分类标题与卡片内其它区块保持同一节奏 */
+.module-group > h3 {
+  margin: 0 0 var(--space-4);
+  font-size: 17px;
+  font-weight: 650;
+}
+
 .module-row {
   padding: 14px 0;
   border-top: 1px solid var(--border);

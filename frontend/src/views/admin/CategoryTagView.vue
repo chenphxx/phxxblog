@@ -97,15 +97,24 @@ onMounted(load)
 <template>
   <div>
     <h2>分类与标签</h2>
+
+    <!-- 页眉与其它后台页一致: 标题独占一行, 工具条左侧放说明, 右侧放主操作 -->
+    <div class="admin-toolbar">
+      <div class="admin-toolbar-filters">
+        <span class="muted">
+          <template v-if="tab === 'category'">共 {{ categories.length }} 个分类</template>
+          <template v-else>共 {{ tags.length }} 个标签</template>
+        </span>
+      </div>
+      <div class="admin-toolbar-actions">
+        <el-button v-if="tab === 'category'" type="primary" @click="openCategoryDialog()">新增分类</el-button>
+        <el-button v-else type="primary" @click="openTagDialog()">新增标签</el-button>
+      </div>
+    </div>
+
     <el-tabs v-model="tab">
       <el-tab-pane label="分类" name="category">
         <div class="card">
-          <div class="admin-toolbar">
-            <span class="muted">共 {{ categories.length }} 个分类</span>
-            <div class="admin-toolbar-actions">
-              <el-button type="primary" @click="openCategoryDialog()">新增分类</el-button>
-            </div>
-          </div>
           <el-table :data="categories">
             <el-table-column prop="name" label="名称" />
             <el-table-column prop="slug" label="别名" />
@@ -131,12 +140,6 @@ onMounted(load)
 
       <el-tab-pane label="标签" name="tag">
         <div class="card">
-          <div class="admin-toolbar">
-            <span class="muted">共 {{ tags.length }} 个标签</span>
-            <div class="admin-toolbar-actions">
-              <el-button type="primary" @click="openTagDialog()">新增标签</el-button>
-            </div>
-          </div>
           <el-table :data="tags">
             <el-table-column prop="name" label="名称" />
             <el-table-column prop="slug" label="别名" />
