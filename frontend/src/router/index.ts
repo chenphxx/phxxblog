@@ -1,5 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import { ADMIN_MODULE_ROUTES, CORE_ADMIN_ROUTES, FRONT_MODULE_ROUTES } from '@/modules/registry'
+import { ADMIN_MODULE_ROUTES, FRONT_MODULE_ROUTES } from '@/modules/registry'
 import { useModulesStore } from '@/stores/modules'
 import { getAccessToken } from '@/utils/tokenStorage'
 
@@ -41,7 +41,7 @@ const router = createRouter({
       path: '/admin',
       component: () => import('@/views/admin/AdminLayout.vue'),
       meta: { requiresAuth: true },
-      children: [{ path: '', redirect: '/admin/dashboard' }, ...ADMIN_MODULE_ROUTES, ...CORE_ADMIN_ROUTES],
+      children: [{ path: '', redirect: '/admin/dashboard' }, ...ADMIN_MODULE_ROUTES],
     },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],

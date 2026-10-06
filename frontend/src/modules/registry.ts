@@ -12,8 +12,8 @@
  * 模块是否可用由后端决定(见 stores/modules.ts): 被禁用时它的导航项不渲染, 路由
  * 直接访问也会被守卫送回首页
  *
- * 只有真正属于"布局自身"的入口留在这里(首页, 登录, 管理后台, 个人资料),
- * 它们不属于任何模块
+ * 只有真正属于"布局自身"的入口留在这里(首页与登录页); 后台外壳与个人资料属于
+ * admin 模块(核心, 不可禁用)
  */
 
 import type { Component } from 'vue'
@@ -81,6 +81,13 @@ function withModule(moduleId: string, routes: RouteRecordRaw[]): RouteRecordRaw[
  * 每个模块占用的前台入口与页面
  */
 export const MODULES: FrontModule[] = [
+  {
+    id: 'admin',
+    name: '管理后台',
+    description: '后台的页面框架, 侧栏菜单与个人资料页',
+    adminNav: [{ to: '/admin/profile', label: '个人资料', icon: Avatar }],
+    adminRoutes: [{ path: 'profile', name: 'admin-profile', component: () => import('@/views/admin/ProfileView.vue') }],
+  },
   {
     id: 'auth',
     name: '认证与会话',
@@ -266,14 +273,6 @@ export const MODULES: FrontModule[] = [
  */
 export const CORE_FRONT_NAV: ModuleNavItem[] = [{ to: '/', label: '首页', group: 'primary', exact: true, gated: false }]
 
-/** 与模块无关的后台菜单项 */
-export const CORE_ADMIN_NAV: ModuleNavItem[] = [{ to: '/admin/profile', label: '个人资料', icon: Avatar, gated: false }]
-
-/** 与模块无关的后台路由 */
-export const CORE_ADMIN_ROUTES: RouteRecordRaw[] = [
-  { path: 'profile', name: 'admin-profile', component: () => import('@/views/admin/ProfileView.vue') },
-]
-
 /** 前台全部模块路由(已带 meta.module) */
 export const FRONT_MODULE_ROUTES: RouteRecordRaw[] = MODULES.flatMap((module) =>
   withModule(module.id, module.frontRoutes ?? []),
@@ -298,7 +297,18 @@ export interface ResolvedNavItem extends ModuleNavItem {
  * 与模块注册顺序解耦: 模块按"核心/内容/数据/扩展"登记, 而后台菜单按使用频率排,
  * 这里显式列出顺序, 未列出的模块按登记顺序追加在后面
  */
-const ADMIN_NAV_ORDER = ['dashboard', 'posts', 'taxonomy', 'comments', 'media', 'users', 'settings', 'modules', 'logs']
+const ADMIN_NAV_ORDER = [
+  'dashboard',
+  'posts',
+  'taxonomy',
+  'comments',
+  'media',
+  'users',
+  'settings',
+  'modules',
+  'logs',
+  'admin',
+]
 
 function orderedModules(): FrontModule[] {
   const byId = new Map(MODULES.map((module) => [module.id, module]))
@@ -313,8 +323,7 @@ export const FRONT_NAV_ITEMS: ResolvedNavItem[] = [
   ...MODULES.flatMap((module) => (module.frontNav ?? []).map((item) => ({ ...item, moduleId: module.id }))),
 ]
 
-/** 后台菜单项(模块入口按 ADMIN_NAV_ORDER, 布局自身的入口在最后) */
+/** 后台菜单项(按 ADMIN_NAV_ORDER 排序, 未列出的模块按登记顺序追加) */
 export const ADMIN_NAV_ITEMS: ResolvedNavItem[] = [
   ...orderedModules().flatMap((module) => (module.adminNav ?? []).map((item) => ({ ...item, moduleId: module.id }))),
-  ...CORE_ADMIN_NAV,
 ]

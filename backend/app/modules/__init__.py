@@ -34,6 +34,7 @@ def build_registry() -> ModuleRegistry:
     # 导入模块包会触发各自 spec 里的 register(); 必须在校验之前完成
     # 核心 -> 内容 -> 数据 -> 扩展, 与后台"模块管理"的分组顺序一致
     from app.modules import (  # noqa: F401
+        admin,
         auth,
         changelog,
         comments,
