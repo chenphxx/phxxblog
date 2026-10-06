@@ -4,7 +4,7 @@
 """
 
 from app.api.v1.history import router
-from app.modules.base import ModuleSpec
+from app.modules.base import ModuleSetting, ModuleSpec
 from app.modules.registry import registry
 
 SPEC = registry.register(
@@ -15,6 +15,15 @@ SPEC = registry.register(
         category="extension",
         routers=(router,),
         api_prefix="/api/v1/misc/history/programmer-today",
+        settings=(
+            ModuleSetting(
+                key="api_url",
+                name="接口地址",
+                default="https://uapis.cn/api/v1/history/programmer/today",
+                description="返回 { date, events } 的 JSON 接口, 留空表示不请求上游",
+                kind="text",
+            ),
+        ),
         tags=("extension",),
     )
 )

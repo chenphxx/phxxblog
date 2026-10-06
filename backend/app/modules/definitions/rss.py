@@ -4,7 +4,7 @@
 """
 
 from app.api.v1.rss import router
-from app.modules.base import ModuleSpec
+from app.modules.base import ModuleSetting, ModuleSpec
 from app.modules.registry import registry
 
 SPEC = registry.register(
@@ -16,6 +16,17 @@ SPEC = registry.register(
         routers=(router,),
         root_routes=True,
         api_prefix="/rss.xml, /sitemap.xml",
+        settings=(
+            ModuleSetting(
+                key="post_limit",
+                name="RSS 文章条数",
+                default="50",
+                description="订阅源里最多包含多少篇最新文章",
+                kind="int",
+                minimum=1,
+                maximum=200,
+            ),
+        ),
         tags=("extension",),
     )
 )

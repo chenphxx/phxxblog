@@ -5,7 +5,7 @@
 """
 
 from app.api.v1.saying import router
-from app.modules.base import ModuleSpec
+from app.modules.base import ModuleSetting, ModuleSpec
 from app.modules.registry import registry
 
 SPEC = registry.register(
@@ -16,6 +16,22 @@ SPEC = registry.register(
         category="extension",
         routers=(router,),
         api_prefix="/api/v1/misc/saying",
+        settings=(
+            ModuleSetting(
+                key="api_url",
+                name="接口地址",
+                default="https://uapis.cn/api/v1/saying",
+                description="返回 { text } 的 JSON 接口, 留空表示不请求上游(只用缓存)",
+                kind="text",
+            ),
+            ModuleSetting(
+                key="daily_cache",
+                name="每天只刷新一次",
+                default="1",
+                description="开启后同一天内所有访客共用一条, 避免频繁请求上游",
+                kind="bool",
+            ),
+        ),
         tags=("extension",),
     )
 )
