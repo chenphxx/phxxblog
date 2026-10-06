@@ -224,7 +224,7 @@ onMounted(load)
     <h2>系统设置</h2>
 
     <!-- 页眉与其它后台页保持一致: h2 独占一行, 下面是"左侧说明 + 右侧操作"的工具条 -->
-    <div class="admin-toolbar settings-toolbar">
+    <div class="admin-toolbar">
       <div class="admin-toolbar-filters">
         <span class="muted">
           <template v-if="dirty">有未保存的修改</template>
@@ -422,17 +422,6 @@ onMounted(load)
  * 若直接把 top 设为 0, 工具条上方会留出一条 20px 的缝, 卡片文字会从缝里露出来;
  * 用 top: -20px 抵消这段内边距即可(卡片不会延伸到这里, 所以不会有内容穿透)
  */
-.settings-toolbar {
-  position: sticky;
-  top: -20px;
-  z-index: 2;
-  margin-bottom: 16px;
-  /* 吸顶时用页面底色盖住下方内容; 平时与普通工具条无异(不要边框, 否则页眉看起来像一条横杆) */
-  background: var(--bg);
-  padding-top: 12px;
-  padding-bottom: 12px;
-}
-
 /* 每张卡片一个配置域, 卡片间距与个人资料页保持一致 */
 .settings-cards {
   display: grid;

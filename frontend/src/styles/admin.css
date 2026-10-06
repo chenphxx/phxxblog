@@ -296,12 +296,22 @@ html:root .el-button--info:not(.is-plain):not(.is-text):not(.is-link) {
  *
  * 标题的间距由本文件顶部的 `.admin-main > div > h2:first-child` 统一提供,
  * 所以视图里不要再给 h2 写 margin
+ *
+ * 工具条吸顶: 后台页面普遍很长(长表单, 长列表), 滚动时把"筛选 + 主操作"钉在内容区
+ * 顶部, 不必滚回页首就能搜索或保存 顶部写 -24px 是为了抵消 .admin-main 的上内边距
+ * (24px), 否则吸顶后工具条上方会留出一条缝, 让卡片文字从缝里透出来
+ * 背景用页面底色: 未吸顶时与普通工具条看不出区别, 吸顶后正好盖住下方内容
  */
 .admin-toolbar {
+  position: sticky;
+  top: -24px;
+  z-index: 2;
   display: flex;
   align-items: center;
   gap: 10px 12px;
   flex-wrap: wrap;
+  background: var(--bg);
+  padding: 12px 0;
   margin-bottom: 16px;
 }
 
