@@ -11,6 +11,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    BackToTopBar: typeof import('./components/reading/BackToTopBar.vue')['default']
     CommentNode: typeof import('./components/CommentNode.vue')['default']
     CommentSection: typeof import('./components/CommentSection.vue')['default']
     ContributionsChart: typeof import('./components/ContributionsChart.vue')['default']
@@ -77,6 +78,7 @@ declare module 'vue' {
     PostCard: typeof import('./components/PostCard.vue')['default']
     PostFormFields: typeof import('./components/PostFormFields.vue')['default']
     PostTocNav: typeof import('./components/post/PostTocNav.vue')['default']
+    ReadingFontSizeControl: typeof import('./components/reading/ReadingFontSizeControl.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ThemeSwitcher: typeof import('./components/ThemeSwitcher.vue')['default']

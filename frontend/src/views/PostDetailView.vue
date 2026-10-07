@@ -11,10 +11,20 @@ import HotPostsCard from '@/components/HotPostsCard.vue'
 import MetaIcon from '@/components/MetaIcon.vue'
 import PostAdjacentNav from '@/components/post/PostAdjacentNav.vue'
 import PostTocNav from '@/components/post/PostTocNav.vue'
+import BackToTopBar from '@/components/reading/BackToTopBar.vue'
+import ReadingFontSizeControl from '@/components/reading/ReadingFontSizeControl.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useModulesStore } from '@/stores/modules'
 import { chipStyle, LIKES_COLOR, VIEWS_COLOR } from '@/utils/chipColor'
 import { formatDateTime } from '@/utils/datetime'
+import {
+  clampStep,
+  readStoredStep,
+  READING_FONT_FALLBACK_STEP,
+  stepToCodeSize,
+  stepToFontSize,
+  writeStoredStep,
+} from '@/utils/readingFont'
 
 const route = useRoute()
 const router = useRouter()
@@ -29,6 +39,52 @@ const hotPosts = ref<PostItem[]>([])
 const activeHeading = ref('')
 /** 站点顶栏是 sticky 的, 判断"标题是否已滚过顶栏"要把它的高度算进去 */
 const HEADER_OFFSET = 96
+
+/** 文章正文节点: 回到顶部按钮据此计算阅读进度 */
+const articleEl = ref<HTMLElement | null>(null)
+/** 正文字号的允许范围与默认档(来自 fontsize 模块的公开配置) */
+const fontRange = ref({ minStep: 1, maxStep: 5, defaultStep: READING_FONT_FALLBACK_STEP })
+/** 当前正文字号档位 */
+const fontStep = ref(READING_FONT_FALLBACK_STEP)
+
+/**
+ * 读取字号模块的公开配置, 并把访客已有的偏好夹进取值区间
+ *
+ * 配置拿不到(模块被禁用或接口失败)时用前端兜底值, 保证正文仍是默认观感
+ */
+function syncFontConfig() {
+  const config = modules.moduleConfig('fontsize')
+  const minStep = clampStep(Number(config.min_step) || 1, 1, 5)
+  const maxStep = clampStep(Math.max(Number(config.max_step) || 5, minStep), 1, 5)
+  const defaultStep = clampStep(Number(config.default_step) || READING_FONT_FALLBACK_STEP, minStep, maxStep)
+  fontRange.value = { minStep, maxStep, defaultStep }
+  fontStep.value = clampStep(readStoredStep() ?? defaultStep, minStep, maxStep)
+}
+
+/** 访客改档位: 先夹进取值区间, 再写在浏览器本地 */
+function applyFontStep(step: number) {
+  fontStep.value = clampStep(step, fontRange.value.minStep, fontRange.value.maxStep)
+  writeStoredStep(fontStep.value)
+}
+
+/** 正文字号与代码块字号: 由档位换算成 CSS 变量, 由 theme.css 应用(见 .reading-body) */
+const readingStyle = computed(() => {
+  if (!modules.isEnabled('fontsize')) return {}
+  return {
+    '--reading-font-size': `${stepToFontSize(fontStep.value)}px`,
+    '--reading-code-size': `${stepToCodeSize(fontStep.value)}px`,
+  }
+})
+
+/** 回到顶部模块的公开配置(阈值与是否显示进度) */
+const backToTop = computed(() => {
+  const config = modules.moduleConfig('backtotop')
+  const threshold = Number(config.threshold_px ?? 600)
+  return {
+    threshold: Number.isFinite(threshold) ? threshold : 600,
+    showProgress: config.show_progress !== false,
+  }
+})
 
 /** 返回上一页(优先返回来源页并恢复滚动位置) */
 function goBack() {
@@ -123,6 +179,7 @@ watch(() => route.params.id, load)
 onMounted(() => {
   // 先拿模块开关: 评论模块被禁用时不再挂载评论区(避免发出注定 404 的请求)
   modules.load().then(() => {
+    syncFontConfig()
     load()
     loadHotPosts()
   })
@@ -145,10 +202,19 @@ onBeforeUnmount(() => {
             <PostTocNav :headings="toc" :active-id="activeHeading" @select="scrollToHeading" />
           </details>
 
-          <article class="panel post-detail">
+          <article ref="articleEl" class="panel post-detail">
             <div class="post-topbar">
               <button class="back-link" @click="goBack">← 返回</button>
-              <el-button v-if="canEdit" size="small" @click="$router.push(`/write/${post.id}`)">编辑</el-button>
+              <div class="post-topbar-actions">
+                <ReadingFontSizeControl
+                  v-if="modules.isEnabled('fontsize')"
+                  :step="fontStep"
+                  :min-step="fontRange.minStep"
+                  :max-step="fontRange.maxStep"
+                  @update:step="applyFontStep"
+                />
+                <el-button v-if="canEdit" size="small" @click="$router.push(`/write/${post.id}`)">编辑</el-button>
+              </div>
             </div>
             <h1 class="post-detail-title">{{ post.title }}</h1>
             <div class="post-detail-meta">
@@ -209,7 +275,14 @@ onBeforeUnmount(() => {
 
             <p v-if="post.summary" class="post-detail-summary">{{ post.summary }}</p>
             <img v-if="post.cover_image" :src="post.cover_image" class="post-cover" alt="封面" />
-            <MarkdownView :content="post.content_md" @headings="toc = $event" />
+            <!-- 阅读增强: 字号由档位换算成 CSS 变量, 代码块字体由外层类提高选择器特异性 -->
+            <div
+              class="reading-body"
+              :class="{ 'reading-code-font': modules.isEnabled('codefont') }"
+              :style="readingStyle"
+            >
+              <MarkdownView :content="post.content_md" @headings="toc = $event" />
+            </div>
 
             <!-- 文章末尾: 右下角更新时间 + 上一篇/下一篇(没有相邻文章的一侧留空) -->
             <footer class="post-footer">
@@ -231,6 +304,13 @@ onBeforeUnmount(() => {
       </div>
     </template>
     <el-empty v-else-if="!loading" description="文章不存在或未发布" />
+
+    <BackToTopBar
+      v-if="modules.isEnabled('backtotop')"
+      :target="articleEl"
+      :threshold="backToTop.threshold"
+      :show-progress="backToTop.showProgress"
+    />
   </div>
 </template>
 
@@ -295,6 +375,11 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--space-4);
+}
+.post-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
 }
 .back-link {
   font-size: 13px;

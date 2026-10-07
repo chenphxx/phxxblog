@@ -263,6 +263,21 @@ export const MODULES: FrontModule[] = [
     name: '看板娘',
     description: '前台左下角的 Live2D 看板娘浮层与形象切换',
   },
+  {
+    id: 'codefont',
+    name: '代码块字体',
+    description: '文章代码块使用自托管的 Cascadia Code',
+  },
+  {
+    id: 'fontsize',
+    name: '正文字号',
+    description: '文章正文可按档位调整字号',
+  },
+  {
+    id: 'backtotop',
+    name: '回到顶部',
+    description: '文章页右下角的回到顶部按钮与阅读进度',
+  },
 ]
 
 /**

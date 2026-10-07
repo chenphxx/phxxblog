@@ -346,7 +346,14 @@ h3 {
   font-family: var(--font-sans);
 }
 
-/* 代码块字体同理: Vditor 给 code 用的是 mononoki/Consolas 而不是 --font-mono */
+/*
+ * 代码块字体同理: Vditor 给 code 用的是 mononoki/Consolas 而不是 --font-mono
+ *
+ * 注意这条规则的特异性只有 0,1,1, 只能盖住 <pre> 容器本身: Vditor 针对
+ * `.vditor-reset pre > code`(0,1,2) 与 `.vditor-reset code:not(.hljs):not(.highlight-chroma)`
+ * (0,3,1) 的字体声明都比它高, 真正显示文字的 <code> 仍会走 Vditor 的字体栈
+ * 想改代码块字体请用下面的 .reading-code-font 规则(由 codefont 模块驱动)
+ */
 .markdown-body code,
 .markdown-body pre,
 .vditor-reset code,
@@ -375,6 +382,29 @@ h3 {
   font-size: 1em;
   background: transparent;
   padding: 0;
+}
+
+/*
+ * ---------- 阅读增强(由 fontsize / codefont 两个纯前台模块驱动) ----------
+ * 两个外层类由 views/PostDetailView.vue 按模块开关挂到文章正文上
+ */
+
+/*
+ * 正文字号: 变量由字号模块写在 .reading-body 上, 模块未启用时用默认值
+ * 必须写到 .markdown-body(它自己声明了 font-size, 只在外层设字号不会生效)
+ * 标题与行内代码是 em 单位会跟随缩放; 代码块原本是固定 14.5px, 这里改为跟随
+ */
+.reading-body .markdown-body {
+  font-size: var(--reading-font-size, 16.5px);
+}
+.reading-body .markdown-body pre {
+  font-size: var(--reading-code-size, 14.5px);
+}
+
+/* 代码块字体: 多带一层类把特异性提到 0,3,2 与 0,5,1, 稳压 Vditor 的两条字体声明 */
+.reading-code-font .markdown-body.vditor-reset pre > code,
+.reading-code-font .markdown-body.vditor-reset code:not(.hljs):not(.highlight-chroma) {
+  font-family: var(--font-mono);
 }
 
 /* 代码块纵向不出现滚动条(长代码用折叠按钮展开) */

@@ -36,10 +36,13 @@ def build_registry() -> ModuleRegistry:
     from app.modules import (  # noqa: F401
         admin,
         auth,
+        backtotop,
         changelog,
+        codefont,
         comments,
         dashboard,
         diary,
+        fontsize,
         history,
         kanbanniang,
         links,
