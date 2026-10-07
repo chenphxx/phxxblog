@@ -196,7 +196,7 @@ verify_all.py[TQ9S]: F:一键跑完后端与前端全部检查并输出汇总表
 ===D:/Projects/phxxblog/docs/===
 接口文档.md[SS7S]: F:项目 API 清单: 按 tag 分组的接口表(方法/路径/鉴权/处理函数) | R:code:backend/scripts/gen_api_doc.py | A:docs/接口文档.md | S:由 gen_api_doc.py 生成, 不要手工维护; 必须与实际路由一致
 数据库设计.md[SS7M]: F:数据库设计: 命名约定, 表清单与逐表字段说明 | R:code:backend/app/models/__init__.py,code:docs/架构与实现.md | A:docs/数据库设计.md | S:手工维护; 改表结构时同步更新
-架构与实现.md[SS9L]: F:技术架构与实现说明: 分层, 目录, 后端与前端实现, 关键功能与开发约定 | R:code:README.md,code:docs/接口文档.md | A:docs/架构与实现.md | S:描述当前实际实现; 功能改动导致方案变化时必须同步更新
+架构与实现.md[SS9M]: F:技术架构与实现说明: 只讲实现原理与关键约定(分层, 模块体系, 前端结构与开发约定) | R:code:README.md,code:docs/接口文档.md | A:docs/架构与实现.md | S: 字段与接口细节不在本文展开, 指向数据库设计与接口文档; 功能改动导致方案变化时必须同步更新
 
 ===D:/Projects/phxxblog/frontend/===
 .gitignore[FV6T]: F:前端工程内的忽略规则: 日志, node_modules/dist, vditor 静态资源与主题预览产物 | R:code:frontend/package.json | A:frontend | S:public/vditor 与 src/styles/themes/_preview 是产物, 不入库
