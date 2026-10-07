@@ -28,7 +28,7 @@ post_tags = Table(
     Column("tag_id", BigInteger, ForeignKey("tags.id", ondelete="CASCADE"), primary_key=True),
 )
 
-# 文章-分类关联表(一篇文章可以同时属于多个分类, 见 docs/mysql.md 的 post_categories)
+# 文章-分类关联表(一篇文章可以同时属于多个分类, 见 docs/数据库设计.md 的 post_categories)
 post_categories = Table(
     "post_categories",
     Base.metadata,
