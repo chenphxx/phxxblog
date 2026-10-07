@@ -167,7 +167,7 @@ onMounted(async () => {
     <div class="app-main">
       <main class="site-main">
         <router-view v-slot="{ Component }">
-          <keep-alive include="HomeView,AllPostsView,ArchiveView,SearchView">
+          <keep-alive include="HomeView,ArchiveView,SearchView">
             <component :is="Component" />
           </keep-alive>
         </router-view>

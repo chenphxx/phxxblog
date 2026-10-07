@@ -139,7 +139,6 @@ export const MODULES: FrontModule[] = [
     frontRoutes: [
       { path: 'post/:id', name: 'post-detail', component: () => import('@/views/PostDetailView.vue') },
       { path: 'archive', name: 'archive', component: () => import('@/views/ArchiveView.vue') },
-      { path: 'posts', name: 'all-posts', component: () => import('@/views/AllPostsView.vue') },
       {
         path: 'write',
         name: 'write',
