@@ -7,7 +7,7 @@ import { messageConfig } from 'element-plus'
  *   1. element-plus 的深色变量 + 程序式组件样式 - Element Plus 基础样式
  *   2. vditor/dist/index.css - 编辑器与正文预览
  *   3. styles/fonts.css - 自托管 Cascadia Code
- *   4. styles/theme-green.css - 主题令牌 + 后台主题层
+ *   4. styles/app.css - 主题令牌 + 后台主题层
  * 主题令牌必须晚于 Element Plus 与 Vditor 才能覆盖它们(见 admin.css 的说明)
  *
  * 这里**不再**引入 element-plus/dist/index.css(整包 349 KB):
@@ -29,7 +29,7 @@ import 'element-plus/es/components/message-box/style/css'
 import 'element-plus/es/components/message/style/css'
 import 'vditor/dist/index.css'
 import './styles/fonts.css'
-import './styles/theme-green.css'
+import './styles/app.css'
 
 import App from './App.vue'
 import router from './router'

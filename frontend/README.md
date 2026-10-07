@@ -114,7 +114,7 @@ src/
   utils/tokenStorage.ts     令牌与用户信息的唯一读写入口(不要在别处写 localStorage 的 key 字面量)
   styles/
     theme.css               结构样式与基础令牌
-    theme-green.css         主题入口: 引入 theme.css + theme-default.css + 各主题
+    app.css                 样式入口: 引入 theme.css + layout.css + 默认令牌 + 各主题 + admin.css
     admin.css               后台主题层: Element Plus 主色接到主题令牌
     fonts.css               自托管 Cascadia Code 的 @font-face
     themes/                 主题令牌(生成物, 勿手改) + registry.ts

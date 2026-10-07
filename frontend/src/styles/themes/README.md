@@ -101,7 +101,7 @@ stores/theme.ts
 }
 ```
 
-它必须在所有主题之后加载(见 `theme-green.css` 的 `@import` 顺序), 且在 `:root` / `html:root` 上以同特异性后写入, 才能覆盖 Element Plus 自带的色阶 
+它必须在所有主题之后加载(见 `app.css` 的 `@import` 顺序), 且在 `:root` / `html:root` 上以同特异性后写入, 才能覆盖 Element Plus 自带的色阶 
 
 ## 改配色 / 改结构
 
@@ -124,7 +124,7 @@ npm run themes:preview    # 生成 18 个预览页 + 总览
 
 ## 只想固定用一套?
 
-把 `styles/theme-green.css` 里多余的 `@import` 注释掉, 再移除 `SiteLayout.vue` / `AdminLayout.vue` 里的 `<ThemeSwitcher />` 即可 
+把 `styles/app.css` 里多余的 `@import` 注释掉, 再移除 `SiteLayout.vue` / `AdminLayout.vue` 里的 `<ThemeSwitcher />` 即可 
 9 套颜色令牌都很短(每套约 2 KB), 全部引入的代价很小 
 
 ## 目录
@@ -133,7 +133,7 @@ npm run themes:preview    # 生成 18 个预览页 + 总览
 src/styles/
   theme.css                  结构与组件样式(面板/列表行/正文/编辑器/Element Plus 细节)
   layout.css                 应用外壳(桌面侧栏 + 移动端抽屉 + 画布与主内容区)
-  theme-green.css            主题入口: theme.css + layout.css + base.css + theme-default.css + 9 套主题 + admin.css
+  app.css                    样式入口: theme.css + layout.css + base.css + theme-default.css + 9 套主题 + admin.css
   admin.css                  后台主题层(Element Plus 令牌 -> 主题令牌, 后台外壳与表格)
   fonts.css                  自托管 Cascadia Code(只给 --font-mono 用)
   themes/
