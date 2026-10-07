@@ -15,6 +15,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { categoryApi, mediaApi, postApi, tagApi } from '@/api'
 import type { Category, PostDetail, Tag } from '@/types'
+import { POST_STATUS_TEXT } from '@/utils/postStatus'
 
 /** 编辑器表单模型 */
 export interface PostForm {
@@ -27,14 +28,6 @@ export interface PostForm {
   tag_ids: number[]
   status: number
   public_visible: boolean
-}
-
-/** 文章状态码 -> 文案(与后台列表的 STATUS_TEXT 前 4 项一致) */
-export const POST_STATUS_TEXT: Record<number, string> = {
-  0: '草稿',
-  1: '审核中',
-  2: '已发布',
-  3: '私密',
 }
 
 export interface UsePostEditorOptions {

@@ -10,6 +10,7 @@ import ListPager from '@/components/ListPager.vue'
 import ImportExportDialogs from '@/components/ImportExportDialogs.vue'
 import { useImportExport } from '@/composables/useImportExport'
 import { usePagedList } from '@/composables/usePagedList'
+import { POST_STATUS_ORDERED, POST_STATUS_TEXT, POST_STATUS_TYPE } from '@/utils/postStatus'
 
 const router = useRouter()
 const statusFilter = ref<number | undefined>(undefined)
@@ -49,14 +50,6 @@ const io = useImportExport({
   submitImports: (files, onDuplicate) => postApi.importPosts(files, onDuplicate),
   onImported: () => reset(),
 })
-
-const STATUS_TEXT = ['草稿', '审核中', '已发布', '私密', '回收站']
-/**
- * 文章状态 -> el-tag 的 type
- * 用字面量联合而非 string: el-tag 的 type 只接受固定几个值(见 CommentManageView 同样处理)
- */
-type TagType = 'primary' | 'success' | 'warning' | 'info' | 'danger'
-const STATUS_TYPE: Record<number, TagType> = { 0: 'info', 1: 'warning', 2: 'success', 3: 'danger', 4: 'info' }
 
 async function changeStatus(post: PostItem, status: number, message: string) {
   await ElMessageBox.confirm(`确定${message}《${post.title}》吗?`, '确认', { type: 'warning' })
@@ -167,7 +160,9 @@ async function batchForceDelete() {
       <div class="admin-toolbar-filters">
         <el-radio-group v-model="statusFilter" @change="reset()">
           <el-radio-button :value="undefined">全部</el-radio-button>
-          <el-radio-button v-for="(text, index) in STATUS_TEXT" :key="index" :value="index">{{ text }}</el-radio-button>
+          <el-radio-button v-for="(text, index) in POST_STATUS_ORDERED" :key="index" :value="index">
+            {{ text }}
+          </el-radio-button>
         </el-radio-group>
       </div>
       <div class="admin-toolbar-actions">
@@ -198,7 +193,7 @@ async function batchForceDelete() {
         </el-table-column>
         <el-table-column label="状态" width="90">
           <template #default="{ row }">
-            <el-tag size="small" :type="STATUS_TYPE[row.status]">{{ STATUS_TEXT[row.status] }}</el-tag>
+            <el-tag size="small" :type="POST_STATUS_TYPE[row.status]">{{ POST_STATUS_TEXT[row.status] }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="views" width="70">

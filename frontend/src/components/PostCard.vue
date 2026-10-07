@@ -3,6 +3,7 @@ import type { PostItem } from '@/types'
 import MetaIcon from '@/components/MetaIcon.vue'
 import { chipStyle } from '@/utils/chipColor'
 import { formatDateTime } from '@/utils/datetime'
+import { POST_STATUS_TEXT } from '@/utils/postStatus'
 
 /**
  * @brief 文章列表行
@@ -15,14 +16,6 @@ import { formatDateTime } from '@/utils/datetime'
  * @param post 文章列表项
  */
 defineProps<{ post: PostItem }>()
-
-const STATUS_TEXT: Record<number, string> = {
-  0: '草稿',
-  1: '审核中',
-  2: '已发布',
-  3: '私密',
-  4: '回收站',
-}
 </script>
 
 <template>
@@ -32,7 +25,7 @@ const STATUS_TEXT: Record<number, string> = {
         <router-link :to="`/post/${post.id}`">{{ post.title }}</router-link>
       </h3>
       <el-tag v-if="post.status !== 2" size="small" type="warning" class="status-tag">
-        {{ STATUS_TEXT[post.status] }}
+        {{ POST_STATUS_TEXT[post.status] }}
       </el-tag>
     </div>
     <p v-if="post.summary" class="post-summary">{{ post.summary }}</p>
