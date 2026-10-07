@@ -454,7 +454,7 @@ registry.ts[LU7T]: F:看板娘形象清单: 每个形象的 id/显示名/系列/
 SiteLayout.vue[AU8S]: F:前台外壳: 桌面侧栏 + 移动端抽屉, 承载品牌区/主导航/次级导航(写作/后台/登录)/主题与看板娘开关/页脚 | R:code:frontend/src/modules/registry.ts,code:frontend/src/stores/modules.ts | A:layouts | S: 移动端(<1024px)侧栏收成抽屉, 由 .app-topbar 按钮打开, 点遮罩或切换路由后自动关闭; 导航项来自模块注册表而非写死; keep-alive 只缓存首页/归档/全部文章
 
 ===D:/Projects/phxxblog/frontend/src/modules/===
-registry.ts[FE8M]: F:前端模块注册表: 每个模块声明前台/后台导航入口与页面路由(自动打上 meta.module 供路由守卫判断) | R:code:frontend/src/router/index.ts,code:frontend/src/stores/modules.ts | A:modules | S: 模块 id 必须与后端模块定义一致; admin 属核心模块不可禁用; 只有布局自身的入口(首页与登录页)留在 router 里; 新增功能只需后端加模块定义与此处加一条记录, 不必再改 router/SiteLayout/AdminLayout; 前台的"全部文章"入口由 search 模块提供
+registry.ts[FE8M]: F:前端模块注册表: 每个模块声明前台/后台导航入口与页面路由(自动打上 meta.module 供路由守卫判断) | R:code:frontend/src/router/index.ts,code:frontend/src/stores/modules.ts | A:modules | S:模块 id 必须与后端模块定义一致, check_modules.py 会校验两侧集合; admin 属核心模块不可禁用; 只有布局自身的入口(首页与登录页)留在 router 里; 新增功能只需后端加模块定义与此处加一条记录; 纯前台模块(kanbanniang/codefont/fontsize/backtotop)只登记 id, 名称与描述, 不带导航与路由; 前台的"全部文章"入口由 search 模块提供
 
 ===D:/Projects/phxxblog/frontend/src/router/===
 index.ts[EU8T]: F:路由表与滚动行为: hash 模式, 前台页面挂在 SiteLayout 下, 其余页面由模块注册表提供 | R:code:frontend/src/modules/registry.ts,code:frontend/src/stores/modules.ts | A:router | S: 直接访问被禁用模块的页面时由路由守卫送回首页; 会记录离开页面的滚动位置供返回时恢复; 首页属于布局自身, 即使模块全被禁用也要有落地页
@@ -469,7 +469,7 @@ theme.ts[DU7T]: F:外观设置: 配色主题与深浅模式, 写入 html[data-th
 admin.css[CU7M]: F:后台主题层: 把 Element Plus 主色令牌指向主题令牌, 并统一后台外壳, 表格控件与跨视图共用版式类 | R:code:frontend/src/styles/app.css | A:styles | S: 必须在主题颜色令牌之后加载才能覆盖 Element Plus 默认蓝; 多视图共用的版式类(如 .admin-toolbar/.batch-bar/.trend-header)集中在此, 视图内不再各写一份
 fonts.css[CU5T]: F:自托管等宽字体 Cascadia Code(latin 子集)的 @font-face 声明 | R:code:frontend/src/styles/themes/base.css | A:styles | S: 只自托管 latin 子集; Cascadia Code 不含中文字形, 中文继续由 --font-sans 字段承担; font-display: swap 避免文字长时间不可见
 layout.css[CU7M]: F:应用外壳样式: 桌面网格(固定宽侧栏 + 主内容区), 浅灰画布与白色主面板, 移动端抽屉与细顶栏 | R:code:frontend/src/layouts/SiteLayout.vue | A:styles | S: 侧栏宽度由 --sidebar-w 控制(当前 248px); <1024px 侧栏转抽屉; 页面内部的列表/面板/排版由 theme.css 负责
-theme.css[CU8L]: F:结构与组件样式(Soft Minimal): 布局, 面板, 列表, 排版与交互状态 | R:code:frontend/src/styles/layout.css,code:frontend/src/styles/themes/base.css | A:styles | S: 只写与颜色无关的结构, 颜色令牌来自 themes/; 全站只有一个 fade-up 入场动画; 字号层级按提案固定
+theme.css[CU8L]: F:结构与组件样式(Soft Minimal): 布局, 面板, 列表, 排版与交互状态 | R:code:frontend/src/styles/layout.css,code:frontend/src/styles/themes/base.css | A:styles | S:只写与颜色无关的结构, 颜色令牌来自 themes/; 全站只有一个 fade-up 入场动画; 字号层级按提案固定; 代码块字体的基础规则特异性(0,1,1)低于 Vditor 的字体声明, 真正生效的是 fontsize/codefont 模块用的 .reading-body 与 .reading-code-font 外层类选择器
 app.css[CU6T]: F:样式入口: 依次引入结构样式, 应用外壳, 结构令牌, 默认主题, 9 套主题颜色令牌与后台主题层 | R:code:frontend/src/styles/admin.css,code:frontend/src/styles/theme.css | A:styles | S: 原名 theme-green.css, 它实际与"绿色主题"无关, 改名以免误导(内容未变); 只需固定一套主题时可注掉多余 @import 并删掉 ThemeSwitcher
 
 ===D:/Projects/phxxblog/frontend/src/styles/themes/===
@@ -510,13 +510,14 @@ textStats.ts[KU5T]: F:文本字数统计与阅读时间估算, 供写作页状�
 tokenStorage.ts[CS8T]: F:令牌与会话信息的本地存储读写, 是三个存储键的唯一出口 | R:code:frontend/src/stores/auth.ts,code:frontend/src/api/http.ts | A:utils | S: 键为 blog_access_token / blog_refresh_token / blog_user; 这三个键原本散落在 6 处, 任一处改名都会静默让其他处失效; tokenRevision 版本号让 store 的 computed 在静默刷新后自动失效
 trendRange.ts[KA7S]: F:访问趋势看板的区间计算与区间汇总: 快捷区间, 上一等长区间与 KPI 聚合 | R:code:frontend/src/views/admin/DashboardView.vue | A:utils | S: 需同时算本期与上一个等长区间用于环比; TREND_MAX_DAYS 366 与后端 /stats/trend 的上限对应
 postStatus.ts[CU6T]: F:文章状态码的单一来源: 文案, el-tag 配色与状态码升序的文案数组 | R:code:frontend/src/components/PostCard.vue,code:frontend/src/views/admin/PostManageView.vue,code:frontend/src/views/admin/DashboardView.vue | A:utils | S: 状态码与后端约定一致(0 草稿 1 审核中 2 已发布 3 私密 4 回收站); 升序数组由映射表派生, 新增状态只需改一处
+readingFont.ts[CU5T]: F:文章正文字号的档位表与本地存储: 档位换算成正文与代码块像素并读写访客偏好 | R:code:frontend/src/views/PostDetailView.vue,code:frontend/src/components/reading/ReadingFontSizeControl.vue | A:READING_FONT_STEPS, READING_FONT_SIZE_KEY, clampStep, stepToFontSize, readStoredStep, writeStoredStep | S:像素表固定在前端且第 3 档等于正文默认字号, 后端只能改默认档与范围; 存储键只在这一处出现, 散落多处时改名会静默失效; localStorage 读写都吞异常(隐私模式), 读不到就回落默认档
 
 ===D:/Projects/phxxblog/frontend/src/views/===
 ArchiveView.vue[AU6M]: F:归档页(书签式时间轴): 按年份分卵, 左侧年份/月份锚点导航 | R:code:frontend/src/utils/datetime.ts,code:frontend/src/api/index.ts | A:views | S: 一年一张面板, 年份作标题, 下面按月分组; 每条记录是定宽日期 + 标题的一行, 悬停时行首浮出书签色条; 锚点改为轻量吸顶列表而非卡片
 ChangelogView.vue[AU6T]: F:更新日志页: 渲染 Markdown 并支持登录后就地编辑保存 | R:code:frontend/src/components/MarkdownView.vue,code:frontend/src/components/VditorEditor.vue | A:views | S: 内容来自 miscApi.changelog, 编辑态与阅读态在页内切换; 取消编辑会重新拉取内容丢弃草稿
 DiaryView.vue[AU7M]: F:日记页: 按日期记录与展示, 含发布记录图与导入导出 | R:code:frontend/src/composables/useImportExport.ts,code:frontend/src/components/ContributionsChart.vue | A:views | S: 仅管理员可见; 保存时直接取编辑器内容而非 v-model, 避免同步滞后导致'点两次才保存'; 导出文件前缀 phxxblog-diaries
 HomeView.vue[AU9M]: F:前台首页: 个人介绍(含指标) + 终端会话 + 关于 + 最新文章 + 发布记录, 右栏放次级模块 | R:code:frontend/src/components/home/HomeProfileCard.vue,code:frontend/src/stores/modules.ts | A:views | S: 辅助模块各自取数, 任一慢接口都不会把整页按在加载态; 模块开关只在模板里判一次, 关掉的模块不挂载也不发请求; onActivated 统一调各模块 refresh(); 只持有页面级数据与布局
-PostDetailView.vue[AU8M]: F:文章详情页: 正文阅读 + 右侧目录 + 点赞 + 上下篇 + 评论区 | R:code:frontend/src/components/MarkdownView.vue,code:frontend/src/components/CommentSection.vue,code:frontend/src/components/post/PostTocNav.vue,code:frontend/src/components/post/PostAdjacentNav.vue | A:views | S: 右侧栏由正文目录(上方)与热门文章(下方)组成; 站点顶栏是 sticky 的, 判标题是否已滚过顶栏要把它的高度算进去(HEADER_OFFSET 96); 滚动监听与高亮计算留在页面, 目录与上下篇组件只负责渲染
+PostDetailView.vue[AU8L]: F:文章详情页: 正文阅读 + 右侧目录 + 点赞 + 上下篇 + 评论区, 并挂载阅读增强(字号/代码字体/回到顶部) | R:code:frontend/src/components/MarkdownView.vue,code:frontend/src/components/post/PostTocNav.vue,code:frontend/src/components/reading/ReadingFontSizeControl.vue,code:frontend/src/components/reading/BackToTopBar.vue | A:views | S:右侧栏由正文目录(上方)与热门文章(下方)组成; 站点顶栏是 sticky 的, 判标题是否已滚过顶栏要把它的高度算进去(HEADER_OFFSET 96); 滚动监听与高亮计算留在页面, 目录与上下篇组件只负责渲染; 字号档位从 fontsize 模块公开配置读取并夹取, 正文外层类与 CSS 变量由模块开关决定, 三个阅读增强都只在文章正文区域生效
 SearchView.vue[AU6S]: F:搜索页: 关键词/分类/标签/日期区间筛选与结果列表 | R:code:frontend/src/composables/usePagedList.ts,code:frontend/src/api/index.ts | A:views | S: 三个取数分支的差异只在'取哪一项', 翻页与回到第 1 页的规则由 usePagedList 统一处理; 初始条件从路由 query 读取
 WriteView.vue[AU7T]: F:前台写作页: 复用文章编辑器与表单字段组件页 | R:code:frontend/src/composables/usePostEditor.ts,code:frontend/src/components/PostFormFields.vue | A:views | S: 保存前必须先同步编辑器正文; 从博客页进入时'取消'返回上一页而非跳后台; 删除确认文案在页面侧注入
 
@@ -547,3 +548,19 @@ HomeContentCard.vue[AC7M]: F:系统设置 - 首页内容卡片: 技术标签, �
 SeoCard.vue[AC5T]: F:系统设置 - SEO 卡片: 关键词与站点描述 | R:code:frontend/src/views/admin/SettingsView.vue | A:admin | S: 站点描述会写进 RSS 摘要, 关键词目前未在前台输出
 SiteBasicCard.vue[AC6T]: F:系统设置 - 基础信息卡片: 站点名称/标签页名称/站点图标(可上传)与个人简介 | R:code:frontend/src/views/admin/SettingsView.vue | A:admin | S: 上传函数由页面以 prop 传入且必须返回 Promise(el-upload 的 http-request 会 await 它); 上传成功后直接改写 form.site_icon
 UploadCard.vue[AC5T]: F:系统设置 - 上传卡片: 单文件上传体积上限 | R:code:frontend/src/views/admin/SettingsView.vue | A:admin | S: 可配置范围 1~2048 MB, 与后端 core/settings_schema.py 保持一致; 全站上传入口共用这一上限
+
+===D:/Projects/phxxblog/backend/app/modules/backtotop/===
+__init__.py[CG3T]: F:导入即注册 backtotop 模块的包入口 | R:code:backend/app/modules/backtotop/spec.py | A:SPEC | S:-
+spec.py[CN6T]: F:把回到顶部注册为纯前台的可禁用模块, 并声明出现阈值与进度开关 | R:code:frontend/src/components/reading/BackToTopBar.vue | A:SPEC | S:threshold_px 与 show_progress 都标了 public, 前端据此决定胶囊何时出现与是否显示百分比; 位置固定写在组件里不提供配置; 依赖 posts, 文章模块不可用(或自身被禁用)时前台不渲染该胶囊
+
+===D:/Projects/phxxblog/backend/app/modules/codefont/===
+__init__.py[CG3T]: F:导入即注册 codefont 模块的包入口 | R:code:backend/app/modules/codefont/spec.py | A:SPEC | S:-
+spec.py[CN5T]: F:把文章代码块的 Cascadia Code 字体注册为纯前台的可禁用模块 | R:code:frontend/src/styles/theme.css | A:SPEC | S:Vditor 代码块字体声明的特异性高于主题覆盖规则, 光启用本模块不生效, 前端必须同时带 .reading-code-font 那层类; 禁用后代码块退回 mononoki/Consolas, 其余排版不变
+
+===D:/Projects/phxxblog/backend/app/modules/fontsize/===
+__init__.py[CG3T]: F:导入即注册 fontsize 模块的包入口 | R:code:backend/app/modules/fontsize/spec.py | A:SPEC | S:-
+spec.py[CN6T]: F:把文章正文字号注册为纯前台的可禁用模块, 并声明默认档与允许范围 | R:code:frontend/src/utils/readingFont.ts | A:SPEC | S:档位像素表固定在前端, 这里只配置 default_step / min_step / max_step, 不提供改像素的入口; 访客已有的偏好超出新范围时由前端夹取, 不会出现未定义的像素值
+
+===D:/Projects/phxxblog/frontend/src/components/reading/===
+BackToTopBar.vue[LU6S]: F:文章页右下角的回到顶部胶囊: 滚动超过阈值才出现, 胶囊内用横向填充显示正文阅读进度 | R:code:frontend/src/stores/kanbanniang.ts,code:frontend/src/stores/modules.ts | A:BackToTopBar, lift, measure, toTop | S:自己监听 scroll/resize(passive + rAF)并在卸载时清理; 看板娘默认停在右下角, 它可见时由 --back-to-top-lift 抬到角色上方(仅宽屏); 进度按正文滚动比例算, 未达阈值时隐藏且不可聚焦
+ReadingFontSizeControl.vue[LU6S]: F:文章正文字号控件: A- / 档位点 / A+, 只渲染后台允许范围内的档位点 | R:code:frontend/src/utils/readingFont.ts | A:ReadingFontSizeControl, steps, canDecrease, canIncrease | S:控件自己不持有偏好也不写存储, 只抛 update:step, 由页面夹取范围并写入 localStorage; 窄屏(<720px)隐藏档位点只留两端按钮; 档位点的 title 与 aria-label 用像素值而非档位号

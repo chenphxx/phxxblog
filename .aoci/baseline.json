@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-07T09:55:05Z",
-  "updated_at": "2026-10-07T11:42:52Z",
+  "updated_at": "2026-10-07T14:10:24Z",
   "files": {
     ".gitattributes": {
       "role": "index",
@@ -41,9 +41,9 @@
     },
     "CHANGELOG.md": {
       "role": "index",
-      "sha256": "1c5d076a01c0f83f2a29ba00859527358b32f3313b50d3889373dd3647c7c626",
-      "size": 5494,
-      "normalized_sha256": "366627cfce63a91aa740b8dae73bcd6b2b108b5a552f1e98c8e8b342ead21b5c"
+      "sha256": "681457860228cdcb86e253a0e40722337ead6d138d2dea3daeb27b41b762cd4d",
+      "size": 5675,
+      "normalized_sha256": "cdecaa283bc37fad300641ddb640dd5f245b6911e0632b9bdc3bbae078ec9f79"
     },
     "LICENSE": {
       "role": "index",
@@ -59,9 +59,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "36664f0c400cd146ebd436a65be7f891788aeafbb6efff3a271de68d015fb639",
-      "size": 112017,
-      "normalized_sha256": "36664f0c400cd146ebd436a65be7f891788aeafbb6efff3a271de68d015fb639"
+      "sha256": "259f8247bb7a12b3de926de26cb46de255a108b02d57fbba1936414072df2ff9",
+      "size": 115848,
+      "normalized_sha256": "259f8247bb7a12b3de926de26cb46de255a108b02d57fbba1936414072df2ff9"
     },
     "aoci.database.txt": {
       "role": "index",
@@ -203,9 +203,9 @@
     },
     "backend/app/models/post.py": {
       "role": "index",
-      "sha256": "1757850138f64bd4ab6e6f8a8f3f295245eb98295ed221b00e33406657045540",
-      "size": 8677,
-      "normalized_sha256": "1757850138f64bd4ab6e6f8a8f3f295245eb98295ed221b00e33406657045540"
+      "sha256": "9ef76ee82a6b8053c583b928e725ccdd7e0e6c01e945b3f66b966417400f9123",
+      "size": 8687,
+      "normalized_sha256": "9ef76ee82a6b8053c583b928e725ccdd7e0e6c01e945b3f66b966417400f9123"
     },
     "backend/app/models/setting.py": {
       "role": "index",
@@ -221,9 +221,9 @@
     },
     "backend/app/modules/__init__.py": {
       "role": "index",
-      "sha256": "58da4791d2244e136a67982152ec5b381c5565445993a4fdcf3be48a02e54312",
-      "size": 1863,
-      "normalized_sha256": "58da4791d2244e136a67982152ec5b381c5565445993a4fdcf3be48a02e54312"
+      "sha256": "0aaf1d45e2b3d1a4c7fc8ad19fb247fa39120f149054750f2144039f7d85d4de",
+      "size": 1918,
+      "normalized_sha256": "0aaf1d45e2b3d1a4c7fc8ad19fb247fa39120f149054750f2144039f7d85d4de"
     },
     "backend/app/modules/admin/__init__.py": {
       "role": "index",
@@ -255,6 +255,18 @@
       "size": 614,
       "normalized_sha256": "f751adc3d1bf0b38babd10259d870ff0c51b09094199f62abb719a0c9c07cf70"
     },
+    "backend/app/modules/backtotop/__init__.py": {
+      "role": "index",
+      "sha256": "d2bfe0ffc93ff40b41e07efa933d4f527693109cc2ecd5318ab07c2c134baed3",
+      "size": 148,
+      "normalized_sha256": "d2bfe0ffc93ff40b41e07efa933d4f527693109cc2ecd5318ab07c2c134baed3"
+    },
+    "backend/app/modules/backtotop/spec.py": {
+      "role": "index",
+      "sha256": "3b035634e2ee217fac6f758b268ea31048ba6573021e7ee8087182f7a2dea888",
+      "size": 1503,
+      "normalized_sha256": "3b035634e2ee217fac6f758b268ea31048ba6573021e7ee8087182f7a2dea888"
+    },
     "backend/app/modules/base.py": {
       "role": "index",
       "sha256": "ee5b0eb13a1c15a0c7b60a51857bf2ed7298ff0c2e14ace949306961ab2f3ac4",
@@ -278,6 +290,18 @@
       "sha256": "99e62a02201623e4c81792f1a0a121bebbaea72b7570881393f81d145afe7f0f",
       "size": 679,
       "normalized_sha256": "99e62a02201623e4c81792f1a0a121bebbaea72b7570881393f81d145afe7f0f"
+    },
+    "backend/app/modules/codefont/__init__.py": {
+      "role": "index",
+      "sha256": "4e4e3b5a6e73c8370d7585140ef767be4a896e7fd4b01e834dd173b17f86bad9",
+      "size": 146,
+      "normalized_sha256": "4e4e3b5a6e73c8370d7585140ef767be4a896e7fd4b01e834dd173b17f86bad9"
+    },
+    "backend/app/modules/codefont/spec.py": {
+      "role": "index",
+      "sha256": "ba16ba3b8737ccc95dc428cb20d1e305248e4c57b7561cb498916b93610c024d",
+      "size": 1116,
+      "normalized_sha256": "ba16ba3b8737ccc95dc428cb20d1e305248e4c57b7561cb498916b93610c024d"
     },
     "backend/app/modules/comments/__init__.py": {
       "role": "index",
@@ -338,6 +362,18 @@
       "sha256": "3f6195b8eee180e56444928100aaf0f4390c98b5d7977444c20aae57b4e6e420",
       "size": 619,
       "normalized_sha256": "3f6195b8eee180e56444928100aaf0f4390c98b5d7977444c20aae57b4e6e420"
+    },
+    "backend/app/modules/fontsize/__init__.py": {
+      "role": "index",
+      "sha256": "b025d6de6fabff356191ddf08d4246d5e5f12b22e69d158bb7172bca4f8b5c00",
+      "size": 146,
+      "normalized_sha256": "b025d6de6fabff356191ddf08d4246d5e5f12b22e69d158bb7172bca4f8b5c00"
+    },
+    "backend/app/modules/fontsize/spec.py": {
+      "role": "index",
+      "sha256": "afea4e68d9ea851036e73502a1a86bf3c5a89da7f6268ce790498730a288c0f0",
+      "size": 1892,
+      "normalized_sha256": "afea4e68d9ea851036e73502a1a86bf3c5a89da7f6268ce790498730a288c0f0"
     },
     "backend/app/modules/history/__init__.py": {
       "role": "index",
@@ -833,9 +869,9 @@
     },
     "docs/架构与实现.md": {
       "role": "index",
-      "sha256": "aa958f0115a388b849832341b487e80fcca99ed834d1ce7f9e9bc39774306704",
-      "size": 30530,
-      "normalized_sha256": "aa958f0115a388b849832341b487e80fcca99ed834d1ce7f9e9bc39774306704"
+      "sha256": "9961e8cef1fae166e839c44755bbca66b348ca2a8fa0ff1990b7206455fd72f0",
+      "size": 30964,
+      "normalized_sha256": "9961e8cef1fae166e839c44755bbca66b348ca2a8fa0ff1990b7206455fd72f0"
     },
     "frontend/.gitignore": {
       "role": "index",
@@ -1983,9 +2019,9 @@
     },
     "frontend/scripts/measure-first-paint.mjs": {
       "role": "index",
-      "sha256": "0521cc91ce6db72fa8c62d33ea8c69116b10f864e5923bd547ae6af4fe76d525",
-      "size": 4087,
-      "normalized_sha256": "0521cc91ce6db72fa8c62d33ea8c69116b10f864e5923bd547ae6af4fe76d525"
+      "sha256": "c488cac09eea9a0495b3f379f3aae5b26752ba0ab34cdf56a4a0542446a2ac02",
+      "size": 4090,
+      "normalized_sha256": "c488cac09eea9a0495b3f379f3aae5b26752ba0ab34cdf56a4a0542446a2ac02"
     },
     "frontend/src/App.vue": {
       "role": "index",
@@ -2012,9 +2048,9 @@
     },
     "frontend/src/components.d.ts": {
       "role": "index",
-      "sha256": "13cdb63e344c810c9a1a51fb6c3811a1d3857c393b1d235320241e280b1b6748",
-      "size": 5322,
-      "normalized_sha256": "13cdb63e344c810c9a1a51fb6c3811a1d3857c393b1d235320241e280b1b6748"
+      "sha256": "596eee6d1a105c42c7df08e19849493f7246e6b480159e641efce4cb79526d6d",
+      "size": 5510,
+      "normalized_sha256": "596eee6d1a105c42c7df08e19849493f7246e6b480159e641efce4cb79526d6d"
     },
     "frontend/src/components/CommentNode.vue": {
       "role": "index",
@@ -2172,6 +2208,18 @@
       "size": 2142,
       "normalized_sha256": "0c08e61661b87034708088b2d8b76e10027e09488a272f836bff0444cf2c0f01"
     },
+    "frontend/src/components/reading/BackToTopBar.vue": {
+      "role": "index",
+      "sha256": "5a809e802ad1b0e2dfbc7326938abe1e6c4194efdd24c78d7b9a484265adf36a",
+      "size": 4986,
+      "normalized_sha256": "5a809e802ad1b0e2dfbc7326938abe1e6c4194efdd24c78d7b9a484265adf36a"
+    },
+    "frontend/src/components/reading/ReadingFontSizeControl.vue": {
+      "role": "index",
+      "sha256": "4da193cfb6f549408022517fc24e8166737ee38c3b12e70f24fa50838b9bdb18",
+      "size": 3246,
+      "normalized_sha256": "4da193cfb6f549408022517fc24e8166737ee38c3b12e70f24fa50838b9bdb18"
+    },
     "frontend/src/composables/useImportExport.ts": {
       "role": "index",
       "sha256": "7969c18692c4b500a6f3ed7c23378ba4532a736ab22abb82e197fcc12914d6e6",
@@ -2216,9 +2264,9 @@
     },
     "frontend/src/modules/registry.ts": {
       "role": "index",
-      "sha256": "28a210ac73e5e9c569baa7caa691712e8463919e75ce51723d77affe468160d3",
-      "size": 11025,
-      "normalized_sha256": "28a210ac73e5e9c569baa7caa691712e8463919e75ce51723d77affe468160d3"
+      "sha256": "5d23043e9c95e1eada9acdefa37fbdace2773ed26eac202e9c6c6d079290a194",
+      "size": 11394,
+      "normalized_sha256": "5d23043e9c95e1eada9acdefa37fbdace2773ed26eac202e9c6c6d079290a194"
     },
     "frontend/src/router/index.ts": {
       "role": "index",
@@ -2282,9 +2330,9 @@
     },
     "frontend/src/styles/theme.css": {
       "role": "index",
-      "sha256": "829b4d7b29d883e765f0b47fb8a1b0ead809e039f79c0ca6462f83eb04ccf5d5",
-      "size": 18426,
-      "normalized_sha256": "60a494c9475e097f25b205e2f7b72d1fe7cf97c65ece1477e76a0b9f91c640d3"
+      "sha256": "90f7586283d50b5ce5a959dcdb5e929335fd537e944841526540d99fc77d4c15",
+      "size": 19790,
+      "normalized_sha256": "4410589cf68e13a968717a5da59fa8a37f748e7fdb40839d0da1ebaf26fa51a2"
     },
     "frontend/src/styles/themes/README.md": {
       "role": "index",
@@ -2454,6 +2502,12 @@
       "size": 1155,
       "normalized_sha256": "558eb914752ba65e5fdee59619dc87e74b1882ed2098b054c59a3210fded46d5"
     },
+    "frontend/src/utils/readingFont.ts": {
+      "role": "index",
+      "sha256": "9bcdc7621ca4a8574f245c5dfc27b64970cb0a89502f789e1e6681dc8b9c034c",
+      "size": 2985,
+      "normalized_sha256": "9bcdc7621ca4a8574f245c5dfc27b64970cb0a89502f789e1e6681dc8b9c034c"
+    },
     "frontend/src/utils/textStats.ts": {
       "role": "index",
       "sha256": "f0ba5e5c90afad237e0df94afe34d7ba2dc32e174b9203750c9cbc7665f7c278",
@@ -2504,9 +2558,9 @@
     },
     "frontend/src/views/PostDetailView.vue": {
       "role": "index",
-      "sha256": "46d13b08cff226a9e0d4819470bb2044d873b32712fc665e3afab9fc41a0297e",
-      "size": 11915,
-      "normalized_sha256": "803ad211b89bd84244190a72ca136716aeda6ddf9ddc38e95f5a59967d72b219"
+      "sha256": "c2ec95be27dbd82c3da34cd2b192972e7423ee5d9a3278d4514996c71a6d1ac1",
+      "size": 15266,
+      "normalized_sha256": "e6fa7f06597a9879ef5d5ce85fe27fc696e1f2a7c966d7b879865b26709487c5"
     },
     "frontend/src/views/SearchView.vue": {
       "role": "index",
