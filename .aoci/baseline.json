@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-07T09:55:05Z",
-  "updated_at": "2026-10-07T11:26:10Z",
+  "updated_at": "2026-10-07T11:42:52Z",
   "files": {
     ".gitattributes": {
       "role": "index",
@@ -59,9 +59,15 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "78d20b567c96893ec03c51699c0e466cfd1194e7b6dbb8ee240ea234eac289c5",
-      "size": 112110,
-      "normalized_sha256": "78d20b567c96893ec03c51699c0e466cfd1194e7b6dbb8ee240ea234eac289c5"
+      "sha256": "36664f0c400cd146ebd436a65be7f891788aeafbb6efff3a271de68d015fb639",
+      "size": 112017,
+      "normalized_sha256": "36664f0c400cd146ebd436a65be7f891788aeafbb6efff3a271de68d015fb639"
+    },
+    "aoci.database.txt": {
+      "role": "index",
+      "sha256": "19db6f7bdf0d7b2fd7b401530a37cb60577f02c6422c16bb7302d37b6cd375e3",
+      "size": 8861,
+      "normalized_sha256": "19db6f7bdf0d7b2fd7b401530a37cb60577f02c6422c16bb7302d37b6cd375e3"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -71,9 +77,9 @@
     },
     "aoci.txt": {
       "role": "index",
-      "sha256": "0d0d56c36042945af46600e0da8de29a2f5c1968b053c1112711720c2f53256b",
-      "size": 297,
-      "normalized_sha256": "0d0d56c36042945af46600e0da8de29a2f5c1968b053c1112711720c2f53256b"
+      "sha256": "79603d0ce5cd20cadc2a8b1d936b0c15afc1bf10cb0d2e20c06a67478f4d4c97",
+      "size": 403,
+      "normalized_sha256": "79603d0ce5cd20cadc2a8b1d936b0c15afc1bf10cb0d2e20c06a67478f4d4c97"
     },
     "backend/.env.example": {
       "role": "index",
@@ -827,9 +833,9 @@
     },
     "docs/架构与实现.md": {
       "role": "index",
-      "sha256": "790846061bcecd7570776e319d915e0cabc694440726fa3e275bac464fe52b19",
-      "size": 30558,
-      "normalized_sha256": "790846061bcecd7570776e319d915e0cabc694440726fa3e275bac464fe52b19"
+      "sha256": "aa958f0115a388b849832341b487e80fcca99ed834d1ce7f9e9bc39774306704",
+      "size": 30530,
+      "normalized_sha256": "aa958f0115a388b849832341b487e80fcca99ed834d1ce7f9e9bc39774306704"
     },
     "frontend/.gitignore": {
       "role": "index",
@@ -2732,5 +2738,150 @@
       ]
     },
     "apply_authorization_mode": "auto"
+  },
+  "database_cognition": {
+    "version": "database-cognition-binding/v1",
+    "entries": [
+      {
+        "object_ref": "database://phxxblog-mysql/phxxblog/categories",
+        "source_id": "phxxblog-mysql",
+        "evidence_version": "database-evidence/v1",
+        "table_evidence_sha256": "79e8430d1f47058b13b0bfb8604f06066c403d420e4311c70c1f4062af35b7ac",
+        "entry_sha256": "420a3219cddb09a87c47371038eed9ada7a0a78062ea869cd119fef8ffb480b3"
+      },
+      {
+        "object_ref": "database://phxxblog-mysql/phxxblog/comments",
+        "source_id": "phxxblog-mysql",
+        "evidence_version": "database-evidence/v1",
+        "table_evidence_sha256": "f4e78c7d5831143f054fc4f1fdfdead25dbdba4073d8049fd927cd0992034ff5",
+        "entry_sha256": "4c927b86a629f73c2eae44ab2c4e6c89b258ee9970e92110810fa3dabb7d83a9"
+      },
+      {
+        "object_ref": "database://phxxblog-mysql/phxxblog/daily_stats",
+        "source_id": "phxxblog-mysql",
+        "evidence_version": "database-evidence/v1",
+        "table_evidence_sha256": "7d234c9b3e1e4aef304efd730e1f3c30806d12e592fcd624b70276d5b3a23f6c",
+        "entry_sha256": "9d09a14c50a9be12280c9842e84c5bb8f07579210d3ada6fd6c2a7ada1732fdf"
+      },
+      {
+        "object_ref": "database://phxxblog-mysql/phxxblog/diaries",
+        "source_id": "phxxblog-mysql",
+        "evidence_version": "database-evidence/v1",
+        "table_evidence_sha256": "a3bfc6cc83eab2a377792ada62ad340d1633d0e19f160a42643cc6331c7e68a8",
+        "entry_sha256": "06fa9689ef09cabe9129e921d50bd43eed013ac3673d6169418c31737376b1f8"
+      },
+      {
+        "object_ref": "database://phxxblog-mysql/phxxblog/media",
+        "source_id": "phxxblog-mysql",
+        "evidence_version": "database-evidence/v1",
+        "table_evidence_sha256": "8b10e85c586433a46e6845cd976285005ddf2a7e95c01d4e43e1c78bf9052cc0",
+        "entry_sha256": "4ef650561dae03893c1e9fcefd453d21c3dc6c1e095c4c7186dde32f8bf6cf69"
+      },
+      {
+        "object_ref": "database://phxxblog-mysql/phxxblog/operation_logs",
+        "source_id": "phxxblog-mysql",
+        "evidence_version": "database-evidence/v1",
+        "table_evidence_sha256": "92a407de52a162bfc01068a86c7d5d32f510ef416962b253df0c544412ce3a58",
+        "entry_sha256": "108c71278369dc9a548a48f5c74c4fe7205bedb11cbd54f13d637194098fcfdf"
+      },
+      {
+        "object_ref": "database://phxxblog-mysql/phxxblog/permissions",
+        "source_id": "phxxblog-mysql",
+        "evidence_version": "database-evidence/v1",
+        "table_evidence_sha256": "f165d59818c09df6f698915247cc19311297ea91a8c5bbe7be6aab879db59403",
+        "entry_sha256": "43d5b81a04484fdc60ca373b7e716c65cf051e7d30f735c147db15d6930c9256"
+      },
+      {
+        "object_ref": "database://phxxblog-mysql/phxxblog/post_categories",
+        "source_id": "phxxblog-mysql",
+        "evidence_version": "database-evidence/v1",
+        "table_evidence_sha256": "8b6ca952b7fc8e7c50ca23bc5a24a491ef15a6916a48374df2c70862e5aaf093",
+        "entry_sha256": "3ea1866d5e2c432e67cbd84e506ddb1edd66fd87839eee92ad4ceb10aeb75085"
+      },
+      {
+        "object_ref": "database://phxxblog-mysql/phxxblog/post_likes",
+        "source_id": "phxxblog-mysql",
+        "evidence_version": "database-evidence/v1",
+        "table_evidence_sha256": "e7c2f08a556f399aa6c88982148bd0e9607dcd16b48d47581f6d4e115cad1a1d",
+        "entry_sha256": "8dff1103a7b3e2c54a0ac1441dc4e6693e9919943428b265c8946ed5986b02c5"
+      },
+      {
+        "object_ref": "database://phxxblog-mysql/phxxblog/post_tags",
+        "source_id": "phxxblog-mysql",
+        "evidence_version": "database-evidence/v1",
+        "table_evidence_sha256": "c6c4da0b61929caec23b01f3db0ae5e318354f2ab9fd72bcde12fbcf8ceb5dd0",
+        "entry_sha256": "fb17a75feff545b8bccce5ecd739c04a6d74af05c8586923cea5bc5a8b09ba71"
+      },
+      {
+        "object_ref": "database://phxxblog-mysql/phxxblog/posts",
+        "source_id": "phxxblog-mysql",
+        "evidence_version": "database-evidence/v1",
+        "table_evidence_sha256": "86441d2966981e4b38f1f9b7162e76da95601074cb75c68c637ca2be0d9a5bbd",
+        "entry_sha256": "82501adefc4a8ca19b2ea7c83f9ad11389083e72a357dbbb8118a5d346312576"
+      },
+      {
+        "object_ref": "database://phxxblog-mysql/phxxblog/refresh_tokens",
+        "source_id": "phxxblog-mysql",
+        "evidence_version": "database-evidence/v1",
+        "table_evidence_sha256": "cb9bda8e4690845d2c187c0e39faff745a90ad0c624a1032fddbaf672dc253f9",
+        "entry_sha256": "72d4bbdc4bac5d57e44e5d2b90467481eb50a7a8ccacda949ccc98e637ac6b2e"
+      },
+      {
+        "object_ref": "database://phxxblog-mysql/phxxblog/role_permissions",
+        "source_id": "phxxblog-mysql",
+        "evidence_version": "database-evidence/v1",
+        "table_evidence_sha256": "2cbd9e0eb14b8202ca6eef77eb37f13bc2d78b5ac3c1df0aa0c4cba21f552859",
+        "entry_sha256": "45a478bdd5a77b14d658dba232d15c0a6185ecc58aff53205acefae1c36a26d8"
+      },
+      {
+        "object_ref": "database://phxxblog-mysql/phxxblog/roles",
+        "source_id": "phxxblog-mysql",
+        "evidence_version": "database-evidence/v1",
+        "table_evidence_sha256": "3982daefbb360c7e141b233f2f328f50226a5dbe33c719b748cda0baa6429051",
+        "entry_sha256": "f963866a1fc280132940ed3299d215fc41d46ba1f4f6de91a864d2884af83566"
+      },
+      {
+        "object_ref": "database://phxxblog-mysql/phxxblog/schema_version",
+        "source_id": "phxxblog-mysql",
+        "evidence_version": "database-evidence/v1",
+        "table_evidence_sha256": "fef4aad6c326ca1ca8495ef25bb67926ea499ee2d805eaf639e9a20e4dfdd6e3",
+        "entry_sha256": "758d98e3b6cc5346632a1716e59be49c202d13b84aae243a4ee352c428a8112c"
+      },
+      {
+        "object_ref": "database://phxxblog-mysql/phxxblog/settings",
+        "source_id": "phxxblog-mysql",
+        "evidence_version": "database-evidence/v1",
+        "table_evidence_sha256": "3e82eb3e5d6a110dda5b4c5d228734c18792cd9a278a3ddaa5d09928927e10cc",
+        "entry_sha256": "f246498b61f8d40be4f13b90ad5d08b963bd95ed2aeb0cb29bce99b4524d0902"
+      },
+      {
+        "object_ref": "database://phxxblog-mysql/phxxblog/tags",
+        "source_id": "phxxblog-mysql",
+        "evidence_version": "database-evidence/v1",
+        "table_evidence_sha256": "5de78c83b9927e2714c395b4f43b6fea137361da78dc6eb75eddffaa3f4dc842",
+        "entry_sha256": "ddeae84875c786ec075964ca797882ffbb1f5e480ee2f091b0bba73c29d37302"
+      },
+      {
+        "object_ref": "database://phxxblog-mysql/phxxblog/user_roles",
+        "source_id": "phxxblog-mysql",
+        "evidence_version": "database-evidence/v1",
+        "table_evidence_sha256": "d3b47c99eb4992ee85e9736a3a0c5414f736b9d67b79aae5017d93dedbcad4f5",
+        "entry_sha256": "b7d8c22e1e3c31097a331a2b796a3962718ef5b0d5a84c737989938e4f487ad0"
+      },
+      {
+        "object_ref": "database://phxxblog-mysql/phxxblog/users",
+        "source_id": "phxxblog-mysql",
+        "evidence_version": "database-evidence/v1",
+        "table_evidence_sha256": "f76980d0a3d75dbdfed9cc4c7fc8bece4d8ed9bdb775cb72138ca8c231f633a2",
+        "entry_sha256": "638cb0007f631161e0a4f29d29d9a117510a0c73d102b68770233bf9d2d2afa3"
+      },
+      {
+        "object_ref": "database://phxxblog-mysql/phxxblog/visit_logs",
+        "source_id": "phxxblog-mysql",
+        "evidence_version": "database-evidence/v1",
+        "table_evidence_sha256": "f89c2501564ee23a3a148aa1665dc2dc6b2bfd7a45fea43630b481ac7fd17f0d",
+        "entry_sha256": "beef5f0c59defe2a11088cc7e6615bead38c546ae4ad60dd7bfae06f118d6e39"
+      }
+    ]
   }
 }

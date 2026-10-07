@@ -196,6 +196,20 @@
   "automation": {
     "mode": "auto"
   },
+  "database_sources": [
+    {
+      "source_id": "phxxblog-mysql",
+      "engine": "mysql",
+      "database": "phxxblog",
+      "namespaces": [
+        "phxxblog"
+      ],
+      "credential_env": "AOCI_DB_PHXXBLOG_DSN",
+      "connect_timeout_seconds": 10,
+      "query_timeout_seconds": 30,
+      "enabled": true
+    }
+  ],
   "ai": {
     "enabled": false,
     "provider": "openai-compatible",

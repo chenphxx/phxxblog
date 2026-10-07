@@ -196,13 +196,12 @@ verify_all.py[TQ9S]: F:一键跑完后端与前端全部检查并输出汇总表
 ===D:/Projects/phxxblog/docs/===
 接口文档.md[SS7S]: F:项目 API 清单: 按 tag 分组的接口表(方法/路径/鉴权/处理函数) | R:code:backend/scripts/gen_api_doc.py | A:docs/接口文档.md | S:由 gen_api_doc.py 生成, 不要手工维护; 必须与实际路由一致
 数据库设计.md[SS7M]: F:数据库设计: 命名约定, 表清单与逐表字段说明 | R:code:backend/app/models/__init__.py,code:docs/架构与实现.md | A:docs/数据库设计.md | S:手工维护; 改表结构时同步更新
-架构与实现.md[SS9M]: F:技术架构与实现说明: 只讲实现原理与关键约定(分层, 模块体系, 前端结构与开发约定) | R:code:README.md,code:docs/接口文档.md | A:docs/架构与实现.md | S: 字段与接口细节不在本文展开, 指向数据库设计与接口文档; 功能改动导致方案变化时必须同步更新
+架构与实现.md[SS9M]: F:项目技术架构文档: 说明分层, 模块体系, 前端结构与关键设计约定, 只讲实现原理不写字段与接口细节 | R:code:README.md,code:docs/接口文档.md,code:docs/数据库设计.md | A:3 系统架构,5.7 模块体系,6 前端实现,7 关键功能实现,8 数据模型概览,10 开发约定 | S:只记录当前实际采用的方案, 字段级说明与接口清单分别留给数据库设计.md 与接口文档.md; 功能方案变化时必须同步更新本文
 
 ===D:/Projects/phxxblog/frontend/===
 .gitignore[FV6T]: F:前端工程内的忽略规则: 日志, node_modules/dist, vditor 静态资源与主题预览产物 | R:code:frontend/package.json | A:frontend | S:public/vditor 与 src/styles/themes/_preview 是产物, 不入库
 .prettierignore[FQ7T]: F:前端格式化忽略清单: 生成物, 第三方静态资源与主题源 CSS | R:code:frontend/.prettierrc.json | A:frontend | S:主题生成物与 _source/*.css 不参与格式化, 改格式需重新生成并核对观感
 .prettierrc.json[FQ8T]: F:前端格式化配置: 无分号, 单引号, 行宽 120, 行尾 auto | R:code:frontend/package.json | A:frontend | S:与 eslint-config-prettier 配合; 格式检查在 verify_all 与 CI 里强制执行
-README.md[SQ7S]: F:前端开发说明: Node 版本要求, 常用 npm 脚本与目录约定 | R:code:frontend/package.json,code:.nvmrc | A:frontend | S:Node 下限 22.19, 版本以根目录 .nvmrc 为准; 改版本要连 engines 与两个 workflow 一起改
 eslint.config.js[FQ8S]: F:前端 ESLint 扁平配置: 只拦可自动发现的错误, 格式交给 Prettier | R:code:frontend/.prettierrc.json,code:.github/workflows/ci.yml | A:frontend | S:不启用需要 project 的类型感知规则(会明显变慢); 主题生成物与 public/** 被忽略
 index.html[EV7T]: F:前端 HTML 入口: #app 挂载点与 main.ts 模块引用 | R:code:frontend/src/main.ts | A:frontend | S:站点标题与图标由运行时公开配置覆盖(SiteLayout 读取后写入 document)
 package-lock.json[LV7L]: F:npm 依赖锁定文件 | R:code:frontend/package.json | A:frontend | S:由 npm 生成, 不手工编辑; CI 用 npm ci 按它安装
