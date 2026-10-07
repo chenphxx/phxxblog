@@ -9,6 +9,8 @@ import MarkdownView from '@/components/MarkdownView.vue'
 import CommentSection from '@/components/CommentSection.vue'
 import HotPostsCard from '@/components/HotPostsCard.vue'
 import MetaIcon from '@/components/MetaIcon.vue'
+import PostAdjacentNav from '@/components/post/PostAdjacentNav.vue'
+import PostTocNav from '@/components/post/PostTocNav.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useModulesStore } from '@/stores/modules'
 import { chipStyle, LIKES_COLOR, VIEWS_COLOR } from '@/utils/chipColor'
@@ -140,18 +142,7 @@ onBeforeUnmount(() => {
           <!-- 窄屏放不下右侧目录: 折叠一份放在正文上方 -->
           <details v-if="toc.length" class="toc-inline">
             <summary>目录</summary>
-            <div class="toc-nav">
-              <button
-                v-for="heading in toc"
-                :key="heading.id"
-                type="button"
-                class="toc-link"
-                :class="[`toc-lv${heading.level}`, { 'is-active': heading.id === activeHeading }]"
-                @click="scrollToHeading(heading.id)"
-              >
-                {{ heading.text }}
-              </button>
-            </div>
+            <PostTocNav :headings="toc" :active-id="activeHeading" @select="scrollToHeading" />
           </details>
 
           <article class="panel post-detail">
@@ -223,16 +214,7 @@ onBeforeUnmount(() => {
             <!-- 文章末尾: 右下角更新时间 + 上一篇/下一篇(没有相邻文章的一侧留空) -->
             <footer class="post-footer">
               <p class="post-updated">最后更新于 {{ formatDateTime(post.updated_at) }}</p>
-              <nav class="post-nav" aria-label="相邻文章">
-                <router-link v-if="post.prev_post" class="post-nav-card is-prev" :to="`/post/${post.prev_post.id}`">
-                  <span class="post-nav-label"><MetaIcon name="back" />上一篇</span>
-                  <span class="post-nav-title">{{ post.prev_post.title }}</span>
-                </router-link>
-                <router-link v-if="post.next_post" class="post-nav-card is-next" :to="`/post/${post.next_post.id}`">
-                  <span class="post-nav-label">下一篇<MetaIcon name="external" /></span>
-                  <span class="post-nav-title">{{ post.next_post.title }}</span>
-                </router-link>
-              </nav>
+              <PostAdjacentNav :prev="post.prev_post" :next="post.next_post" />
             </footer>
           </article>
 
@@ -242,19 +224,7 @@ onBeforeUnmount(() => {
         <aside class="post-aside">
           <nav v-if="toc.length" class="card toc-card" aria-label="文章目录">
             <p class="eyebrow">目录</p>
-            <div class="toc-nav">
-              <button
-                v-for="heading in toc"
-                :key="heading.id"
-                type="button"
-                class="toc-link"
-                :class="[`toc-lv${heading.level}`, { 'is-active': heading.id === activeHeading }]"
-                :title="heading.text"
-                @click="scrollToHeading(heading.id)"
-              >
-                {{ heading.text }}
-              </button>
-            </div>
+            <PostTocNav :headings="toc" :active-id="activeHeading" with-title @select="scrollToHeading" />
           </nav>
           <HotPostsCard :posts="hotPosts" />
         </aside>
@@ -319,57 +289,6 @@ onBeforeUnmount(() => {
 }
 .toc-card {
   padding: var(--space-4) var(--space-5);
-}
-.toc-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-top: var(--space-3);
-  /* 目录过长时在卡片内滚动, 否则 sticky 的右栏会被撑出视野, 底部永远够不到 */
-  max-height: min(52vh, 420px);
-  overflow-y: auto;
-}
-.toc-link {
-  display: block;
-  width: 100%;
-  padding: 5px 9px;
-  border: none;
-  border-radius: var(--radius-chip);
-  background: transparent;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.5;
-  text-align: left;
-  cursor: pointer;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  transition:
-    color 0.15s ease,
-    background-color 0.15s ease,
-    border-color 0.15s ease;
-}
-.toc-link:hover {
-  color: var(--text);
-  background: var(--code-bg);
-}
-.toc-link.is-active {
-  background: var(--code-bg);
-  color: var(--text);
-  font-weight: 600;
-}
-/* 按标题层级缩进(h1/h2 不缩进) */
-.toc-lv3 {
-  padding-left: 20px;
-}
-.toc-lv4 {
-  padding-left: 32px;
-}
-.toc-lv5 {
-  padding-left: 44px;
-}
-.toc-lv6 {
-  padding-left: 56px;
 }
 .post-topbar {
   display: flex;
@@ -444,52 +363,5 @@ onBeforeUnmount(() => {
   text-align: right;
   font-size: 12.5px;
   color: var(--muted);
-}
-.post-nav {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-3);
-}
-.post-nav-card {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-  padding: var(--space-4);
-  border: 1px solid transparent;
-  border-radius: var(--radius-control);
-  background: var(--code-bg);
-  transition: background-color var(--dur) var(--ease);
-}
-.post-nav-card:hover {
-  background: var(--primary-weak);
-  text-decoration: none;
-}
-/* 没有相邻文章的一侧不渲染卡片, 用 grid-column 保证"下一篇"始终落在右侧 */
-.post-nav-card.is-next {
-  grid-column: 2;
-  text-align: right;
-}
-.post-nav-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  color: var(--muted);
-}
-.post-nav-card.is-next .post-nav-label {
-  justify-content: flex-end;
-}
-.post-nav-title {
-  color: var(--text);
-  font-size: 14.5px;
-  font-weight: 500;
-  line-height: 1.5;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.post-nav-card:hover .post-nav-title {
-  color: var(--link);
 }
 </style>

@@ -354,3 +354,46 @@ html:root .el-button--info:not(.is-plain):not(.is-text):not(.is-link) {
   border: 1px solid var(--border);
   border-radius: var(--radius-control);
 }
+
+/*
+ * 卡片头部行: 左侧标题 + 右侧操作
+ * 仪表盘的"访问趋势"与"访问记录"两张卡片共用, 不要再在各自组件里各写一份
+ */
+.trend-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+/*
+ * 设置类表单卡片的公共零件
+ * 系统设置拆成多张子卡片后由它们共用, 不要再在各自组件里各写一份
+ */
+/* 卡片标题下的一句说明 */
+.section-hint {
+  margin: -4px 0 16px;
+}
+/* 配置域的可见性说明: 默认"公开可见", is-admin 表示仅管理员可见 */
+.vis-badge {
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 400;
+  vertical-align: 2px;
+  color: var(--primary);
+  background: var(--primary-weak);
+}
+.vis-badge.is-admin {
+  color: var(--warn);
+  background: color-mix(in srgb, var(--warn) 12%, transparent);
+}
+/* 字段下方的补充说明: 统一字号, 不再写内联样式 */
+.form-hint {
+  width: 100%;
+  font-size: 12px;
+  line-height: 1.6;
+}
