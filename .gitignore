@@ -34,7 +34,11 @@ backend/data/*.xdb
 output/
 
 # AI
-AGENTS.md
+# 不要忽略 AGENTS.md: AOCI 的索引以 git 的忽略为权威, 被忽略的文件会被静默跳过, 索引就建不起来
 
 # todo 
 todo.md
+
+# AOCI agent host integration (machine-bound; do not commit)
+.codex/config.toml
+.codex/config.toml.backup.*
