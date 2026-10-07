@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-07T09:55:05Z",
-  "updated_at": "2026-10-07T10:23:05Z",
+  "updated_at": "2026-10-07T11:10:44Z",
   "files": {
     ".gitattributes": {
       "role": "index",
@@ -23,9 +23,9 @@
     },
     ".gitignore": {
       "role": "index",
-      "sha256": "1a52fd2bcc04b85bdfb5975b3fe7acc713a3aed618e9036d656077a84ec8835f",
-      "size": 820,
-      "normalized_sha256": "1a52fd2bcc04b85bdfb5975b3fe7acc713a3aed618e9036d656077a84ec8835f"
+      "sha256": "3e924d798ba63d2039fe67858482c09cab146beb3c2ba54192ecd1d510aede1f",
+      "size": 837,
+      "normalized_sha256": "3e924d798ba63d2039fe67858482c09cab146beb3c2ba54192ecd1d510aede1f"
     },
     ".nvmrc": {
       "role": "index",
@@ -59,9 +59,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "980639e528cddb72b00f0fdf40b76c61ebf7e7d8abf6e00ed985dafa56db1b13",
-      "size": 108139,
-      "normalized_sha256": "980639e528cddb72b00f0fdf40b76c61ebf7e7d8abf6e00ed985dafa56db1b13"
+      "sha256": "ca7bd5dc8f122fd30bf48a00ce20c8e9f70d55e3a86547780f776b1935a8fe28",
+      "size": 112038,
+      "normalized_sha256": "ca7bd5dc8f122fd30bf48a00ce20c8e9f70d55e3a86547780f776b1935a8fe28"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -827,9 +827,9 @@
     },
     "docs/架构与实现.md": {
       "role": "index",
-      "sha256": "7dfcb8d322aa32306ad74bba1731b6ce28e935d23ad2fc651edd39af6a88f603",
-      "size": 83479,
-      "normalized_sha256": "02e1fb90d130fb8ca407b3b36bf1d57a8c4416f4297aaf67f25ae10ee0c687e2"
+      "sha256": "f16ac8b9c96d650abdd3bac9a848b2efeaf97bb98ea4d1ce106380849f610fc9",
+      "size": 83526,
+      "normalized_sha256": "a0fdb935e09c6ae8a1438744d4809eded4059970e23f134725b609cedabe4fc3"
     },
     "frontend/.gitignore": {
       "role": "index",
@@ -851,9 +851,9 @@
     },
     "frontend/README.md": {
       "role": "index",
-      "sha256": "1e859f709ff685dad438889ebe0206ed3867dae183488be201d5aa1d0de41025",
-      "size": 7230,
-      "normalized_sha256": "1e859f709ff685dad438889ebe0206ed3867dae183488be201d5aa1d0de41025"
+      "sha256": "4a4b1a80de91fd0f3bbdf50dac92da04680c6bc5e0a7204a94790143688f2d37",
+      "size": 7250,
+      "normalized_sha256": "4a4b1a80de91fd0f3bbdf50dac92da04680c6bc5e0a7204a94790143688f2d37"
     },
     "frontend/eslint.config.js": {
       "role": "index",
@@ -2006,9 +2006,9 @@
     },
     "frontend/src/components.d.ts": {
       "role": "index",
-      "sha256": "9ad3586d15d267303e3d39150478e7f07026eef120372b2d593e0375f862fe0b",
-      "size": 5158,
-      "normalized_sha256": "9ad3586d15d267303e3d39150478e7f07026eef120372b2d593e0375f862fe0b"
+      "sha256": "13cdb63e344c810c9a1a51fb6c3811a1d3857c393b1d235320241e280b1b6748",
+      "size": 5322,
+      "normalized_sha256": "13cdb63e344c810c9a1a51fb6c3811a1d3857c393b1d235320241e280b1b6748"
     },
     "frontend/src/components/CommentNode.vue": {
       "role": "index",
@@ -2084,9 +2084,9 @@
     },
     "frontend/src/components/PostCard.vue": {
       "role": "index",
-      "sha256": "c747fa5dd41aca904eec777a3ca1747110541d85d612207b45bf4406f118f2ac",
-      "size": 3879,
-      "normalized_sha256": "4f1a641e09f1f222012f0c02c5ec75d42e44be508fb474b78a7f454a0a4d2ae9"
+      "sha256": "bd2332f2da496f44d0476c17d4ac0371db942caad9e94a799bf7f794d6cb458d",
+      "size": 3798,
+      "normalized_sha256": "99f32f18ad991869efc93c8385ff299a1b30040bde00523dba56d317b51b523a"
     },
     "frontend/src/components/PostFormFields.vue": {
       "role": "index",
@@ -2154,6 +2154,18 @@
       "size": 1347,
       "normalized_sha256": "5a461a43474bd74b77c2d4425c2687ef3d04cc245926f87844299d9c3825f205"
     },
+    "frontend/src/components/post/PostAdjacentNav.vue": {
+      "role": "index",
+      "sha256": "c41573b4527c66d8bb077a800b4f524add9dac5f2d55afb3408d6a5fcee85191",
+      "size": 2071,
+      "normalized_sha256": "c41573b4527c66d8bb077a800b4f524add9dac5f2d55afb3408d6a5fcee85191"
+    },
+    "frontend/src/components/post/PostTocNav.vue": {
+      "role": "index",
+      "sha256": "0c08e61661b87034708088b2d8b76e10027e09488a272f836bff0444cf2c0f01",
+      "size": 2142,
+      "normalized_sha256": "0c08e61661b87034708088b2d8b76e10027e09488a272f836bff0444cf2c0f01"
+    },
     "frontend/src/composables/useImportExport.ts": {
       "role": "index",
       "sha256": "7969c18692c4b500a6f3ed7c23378ba4532a736ab22abb82e197fcc12914d6e6",
@@ -2162,15 +2174,15 @@
     },
     "frontend/src/composables/usePagedList.ts": {
       "role": "index",
-      "sha256": "39d0f351278d8f2bb9289af28286ddfeb4a4ebd063ec8c81266421a14896248f",
+      "sha256": "ac1d313eeb64d8cd42e046ac2a30dfb5a625a32a91b97570fb21f7114dae8969",
       "size": 2809,
-      "normalized_sha256": "39d0f351278d8f2bb9289af28286ddfeb4a4ebd063ec8c81266421a14896248f"
+      "normalized_sha256": "ac1d313eeb64d8cd42e046ac2a30dfb5a625a32a91b97570fb21f7114dae8969"
     },
     "frontend/src/composables/usePostEditor.ts": {
       "role": "index",
-      "sha256": "e5ed58a66b696029e3004c9faf40507e51f11696093d6006e3e8931ec427475b",
-      "size": 6802,
-      "normalized_sha256": "e5ed58a66b696029e3004c9faf40507e51f11696093d6006e3e8931ec427475b"
+      "sha256": "b855bc9372548032b4b711c2451cab2a9996180a32da97eb35941dde2a903f0c",
+      "size": 6648,
+      "normalized_sha256": "b855bc9372548032b4b711c2451cab2a9996180a32da97eb35941dde2a903f0c"
     },
     "frontend/src/kanbanniang/loader.ts": {
       "role": "index",
@@ -2186,21 +2198,21 @@
     },
     "frontend/src/layouts/SiteLayout.vue": {
       "role": "index",
-      "sha256": "141072c9843923ebc3767f2e17b074923b7d1babf1b3117c6e15b3fc122ff4e6",
-      "size": 8116,
-      "normalized_sha256": "ce4f0ec6dd20afbd4ad14d482e928e62025165692132a86f2c40442e16f3de49"
+      "sha256": "f655e85aad8b2584d4341bec9aa54252b65f3dcf9214290c27619bca5b8da635",
+      "size": 8103,
+      "normalized_sha256": "ab459a1c7f03bd2028a23ba0d6afed7880173df02005e6e68765b7eb0957bb5c"
     },
     "frontend/src/main.ts": {
       "role": "index",
-      "sha256": "b9d57f758f316f45a264ffb324f1e58f6740cbb5af761a9c927402bd06ce165c",
-      "size": 2416,
-      "normalized_sha256": "b9d57f758f316f45a264ffb324f1e58f6740cbb5af761a9c927402bd06ce165c"
+      "sha256": "28cbc72ddff685e40ba7b92558132f9564e99c1ffdb7beea1837f75cafc747c9",
+      "size": 2400,
+      "normalized_sha256": "28cbc72ddff685e40ba7b92558132f9564e99c1ffdb7beea1837f75cafc747c9"
     },
     "frontend/src/modules/registry.ts": {
       "role": "index",
-      "sha256": "984f9575287df8c4736364728555286c332973d3c3a90ed71e52a984f6b5966d",
-      "size": 11122,
-      "normalized_sha256": "984f9575287df8c4736364728555286c332973d3c3a90ed71e52a984f6b5966d"
+      "sha256": "28a210ac73e5e9c569baa7caa691712e8463919e75ce51723d77affe468160d3",
+      "size": 11025,
+      "normalized_sha256": "28a210ac73e5e9c569baa7caa691712e8463919e75ce51723d77affe468160d3"
     },
     "frontend/src/router/index.ts": {
       "role": "index",
@@ -2234,9 +2246,15 @@
     },
     "frontend/src/styles/admin.css": {
       "role": "index",
-      "sha256": "c4b12842a454672587c4f33158ae6e077d2fda5012aeada62aff310f40e8f663",
-      "size": 13630,
-      "normalized_sha256": "e07004b336d14dd0e19cb3636df8208c50e93022271a4aaebed0fc27df489773"
+      "sha256": "0a6d9adb98e6dcc1619e802fe20a0b21d4219b04c8907890712106745291928d",
+      "size": 14738,
+      "normalized_sha256": "2db3fa38f5385f46ac74d60851c6e24245bc64c97e0ba2a487130af201fb839a"
+    },
+    "frontend/src/styles/app.css": {
+      "role": "index",
+      "sha256": "99910cb627dda70d9228b7938d4eaf11eef164706696ec348ce324b30a073b39",
+      "size": 2437,
+      "normalized_sha256": "0feb0d56a5f79b7ca91351c3d22526e9be7880f17ae91ed11dffa78c12e83d1b"
     },
     "frontend/src/styles/fonts.css": {
       "role": "index",
@@ -2264,9 +2282,9 @@
     },
     "frontend/src/styles/themes/README.md": {
       "role": "index",
-      "sha256": "3c1afb31075e38423fb846fb4416d882fd719a7dccfc8899500a35f3432a0f45",
-      "size": 7902,
-      "normalized_sha256": "902726485edfbb6785f4c320398fadfca6e7c88a40575ed4df8086561c1584ce"
+      "sha256": "ef18c0f2c2d188590c90ddd09f2de71160ab5fb40599ee0bcf7031d712117e90",
+      "size": 7886,
+      "normalized_sha256": "2034841dc0f509017e0520e350af00ce0ff87e8d48a04b375a8b2671c51803c2"
     },
     "frontend/src/styles/themes/_source/_gallery-template.html": {
       "role": "index",
@@ -2424,6 +2442,12 @@
       "size": 1754,
       "normalized_sha256": "fe208921f47216e137f49ecbe0155fb687de7d08238174205c3619b342c20635"
     },
+    "frontend/src/utils/postStatus.ts": {
+      "role": "index",
+      "sha256": "558eb914752ba65e5fdee59619dc87e74b1882ed2098b054c59a3210fded46d5",
+      "size": 1155,
+      "normalized_sha256": "558eb914752ba65e5fdee59619dc87e74b1882ed2098b054c59a3210fded46d5"
+    },
     "frontend/src/utils/textStats.ts": {
       "role": "index",
       "sha256": "f0ba5e5c90afad237e0df94afe34d7ba2dc32e174b9203750c9cbc7665f7c278",
@@ -2474,9 +2498,9 @@
     },
     "frontend/src/views/PostDetailView.vue": {
       "role": "index",
-      "sha256": "771c71af172924af2599613795c4c460aa8e5ec402845fd68a7bb2ce2f9e3da3",
-      "size": 15342,
-      "normalized_sha256": "70e67ac69a2fb36977cc568e0bf9e5048128b4ad5f171ff094fd319a296ffb91"
+      "sha256": "46d13b08cff226a9e0d4819470bb2044d873b32712fc665e3afab9fc41a0297e",
+      "size": 11915,
+      "normalized_sha256": "803ad211b89bd84244190a72ca136716aeda6ddf9ddc38e95f5a59967d72b219"
     },
     "frontend/src/views/SearchView.vue": {
       "role": "index",
@@ -2508,11 +2532,23 @@
       "size": 7302,
       "normalized_sha256": "d882d4b5d1bc6a1140b395403d76a4dc159c0ea603b74716754f54796732feeb"
     },
+    "frontend/src/views/admin/DashboardTrendPanel.vue": {
+      "role": "index",
+      "sha256": "2d4f4d6e3c36a7441e079664f094a15b2e6327b239e3e8346c8cee9fc488a5bf",
+      "size": 10618,
+      "normalized_sha256": "2d4f4d6e3c36a7441e079664f094a15b2e6327b239e3e8346c8cee9fc488a5bf"
+    },
     "frontend/src/views/admin/DashboardView.vue": {
       "role": "index",
-      "sha256": "3b12821ee8fd0b7657c29beb41575ab41cfe51fd24e6417aca792297c15a575c",
-      "size": 18796,
-      "normalized_sha256": "d7bd74168355bc11787fa6f44148e725c6201483e7f5e65dca70f1f3edc45366"
+      "sha256": "cb26a5b2ccfd8943d0da13af345da352c7dd09aab85e56b34f9f27c96c30cf28",
+      "size": 6535,
+      "normalized_sha256": "cb26a5b2ccfd8943d0da13af345da352c7dd09aab85e56b34f9f27c96c30cf28"
+    },
+    "frontend/src/views/admin/DashboardVisitsTable.vue": {
+      "role": "index",
+      "sha256": "3223b15f33ea341ba81a00580769c1f688de7778acb55cf92128c1e0a4d9b654",
+      "size": 2606,
+      "normalized_sha256": "3223b15f33ea341ba81a00580769c1f688de7778acb55cf92128c1e0a4d9b654"
     },
     "frontend/src/views/admin/LoginView.vue": {
       "role": "index",
@@ -2546,9 +2582,9 @@
     },
     "frontend/src/views/admin/PostManageView.vue": {
       "role": "index",
-      "sha256": "9f58667266c8f0598ac2991c8717b635d4694af9a066a23d810cdce111ebe944",
-      "size": 11665,
-      "normalized_sha256": "9f58667266c8f0598ac2991c8717b635d4694af9a066a23d810cdce111ebe944"
+      "sha256": "02cd4cc8f0f22f8b5037a9aa625bd86013f21650695a30586a9edad61a8549e8",
+      "size": 11383,
+      "normalized_sha256": "02cd4cc8f0f22f8b5037a9aa625bd86013f21650695a30586a9edad61a8549e8"
     },
     "frontend/src/views/admin/ProfileView.vue": {
       "role": "index",
@@ -2558,15 +2594,45 @@
     },
     "frontend/src/views/admin/SettingsView.vue": {
       "role": "index",
-      "sha256": "e33da898637d6163381741c7244eef6ad596490efb0ad749abd2576e0c975237",
-      "size": 22061,
-      "normalized_sha256": "46c08bc877ca5cfa9dccd9771949dbcce1bf596f83fae81f18fdbbdc84a28000"
+      "sha256": "90ecca603006db737fa2e1d3dc854986e151a51aa0df6f415eb197dd37e23d05",
+      "size": 5590,
+      "normalized_sha256": "90ecca603006db737fa2e1d3dc854986e151a51aa0df6f415eb197dd37e23d05"
     },
     "frontend/src/views/admin/UserManageView.vue": {
       "role": "index",
       "sha256": "448aca6788e3e2f74c51b431255bc1f2d1219b7a095037d26f200af0d4442f12",
       "size": 7586,
       "normalized_sha256": "448aca6788e3e2f74c51b431255bc1f2d1219b7a095037d26f200af0d4442f12"
+    },
+    "frontend/src/views/admin/settings/FooterLinksCard.vue": {
+      "role": "index",
+      "sha256": "340e5cd8bd51bbd4d286ef915315718d1473b330cb1c5629a5a9171149d828a6",
+      "size": 5099,
+      "normalized_sha256": "340e5cd8bd51bbd4d286ef915315718d1473b330cb1c5629a5a9171149d828a6"
+    },
+    "frontend/src/views/admin/settings/HomeContentCard.vue": {
+      "role": "index",
+      "sha256": "5bf505553b3477634d7e99dbbfe0b623cbf361c74baef5ad224562fc00e3875b",
+      "size": 7687,
+      "normalized_sha256": "5bf505553b3477634d7e99dbbfe0b623cbf361c74baef5ad224562fc00e3875b"
+    },
+    "frontend/src/views/admin/settings/SeoCard.vue": {
+      "role": "index",
+      "sha256": "2c7787663678ae785ce1c9d4076e9753abad4c26ccfedfb78b44e8ce4dff868a",
+      "size": 1059,
+      "normalized_sha256": "2c7787663678ae785ce1c9d4076e9753abad4c26ccfedfb78b44e8ce4dff868a"
+    },
+    "frontend/src/views/admin/settings/SiteBasicCard.vue": {
+      "role": "index",
+      "sha256": "97f6c9937e3a0b64698b47bbb6a3071feda98bae221f166839e299bd932fec8c",
+      "size": 2880,
+      "normalized_sha256": "97f6c9937e3a0b64698b47bbb6a3071feda98bae221f166839e299bd932fec8c"
+    },
+    "frontend/src/views/admin/settings/UploadCard.vue": {
+      "role": "index",
+      "sha256": "4a8111f83386a4e795f0ba13dbc7901542bef91acfff6a42d7fa7d9b2f6fac73",
+      "size": 1288,
+      "normalized_sha256": "4a8111f83386a4e795f0ba13dbc7901542bef91acfff6a42d7fa7d9b2f6fac73"
     },
     "frontend/tsconfig.app.json": {
       "role": "index",
