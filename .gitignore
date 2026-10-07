@@ -15,6 +15,7 @@ __pycache__/
 
 # 日志与临时文件
 *.log
+.playwright-cli/
 
 # 上传文件(保留目录, 忽略内容)
 assets/uploads/*
