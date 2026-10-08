@@ -2,7 +2,6 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Star } from '@element-plus/icons-vue'
 import { postApi } from '@/api'
 import type { MarkdownHeading, PostDetail, PostItem } from '@/types'
 import MarkdownView from '@/components/MarkdownView.vue'
@@ -266,11 +265,14 @@ onBeforeUnmount(() => {
                 class="like-btn"
                 size="small"
                 :type="liked ? 'warning' : 'default'"
-                :icon="Star"
                 circle
                 :title="liked ? '取消点赞' : '点赞'"
+                :aria-label="liked ? '取消点赞' : '点赞'"
                 @click="toggleLike"
-              />
+              >
+                <!-- 用与点赞数标签同一个大拇指图标: 五角星容易被误认成收藏 -->
+                <MetaIcon name="thumb" />
+              </el-button>
             </div>
 
             <p v-if="post.summary" class="post-detail-summary">{{ post.summary }}</p>
