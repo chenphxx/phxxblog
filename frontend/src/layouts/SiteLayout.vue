@@ -11,6 +11,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useKanbanniangStore } from '@/stores/kanbanniang'
 import { useModulesStore } from '@/stores/modules'
 import type { PublicSettings } from '@/types'
+import { rowsOf, textOf } from '@/utils/moduleConfig'
 
 /**
  * @brief 前台外壳(桌面侧栏 + 移动端抽屉)
@@ -31,19 +32,22 @@ const settings = ref<PublicSettings | null>(null)
 /** 移动端抽屉是否展开 */
 const drawerOpen = ref(false)
 
-/** 页脚版权信息(后台可配置, 支持 {year}/{site_name} 占位符; 留空则不显示) */
+/** 页脚配置(footer 模块): 版权文案, 网站链接与备案信息都在这里 */
+const footerConfig = computed(() => modules.moduleConfig('footer'))
+
+/** 页脚版权信息(支持 {year}/{site_name} 占位符; 留空则不显示) */
 const DEFAULT_FOOTER_TEXT = '© {year} {site_name} · Vue3 + FastAPI'
 const footerText = computed(() => {
-  // 配置项缺失(未初始化)时用默认文案, 后台显式留空则不显示
-  const raw = (settings.value ? (settings.value.footer_text ?? DEFAULT_FOOTER_TEXT) : DEFAULT_FOOTER_TEXT).trim()
+  // 配置项缺失(模块状态还没加载)时用默认文案, 模块里显式留空则不显示
+  const raw = textOf(footerConfig.value.footer_text, DEFAULT_FOOTER_TEXT).trim()
   if (!raw) return ''
   return raw
     .replaceAll('{year}', String(new Date().getFullYear()))
     .replaceAll('{site_name}', settings.value?.site_name || 'phxxblog')
 })
-const beianList = computed(() => (settings.value?.beian_info ?? []).filter((b) => b.name))
-/** 页脚无任何内容时整体不渲染 */
-const hasFooter = computed(() => beianList.value.length > 0 || !!footerText.value)
+const beianList = computed(() => rowsOf(footerConfig.value.beian_info).filter((b) => b.name))
+/** 模块被禁用, 或页脚确实没有任何内容时, 页脚整体不渲染 */
+const hasFooter = computed(() => modules.isEnabled('footer') && (beianList.value.length > 0 || !!footerText.value))
 
 /**
  * 侧栏导航: 由模块注册表生成, 再按登录状态与模块开关过滤
@@ -66,6 +70,36 @@ function visibleNav(group: 'primary' | 'secondary') {
 const primaryNav = computed(() => visibleNav('primary'))
 const secondaryNav = computed(() => visibleNav('secondary'))
 
+/**
+ * 写一个 head 里的 meta 标签
+ *
+ * @param name meta 的 name
+ * @param content 内容; 为空时移除已有标签(模块被禁用时不留残迹)
+ */
+function setMeta(name: string, content: string) {
+  const existing = document.head.querySelector<HTMLMetaElement>(`meta[name="${name}"]`)
+  if (!content) {
+    existing?.remove()
+    return
+  }
+  const meta = existing ?? document.createElement('meta')
+  meta.name = name
+  meta.content = content
+  if (!existing) document.head.appendChild(meta)
+}
+
+/**
+ * @brief 按 SEO 模块的开关注入 meta 标签
+ *
+ * 关键词取自 seo 模块配置, 描述取自站点设置里的 site_desc(它同时是 RSS 的订阅摘要,
+ * 属于各模块共享的站点身份信息); 模块被禁用时两处都不输出
+ */
+function applySeoMeta() {
+  const enabled = modules.isEnabled('seo')
+  setMeta('keywords', enabled ? textOf(modules.moduleConfig('seo').keywords).trim() : '')
+  setMeta('description', enabled ? (settings.value?.site_desc || '').trim() : '')
+}
+
 /** 切换路由后收起抽屉(窄屏点完导航就该看到内容) */
 watch(
   () => route.fullPath,
@@ -77,14 +111,14 @@ watch(
 onMounted(async () => {
   // 站点设置与模块开关一起取: 首页各模块的展示条件要用到两者
   await modules.load()
+  // 看板娘的总开关现在就是模块开关: 模块被禁用时连运行时与模型都不下载
+  kanbanniang.setAllowed(modules.isEnabled('kanbanniang'))
   // 页面访问埋点(PV/UV): 统计模块被禁用时不再产生请求
   if (modules.isEnabled('stats')) {
     statsApi.track({ url: location.hash || '/' }).catch(() => {})
   }
   try {
     settings.value = await settingsApi.public()
-    // 后台的看板娘总开关(系统设置 - 前台展示), 关掉后前台不加载也不展示
-    kanbanniang.setAllowed(settings.value.show_kanbanniang !== false)
     // 浏览器标签页名称(留空回退到站点名称)
     document.title = settings.value.site_title || settings.value.site_name || 'phxxblog'
     // 动态站点图标
@@ -98,9 +132,9 @@ onMounted(async () => {
       }
       link.href = icon
     }
+    applySeoMeta()
   } catch {
-    // 设置加载失败不影响页面, 看板娘按默认(展示)处理
-    kanbanniang.setAllowed(true)
+    // 设置加载失败不影响页面: 看板娘的总开关已按模块状态决定
   }
 })
 </script>

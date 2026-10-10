@@ -1,12 +1,17 @@
 """系统设置的键与默认值(后端唯一定义处)
 
+本文件只保留两类键:
+  - 站点身份: 站点名/标题/描述/图标/头像/简介 - 布局层与多个模块都要读, 是共享输入
+  - 平台约束: 单文件上传上限 - 全站所有上传入口共用同一个限制
+某个能力的配置(内容与开关)归它自己的模块, 见 app/modules/<模块 id>/spec.py 的 settings,
+在 settings 表里以 module.<模块 id>.<配置键> 存放(见 app/modules/base.py)
+
 为什么单独抽一个模块:
     同一份默认值以前写在两处 - seed.py 的 DEFAULT_SETTINGS(带描述, 初始化数据库用)
     与 api/v1/settings.py 的 DEFAULTS(库里缺行时兜底) - 并且已经漂移过:
-    tech_tags 在 seed 里是 ["Python", "Vue", "FastAPI", "MySQL"], 在兜底里是
-    "Python, Vue, FastAPI"(个数与格式都不一样), 而 /settings/public 会把逗号串
+    同一种列表型设置在两处的元素个数与格式都不一样, 而 /settings/public 会把逗号串
     兜底解析成数组, 所以这个差异在界面上完全看不出来
-    现在默认值只有这一份, 初始化脚本与路由都从这里取, 新增设置项时后端只需改本文件
+    现在默认值只有这一份, 初始化脚本与路由都从这里取
 
     PUBLIC_KEYS 与 BOOL_KEYS 仍然显式列出, 不从默认值反推:
       - PUBLIC_KEYS 决定哪些键对前台公开, 属于安全边界, 必须逐个显式增删
@@ -27,27 +32,9 @@ DEFAULT_SETTINGS: dict[str, tuple[str, str]] = {
     "site_name": ("phxxblog", "站点名称"),
     "site_title": ("", "浏览器标签页名称(留空用站点名称)"),
     "site_desc": ("记录技术成长与生活点滴的个人博客", "站点描述"),
-    "site_keywords": ("blog, 技术, 分享", "SEO 关键词"),
     "site_icon": ("", "站点图标URL"),
     "site_avatar": ("", "首页头像URL"),
     "site_bio": ("一个热爱编程的开发者", "首页个人简介"),
-    "site_readme": ("", "主页 README(Markdown)"),
-    "show_readme": ("1", "首页是否展示 README 模块(1=展示, 0=隐藏)"),
-    "show_contributions": ("1", "首页是否展示文章发布记录(1=展示, 0=隐藏)"),
-    "show_history": ("1", "首页是否展示程序员历史上的今天(1=展示, 0=隐藏)"),
-    "show_session": ("1", "首页是否展示 session 终端卡片(1=展示, 0=隐藏)"),
-    "show_kanbanniang": ("1", "全站是否展示看板娘(1=展示, 0=隐藏)"),
-    "footer_text": (
-        "© {year} {site_name} · Vue3 + FastAPI",
-        "页脚版权信息(支持 {year}/{site_name} 占位符, 留空则不显示)",
-    ),
-    "tech_tags": ('["Python", "Vue", "FastAPI", "MySQL"]', "首页技术标签(JSON数组)"),
-    "social_links": (
-        '[{"name": "GitHub", "url": "https://github.com/chenphxx"}]',
-        "社交账号链接(JSON数组)",
-    ),
-    "website_links": ("[]", "网站链接(JSON数组)"),
-    "beian_info": ("[]", "网站备案信息(JSON数组, 元素含 name/url/icon)"),
 }
 
 # 键 -> 默认值(不带说明), 供路由在库里缺行时兜底
@@ -58,21 +45,9 @@ PUBLIC_KEYS = [
     "site_name",
     "site_title",
     "site_desc",
-    "site_keywords",
     "site_icon",
     "site_avatar",
     "site_bio",
-    "site_readme",
-    "tech_tags",
-    "social_links",
-    "website_links",
-    "beian_info",
-    "show_readme",
-    "show_contributions",
-    "show_history",
-    "show_session",
-    "show_kanbanniang",
-    "footer_text",
 ]
 
 # 只在后台可编辑、不向前台公开的配置键(需要出现在后台表单里)
@@ -83,13 +58,9 @@ ADMIN_ONLY_KEYS = [
 ]
 
 # 布尔型开关: 1/true/yes/on 视为开启
-BOOL_KEYS = (
-    "show_readme",
-    "show_contributions",
-    "show_history",
-    "show_session",
-    "show_kanbanniang",
-)
+# 站点级设置里已没有布尔开关(首页各区块的展示开关随各自模块走), 留空是刻意的:
+# 路由仍按这份名单把值转成 true/false, 以后新增站点级开关时在这里加上即可
+BOOL_KEYS: tuple[str, ...] = ()
 
 
 def parse_upload_size_mb(raw: object) -> int | None:

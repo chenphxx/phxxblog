@@ -5,6 +5,8 @@ import { faviconOf, linkName, onFaviconError } from '@/utils/linkIcon'
  * @brief 首页左侧的常用网站卡片
  *
  * 只在管理员访问时由首页渲染(站长自己用的快捷入口), 自身不取数
+ *
+ * 链接来自 sitelinks 模块的配置: 与页脚分开, 各自一个开关
  */
 defineProps<{ links: { name: string; url: string }[] }>()
 </script>

@@ -62,6 +62,19 @@ class ModuleRegistry:
             if item.kind == "int" and item.minimum is not None and item.maximum is not None:
                 if item.minimum > item.maximum:
                     raise ValueError(f"模块 {spec.id} 的配置 {item.key} 取值范围不合法")
+            # 行列表必须声明列名, 否则后台不知道该渲染几列; 其它类型声明了列名则是写错了
+            if item.kind == "rows":
+                if not item.columns:
+                    raise ValueError(f"模块 {spec.id} 的行列表配置 {item.key} 必须声明 columns")
+                if any(not column.strip() for column in item.columns):
+                    raise ValueError(f"模块 {spec.id} 的配置 {item.key} 存在空白列名")
+                if len(set(item.columns)) != len(item.columns):
+                    raise ValueError(f"模块 {spec.id} 的配置 {item.key} 存在重复列名")
+            elif item.columns:
+                raise ValueError(f"模块 {spec.id} 的配置 {item.key} 不是行列表, 不能声明 columns")
+            # 多行文本没有数值语义, 声明取值范围说明用错了类型
+            if item.kind == "long_text" and (item.minimum is not None or item.maximum is not None):
+                raise ValueError(f"模块 {spec.id} 的多行文本配置 {item.key} 不能声明取值范围")
             self._setting_owner[module_setting_key(spec.id, item.key)] = spec.id
 
         self._modules[spec.id] = spec

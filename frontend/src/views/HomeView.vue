@@ -15,6 +15,7 @@ import HomeContributionsSection from '@/components/home/HomeContributionsSection
 import { useAuthStore } from '@/stores/auth'
 import { useModulesStore } from '@/stores/modules'
 import { usePagedList } from '@/composables/usePagedList'
+import { linkRowsOf, rowsOf, textOf } from '@/utils/moduleConfig'
 
 /**
  * @brief 前台首页
@@ -36,6 +37,19 @@ const loading = ref(true)
 const auth = useAuthStore()
 const modules = useModulesStore()
 const isAdmin = computed(() => auth.user?.role_codes.includes('admin'))
+
+/** 关于区块的内容与个人资料卡的链接/标签: 随模块开关一起由模块管理维护 */
+const aboutContent = computed(() => textOf(modules.moduleConfig('about').content))
+const socialLinks = computed(() => linkRowsOf(modules.moduleConfig('profile').social_links))
+const techTags = computed(() =>
+  rowsOf(modules.moduleConfig('profile').tech_tags)
+    .map((row) => row.name ?? '')
+    .filter((name) => !!name),
+)
+/** 首页右侧的"常用网站"(sitelinks 模块配置, 仅管理员可见) */
+const websiteLinks = computed(() => linkRowsOf(modules.moduleConfig('sitelinks').links))
+/** 首页底部的发布记录是否展示: 统计能力可以开, 但不必占首页一整行 */
+const showContributions = computed(() => modules.moduleConfig('stats').show_on_home !== false)
 
 /**
  * 首页文章分页: 每页 10 篇, 第 1 页即最近 10 篇
@@ -156,7 +170,13 @@ onMounted(async () => {
       <div class="home-main">
         <!-- 个人介绍 + 内容概览(参考稿里"概览面板"的位置) -->
         <section class="panel">
-          <HomeProfileCard :settings="settings" :categories="categories" @open-avatar="openAvatar" />
+          <HomeProfileCard
+            :settings="settings"
+            :categories="categories"
+            :social-links="socialLinks"
+            :tech-tags="techTags"
+            @open-avatar="openAvatar"
+          />
 
           <div class="home-metrics">
             <div class="metric">
@@ -179,19 +199,20 @@ onMounted(async () => {
 
         <!-- 终端会话: 个性化模块, 缩短后放在个人介绍下方 -->
         <HomeSessionCard
-          v-if="settings && settings.show_session !== false && modules.isEnabled('saying')"
+          v-if="modules.isEnabled('session')"
           ref="sessionRef"
           :settings="settings"
           :total-posts="totalPosts"
           :latest-post="latestPost"
+          :saying-enabled="modules.isEnabled('saying')"
         />
 
         <!-- 主页 README(关于) -->
-        <section v-if="settings?.show_readme !== false && settings?.site_readme" class="panel">
+        <section v-if="modules.isEnabled('about') && aboutContent" class="panel">
           <div class="panel-head">
             <h2 class="panel-title">关于</h2>
           </div>
-          <MarkdownView :content="settings.site_readme" />
+          <MarkdownView :content="aboutContent" />
         </section>
 
         <!-- 最新文章: 首页的主体 -->
@@ -208,20 +229,17 @@ onMounted(async () => {
         </section>
 
         <!-- 发布记录(热力图需要整行宽度, 放在主列底部) -->
-        <HomeContributionsSection
-          v-if="settings && settings.show_contributions !== false && modules.isEnabled('stats')"
-          ref="contributionsRef"
-        />
+        <HomeContributionsSection v-if="modules.isEnabled('stats') && showContributions" ref="contributionsRef" />
       </div>
 
       <!-- 右侧栏: 次级模块 -->
       <aside class="home-aside">
         <HomeHotPostsCard ref="hotPostsRef" />
-        <HomeSiteLinksCard v-if="isAdmin && settings?.website_links?.length" :links="settings.website_links" />
-        <HomeHistoryCard
-          v-if="settings && settings.show_history !== false && modules.isEnabled('history')"
-          ref="historyRef"
+        <HomeSiteLinksCard
+          v-if="isAdmin && modules.isEnabled('sitelinks') && websiteLinks.length"
+          :links="websiteLinks"
         />
+        <HomeHistoryCard v-if="modules.isEnabled('history')" ref="historyRef" />
       </aside>
     </div>
 

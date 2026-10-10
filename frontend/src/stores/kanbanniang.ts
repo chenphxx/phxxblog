@@ -32,7 +32,7 @@ function readStoredPosition(): KanbanniangPosition | null {
 
 /**
  * 看板娘设置:
- *   - allowed  后台的全站开关(系统设置 - 前台展示), 关掉后前台完全不出现看板娘
+ *   - allowed  全站开关(kanbanniang 模块是否启用), 关掉后前台完全不出现看板娘
  *   - enabled  访客自己是否展示, 默认展示(关掉后由浏览器记住, 下次访问不再出现)
  *   - modelId  当前形象(见 kanbanniang/registry.ts)
  *   - position 拖动后的浮层坐标(相对视口左上角), null 表示未拖动过, 仍停在默认的右下角

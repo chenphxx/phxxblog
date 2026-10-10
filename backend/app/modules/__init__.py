@@ -34,6 +34,7 @@ def build_registry() -> ModuleRegistry:
     # 导入模块包会触发各自 spec 里的 register(); 必须在校验之前完成
     # 核心 -> 内容 -> 数据 -> 扩展, 与后台"模块管理"的分组顺序一致
     from app.modules import (  # noqa: F401
+        about,
         admin,
         auth,
         backtotop,
@@ -43,6 +44,7 @@ def build_registry() -> ModuleRegistry:
         dashboard,
         diary,
         fontsize,
+        footer,
         history,
         kanbanniang,
         links,
@@ -50,10 +52,14 @@ def build_registry() -> ModuleRegistry:
         media,
         modules as module_admin,
         posts,
+        profile,
         rss,
         saying,
         search,
+        seo,
+        session,
         settings,
+        sitelinks,
         stats,
         taxonomy,
         users,

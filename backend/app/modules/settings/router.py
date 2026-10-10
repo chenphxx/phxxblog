@@ -31,16 +31,6 @@ def public_settings(db: Session = Depends(get_db)):
     rows = db.query(Setting).filter(Setting.setting_key.in_(PUBLIC_KEYS)).all()
     data = {row.setting_key: row.setting_value for row in rows}
     result = {key: data.get(key, DEFAULTS.get(key, "")) for key in PUBLIC_KEYS}
-    # 对列表型字段尝试 JSON 解析
-    import json
-
-    for key in ("tech_tags", "social_links", "website_links", "beian_info"):
-        raw = result.get(key, "")
-        if isinstance(raw, str):
-            try:
-                result[key] = json.loads(raw)
-            except json.JSONDecodeError:
-                result[key] = [item.strip() for item in raw.split(",") if item.strip()]
     # 布尔开关统一转成 true/false, 前端直接当布尔值使用
     for key in BOOL_KEYS:
         result[key] = str(result.get(key, "")).strip().lower() in ("1", "true", "yes", "on")

@@ -12,7 +12,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { modulesApi } from '@/api'
-import type { PublicModuleState } from '@/types'
+import type { ModuleSettingValue, PublicModuleState } from '@/types'
 
 export const useModulesStore = defineStore('modules', () => {
   const ids = ref<string[]>([])
@@ -44,7 +44,7 @@ export const useModulesStore = defineStore('modules', () => {
    * @param id 模块 id
    * @returns 该模块的公开配置(没有则返回空对象)
    */
-  function moduleConfig(id: string): Record<string, boolean | number | string> {
+  function moduleConfig(id: string): Record<string, ModuleSettingValue> {
     return config.value[id] ?? {}
   }
 

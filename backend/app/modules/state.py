@@ -136,6 +136,9 @@ def validate_value(item: ModuleSetting, raw: object) -> str:
     @return 可写入 settings 表的字符串
     @throws ValueError 值不符合类型或范围
     """
+    # 多行文本(Markdown)原样保存: 前后空行与行首缩进都可能是内容的一部分, 不能 strip
+    if item.kind == "long_text":
+        return "" if raw is None else str(raw)
     text = "" if raw is None else str(raw).strip()
     if item.kind == "bool":
         return "1" if parse_bool(raw) else "0"
@@ -148,6 +151,8 @@ def validate_value(item: ModuleSetting, raw: object) -> str:
         if item.maximum is not None and value > item.maximum:
             raise ValueError(f"{item.name} 不能大于 {item.maximum}")
         return str(value)
+    if item.kind == "rows":
+        return json.dumps(coerce_rows(item, raw), ensure_ascii=False)
     if item.kind == "json":
         try:
             json.loads(text or "null")
@@ -157,8 +162,51 @@ def validate_value(item: ModuleSetting, raw: object) -> str:
     return text
 
 
-def typed_value(item: ModuleSetting, raw: str | None) -> bool | int | str:
+def coerce_rows(item: ModuleSetting, raw: object) -> list[dict[str, str]]:
+    """把行列表配置的值规范成 [{列名: 值}]
+
+    接受前端直接下发的数组, 也接受库里存的 JSON 字符串(settings 表按字符串存值)
+
+    @param item: 行列表配置项定义
+    @param raw: 待规范的值
+    @return 每行都按 columns 顺序补齐的行列表
+    @throws ValueError 不是数组, 元素不是对象, 或出现了未声明的列
+    """
+    if isinstance(raw, list):
+        parsed: object = raw
+    else:
+        text = "" if raw is None else str(raw).strip()
+        try:
+            parsed = json.loads(text or "[]")
+        except json.JSONDecodeError as err:
+            raise ValueError(f"{item.name} 不是合法的 JSON") from err
+    if not isinstance(parsed, list):
+        raise ValueError(f"{item.name} 必须是数组")
+
+    columns = set(item.columns)
+    rows: list[dict[str, str]] = []
+    for index, row in enumerate(parsed, start=1):
+        if not isinstance(row, dict):
+            raise ValueError(f"{item.name} 第 {index} 行必须是对象")
+        unknown = set(row) - columns
+        if unknown:
+            raise ValueError(
+                f"{item.name} 第 {index} 行出现未声明的列: {', '.join(sorted(unknown))}"
+            )
+        rows.append(
+            {
+                column: "" if row.get(column) is None else str(row.get(column))
+                for column in item.columns
+            }
+        )
+    return rows
+
+
+def typed_value(item: ModuleSetting, raw: str | None) -> bool | int | str | list[dict[str, str]]:
     """把库里存的字符串按配置项类型转成 Python 值(供接口下发)
+
+    读取路径要容错: 库里可能留着历史值或非法 JSON, 此时回落到默认值而不是让
+    整个模块状态接口报错
 
     @param item: 配置项定义
     @param raw: 库里存的字符串(可能为 None)
@@ -170,6 +218,11 @@ def typed_value(item: ModuleSetting, raw: str | None) -> bool | int | str:
     if item.kind == "int":
         text = str(value).strip()
         return int(text) if text.lstrip("-").isdigit() else int(item.default or 0)
+    if item.kind == "rows":
+        try:
+            return coerce_rows(item, value)
+        except ValueError:
+            return []
     return value
 
 
@@ -271,6 +324,7 @@ def admin_state(db: Session) -> list[dict]:
                         "minimum": item.minimum,
                         "maximum": item.maximum,
                         "public": item.public,
+                        "columns": list(item.columns),
                         "value": typed_value(item, values.get(item.key)),
                     }
                     for item in spec.settings

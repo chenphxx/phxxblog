@@ -10,9 +10,11 @@ import type { ModuleInfo } from '@/types'
 /**
  * @brief 后台 - 模块管理
  *
- * 展示系统里注册的全部能力(后端模块注册表), 支持:
- *   - 启用 / 禁用(核心模块锁定, 禁用后它的接口 404, 前台与后台入口一起消失)
- *   - 维护模块自己的配置项(类型由后端模块元数据声明)
+ * 展示系统里注册的全部能力(后端模块注册表), 只负责"开启 / 禁用":
+ *   - 核心模块锁定, 不允许禁用; 禁用后它的接口 404, 前台与后台入口一起消失
+ *   - 模块自己的参数不在这里配: 声明了参数的功能启用后, 到"系统设置"里配置
+ *
+ * 这样开关与参数各归一处: 这里回答"这个能力在不在", 系统设置回答"它怎么工作"
  *
  * 修改先落在本地草稿里, 点"保存"才提交; 提交后清空草稿并刷新前台的模块状态,
  * 因此侧栏与后台菜单会立刻跟着变
@@ -25,43 +27,18 @@ const categories = ref<Record<string, string>>({})
 const loading = ref(true)
 const saving = ref(false)
 
-/** 本地草稿: 开关与配置分两份, 便于模板里按类型取值(避免在模板中做类型断言) */
+/** 开关的本地草稿 */
 const draftEnabled = ref<Record<string, boolean>>({})
-const draftSettings = ref<Record<string, Record<string, boolean | number | string>>>({})
 
 /** 把后端返回的模块清单写进草稿 */
 function resetDraft(list: ModuleInfo[]) {
   draftEnabled.value = Object.fromEntries(list.map((item) => [item.id, item.enabled]))
-  draftSettings.value = Object.fromEntries(
-    list.map((item) => [item.id, Object.fromEntries(item.settings.map((setting) => [setting.key, setting.value]))]),
-  )
 }
 
 /** 有改动的模块 id(只有这些会提交) */
 const dirtyIds = computed(() =>
-  modules.value
-    .filter((item) => {
-      if (draftEnabled.value[item.id] !== item.enabled) return true
-      return item.settings.some((setting) => draftSettings.value[item.id]?.[setting.key] !== setting.value)
-    })
-    .map((item) => item.id),
+  modules.value.filter((item) => draftEnabled.value[item.id] !== item.enabled).map((item) => item.id),
 )
-
-/** 取模块配置的当前草稿值(按类型给模板用) */
-function settingValue(id: string, key: string): boolean | number | string {
-  return draftSettings.value[id]?.[key] ?? ''
-}
-
-/**
- * 写入模块配置的草稿值
- *
- * @param id 模块 id
- * @param key 配置键
- * @param value 新值(布尔/数字/字符串)
- */
-function updateSetting(id: string, key: string, value: boolean | number | string) {
-  draftSettings.value[id] = { ...draftSettings.value[id], [key]: value }
-}
 
 /** 按分类分组展示(顺序由后端给出) */
 const groups = computed(() =>
@@ -91,9 +68,9 @@ async function load() {
 
 async function save() {
   if (!dirtyIds.value.length) return
-  const payload: Record<string, { enabled?: boolean; settings?: Record<string, unknown> }> = {}
+  const payload: Record<string, { enabled?: boolean }> = {}
   for (const id of dirtyIds.value) {
-    payload[id] = { enabled: draftEnabled.value[id], settings: draftSettings.value[id] }
+    payload[id] = { enabled: draftEnabled.value[id] }
   }
   saving.value = true
   try {
@@ -102,9 +79,9 @@ async function save() {
     resetDraft(data.modules)
     // 前台的模块状态要重新拉一次, 侧栏与后台菜单才会立刻跟随
     await moduleStore.load(true)
-    ElMessage.success('模块配置已保存')
+    ElMessage.success('模块开关已保存')
   } catch {
-    // 拦截器已提示(例如试图禁用核心模块或配置值越界)
+    // 拦截器已提示(例如试图禁用核心模块)
     await load()
   } finally {
     saving.value = false
@@ -171,39 +148,10 @@ onMounted(load)
             <code v-for="code in item.permissions" :key="code" class="perm-chip">{{ code }}</code>
           </span>
           <span v-if="navOf(item.id).length" class="meta-line">入口 {{ navOf(item.id).join(' / ') }}</span>
-        </div>
-
-        <div v-if="item.settings.length" class="module-settings">
-          <div v-for="setting in item.settings" :key="setting.key" class="setting-item">
-            <label class="setting-label">
-              {{ setting.name }}
-              <span v-if="setting.description" class="muted setting-desc">{{ setting.description }}</span>
-            </label>
-
-            <el-switch
-              v-if="setting.kind === 'bool'"
-              :model-value="Boolean(settingValue(item.id, setting.key))"
-              @update:model-value="
-                (value: string | number | boolean) => updateSetting(item.id, setting.key, Boolean(value))
-              "
-            />
-            <el-input-number
-              v-else-if="setting.kind === 'int'"
-              :model-value="Number(settingValue(item.id, setting.key))"
-              :min="setting.minimum ?? undefined"
-              :max="setting.maximum ?? undefined"
-              controls-position="right"
-              style="width: 160px"
-              @update:model-value="(value: number | undefined) => updateSetting(item.id, setting.key, value ?? 0)"
-            />
-            <el-input
-              v-else
-              :model-value="String(settingValue(item.id, setting.key))"
-              style="max-width: 520px"
-              clearable
-              @update:model-value="(value: string) => updateSetting(item.id, setting.key, value)"
-            />
-          </div>
+          <!-- 有参数的功能, 参数在系统设置里配: 这里只说要到哪儿去配, 不重复渲染表单 -->
+          <span v-if="item.settings.length" class="meta-line">
+            {{ item.settings.length }} 项参数在「系统设置」里配置
+          </span>
         </div>
       </div>
     </section>
@@ -292,32 +240,5 @@ onMounted(load)
   display: inline-flex;
   align-items: center;
   gap: 6px;
-}
-
-/* 模块配置: 与"系统设置"页一致的两列排布 */
-.module-settings {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 12px 24px;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px dashed var(--border);
-}
-
-.setting-item {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-}
-
-.setting-label {
-  font-size: 13px;
-  color: var(--text);
-}
-
-.setting-desc {
-  margin-left: 6px;
-  font-size: 12px;
 }
 </style>

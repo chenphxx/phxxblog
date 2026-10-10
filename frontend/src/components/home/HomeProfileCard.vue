@@ -9,11 +9,18 @@ import { faviconOf, linkName, onFaviconError } from '@/utils/linkIcon'
  * 内容来自后台设置与分类接口, 自己不取数; 头像点击改成事件抛给首页 - 头像弹窗改的是
  * 页面级设置(site_avatar), 由首页统一持有更合适
  *
+ * 社交链接与技术标签来自 profile 模块的配置: 关掉该模块时首页传进来的是空数组,
+ * 这一行自然不渲染
+ *
  * 只负责介绍区本身, 外层的白色面板由首页提供(见 HomeView 的 .panel)
  */
 defineProps<{
   settings: PublicSettings | null
   categories: Category[]
+  /** 社交链接(profile 模块配置) */
+  socialLinks: { name: string; url: string }[]
+  /** 技术标签(profile 模块配置) */
+  techTags: string[]
 }>()
 
 defineEmits<{ (e: 'open-avatar'): void }>()
@@ -41,9 +48,9 @@ defineEmits<{ (e: 'open-avatar'): void }>()
       <h1 class="profile-name">{{ settings?.site_name || 'phxxblog' }}</h1>
       <p v-if="settings?.site_bio" class="profile-bio">{{ settings.site_bio }}</p>
 
-      <div v-if="settings?.social_links?.length || settings?.tech_tags?.length" class="profile-row">
+      <div v-if="socialLinks.length || techTags.length" class="profile-row">
         <a
-          v-for="link in settings?.social_links || []"
+          v-for="link in socialLinks"
           :key="link.url"
           :href="link.url"
           target="_blank"
@@ -61,7 +68,7 @@ defineEmits<{ (e: 'open-avatar'): void }>()
           <span>{{ linkName(link) }}</span>
         </a>
 
-        <span v-for="tag in settings?.tech_tags || []" :key="tag" class="tech-tag">{{ tag }}</span>
+        <span v-for="tag in techTags" :key="tag" class="tech-tag">{{ tag }}</span>
       </div>
     </div>
   </div>

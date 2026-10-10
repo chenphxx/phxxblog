@@ -163,27 +163,9 @@ export interface PublicSettings {
   site_name: string
   site_title: string
   site_desc: string
-  site_keywords: string
   site_icon: string
   site_avatar: string
   site_bio: string
-  site_readme: string
-  /** 首页是否展示 README 模块 */
-  show_readme: boolean
-  /** 首页是否展示文章发布记录(贡献热力图) */
-  show_contributions: boolean
-  /** 首页是否展示程序员历史上的今天 */
-  show_history: boolean
-  /** 首页是否展示 session 终端卡片 */
-  show_session: boolean
-  /** 全站是否展示看板娘 */
-  show_kanbanniang: boolean
-  /** 页脚版权信息(支持 {year}/{site_name} 占位符, 留空不显示) */
-  footer_text: string
-  tech_tags: string[]
-  social_links: { name: string; url: string }[]
-  website_links: { name: string; url: string }[]
-  beian_info: { name: string; url: string; icon?: string }[]
 }
 
 export interface LinkPreview {
@@ -300,8 +282,19 @@ export interface HistoryEvent {
   url?: string
 }
 
-/** 模块配置项的类型(决定后台用什么控件渲染) */
-export type ModuleSettingKind = 'bool' | 'int' | 'text' | 'json'
+/** 模块配置项的类型(决定后台用什么控件渲染), 与后端 base.py 的 SettingKind 一一对应 */
+export type ModuleSettingKind = 'bool' | 'int' | 'text' | 'long_text' | 'json' | 'rows'
+
+/**
+ * 模块配置的值
+ *
+ * bool 是布尔, int 是数字, text/long_text/json 是字符串; rows 是行列表, 后端已经
+ * 解析成对象数组下发, 前台不必再 JSON.parse
+ */
+export type ModuleSettingValue = boolean | number | string | ConfigRow[]
+
+/** 行列表配置的一行: 列名 -> 值 */
+export type ConfigRow = Record<string, string>
 
 /** 模块的一项配置(后端 app/modules 里的 ModuleSetting) */
 export interface ModuleSettingSpec {
@@ -313,7 +306,9 @@ export interface ModuleSettingSpec {
   maximum: number | null
   /** 是否随公开接口下发(前台可见) */
   public: boolean
-  value: boolean | number | string
+  /** 行列表类型的列名(按顺序渲染); 其它类型为空数组 */
+  columns: string[]
+  value: ModuleSettingValue
 }
 
 /** 单个模块的完整信息(后台"模块管理"用) */
@@ -351,5 +346,5 @@ export interface PublicModuleState {
   /** 当前可用的模块 id */
   ids: string[]
   /** 模块 id -> 公开配置 */
-  config: Record<string, Record<string, boolean | number | string>>
+  config: Record<string, Record<string, ModuleSettingValue>>
 }

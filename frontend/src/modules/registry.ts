@@ -278,6 +278,38 @@ export const MODULES: FrontModule[] = [
     name: '回到顶部',
     description: '文章页右下角的回到顶部按钮与阅读进度',
   },
+  // 以下 5 个是设置项插件化后新增的纯前台模块: 没有导航也没有页面路由, 只提供
+  // 首页区块与页脚的内容和开关(原先由站点设置里的 show_* 与若干内容键承担)
+  {
+    id: 'session',
+    name: '终端卡片',
+    description: '首页顶部的 session 终端卡片, 含个人简介, 文章统计与一言',
+  },
+  {
+    id: 'about',
+    name: '主页简介',
+    description: '首页的关于区块, 用 Markdown 写一段自我介绍',
+  },
+  {
+    id: 'profile',
+    name: '个人资料卡',
+    description: '首页个人资料卡上的社交链接与技术标签',
+  },
+  {
+    id: 'footer',
+    name: '页脚',
+    description: '前台页脚的版权文案与备案信息',
+  },
+  {
+    id: 'sitelinks',
+    name: '网站链接',
+    description: '首页右侧的常用网站卡片(仅管理员可见)',
+  },
+  {
+    id: 'seo',
+    name: 'SEO',
+    description: '向前台页面注入 meta keywords 与 meta description',
+  },
 ]
 
 /**

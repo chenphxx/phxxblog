@@ -7,11 +7,16 @@
     (frontend/src/modules/registry.ts) 与权限表(seed 里的 PERMISSIONS). 任何一处漏改
     都不会报错, 只会表现为"后端启用了但前台没有入口"或者"模块声明的权限码从未被授予
     任何角色". 这里把三者的关系固定下来, 并挂了 verify_all.py
+
+    模块配置的类型同样横跨两侧: 后端 app/modules/base.py 的 SettingKind 与前端
+    types/index.ts 的 ModuleSettingKind. 加一种类型时只改一侧, 后台会把控件渲染成
+    兜底的单行输入框, 界面上不会有任何报错, 因此也在这里对齐
 """
 
 import re
 import sys
 from pathlib import Path
+from typing import get_args
 
 BACKEND = Path(__file__).resolve().parents[1]
 ROOT = BACKEND.parent
@@ -20,6 +25,7 @@ sys.path.insert(0, str(BACKEND))
 
 from app.core.settings_schema import ADMIN_ONLY_KEYS, DEFAULTS  # noqa: E402
 from app.modules import build_registry  # noqa: E402
+from app.modules.base import SettingKind  # noqa: E402
 from app.seed import PERMISSIONS  # noqa: E402
 
 # Windows 下 stdout 被重定向到管道时默认按本地编码(GBK)输出, 而 verify_all.py 按 UTF-8
@@ -28,6 +34,7 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 FRONT_REGISTRY = ROOT / "frontend" / "src" / "modules" / "registry.ts"
+FRONT_TYPES = ROOT / "frontend" / "src" / "types" / "index.ts"
 
 problems: list[str] = []
 
@@ -79,6 +86,22 @@ stale_in_front = sorted(set(front_ids) - set(backend_ids))
 if missing_in_front or stale_in_front:
     print(f"       前端缺少: {missing_in_front}")
     print(f"       前端多余: {stale_in_front}")
+
+print()
+print("前后端: 模块配置类型")
+types_src = FRONT_TYPES.read_text(encoding="utf-8")
+kind_match = re.search(r"export type ModuleSettingKind =([^\n]+)", types_src)
+if kind_match is None:
+    raise SystemExit(f"  FAIL 在 {FRONT_TYPES.name} 里找不到 ModuleSettingKind")
+front_kinds = set(re.findall(r"'([a-z_]+)'", kind_match.group(1)))
+backend_kinds = set(get_args(SettingKind))
+check(
+    front_kinds == backend_kinds,
+    f"ModuleSettingKind 与后端 SettingKind 完全一致({len(backend_kinds)} 种)",
+)
+if front_kinds != backend_kinds:
+    print(f"       前端缺少: {sorted(backend_kinds - front_kinds)}")
+    print(f"       前端多余: {sorted(front_kinds - backend_kinds)}")
 
 print()
 print("模块清单")

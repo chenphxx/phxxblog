@@ -19,8 +19,9 @@ from fastapi import APIRouter
 
 from app.core.permissions import Perm
 
-"""配置项类型: bool(开关) / int(整数) / text(单行文本) / json(JSON)"""
-SettingKind = Literal["bool", "int", "text", "json"]
+"""配置项类型: bool(开关) / int(整数) / text(单行文本) / long_text(多行文本)
+/ json(JSON) / rows(行列表)"""
+SettingKind = Literal["bool", "int", "text", "long_text", "json", "rows"]
 
 """模块分类, 只影响后台"模块管理"里的分组展示"""
 CATEGORIES = {
@@ -73,6 +74,7 @@ class ModuleSetting:
     @param minimum: 整数类型的下限(含)
     @param maximum: 整数类型的上限(含)
     @param public: 是否随公开接口下发给前台
+    @param columns: 行列表类型的列名(按顺序渲染); 其它类型留空
     """
 
     key: str
@@ -83,6 +85,7 @@ class ModuleSetting:
     minimum: int | None = None
     maximum: int | None = None
     public: bool = False
+    columns: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)

@@ -8,6 +8,7 @@ const props = defineProps<{
   form: {
     site_name: string
     site_title: string
+    site_desc: string
     site_icon: string
     site_bio: string
   }
@@ -24,7 +25,7 @@ const form = props.form
 <template>
   <div class="card">
     <h3>基础信息 <span class="vis-badge">公开可见</span></h3>
-    <p class="muted section-hint">站点名称、标签页标题与图标显示在浏览器标签页, 个人简介显示在首页的个人资料卡</p>
+    <p class="muted section-hint">站点名称、标签页标题与图标显示在浏览器标签页, 个人简介显示在侧栏与首页的个人资料卡</p>
     <el-form label-position="top">
       <el-row :gutter="16">
         <el-col :span="12">
@@ -38,6 +39,12 @@ const form = props.form
           </el-form-item>
         </el-col>
       </el-row>
+      <el-form-item label="站点描述">
+        <el-input v-model="form.site_desc" placeholder="一句话介绍这个站点" />
+        <div class="muted form-hint">
+          站点的副标题: 会写进 RSS 订阅摘要, SEO 模块启用时也作为页面的 meta description
+        </div>
+      </el-form-item>
       <el-form-item label="站点图标(浏览器标签页图标, 可上传或填写 URL)">
         <div class="icon-row">
           <img v-if="form.site_icon" :src="form.site_icon" alt="站点图标预览" class="icon-preview" />

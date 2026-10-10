@@ -12,13 +12,18 @@ import { formatDate } from '@/utils/datetime'
  * 只保留三段输出: 我是谁 / 有多少篇文章与最新一篇 / 一句一言, 高度约为原版的一半,
  * 并且放在个人介绍之后, 不再抢占首屏焦点
  *
+ * 最后一段"一言"来自 saying 模块: 该模块被禁用时卡片仍然渲染, 只是不再请求上游,
+ * 也不再显示对应的命令行与操作按钮(两个能力的生命周期互不绑定)
+ *
  * 自己负责"一言"的取数, 刷新与复制; 文章总数与"最新一篇"是页面文章列表的数据,
  * 由首页传进来, 避免为了终端里的两行输出再查一次文章接口
  */
-defineProps<{
+const props = defineProps<{
   settings: PublicSettings | null
   totalPosts: number
   latestPost: PostItem | null
+  /** 一言模块是否启用 */
+  sayingEnabled: boolean
 }>()
 
 const saying = ref('')
@@ -53,10 +58,14 @@ async function copySaying() {
 
 /** @brief 重新取一言; 也供首页在 keep-alive 重新激活时调用 */
 async function refresh() {
+  if (!props.sayingEnabled) return
   await loadSaying()
 }
 
-onMounted(() => loadSaying())
+onMounted(() => {
+  // 一言模块被禁用时连请求都不发
+  if (props.sayingEnabled) loadSaying()
+})
 
 defineExpose({ refresh })
 </script>
@@ -68,7 +77,7 @@ defineExpose({ refresh })
       <span class="term-dot term-dot-amber" />
       <span class="term-dot term-dot-green" />
       <span class="term-title">session — {{ settings?.site_name || 'blog' }}</span>
-      <div class="term-actions">
+      <div v-if="sayingEnabled" class="term-actions">
         <el-button size="small" circle :disabled="!saying" :icon="CopyDocument" title="复制一言" @click="copySaying" />
         <el-button
           size="small"
@@ -96,8 +105,10 @@ defineExpose({ refresh })
           </router-link>
         </template>
       </p>
-      <p class="term-line"><span class="term-prompt">$</span> say</p>
-      <p class="term-out">{{ saying || '一言加载中...' }}<span class="term-cursor" aria-hidden="true" /></p>
+      <template v-if="sayingEnabled">
+        <p class="term-line"><span class="term-prompt">$</span> say</p>
+        <p class="term-out">{{ saying || '一言加载中...' }}<span class="term-cursor" aria-hidden="true" /></p>
+      </template>
     </div>
   </section>
 </template>
