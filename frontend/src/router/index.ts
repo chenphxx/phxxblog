@@ -62,8 +62,15 @@ router.beforeEach(async (to) => {
   if (modules.isEnabled(moduleId)) {
     return true
   }
-  // 模块被禁用: 后台页面回落到"个人资料"(它不属于任何模块), 前台回首页
-  return { path: to.path.startsWith('/admin') ? '/admin/profile' : '/' }
+  /*
+   * 模块被禁用, 或者当前身份看不到它(配成了"仅管理员"): 后台页面回落到"个人资料",
+   * 它属于 admin 模块; 前台回首页 若"个人资料"本身也不可用(例如非管理员账号), 直接回前台,
+   * 否则会一直往同一个地址跳(守卫拦下自己跳自己的重定向)
+   */
+  if (to.path.startsWith('/admin')) {
+    return { path: modules.isEnabled('admin') ? '/admin/profile' : '/' }
+  }
+  return { path: '/' }
 })
 
 export default router

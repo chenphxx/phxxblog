@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { authApi } from '@/api'
 import { useAuthStore } from '@/stores/auth'
+import { useModulesStore } from '@/stores/modules'
 import ThemeToggle from '@/components/ThemeToggle.vue'
 
 const router = useRouter()
@@ -22,6 +23,11 @@ async function login() {
   try {
     const result = await authApi.login(form.value)
     auth.setSession(result.tokens.access_token, result.tokens.refresh_token, result.user)
+    /*
+     * 模块状态是按访问者生成的("仅管理员可见"的模块只对管理员下发): 必须先等它按新身份
+     * 刷新完再跳后台, 否则路由守卫会拿上一个身份(匿名)的模块集合判定, 把后台页面挡回去
+     */
+    await useModulesStore().load(true)
     ElMessage.success('登录成功')
     const redirect = (route.query.redirect as string) || '/admin/dashboard'
     router.push(redirect)
