@@ -40,21 +40,6 @@ ROLES = {
         "description": "拥有全部权限",
         "permissions": [p[0] for p in PERMISSIONS],
     },
-    "editor": {
-        "name": "编辑",
-        "description": "可发布与管理内容",
-        "permissions": [
-            Perm.POST_CREATE,
-            Perm.POST_EDIT,
-            Perm.POST_PUBLISH,
-            Perm.POST_DELETE,
-            Perm.POST_MANAGE,
-            Perm.COMMENT_MANAGE,
-            Perm.MEDIA_MANAGE,
-            Perm.STATS_VIEW,
-            Perm.LOG_VIEW,
-        ],
-    },
     "author": {
         "name": "作者",
         "description": "可创作文章并提交审核",

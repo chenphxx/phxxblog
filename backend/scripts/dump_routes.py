@@ -61,6 +61,10 @@ def route_block(lines: list[str], deco_index: int) -> tuple[str, str]:
 
 
 def detect_auth(block: str) -> str:
+    # 放宽版读取接口: 有权限码, 或者模块可见范围配成公开 - 两者满足其一即可
+    m = re.search(r"permission_or_module_public\(Perm\.(\w+)", block)
+    if m:
+        return f"{m.group(1).lower().replace('_', ':')} 或公开"
     m = re.search(r"require_permission\(Perm\.(\w+)\)", block)
     if m:
         # Perm.POST_MANAGE -> post:manage

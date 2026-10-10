@@ -322,6 +322,10 @@ export interface ModuleInfo {
   default_enabled: boolean
   /** 是否被显式打开 */
   enabled: boolean
+  /** 可见范围: public(所有访客可用) / admin(仅管理员可用) */
+  visibility: string
+  /** 可见范围是否固定(管理后台自身的能力): 固定时后台不提供调整入口 */
+  visibility_fixed: boolean
   /** 是否真正可用(启用且依赖链上的模块都启用) */
   available: boolean
   /** 当前被禁用的依赖 */
@@ -339,6 +343,8 @@ export interface ModuleAdminData {
   modules: ModuleInfo[]
   /** 分类键 -> 展示名 */
   categories: Record<string, string>
+  /** 可见范围取值 -> 展示名(public / admin) */
+  visibilities: Record<string, string>
 }
 
 /** 前台公开的模块状态 */

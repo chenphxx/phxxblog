@@ -9,11 +9,11 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.deps import require_permission
+from app.core.deps import get_optional_user, is_site_manager, require_permission
 from app.core.permissions import Perm
 from app.core.response import ok
 from app.models.user import User
-from app.modules.base import CATEGORIES
+from app.modules.base import CATEGORIES, VISIBILITIES
 from app.modules.registry import registry
 from app.modules.state import (
     admin_state,
@@ -21,6 +21,7 @@ from app.modules.state import (
     public_state,
     set_enabled,
     set_module_config,
+    set_visibility,
 )
 from app.services.log import write_operation_log
 
@@ -31,6 +32,7 @@ class ModuleUpdate(BaseModel):
     """单个模块的更新内容(两者都可省略, 只改传了的字段)"""
 
     enabled: bool | None = None
+    visibility: str | None = Field(default=None, description="可见范围: public / admin")
     settings: dict[str, object] | None = Field(default=None, description="模块配置键值对")
 
 
@@ -41,9 +43,12 @@ class ModuleUpdateIn(BaseModel):
 
 
 @router.get("", response_model=dict)
-def public_modules(db: Session = Depends(get_db)):
-    """前台公开的模块状态(启用集合 + 公开配置)"""
-    return ok(public_state(db))
+def public_modules(
+    user: User | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
+):
+    """前台公开的模块状态(当前访问者可见的模块 + 公开配置)"""
+    return ok(public_state(db, is_admin=is_site_manager(user)))
 
 
 @router.get("/admin", response_model=dict)
@@ -52,7 +57,7 @@ def admin_modules(
     db: Session = Depends(get_db),
 ):
     """后台模块清单: 元数据 + 启用状态 + 依赖状态 + 配置项"""
-    return ok({"modules": admin_state(db), "categories": CATEGORIES})
+    return ok({"modules": admin_state(db), "categories": CATEGORIES, "visibilities": VISIBILITIES})
 
 
 @router.put("/admin", response_model=dict)
@@ -81,6 +86,9 @@ def update_modules(
                     missing = disabled_dependencies(db, spec)
                     if missing:
                         raise ValueError(f"{spec.name} 依赖的模块未启用: {', '.join(missing)}")
+            if patch.visibility is not None:
+                set_visibility(db, module_id, patch.visibility)
+                changed.append({"module": module_id, "visibility": patch.visibility})
             if patch.settings is not None:
                 set_module_config(db, spec, patch.settings)
                 changed.append({"module": module_id, "settings": sorted(patch.settings)})

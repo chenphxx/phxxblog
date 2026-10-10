@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.database import get_db
+from app.core.permissions import Perm
 from app.core.security import decode_token
 from app.models.user import User
 
@@ -97,3 +98,15 @@ def require_permission(code: str) -> Callable:
         return user
 
     return checker
+
+
+def is_site_manager(user: User | None) -> bool:
+    """判断一个(可能未登录的)用户是不是站点管理员
+
+    项目约定不判断角色名(角色 code 可以被后台改名), "管理员"在这里等价于拥有
+    setting:manage 权限码 - 与 /docs 与受控静态资源的判定完全一致
+
+    @param user: 当前用户, 未登录时为 None
+    @return 是管理员返回 True
+    """
+    return user is not None and Perm.SETTING_MANAGE in user.permission_codes

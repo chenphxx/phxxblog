@@ -25,7 +25,7 @@ sys.path.insert(0, str(BACKEND))
 
 from app.core.settings_schema import ADMIN_ONLY_KEYS, DEFAULTS  # noqa: E402
 from app.modules import build_registry  # noqa: E402
-from app.modules.base import SettingKind  # noqa: E402
+from app.modules.base import VISIBILITY_ADMIN, SettingKind  # noqa: E402
 from app.seed import PERMISSIONS  # noqa: E402
 
 # Windows 下 stdout 被重定向到管道时默认按本地编码(GBK)输出, 而 verify_all.py 按 UTF-8
@@ -109,6 +109,8 @@ for spec in registry.all():
     flags = []
     if spec.locked:
         flags.append("核心")
+    if spec.default_visibility == VISIBILITY_ADMIN:
+        flags.append("默认仅管理员")
     if spec.frontend_only:
         flags.append("纯前台")
     if spec.depends_on:

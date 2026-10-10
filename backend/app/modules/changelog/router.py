@@ -10,6 +10,7 @@ from app.core.deps import require_permission
 from app.core.permissions import Perm
 from app.core.response import ok
 from app.models.user import User
+from app.modules.deps import permission_or_module_public
 
 router = APIRouter(prefix="/misc", tags=["其他"])
 
@@ -22,10 +23,13 @@ class ChangelogIn(BaseModel):
 
 @router.get("/changelog", response_model=dict)
 def changelog(
-    user: User = Depends(require_permission(Perm.CHANGELOG_MANAGE)),
+    _user: User | None = Depends(permission_or_module_public(Perm.CHANGELOG_MANAGE, "changelog")),
     _db: Session = Depends(get_db),
 ):
-    """更新日志内容(需 changelog:manage 权限, 内容同 CHANGELOG.md)"""
+    """更新日志内容(内容同 CHANGELOG.md)
+
+    管理员随时可读; 更新日志模块的可见范围配成公开时, 访客也能读
+    """
     path = PROJECT_ROOT / "CHANGELOG.md"
     content = path.read_text(encoding="utf-8") if path.exists() else ""
     return ok({"content": content})

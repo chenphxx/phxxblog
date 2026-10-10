@@ -293,7 +293,8 @@ onBeforeUnmount(() => {
             </footer>
           </article>
 
-          <CommentSection v-if="modules.isEnabled('comments')" :post-id="post.id" />
+          <!-- 评论区会自己取数: 等模块状态有结果再挂载, 否则评论模块被禁用时会发出注定 404 的请求 -->
+          <CommentSection v-if="modules.ready && modules.isEnabled('comments')" :post-id="post.id" />
         </div>
 
         <aside class="post-aside">

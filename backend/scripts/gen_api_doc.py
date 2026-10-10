@@ -36,8 +36,9 @@ MODULE_NOTES: dict[str, str] = {
     "列表与创建为可选登录; 管理列表 `GET /comments/admin` 与状态变更需 `comment:manage`; "
     "编辑/删除自身评论走 `_can_manage_comment` 判定, 故标注为可选登录 "
     "删除某条评论会连同它的所有回复一起删除 ",
-    "日记": "整组接口需 `diary:manage`; 导入/导出支持 zip 与 markdown, "
-    "导入的 frontmatter 与文章导入共用同一套解析(`services/archive.py`) ",
+    "日记": "读取列表有 `diary:manage` 权限码, 或日记模块的可见范围配成公开时放行(其余接口仍需 "
+    "`diary:manage`); 导入/导出支持 zip 与 markdown, 导入的 frontmatter 与文章导入共用同一套解析"
+    "(`services/archive.py`) ",
     "媒体": "整组接口需 `media:manage`; 上传有**扩展名白名单**与图片文件头校验, "
     "拒绝 .svg/.html/.js 等可执行文档(上传目录与站点同源, 否则等于开放 XSS); "
     "单文件上限默认见 `PHXXBLOG_MAX_UPLOAD_SIZE`(默认 100MB), 后台系统设置页可按 MB 覆盖, "
@@ -49,8 +50,9 @@ MODULE_NOTES: dict[str, str] = {
     "用户管理": "需 `user:manage`; 角色与权限相关接口需 `role:manage` 内置角色的 code 建议不要修改"
     "(业务代码已改为按权限码授权, 但前端菜单等仍依赖 admin 角色名) ",
     "操作日志": "需 `log:view` ",
-    "其他": "更新日志读写需 `changelog:manage`(注意 `PUT /misc/changelog` 会直接写仓库里的 CHANGELOG.md, "
-    "要求该目录可写, 且会让 git 工作区变 dirty); 一言与历史上的今天是公开代理接口 ",
+    "其他": "读取更新日志有 `changelog:manage` 权限码, 或该模块的可见范围配成公开时放行; 保存需 "
+    "`changelog:manage`(注意 `PUT /misc/changelog` 会直接写仓库里的 CHANGELOG.md, 要求该目录可写, "
+    "且会让 git 工作区变 dirty); 一言与历史上的今天是公开代理接口 ",
     "搜索": "公开 关键词长度上限 100 字符 ",
     "链接预览": "公开; 用于抓取外链标题与图标 ",
     "RSS/SEO": "公开; 输出 RSS 与 sitemap ",
@@ -97,6 +99,7 @@ Authorization: Bearer <access_token>
 | 可选登录 | 匿名可用; 带令牌时行为不同(如能看到自己的草稿, 点赞按用户去重) |
 | 登录 | 任意已登录用户 |
 | `<资源>:<动作>` | 需要该权限码, 如 `post:manage`, `diary:manage` |
+| `<资源>:<动作> 或公开` | 有该权限码, 或该模块的可见范围配成公开时都放行(只用于读取接口, 写操作仍需权限码) |
 
 权限码定义在 `backend/app/core/permissions.py`, 由 `app/seed.py` 初始化并分配给内置角色 
 

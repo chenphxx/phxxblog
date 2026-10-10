@@ -5,8 +5,9 @@
   - root_routers 挂在根路径的模块接口(如 /rss.xml, /sitemap.xml)
 
 装配规则:
-  - 锁定模块(认证/用户/设置/模块管理/分类标签/文章)一定可用, 不加模块依赖, 少一次查询
-  - 其余模块统一挂 require_module 依赖, 被禁用时该模块的全部接口返回 404
+  - 锁定模块(认证/用户/设置/模块管理/分类标签/文章)一定可用, 不加模块依赖, 少两次查询
+  - 其余模块统一挂两个依赖: require_module(被禁用时 404)与 require_module_visible
+    (可见范围配成"仅管理员"时, 访客 401 / 无权限账号 403)
   用依赖而不是"启动时只装配启用的模块": 后台改完开关要立刻生效, 不能要求重启服务
 """
 
@@ -14,7 +15,7 @@ from fastapi import APIRouter, Depends
 
 from app.modules import build_registry
 from app.modules.base import ModuleSpec
-from app.modules.deps import require_module
+from app.modules.deps import require_module, require_module_visible
 
 # 导入模块包并校验(幂等): 下面的装配与接口文档都依赖它
 registry = build_registry()
@@ -24,7 +25,12 @@ api_router = APIRouter(prefix="/api/v1")
 for spec in registry.all():
     if spec.root_routes or not spec.routers:
         continue
-    dependencies = [] if spec.locked else [Depends(require_module(spec.id))]
+    dependencies = []
+    if not spec.locked:
+        dependencies = [
+            Depends(require_module(spec.id)),
+            Depends(require_module_visible(spec.id)),
+        ]
     for module_router in spec.routers:
         api_router.include_router(module_router, dependencies=dependencies)
 

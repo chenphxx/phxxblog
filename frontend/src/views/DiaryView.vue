@@ -6,6 +6,8 @@ import type { ContributionPoint, DiaryEntry } from '@/types'
 import MarkdownView from '@/components/MarkdownView.vue'
 import VditorEditor from '@/components/VditorEditor.vue'
 import ContributionsChart from '@/components/ContributionsChart.vue'
+import { useAuthStore } from '@/stores/auth'
+import { useModulesStore } from '@/stores/modules'
 import MetaIcon from '@/components/MetaIcon.vue'
 import ImportExportDialogs from '@/components/ImportExportDialogs.vue'
 import { useImportExport } from '@/composables/useImportExport'
@@ -19,6 +21,20 @@ const saving = ref(false)
 const editingId = ref<number | null>(null)
 const form = ref({ content_md: '', entry_date: today() })
 const contributionYear = ref<number | null>(null)
+const modules = useModulesStore()
+const auth = useAuthStore()
+
+/**
+ * 是否能管理日记(新增/编辑/删除/导入导出)
+ *
+ * 管理动作在后端要求 diary:manage 权限, 而项目里只有管理员角色持有它 - 因此前台按
+ * 管理员身份隐藏这些入口 日记模块配成公开时, 访客仍能看列表, 但看不到管理按钮
+ */
+const canManage = computed(() => auth.user?.role_codes.includes('admin') ?? false)
+
+/** 统计模块未启用时, 日记的发布记录取不到数据, 这块整体不渲染(接口会 404) */
+const statsEnabled = computed(() => modules.isEnabled('stats'))
+
 /** 编辑器实例: 保存时直接取编辑器内容, 避免 v-model 尚未同步导致"点两次才保存" */
 const editorRef = ref<InstanceType<typeof VditorEditor> | null>(null)
 
@@ -89,6 +105,11 @@ async function load() {
 }
 
 async function loadContributions() {
+  // 统计模块被禁用时接口会 404: 这里就不取数, 也不渲染下面的热力图
+  if (!statsEnabled.value) {
+    contributions.value = []
+    return
+  }
   contributions.value = await statsApi.contributions({
     source: 'diary',
     weeks: 52,
@@ -152,7 +173,7 @@ onMounted(load)
         <p class="eyebrow" style="margin: 0 0 4px">diary — 日记</p>
         <h1 style="margin: 0">日记</h1>
       </div>
-      <div class="diary-actions-bar">
+      <div v-if="canManage" class="diary-actions-bar">
         <el-button @click="io.importDialog = true">导入日记</el-button>
         <el-button @click="io.openExportDialog">导出日记</el-button>
         <el-button type="primary" @click="openCreate">新增日记</el-button>
@@ -160,7 +181,7 @@ onMounted(load)
     </div>
 
     <!-- 日记贡献热力图 -->
-    <div class="card" style="margin-top: 16px">
+    <div v-if="statsEnabled" class="card" style="margin-top: 16px">
       <p class="eyebrow" style="margin: 0 0 12px">activity — 日记记录</p>
       <ContributionsChart
         :points="contributions"
@@ -200,7 +221,7 @@ onMounted(load)
                 </div>
                 <div class="card diary-card">
                   <MarkdownView :content="entry.content_md" />
-                  <div class="diary-actions">
+                  <div v-if="canManage" class="diary-actions">
                     <el-button size="small" @click="openEdit(entry)">编辑</el-button>
                     <el-button size="small" type="danger" @click="remove(entry)">删除</el-button>
                   </div>

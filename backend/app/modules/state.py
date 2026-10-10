@@ -16,6 +16,8 @@ from sqlalchemy.orm import Session
 from app.models.setting import Setting
 from app.modules.base import (
     CATEGORIES,
+    VISIBILITIES,
+    VISIBILITY_PUBLIC,
     ModuleSetting,
     ModuleSpec,
     module_enabled_key,
@@ -25,6 +27,18 @@ from app.modules.registry import registry
 
 # 与 core/settings_schema.py 的 BOOL_KEYS 保持同一套真值写法
 TRUE_VALUES = ("1", "true", "yes", "on")
+
+# 可见范围在 settings 表里的键后缀: module.<模块 id>.visibility
+VISIBILITY_KEY = "visibility"
+
+
+def module_visibility_key(module_id: str) -> str:
+    """模块可见范围在 settings 表里的键名
+
+    @param module_id: 模块 id
+    @return 形如 module.<模块 id>.visibility 的键名
+    """
+    return module_setting_key(module_id, VISIBILITY_KEY)
 
 
 def parse_bool(raw: object) -> bool:
@@ -108,6 +122,65 @@ def enabled_ids(db: Session) -> list[str]:
     @return 模块 id 列表
     """
     return [spec.id for spec in registry.all() if effective_enabled(db, spec.id)]
+
+
+def module_visibility(db: Session, module_id: str) -> str:
+    """模块的可见范围(库里没有记录时用元数据里的默认值)
+
+    锁定模块与固定可见范围的模块(核心能力与管理后台自身的内容)一律取声明值: 库里即使
+    留着历史记录也不生效, 否则"固定"会被一行旧数据悄悄改掉
+
+    @param db: 数据库会话
+    @param module_id: 模块 id
+    @return public(所有访客可用) 或 admin(仅管理员可用)
+    """
+    spec = registry.get(module_id)
+    if spec is None:
+        return VISIBILITY_PUBLIC
+    if spec.locked or spec.visibility_fixed:
+        return spec.default_visibility
+    raw = _read(db, module_visibility_key(module_id))
+    if raw is None:
+        return spec.default_visibility
+    value = raw.strip()
+    # 值被写坏时回落到模块声明的默认值, 而不是让整个模块状态接口报错
+    return value if value in VISIBILITIES else spec.default_visibility
+
+
+def visible_for(db: Session, module_id: str, *, is_admin: bool) -> bool:
+    """判断当前访问者能不能看到某个模块的能力
+
+    只看可见范围这一层: "模块是否启用"由 effective_enabled 另外判断, 两者都要满足
+
+    @param db: 数据库会话
+    @param module_id: 模块 id
+    @param is_admin: 访问者是否拥有站点管理权限
+    @return 可见返回 True
+    """
+    if is_admin:
+        return True
+    return module_visibility(db, module_id) == VISIBILITY_PUBLIC
+
+
+def set_visibility(db: Session, module_id: str, visibility: str) -> ModuleSpec:
+    """设置模块的可见范围
+
+    @param db: 数据库会话
+    @param module_id: 模块 id
+    @param visibility: public 或 admin
+    @return 模块元数据
+    @throws ValueError 模块不存在, 取值非法, 或试图限制锁定模块
+    """
+    spec = registry.get(module_id)
+    if spec is None:
+        raise ValueError(f"模块不存在: {module_id}")
+    if visibility not in VISIBILITIES:
+        raise ValueError(f"可见范围不合法: {visibility}")
+    # 核心模块与"管理后台自身的能力"都固定可见范围: 前者是站点基本盘, 后者只可能给管理员用
+    if spec.locked or spec.visibility_fixed:
+        raise ValueError(f"{spec.name} 的可见范围是固定的, 不允许修改")
+    _write(db, module_visibility_key(module_id), visibility, f"可见范围: {spec.name}")
+    return spec
 
 
 def set_enabled(db: Session, module_id: str, enabled: bool) -> ModuleSpec:
@@ -267,15 +340,17 @@ def set_module_config(db: Session, spec: ModuleSpec, values: dict) -> dict:
     return module_config(db, spec)
 
 
-def public_state(db: Session) -> dict:
-    """公开给前台的模块状态: 启用的模块 id 与公开配置
+def public_state(db: Session, *, is_admin: bool = False) -> dict:
+    """公开给前台的模块状态: 当前访问者可见的模块 id 与公开配置
 
-    前台用它决定注册哪些路由/导航项, 因此只暴露"启用集合", 不暴露默认值与依赖细节
+    按访问者过滤, 而不是把判断丢给前端: 配成"仅管理员"的模块, 它的配置(如主页 README
+    的内容)本来就不该下发给访客. 前端因此只需处理"我能不能用", 不必再区分启用与可见范围
 
     @param db: 数据库会话
+    @param is_admin: 访问者是否拥有站点管理权限
     @return {"ids": [...], "config": {模块 id: {公开配置}}}
     """
-    ids = set(enabled_ids(db))
+    ids = {mid for mid in enabled_ids(db) if visible_for(db, mid, is_admin=is_admin)}
     config: dict[str, dict] = {}
     for spec in registry.all():
         if spec.id not in ids:
@@ -308,6 +383,10 @@ def admin_state(db: Session) -> list[dict]:
                 "locked": spec.locked,
                 "default_enabled": spec.default_enabled,
                 "enabled": is_enabled(db, spec.id),
+                "visibility": module_visibility(db, spec.id),
+                # 固定可见范围的模块(核心模块与后台自身的能力)在后台不提供调整入口;
+                # locked 与 visibility_fixed 分开下发, 后台据此给出不同的说明
+                "visibility_fixed": spec.visibility_fixed,
                 "available": effective_enabled(db, spec.id),
                 "disabled_dependencies": disabled_dependencies(db, spec),
                 "depends_on": list(spec.depends_on),

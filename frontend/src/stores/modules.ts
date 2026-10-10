@@ -6,6 +6,12 @@
  *   - 直接访问禁用模块的页面时由路由守卫送回首页(见 router/index.ts)
  *   - 首页的终端卡片 / 历史上的今天 / 发布记录等模块化区块是否请求接口
  *
+ * 两个标志位的分工:
+ *   - loaded  状态已成功拉取
+ *   - ready   首次拉取已经有结果(成功或失败都算)
+ * "会发请求的模块区块"必须等 ready 再挂载: isEnabled 在状态未知时按可用处理(避免首屏
+ * 入口闪烁), 若区块此时就挂载, 它会在模块其实已禁用的情况下发出注定 404 的请求
+ *
  * load() 是幂等的: 同一个会话内只请求一次, 后台改完模块配置后调用 load(true) 强制刷新
  */
 
@@ -18,6 +24,8 @@ export const useModulesStore = defineStore('modules', () => {
   const ids = ref<string[]>([])
   const config = ref<PublicModuleState['config']>({})
   const loaded = ref(false)
+  /** 首次拉取是否已经有结果(成功或失败); 会取数的模块区块据此决定何时挂载 */
+  const ready = ref(false)
   /** 正在进行的加载(并发调用共用同一个请求) */
   let pending: Promise<void> | null = null
 
@@ -65,11 +73,12 @@ export const useModulesStore = defineStore('modules', () => {
       } catch {
         // 拉不到就保持"全部可用"的保守状态: 接口本身不可用时, 页面入口不该跟着消失
       } finally {
+        ready.value = true
         pending = null
       }
     })()
     return pending
   }
 
-  return { ids, config, loaded, isEnabled, moduleConfig, load }
+  return { ids, config, loaded, ready, isEnabled, moduleConfig, load }
 })

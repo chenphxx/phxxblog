@@ -15,6 +15,7 @@ from app.core.permissions import Perm
 from app.core.response import ok
 from app.models.diary import DiaryEntry
 from app.models.user import User
+from app.modules.deps import permission_or_module_public
 from app.schemas.diary import DiaryIn, DiaryOut
 from app.services.archive import (
     frontmatter_lines,
@@ -129,10 +130,13 @@ def _diary_import_label(plan: dict) -> str:
 def list_diaries(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
-    user: User = Depends(require_permission(Perm.DIARY_MANAGE)),
+    _user: User | None = Depends(permission_or_module_public(Perm.DIARY_MANAGE, "diary")),
     db: Session = Depends(get_db),
 ):
-    """日记列表(按日期倒序)"""
+    """日记列表(按日期倒序)
+
+    管理员随时可读; 日记模块的可见范围配成公开时, 访客也能读(前端据此展示日记页)
+    """
     query = db.query(DiaryEntry).order_by(
         DiaryEntry.entry_date.desc(), DiaryEntry.created_at.desc()
     )

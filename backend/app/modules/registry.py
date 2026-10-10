@@ -11,7 +11,13 @@
 
 import re
 
-from app.modules.base import CATEGORIES, PERMISSION_CODES, ModuleSpec, module_setting_key
+from app.modules.base import (
+    CATEGORIES,
+    PERMISSION_CODES,
+    VISIBILITIES,
+    ModuleSpec,
+    module_setting_key,
+)
 
 ID_RE = re.compile(r"^[a-z][a-z0-9-]*$")
 
@@ -39,6 +45,10 @@ class ModuleRegistry:
             raise ValueError(f"模块 {spec.id} 的分类不合法: {spec.category}")
         if spec.locked and not spec.default_enabled:
             raise ValueError(f"模块 {spec.id} 是锁定模块, 不能默认禁用")
+        if spec.default_visibility not in VISIBILITIES:
+            raise ValueError(f"模块 {spec.id} 的默认可见范围不合法: {spec.default_visibility}")
+        # 锁定模块的可见范围同样不可修改(它们要么是站点基本盘, 要么是后台自身的能力),
+        # 由声明固定: 认证/文章/分类标签是公开, 用户/系统设置/模块管理是仅管理员
 
         for code in spec.permissions:
             if code not in PERMISSION_CODES:

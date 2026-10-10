@@ -199,7 +199,7 @@ onMounted(async () => {
 
         <!-- 终端会话: 个性化模块, 缩短后放在个人介绍下方 -->
         <HomeSessionCard
-          v-if="modules.isEnabled('session')"
+          v-if="modules.ready && modules.isEnabled('session')"
           ref="sessionRef"
           :settings="settings"
           :total-posts="totalPosts"
@@ -229,17 +229,17 @@ onMounted(async () => {
         </section>
 
         <!-- 发布记录(热力图需要整行宽度, 放在主列底部) -->
-        <HomeContributionsSection v-if="modules.isEnabled('stats') && showContributions" ref="contributionsRef" />
+        <HomeContributionsSection
+          v-if="modules.ready && modules.isEnabled('stats') && showContributions"
+          ref="contributionsRef"
+        />
       </div>
 
       <!-- 右侧栏: 次级模块 -->
       <aside class="home-aside">
         <HomeHotPostsCard ref="hotPostsRef" />
-        <HomeSiteLinksCard
-          v-if="isAdmin && modules.isEnabled('sitelinks') && websiteLinks.length"
-          :links="websiteLinks"
-        />
-        <HomeHistoryCard v-if="modules.isEnabled('history')" ref="historyRef" />
+        <HomeSiteLinksCard v-if="modules.isEnabled('sitelinks') && websiteLinks.length" :links="websiteLinks" />
+        <HomeHistoryCard v-if="modules.ready && modules.isEnabled('history')" ref="historyRef" />
       </aside>
     </div>
 

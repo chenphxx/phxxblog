@@ -1,14 +1,23 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { miscApi } from '@/api'
 import MarkdownView from '@/components/MarkdownView.vue'
 import VditorEditor from '@/components/VditorEditor.vue'
+import { useAuthStore } from '@/stores/auth'
 
 const content = ref('')
 const loading = ref(true)
 const saving = ref(false)
 const editing = ref(false)
+const auth = useAuthStore()
+
+/**
+ * 是否能编辑更新日志
+ * 保存接口要求 changelog:manage 权限, 而项目里只有管理员角色持有它 - 前台按管理员
+ * 身份显示编辑入口; 更新日志配成公开时访客仍能阅读, 但看不到编辑按钮
+ */
+const canEdit = computed(() => auth.user?.role_codes.includes('admin') ?? false)
 
 async function load() {
   loading.value = true
@@ -49,7 +58,7 @@ onMounted(load)
         <p class="eyebrow" style="margin: 0 0 4px">changelog — 更新日志</p>
         <h1 style="margin: 0">更新日志</h1>
       </div>
-      <div v-if="!editing">
+      <div v-if="!editing && canEdit">
         <el-button type="primary" @click="startEdit">编辑</el-button>
       </div>
       <div v-else>

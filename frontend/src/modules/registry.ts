@@ -210,31 +210,21 @@ export const MODULES: FrontModule[] = [
     id: 'diary',
     name: '日记',
     description: '私人日记(仅管理员)',
-    frontNav: [
-      { to: '/diary', label: '日记', icon: Notebook, group: 'secondary', requiresAuth: true, adminOnly: true },
-    ],
-    frontRoutes: [
-      {
-        path: 'diary',
-        name: 'diary',
-        component: () => import('@/views/DiaryView.vue'),
-        meta: { requiresAuth: true },
-      },
-    ],
+    // 前台入口与页面是否对访客开放由模块状态决定(可见范围配成公开时访客也能看),
+    // 因此这里不再写死 requiresAuth / adminOnly
+    frontNav: [{ to: '/diary', label: '日记', icon: Notebook, group: 'secondary' }],
+    frontRoutes: [{ path: 'diary', name: 'diary', component: () => import('@/views/DiaryView.vue') }],
   },
   {
     id: 'changelog',
     name: '更新日志',
     description: '站点更新日志的展示与编辑',
-    frontNav: [
-      { to: '/changelog', label: '更新日志', icon: Tickets, group: 'secondary', requiresAuth: true, adminOnly: true },
-    ],
+    frontNav: [{ to: '/changelog', label: '更新日志', icon: Tickets, group: 'secondary' }],
     frontRoutes: [
       {
         path: 'changelog',
         name: 'changelog',
         component: () => import('@/views/ChangelogView.vue'),
-        meta: { requiresAuth: true },
       },
     ],
   },
