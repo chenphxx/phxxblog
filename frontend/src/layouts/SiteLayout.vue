@@ -179,12 +179,12 @@ onMounted(async () => {
           <el-icon v-if="item.icon" class="nav-icon"><component :is="item.icon" /></el-icon>
           <span>{{ item.label }}</span>
         </router-link>
-        <router-link to="/admin">
+        <!-- 这两条与模块无关, 由布局自己渲染: 未登录只给登录入口, 登录后再给后台入口 -->
+        <router-link v-if="hasToken" to="/admin">
           <el-icon class="nav-icon"><Setting /></el-icon>
           <span>管理后台</span>
         </router-link>
-        <!-- 未登录时给一个入口: 这条与模块无关, 由布局自己渲染 -->
-        <router-link v-if="!hasToken" to="/admin/login">
+        <router-link v-else to="/admin/login">
           <el-icon class="nav-icon"><User /></el-icon>
           <span>登录</span>
         </router-link>
