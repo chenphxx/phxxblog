@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.deps import get_optional_user, is_site_manager, require_permission
+from app.core.deps import get_optional_user_strict, is_site_manager, require_permission
 from app.core.permissions import Perm
 from app.core.response import ok
 from app.models.user import User
@@ -44,7 +44,8 @@ class ModuleUpdateIn(BaseModel):
 
 @router.get("", response_model=dict)
 def public_modules(
-    user: User | None = Depends(get_optional_user),
+    # 这份状态决定前台的导航与路由: 令牌失效必须 401(触发静默续期), 不能静默降级成游客
+    user: User | None = Depends(get_optional_user_strict),
     db: Session = Depends(get_db),
 ):
     """前台公开的模块状态(当前访问者可见的模块 + 公开配置)"""

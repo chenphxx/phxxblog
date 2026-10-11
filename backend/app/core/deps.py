@@ -86,6 +86,40 @@ def get_optional_user(
     return user
 
 
+def get_optional_user_strict(
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+    db: Session = Depends(get_db),
+) -> User | None:
+    """可选登录的严格版: 没带令牌当游客, 带了令牌却认不出来则 401
+
+    与 get_optional_user 只差最后一条. "令牌失效就静默当游客"对读数据的接口没问题, 但对
+    "决定前端能渲染什么"的接口是致命的: 访问令牌刚过期的管理员会拿到一份匿名配置 - 导航里
+    少了仅管理员可见的模块, 后台入口也因此被判定为不可用. 返回 401 才能走到前端的静默续期
+    (换到新令牌后重放这次请求), 与其它要求登录的接口行为一致
+
+    @param credentials 请求头里的 Bearer 令牌(可缺省)
+    @param db 数据库会话
+    @return 有效令牌对应的用户; 没带令牌返回 None
+    @throws HTTPException 令牌无效或已过期(401), 账号被禁用(403)
+    """
+    if credentials is None:
+        return None
+    try:
+        payload = decode_token(credentials.credentials)
+        if payload.get("type") != "access":
+            raise ValueError("令牌类型错误")
+        user = db.get(User, int(payload["sub"]))
+    except (jwt.PyJWTError, KeyError, ValueError, TypeError) as err:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="令牌无效或已过期"
+        ) from err
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="用户不存在")
+    if user.status == 0:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="账号已被禁用")
+    return user
+
+
 def require_permission(code: str) -> Callable:
     """权限依赖工厂: 要求当前用户拥有指定权限码"""
 
