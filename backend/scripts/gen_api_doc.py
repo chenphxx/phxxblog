@@ -44,8 +44,9 @@ MODULE_NOTES: dict[str, str] = {
     "单文件上限默认见 `PHXXBLOG_MAX_UPLOAD_SIZE`(默认 100MB), 后台系统设置页可按 MB 覆盖, "
     "超限返回 413 并删除半成品文件 ",
     "看板": "后台首页聚合数据; 需 `stats:view` `trend` 为近 14 天 `{date, pv, uv}`(与 `/stats/trend` 字段名不同) `overview` 含今日 `today_pv`/`today_uv` ",
-    "统计": "`/stats/track` 由前台埋点调用(公开); "
-    "其余为后台统计, 需 `stats:view` 自定义区间的天数上限为 366 天 ",
+    "统计": "访问统计固定为仅管理员可见, 需 `stats:view` 自定义区间的天数上限为 366 天 ",
+    "访问埋点": "`/tracking/track` 由前台进入页面时上报(公开, 对访客无感); 关掉该模块即不再记录访问 ",
+    "发布记录": "首页与日记页的贡献热力图数据(公开); 独立模块, 默认关闭 ",
     "设置": "公开设置可匿名读取(站点名/简介/模块开关等); 更新需 `setting:manage` ",
     "用户管理": "需 `user:manage`; 角色与权限相关接口需 `role:manage` 内置角色的 code 建议不要修改"
     "(业务代码已改为按权限码授权, 但前端菜单等仍依赖 admin 角色名) ",

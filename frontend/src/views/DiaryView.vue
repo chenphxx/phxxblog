@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { diaryApi, statsApi } from '@/api'
+import { contributionsApi, diaryApi } from '@/api'
 import type { ContributionPoint, DiaryEntry } from '@/types'
 import MarkdownView from '@/components/MarkdownView.vue'
 import VditorEditor from '@/components/VditorEditor.vue'
@@ -32,8 +32,15 @@ const auth = useAuthStore()
  */
 const canManage = computed(() => auth.user?.role_codes.includes('admin') ?? false)
 
-/** 统计模块未启用时, 日记的发布记录取不到数据, 这块整体不渲染(接口会 404) */
-const statsEnabled = computed(() => modules.isEnabled('stats'))
+/** 发布记录模块未启用时, 日记的热力图取不到数据, 这块整体不渲染(接口会 404) */
+/**
+ * 日记页要不要展示发布记录
+ *
+ * 模块未启用时接口会 404; 页面级的"日记页展示"开关关掉时也不取数(与首页那块各自独立)
+ */
+const contributionsEnabled = computed(
+  () => modules.isEnabled('contributions') && modules.moduleConfig('contributions').show_on_diary !== false,
+)
 
 /** 编辑器实例: 保存时直接取编辑器内容, 避免 v-model 尚未同步导致"点两次才保存" */
 const editorRef = ref<InstanceType<typeof VditorEditor> | null>(null)
@@ -105,12 +112,12 @@ async function load() {
 }
 
 async function loadContributions() {
-  // 统计模块被禁用时接口会 404: 这里就不取数, 也不渲染下面的热力图
-  if (!statsEnabled.value) {
+  // 发布记录模块被禁用时接口会 404: 这里就不取数, 也不渲染下面的热力图
+  if (!contributionsEnabled.value) {
     contributions.value = []
     return
   }
-  contributions.value = await statsApi.contributions({
+  contributions.value = await contributionsApi.contributions({
     source: 'diary',
     weeks: 52,
     year: contributionYear.value || undefined,
@@ -181,7 +188,7 @@ onMounted(load)
     </div>
 
     <!-- 日记贡献热力图 -->
-    <div v-if="statsEnabled" class="card" style="margin-top: 16px">
+    <div v-if="contributionsEnabled" class="card" style="margin-top: 16px">
       <p class="eyebrow" style="margin: 0 0 12px">activity — 日记记录</p>
       <ContributionsChart
         :points="contributions"

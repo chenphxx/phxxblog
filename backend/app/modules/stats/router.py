@@ -1,9 +1,12 @@
-"""访问统计接口: 埋点, 总览, 趋势, 来源分析"""
+"""访问统计接口: 总览, 趋势, 访问明细与来源分析(只给管理员看的数据能力)
+
+访问埋点与发布记录已拆成独立模块(见 app/modules/tracking 与 app/modules/contributions):
+它们要出现在前台或必须对访客开放, 与本模块的"仅管理员"可见范围正好相反
+"""
 
 from datetime import date, datetime, timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -13,29 +16,12 @@ from app.core.permissions import Perm
 from app.core.response import ok
 from app.models.analytics import DailyStat, VisitLog
 from app.models.comment import Comment
-from app.models.diary import DiaryEntry
 from app.models.post import Post, PostLike
 from app.models.user import User
 from app.schemas.common import Page
 from app.services.geo import resolve_location
-from app.services.stats import record_visit
 
 router = APIRouter(prefix="/stats", tags=["统计"])
-
-
-class TrackIn(BaseModel):
-    """访问埋点请求"""
-
-    url: str | None = None
-    post_id: int | None = None
-
-
-@router.post("/track", response_model=dict)
-def track(data: TrackIn, request: Request, db: Session = Depends(get_db)):
-    """前台页面访问埋点(公开)"""
-    post = db.get(Post, data.post_id) if data.post_id else None
-    record_visit(db, request=request, post=post, url=data.url)
-    return ok(message="ok")
 
 
 @router.get("/overview", response_model=dict)
@@ -167,47 +153,6 @@ def visits(
             page_size=page_size,
         )
     )
-
-
-@router.get("/contributions", response_model=dict)
-def contributions(
-    source: str = Query("post", pattern="^(post|diary)$"),
-    weeks: int = Query(52, ge=4, le=104),
-    year: int | None = Query(None, ge=2000, le=2100, description="指定年份(返回整年数据)"),
-    db: Session = Depends(get_db),
-):
-    """GitHub 风格贡献数据: 近 N 周或指定年份每天的发布数量"""
-    if year:
-        start = date(year, 1, 1)
-        days = 366 if (year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)) else 365
-    else:
-        start = date.today() - timedelta(weeks=weeks)
-        days = (date.today() - start).days + 1
-    count_map: dict[str, int] = {}
-    if source == "post":
-        rows = (
-            db.query(func.date(Post.published_at), func.count(Post.id))
-            .filter(
-                Post.status == 2,
-                Post.published_at >= datetime(start.year, start.month, start.day),
-            )
-            .group_by(func.date(Post.published_at))
-            .all()
-        )
-    else:
-        rows = (
-            db.query(DiaryEntry.entry_date, func.count(DiaryEntry.id))
-            .filter(DiaryEntry.entry_date >= start)
-            .group_by(DiaryEntry.entry_date)
-            .all()
-        )
-    for day, count in rows:
-        count_map[str(day)] = int(count)
-    items = []
-    for offset in range(days):
-        day = start + timedelta(days=offset)
-        items.append({"date": day.isoformat(), "count": count_map.get(day.isoformat(), 0)})
-    return ok(items)
 
 
 @router.get("/sources", response_model=dict)

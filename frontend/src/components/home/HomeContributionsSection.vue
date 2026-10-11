@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { statsApi } from '@/api'
+import { contributionsApi } from '@/api'
 import type { ContributionPoint } from '@/types'
 import ContributionsChart from '@/components/ContributionsChart.vue'
 
@@ -24,7 +24,7 @@ const years = computed(() => {
 async function refresh() {
   loading.value = true
   try {
-    points.value = await statsApi.contributions({
+    points.value = await contributionsApi.contributions({
       source: 'post',
       weeks: 52,
       year: year.value || undefined,

@@ -41,6 +41,7 @@ def build_registry() -> ModuleRegistry:
         changelog,
         codefont,
         comments,
+        contributions,
         dashboard,
         diary,
         fontsize,
@@ -62,6 +63,7 @@ def build_registry() -> ModuleRegistry:
         sitelinks,
         stats,
         taxonomy,
+        tracking,
         users,
     )
 

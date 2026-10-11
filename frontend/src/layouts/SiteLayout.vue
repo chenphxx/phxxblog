@@ -5,7 +5,7 @@ import { Menu, Setting, User } from '@element-plus/icons-vue'
 import Kanbanniang from '@/components/Kanbanniang.vue'
 import KanbanniangSwitcher from '@/components/KanbanniangSwitcher.vue'
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue'
-import { settingsApi, statsApi } from '@/api'
+import { settingsApi, trackingApi } from '@/api'
 import { FRONT_NAV_ITEMS } from '@/modules/registry'
 import { useAuthStore } from '@/stores/auth'
 import { useKanbanniangStore } from '@/stores/kanbanniang'
@@ -113,9 +113,9 @@ onMounted(async () => {
   await modules.load()
   // 看板娘的总开关现在就是模块开关: 模块被禁用时连运行时与模型都不下载
   kanbanniang.setAllowed(modules.isEnabled('kanbanniang'))
-  // 页面访问埋点(PV/UV): 统计模块被禁用时不再产生请求
-  if (modules.isEnabled('stats')) {
-    statsApi.track({ url: location.hash || '/' }).catch(() => {})
+  // 页面访问埋点(PV/UV): 埋点模块被禁用时不再产生请求
+  if (modules.isEnabled('tracking')) {
+    trackingApi.track({ url: location.hash || '/' }).catch(() => {})
   }
   try {
     settings.value = await settingsApi.public()

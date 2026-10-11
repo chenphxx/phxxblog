@@ -191,6 +191,16 @@ export const MODULES: FrontModule[] = [
     description: '访问埋点, 概览与趋势(首页发布记录与后台看板的数据来源)',
   },
   {
+    id: 'tracking',
+    name: '访问埋点',
+    description: '记录访客的访问明细与按日 PV/UV, 对访客无感',
+  },
+  {
+    id: 'contributions',
+    name: '文章发布记录',
+    description: '首页底部的发布记录(贡献热力图), 按周或年份聚合',
+  },
+  {
     id: 'dashboard',
     name: '后台看板',
     description: '后台首页的数据概览',

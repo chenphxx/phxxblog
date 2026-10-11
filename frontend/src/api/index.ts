@@ -121,16 +121,23 @@ export const mediaApi = {
   remove: (id: number) => http.delete<null>(`/media/${id}`),
 }
 
-/** 统计与看板 */
+/** 访问统计与后台看板(仅管理员可见的报表) */
 export const statsApi = {
-  track: (data?: { url?: string; post_id?: number }) => http.post('/stats/track', data ?? {}),
   overview: () => http.get<Record<string, number>>('/stats/overview'),
   trend: (params?: Record<string, unknown>) => http.get<TrendPoint[]>('/stats/trend', { params }),
   sources: () => http.get<Record<string, { name: string; count: number }[]>>('/stats/sources'),
   dashboard: () => http.get<DashboardData>('/dashboard'),
   visits: (params?: Record<string, unknown>) => http.get<Page<VisitItem>>('/stats/visits', { params }),
-  contributions: (params?: Record<string, unknown>) =>
-    http.get<ContributionPoint[]>('/stats/contributions', { params }),
+}
+
+/** 访问埋点: 前台进入页面时上报一次, 对访客无感(关闭该模块即不再记录访问) */
+export const trackingApi = {
+  track: (data?: { url?: string; post_id?: number }) => http.post('/tracking/track', data ?? {}),
+}
+
+/** 文章发布记录: 首页与日记页的贡献热力图数据 */
+export const contributionsApi = {
+  contributions: (params?: Record<string, unknown>) => http.get<ContributionPoint[]>('/contributions', { params }),
 }
 
 /** 日记(仅管理员) */

@@ -48,8 +48,8 @@ const techTags = computed(() =>
 )
 /** 首页右侧的"常用网站"(sitelinks 模块配置, 仅管理员可见) */
 const websiteLinks = computed(() => linkRowsOf(modules.moduleConfig('sitelinks').links))
-/** 首页底部的发布记录是否展示: 统计能力可以开, 但不必占首页一整行 */
-const showContributions = computed(() => modules.moduleConfig('stats').show_on_home !== false)
+/** 首页底部的发布记录是否展示: 属发布记录模块的展示配置(日记页有它自己的开关) */
+const showContributions = computed(() => modules.moduleConfig('contributions').show_on_home !== false)
 
 /**
  * 首页文章分页: 每页 10 篇, 第 1 页即最近 10 篇
@@ -230,7 +230,7 @@ onMounted(async () => {
 
         <!-- 发布记录(热力图需要整行宽度, 放在主列底部) -->
         <HomeContributionsSection
-          v-if="modules.ready && modules.isEnabled('stats') && showContributions"
+          v-if="modules.ready && modules.isEnabled('contributions') && showContributions"
           ref="contributionsRef"
         />
       </div>
