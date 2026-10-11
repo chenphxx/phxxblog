@@ -2,17 +2,17 @@
 
 ## 快速开始
 
-> 双击项目根目录的 `start.bat`, 脚本会自动检查环境并同时启动前后端 
+> 双击项目根中的 `start.bat`, 脚本会自动检查环境并启动项目 
 
 ### 环境要求
 
 - Node.js ≥ 22.19(`.nvmrc` 与 CI 用 24) 
-- Python ≥ 3.10 
+- Python ≥ 3.10(本项目使用3.14.7, 其他版本自行测试即可) 
 - MySQL 9(本项目使用的是MySQL 9, 其他版本自行测试即可) 
 
 ### 初始化数据库
 
-确认 MySQL 服务已启动后, 创建数据库: 
+创建数据库: 
 
 ```bash
 mysql -u root -p < backend/scripts/init_db.sql
@@ -30,7 +30,7 @@ pip install -r requirements.txt
 copy .env.example .env               # Windows: copy; macOS/Linux: cp
 ```
 
-编辑 `.env`, 改两处: 数据库连接串里的密码, 以及 `PHXXBLOG_SECRET_KEY`(`.env.example` 里的占位值长度不足 32, 不改会拒绝启动): 
+编辑 `.env`, 需改动数据库连接串里的密码, 以及 `PHXXBLOG_SECRET_KEY`(`.env.example` 里的占位值长度不足 32, 不改会拒绝启动): 
 
 ```ini
 PHXXBLOG_DATABASE_URL=mysql+pymysql://root:你的MySQL密码@localhost:3306/phxxblog?charset=utf8mb4
@@ -66,7 +66,7 @@ npm install
 npm run dev
 ```
 
-一键跑完所有检查(类型检查, 主题令牌一致性, 图标路径, 格式): 
+检查类型, 主题令牌一致性, 图标路径, 格式: 
 
 ```bash
 cd backend
