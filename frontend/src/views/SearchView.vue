@@ -33,12 +33,15 @@ const {
   fetch: (page, pageSize) => {
     const start_date = dateRange.value?.[0] || undefined
     const end_date = dateRange.value?.[1] || undefined
-    if (categoryId.value || tagId.value) {
+    // 0 是"未分类/无标签"这个选项, 所以判断要用 !== null 而不是真值判断
+    if (categoryId.value !== null || tagId.value !== null) {
       return postApi.list({
         page,
         page_size: pageSize,
         category: categoryId.value || undefined,
+        no_category: categoryId.value === 0 || undefined,
         tag: tagId.value || undefined,
+        no_tag: tagId.value === 0 || undefined,
         keyword: keyword.value.trim() || undefined,
         start_date,
         end_date,
@@ -105,6 +108,7 @@ onMounted(async () => {
           @clear="reset()"
         />
         <el-select v-model="categoryId" placeholder="按分类筛选" clearable style="width: 180px" @change="reset()">
+          <el-option label="未分类" :value="0" />
           <el-option
             v-for="cat in categories"
             :key="cat.id"
@@ -113,6 +117,7 @@ onMounted(async () => {
           />
         </el-select>
         <el-select v-model="tagId" placeholder="按标签筛选" clearable style="width: 180px" @change="reset()">
+          <el-option label="无标签" :value="0" />
           <el-option v-for="tag in tags" :key="tag.id" :label="`#${tag.name} (${tag.post_count})`" :value="tag.id" />
         </el-select>
         <el-date-picker

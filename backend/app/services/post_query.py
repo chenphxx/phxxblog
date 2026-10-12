@@ -27,6 +27,8 @@ def public_list(
     page_size: int = 10,
     category: int | None = None,
     tag: int | None = None,
+    no_category: bool = False,
+    no_tag: bool = False,
     year: int | None = None,
     month: int | None = None,
     start_date: str | None = None,
@@ -38,6 +40,8 @@ def public_list(
     @param db 数据库会话
     @param category 分类ID(多对多关联表筛选)
     @param tag 标签ID
+    @param no_category 只看未分类文章(与 category 互斥, 同时传时以它为准)
+    @param no_tag 只看无标签文章(与 tag 互斥, 同时传时以它为准)
     @param year 按发布年份筛选
     @param month 按发布月份筛选
     @param start_date 发布起始日 YYYY-MM-DD(含当日)
@@ -46,9 +50,14 @@ def public_list(
     @return (当页文章, 总数)
     """
     query = db.query(Post).filter(Post.status == STATUS_PUBLISHED)
-    if category:
+    # "未分类/无标签"用 NOT EXISTS 表达, 与 join 出来的等值筛选是两条互斥路径
+    if no_category:
+        query = query.filter(~Post.categories.any())
+    elif category:
         query = query.join(Post.categories).filter(Category.id == category)
-    if tag:
+    if no_tag:
+        query = query.filter(~Post.tags.any())
+    elif tag:
         query = query.join(Post.tags).filter(Tag.id == tag)
     if year:
         query = query.filter(func.year(Post.published_at) == year)
