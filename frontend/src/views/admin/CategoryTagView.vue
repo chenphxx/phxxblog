@@ -48,7 +48,20 @@ function openCategoryDialog(category?: Category) {
 }
 
 async function saveCategory() {
-  const payload = { ...categoryForm.value }
+  // 空值在这里就拦下: 直接提交只会拿到后端 422 的英文校验信息(如 "body.slug: String ...")
+  if (!categoryForm.value.name.trim()) {
+    ElMessage.warning('名称不能为空')
+    return
+  }
+  if (!categoryForm.value.slug.trim()) {
+    ElMessage.warning('别名不能为空')
+    return
+  }
+  const payload = {
+    ...categoryForm.value,
+    name: categoryForm.value.name.trim(),
+    slug: categoryForm.value.slug.trim(),
+  }
   if (payload.id) {
     await categoryApi.update(payload.id, payload)
   } else {
@@ -74,10 +87,23 @@ function openTagDialog(tag?: Tag) {
 }
 
 async function saveTag() {
+  if (!tagForm.value.name.trim()) {
+    ElMessage.warning('名称不能为空')
+    return
+  }
+  if (!tagForm.value.slug.trim()) {
+    ElMessage.warning('别名不能为空')
+    return
+  }
+  const payload = {
+    ...tagForm.value,
+    name: tagForm.value.name.trim(),
+    slug: tagForm.value.slug.trim(),
+  }
   if (tagForm.value.id) {
-    await tagApi.update(tagForm.value.id, tagForm.value)
+    await tagApi.update(tagForm.value.id, payload)
   } else {
-    await tagApi.create(tagForm.value)
+    await tagApi.create(payload)
   }
   ElMessage.success('保存成功')
   tagDialog.value = false
