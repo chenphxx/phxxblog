@@ -39,6 +39,29 @@ def _tag_out(tag: Tag, counts: dict[int, int]) -> TagOut:
     )
 
 
+def _ensure_unique(db: Session, *, name: str, slug: str, exclude_id: int | None = None) -> None:
+    """校验标签名称与别名没有被别的记录占用
+
+    新增与编辑都要校验: 只靠库里的唯一索引时, 重名会以 IntegrityError 收场(500),
+    提示是数据库原文, 编辑的人看不出哪里错了
+
+    @param db 数据库会话
+    @param name 标签名称
+    @param slug 标签别名
+    @param exclude_id 编辑时传当前标签 id, 把"自己"排除掉(只改大小写是允许的)
+    @throws HTTPException 名称或别名已被占用(400)
+    """
+    name_query = db.query(Tag).filter(Tag.name == name)
+    slug_query = db.query(Tag).filter(Tag.slug == slug)
+    if exclude_id is not None:
+        name_query = name_query.filter(Tag.id != exclude_id)
+        slug_query = slug_query.filter(Tag.id != exclude_id)
+    if name_query.first():
+        raise HTTPException(status_code=400, detail="标签名称已存在")
+    if slug_query.first():
+        raise HTTPException(status_code=400, detail="标签别名已存在")
+
+
 @router.get("", response_model=dict)
 def list_tags(db: Session = Depends(get_db)):
     """标签列表(公开)"""
@@ -55,8 +78,7 @@ def create_tag(
     db: Session = Depends(get_db),
 ):
     """新增标签"""
-    if db.query(Tag).filter(Tag.name == data.name).first():
-        raise HTTPException(status_code=400, detail="标签名已存在")
+    _ensure_unique(db, name=data.name, slug=data.slug)
     tag = Tag(**data.model_dump())
     db.add(tag)
     db.commit()
@@ -85,6 +107,7 @@ def update_tag(
     tag = db.get(Tag, tag_id)
     if tag is None:
         raise HTTPException(status_code=404, detail="标签不存在")
+    _ensure_unique(db, name=data.name, slug=data.slug, exclude_id=tag_id)
     tag.name = data.name
     tag.slug = data.slug
     db.commit()

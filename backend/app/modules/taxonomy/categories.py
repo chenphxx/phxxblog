@@ -42,6 +42,29 @@ def _category_out(category: Category, counts: dict[int, int]) -> CategoryOut:
     )
 
 
+def _ensure_unique(db: Session, *, name: str, slug: str, exclude_id: int | None = None) -> None:
+    """校验分类名称与别名没有被别的记录占用
+
+    新增与编辑都要校验: 库里的 name 没有唯一约束, 漏掉一次就会出现两个同名分类; 而
+    slug 有唯一索引, 不先拦下来会以数据库的 IntegrityError 收场(500 + 报错看不懂)
+
+    @param db 数据库会话
+    @param name 分类名称
+    @param slug 分类别名
+    @param exclude_id 编辑时传当前分类 id, 把"自己"排除掉(只改大小写是允许的)
+    @throws HTTPException 名称或别名已被占用(400)
+    """
+    name_query = db.query(Category).filter(Category.name == name)
+    slug_query = db.query(Category).filter(Category.slug == slug)
+    if exclude_id is not None:
+        name_query = name_query.filter(Category.id != exclude_id)
+        slug_query = slug_query.filter(Category.id != exclude_id)
+    if name_query.first():
+        raise HTTPException(status_code=400, detail="分类名称已存在")
+    if slug_query.first():
+        raise HTTPException(status_code=400, detail="分类别名已存在")
+
+
 @router.get("", response_model=dict)
 def list_categories(db: Session = Depends(get_db)):
     """分类列表(公开)"""
@@ -58,8 +81,7 @@ def create_category(
     db: Session = Depends(get_db),
 ):
     """新增分类"""
-    if db.query(Category).filter(Category.slug == data.slug).first():
-        raise HTTPException(status_code=400, detail="分类别名已存在")
+    _ensure_unique(db, name=data.name, slug=data.slug)
     category = Category(**data.model_dump())
     db.add(category)
     db.commit()
@@ -88,6 +110,7 @@ def update_category(
     category = db.get(Category, category_id)
     if category is None:
         raise HTTPException(status_code=404, detail="分类不存在")
+    _ensure_unique(db, name=data.name, slug=data.slug, exclude_id=category_id)
     for field, value in data.model_dump().items():
         setattr(category, field, value)
     db.commit()
