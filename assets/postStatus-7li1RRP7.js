@@ -1,0 +1,1 @@
+var e={0:`草稿`,1:`审核中`,2:`已发布`,3:`私密`,4:`回收站`},t={0:`info`,1:`warning`,2:`success`,3:`danger`,4:`info`},n=Object.keys(e).map(Number).sort((e,t)=>e-t).map(t=>e[t]);export{e as n,t as r,n as t};

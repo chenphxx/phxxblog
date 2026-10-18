@@ -1,0 +1,1 @@
+function e(e){return Array.isArray(e)?e:[]}function t(t){return e(t).map(e=>({name:e.name??``,url:e.url??``}))}function n(e,t=``){return typeof e==`string`?e:t}export{e as n,n as r,t};
