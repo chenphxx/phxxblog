@@ -20,8 +20,8 @@
 
 > 表结构会在后端首次启动时自动创建, 无需手工建表 
 
-```bash
-mysql -u root -p < backend/scripts/init_db.sql
+```sql
+source D:/Projects/phxxblog/backend/scripts/init_db.sql;
 ```
 
 在终端中按顺序执行以下命令 
