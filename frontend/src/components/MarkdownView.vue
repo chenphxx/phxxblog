@@ -179,6 +179,22 @@ const expandedBlocks = new Set<number>()
 const previewSrc = ref('')
 
 /**
+ * @brief 打开正文图片预览
+ *
+ * 监听放在正文容器上而不是逐个绑定到 img: Vditor 会异步加载 highlight.js,
+ * 原先图片监听必须在它加载完成后才能绑定, 首次访问时图片虽已显示却点不开.
+ * 事件委托也能在主题切换重建正文 DOM 后继续生效, 不会遗留重复监听
+ *
+ * @param event 正文区域的点击事件
+ */
+function openImagePreview(event: MouseEvent) {
+  const target = event.target
+  if (!(target instanceof HTMLImageElement)) return
+  event.preventDefault()
+  previewSrc.value = target.currentSrc || target.src
+}
+
+/**
  * 长代码块折叠: 超过 20 行的代码块只展示前 20 行, 点击按钮展开/收起
  * 折叠时用 max-height 裁剪并隐藏纵向溢出, 不出现滚动条
  */
@@ -281,12 +297,6 @@ async function render() {
   await highlightCode(el.value)
   // 长代码块折叠
   applyCodeFold(el.value)
-  // 图片点击预览: 用 Element Plus 看图器(自适应窗口居中显示, 支持滚轮缩放与拖拽平移)
-  el.value.querySelectorAll('img').forEach((img) => {
-    img.addEventListener('click', () => {
-      previewSrc.value = img.src
-    })
-  })
   // 标题锚点与目录(必须在 DOM 完整之后, 否则收集不到标题)
   emit('headings', buildHeadings(el.value))
 }
@@ -326,6 +336,6 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="el" class="markdown-body vditor-reset" />
+  <div ref="el" class="markdown-body vditor-reset" @click="openImagePreview" />
   <el-image-viewer v-if="previewSrc" :url-list="[previewSrc]" teleported hide-on-click-modal @close="previewSrc = ''" />
 </template>
