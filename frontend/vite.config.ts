@@ -4,21 +4,9 @@ import vue from '@vitejs/plugin-vue'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 
-/**
- * @brief Vite 配置文件
- * 
- * @param plugins 插件列表
- * @param resolve 模块解析配置
- * @param server 开发服务器配置
- * 
- * @return Vite 配置对象
- */
-
 // https://vite.dev/config/
-export default defineConfig(
-{
-  plugins: 
-  [
+export default defineConfig({
+  plugins: [
     vue(),
     /*
      * Element Plus 按需引入
@@ -35,13 +23,10 @@ export default defineConfig(
      * 否则确认框会变成左上角的裸按钮, 提示条不可见
      * 漏了会被 `npm run check:element-styles` 拦下
      */
-    Components
-    (
-      {
-        dts: 'src/components.d.ts',
-        resolvers: [ElementPlusResolver({ importStyle: 'css' })],
-      }
-    ),
+    Components({
+      dts: 'src/components.d.ts',
+      resolvers: [ElementPlusResolver({ importStyle: 'css' })],
+    }),
   ],
   resolve: {
     alias: {
