@@ -8,7 +8,6 @@ import VditorEditor from '@/components/VditorEditor.vue'
 import ContributionsChart from '@/components/ContributionsChart.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useModulesStore } from '@/stores/modules'
-import MetaIcon from '@/components/MetaIcon.vue'
 import ImportExportDialogs from '@/components/ImportExportDialogs.vue'
 import { useImportExport } from '@/composables/useImportExport'
 import { formatDateTime } from '@/utils/datetime'
@@ -31,6 +30,8 @@ const auth = useAuthStore()
  * 管理员身份隐藏这些入口 日记模块配成公开时, 访客仍能看列表, 但看不到管理按钮
  */
 const canManage = computed(() => auth.user?.role_codes.includes('admin') ?? false)
+
+const WEEKDAY_LABELS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
 
 /** 发布记录模块未启用时, 日记的热力图取不到数据, 这块整体不渲染(接口会 404) */
 /**
@@ -82,6 +83,28 @@ function today(): string {
   const now = new Date()
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+}
+
+/**
+ * @brief 日记日期对应的星期
+ *
+ * @param value 日记归属日期(YYYY-MM-DD)
+ * @return 星期文案; 日期不合法时返回空串
+ */
+function weekdayLabel(value: string): string {
+  const date = new Date(`${value}T00:00:00`)
+  return Number.isNaN(date.getTime()) ? '' : (WEEKDAY_LABELS[date.getDay()] ?? '')
+}
+
+/**
+ * @brief 日记的创建时刻
+ *
+ * @param value 创建时间
+ * @return HH:mm; 无法解析时不展示
+ */
+function createdTime(value: string): string {
+  const formatted = formatDateTime(value)
+  return formatted.length >= 16 ? formatted.slice(11, 16) : ''
 }
 
 /** 按年份二次分组, 生成侧边栏锚点 */
@@ -175,10 +198,10 @@ onMounted(load)
 
 <template>
   <div v-loading="loading" class="page-container">
-    <div class="diary-header">
+    <div class="page-head diary-header">
       <div>
-        <p class="eyebrow" style="margin: 0 0 4px">diary — 日记</p>
-        <h1 style="margin: 0">日记</h1>
+        <h1 class="page-title">日记</h1>
+        <p class="page-subtitle">按时间记录日常与片刻</p>
       </div>
       <div v-if="canManage" class="diary-actions-bar">
         <el-button @click="io.importDialog = true">导入日记</el-button>
@@ -189,7 +212,7 @@ onMounted(load)
 
     <!-- 日记贡献热力图 -->
     <div v-if="contributionsEnabled" class="card" style="margin-top: 16px">
-      <p class="eyebrow" style="margin: 0 0 12px">activity — 日记记录</p>
+      <p class="eyebrow" style="margin: 0 0 12px">ACTIVITY / 日记记录</p>
       <ContributionsChart
         :points="contributions"
         :years="contributionYears"
@@ -198,9 +221,9 @@ onMounted(load)
       />
     </div>
 
-    <!-- 时间轴(类似归档页) -->
+    <!-- 按年份和月份分组的日记卡片 -->
     <div class="diary-body">
-      <aside class="diary-nav card">
+      <aside class="diary-nav" aria-label="日记时间导航">
         <div v-for="[year, months] in yearGroups" :key="year" class="nav-year">
           <a href="#" class="nav-year-title" @click.prevent="scrollToId(`diary-${year}`)">{{ year }}</a>
           <a
@@ -219,21 +242,34 @@ onMounted(load)
         <template v-for="[year, months] in yearGroups" :key="year">
           <h2 :id="`diary-${year}`" class="year-title">{{ year }}</h2>
           <div v-for="month in months" :key="month" class="month-block">
-            <h3 :id="`diary-${month}`" class="month-title">{{ month }}</h3>
-            <div class="timeline">
-              <div v-for="entry in groups.get(month) || []" :key="entry.id" class="timeline-item">
-                <div class="timeline-date muted">
-                  <MetaIcon name="calendar" />
-                  <span>{{ formatDateTime(entry.created_at) }}</span>
-                </div>
-                <div class="card diary-card">
-                  <MarkdownView :content="entry.content_md" />
+            <div class="month-heading">
+              <h3 :id="`diary-${month}`" class="month-title">{{ Number(month.slice(5, 7)) }} 月</h3>
+              <span class="month-count">{{ (groups.get(month) || []).length }} 篇</span>
+            </div>
+            <div class="diary-list">
+              <article v-for="entry in groups.get(month) || []" :key="entry.id" class="card diary-card">
+                <header class="diary-card-head">
+                  <time :datetime="entry.entry_date" class="diary-date">
+                    <span class="diary-date-day">{{ Number(entry.entry_date.slice(8, 10)) }}</span>
+                    <span class="diary-date-copy">
+                      <span class="diary-date-label">{{ entry.entry_date.slice(0, 7).replace('-', ' / ') }}</span>
+                      <span class="diary-date-note">
+                        {{ weekdayLabel(entry.entry_date) }}
+                        <template v-if="createdTime(entry.created_at)">
+                          · 写于 {{ createdTime(entry.created_at) }}
+                        </template>
+                      </span>
+                    </span>
+                  </time>
                   <div v-if="canManage" class="diary-actions">
-                    <el-button size="small" @click="openEdit(entry)">编辑</el-button>
-                    <el-button size="small" type="danger" @click="remove(entry)">删除</el-button>
+                    <el-button text size="small" @click="openEdit(entry)">编辑</el-button>
+                    <el-button text size="small" type="danger" @click="remove(entry)">删除</el-button>
                   </div>
+                </header>
+                <div class="diary-content">
+                  <MarkdownView :content="entry.content_md" />
                 </div>
-              </div>
+              </article>
             </div>
           </div>
         </template>
@@ -271,11 +307,8 @@ onMounted(load)
 
 <style scoped>
 .diary-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
   flex-wrap: wrap;
+  margin-bottom: var(--space-6);
 }
 .diary-actions-bar {
   display: flex;
@@ -292,84 +325,186 @@ onMounted(load)
 }
 .diary-nav {
   position: sticky;
-  top: 76px;
-  max-height: calc(100vh - 100px);
+  top: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  max-height: calc(100vh - var(--space-12));
   overflow-y: auto;
 }
 .nav-year {
-  margin-bottom: 12px;
+  min-width: 0;
 }
 .nav-year-title {
   display: block;
-  font-weight: 700;
-  margin-bottom: 6px;
-  font-family: var(--font-mono);
+  margin-bottom: var(--space-1);
+  color: var(--text);
   font-size: 14px;
+  font-weight: 600;
 }
 .nav-month {
   display: block;
   padding: 3px 0 3px 12px;
+  border-left: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 12.5px;
+}
+.nav-month:hover,
+.nav-year-title:hover {
+  color: var(--link);
+  text-decoration: none;
+}
+.diary-main {
+  min-width: 0;
+}
+.year-title {
+  margin: 0 0 var(--space-5);
+  border-bottom: 2px solid var(--border);
+  padding-bottom: var(--space-2);
+  font-size: 24px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  scroll-margin-top: var(--space-6);
+}
+.year-title:not(:first-child) {
+  margin-top: var(--space-10);
+}
+.month-block + .month-block {
+  margin-top: var(--space-8);
+}
+.month-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+.month-title {
+  margin: 0;
+  color: var(--primary);
+  font-size: 16px;
+  font-weight: 600;
+  scroll-margin-top: var(--space-6);
+}
+.month-count {
   color: var(--muted);
   font-family: var(--font-mono);
   font-size: 12px;
 }
-.year-title {
-  border-bottom: 2px solid var(--border);
-  padding-bottom: 8px;
-  font-size: 22px;
-}
-.month-title {
-  color: var(--primary);
-  font-family: var(--font-mono);
-  font-size: 15px;
-}
-.timeline {
-  position: relative;
-  padding-left: 24px;
-}
-.timeline::before {
-  content: '';
-  position: absolute;
-  left: 8px;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: var(--border);
-}
-.timeline-item {
-  position: relative;
-  margin-bottom: 20px;
-}
-.timeline-item::before {
-  content: '';
-  position: absolute;
-  left: -22px;
-  top: 18px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--primary);
-}
-.timeline-date {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  margin-bottom: 4px;
+.diary-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }
 .diary-card {
-  padding: 12px;
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+  transition:
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
+.diary-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--primary) 28%, transparent));
+  opacity: 0.72;
+}
+.diary-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-float);
+}
+.diary-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  background: color-mix(in srgb, var(--primary) 3%, var(--card-bg));
+}
+.diary-date {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.diary-date-day {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 42px;
+  height: 42px;
+  border-radius: calc(var(--radius-control) + 3px);
+  background: var(--primary-weak);
+  color: var(--primary-strong);
+  font-family: var(--font-mono);
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1;
+}
+.diary-date-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.diary-date-label {
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.diary-date-note {
+  color: var(--muted);
+  font-size: 12px;
 }
 .diary-actions {
-  margin-top: 8px;
-  text-align: right;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.diary-actions :deep(.el-button + .el-button) {
+  margin-left: 0;
+}
+.diary-content {
+  padding: var(--space-5) var(--space-6) var(--space-6);
+}
+.diary-content :deep(.markdown-body) {
+  font-size: 15.5px;
+  line-height: 1.9;
+}
+.diary-content :deep(.markdown-body > :first-child) {
+  margin-top: 0;
+}
+.diary-content :deep(.markdown-body > :last-child) {
+  margin-bottom: 0;
 }
 @media (max-width: 900px) {
   .diary-body {
     grid-template-columns: 1fr;
+    gap: var(--space-6);
   }
   .diary-nav {
     position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
+    max-height: none;
+  }
+}
+@media (max-width: 600px) {
+  .diary-card-head {
+    padding: var(--space-4);
+  }
+  .diary-content {
+    padding: var(--space-4);
   }
 }
 </style>
