@@ -244,7 +244,7 @@ async function batchForceDelete() {
       import-title="导入互联网纪事"
       dup-title="检测到重复纪事"
       export-title="导出选中纪事"
-      import-hint="支持 .md 文件或 .zip 压缩包(可多选)。zip 内需包含 .md 纪事文件; 图片可放在任意目录, 在正文中用相对路径引用(如 images/xxx.png), 导入时图片会一并上传并自动改写为可访问的 URL。支持 YAML frontmatter 元信息: title / status / date / summary / cover_image。未提供标题时取文件名或首个一级标题; 未提供概览时从正文自动提取; 未提供状态时导入为草稿。导入前按标题查重(忽略大小写与首尾空格), 有重复时可选择仅导入不重复或全部导入。"
+      import-hint="支持 .md 文件或 .zip 压缩包(可多选)。zip 内需包含 .md 纪事文件; 图片可放在任意目录, 在正文中用相对路径引用(如 images/xxx.png), 导入时图片会一并上传到媒体库并自动改写为可访问的 URL。支持 YAML frontmatter 元信息: title / status / date / summary / cover_image。未提供标题时取文件名或首个一级标题; 未提供概览时从正文自动提取; 未提供状态时导入为草稿。导入前按标题查重(忽略大小写与首尾空格), 有重复时可选择仅导入不重复或全部导入。"
       dup-hint="重复依据为纪事标题(忽略大小写与首尾空格)。可跳过重复内容, 也可全部导入。"
       export-hint="导出所选纪事为 zip 压缩包, 正文引用的图片和封面会一并打包, 并自动改写为相对路径。"
     />

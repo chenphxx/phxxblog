@@ -107,7 +107,15 @@ def run_import(
         if group_index not in image_maps:
             entries = groups[group_index][0]
             image_maps[group_index] = (
-                save_import_images(entries, datetime.now().strftime("%Y/%m")) if entries else {}
+                save_import_images(
+                    entries,
+                    datetime.now().strftime("%Y/%m"),
+                    db=db,
+                    uploader_id=user.id,
+                    module=module,
+                )
+                if entries
+                else {}
             )
         return image_maps[group_index]
 

@@ -282,7 +282,7 @@ onMounted(load)
       import-title="导入日记"
       dup-title="检测到重复日记"
       export-title="导出日记"
-      import-hint="支持 .md 文件或 .zip 压缩包(可多选)。zip 内需包含 .md 日记文件; 日记图片可放在任意目录, 在正文中用相对路径引用(如 images/xxx.png), 导入时图片会一并上传并自动改写为可访问的 URL。支持 YAML frontmatter 元信息: date(YYYY-MM-DD) / created_at。未提供日期时取文件名开头的日期, 仍取不到则记为今天。导入前会按正文查重(忽略空白与图片地址差异), 有重复时可选择仅导入不重复或全部导入。"
+      import-hint="支持 .md 文件或 .zip 压缩包(可多选)。zip 内需包含 .md 日记文件; 日记图片可放在任意目录, 在正文中用相对路径引用(如 images/xxx.png), 导入时图片会一并上传到媒体库并自动改写为可访问的 URL。支持 YAML frontmatter 元信息: date(YYYY-MM-DD) / created_at。未提供日期时取文件名开头的日期, 仍取不到则记为今天。导入前会按正文查重(忽略空白与图片地址差异), 有重复时可选择仅导入不重复或全部导入。"
       dup-hint="重复依据为日记正文(忽略空白与图片地址差异)。可跳过重复内容, 也可全部导入。"
       export-hint="导出全部日记为 zip 压缩包, 正文引用的图片会一并打包, 并自动改写为相对路径。"
     />

@@ -5,13 +5,16 @@
 
 import io
 import json
+import mimetypes
 import re
+import uuid
 import zipfile
 from pathlib import Path
 
 from sqlalchemy.orm import Session
 
 from app.core.config import PROJECT_ROOT, settings
+from app.models.media import Media
 
 # 正文中被引用到的上传图片 URL
 _IMAGE_URL_RE = re.compile(
@@ -107,12 +110,20 @@ def pack_images(
     return body
 
 
-def save_import_images(entries: list[tuple[str, bytes]], date_dir: str) -> dict[str, str]:
-    """把压缩包中的图片保存到 uploads/import/<date_dir>/, 返回 相对路径 -> URL 映射"""
+def save_import_images(
+    entries: list[tuple[str, bytes]],
+    date_dir: str,
+    *,
+    db: Session,
+    uploader_id: int | None,
+    module: str,
+) -> dict[str, str]:
+    """保存导入图片, 登记媒体库记录, 返回相对路径 -> URL 映射"""
     image_map: dict[str, str] = {}
     uploads_root = (Path(settings.upload_dir) / "import" / date_dir).resolve()
     for name, data in entries:
-        if Path(name).suffix.lower() not in IMPORT_IMAGE_EXTS:
+        suffix = Path(name).suffix.lower()
+        if suffix not in IMPORT_IMAGE_EXTS:
             continue
         norm = normalize_rel(name)
         parts = [part for part in norm.split("/") if part not in ("", ".", "..")]
@@ -125,6 +136,20 @@ def save_import_images(entries: list[tuple[str, bytes]], date_dir: str) -> dict[
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_bytes(data)
         url = f"/assets/uploads/import/{date_dir}/{safe_rel}"
+        mime_type = mimetypes.guess_type(parts[-1])[0] or f"image/{suffix.lstrip('.')}"
+        db.add(
+            Media(
+                uploader_id=uploader_id,
+                original_name=parts[-1][:255],
+                filename=f"import-{uuid.uuid4().hex}{suffix}",
+                path=str(dest).replace("\\", "/"),
+                url=url,
+                mime_type=mime_type,
+                size=len(data),
+                type="image",
+                related_type=module[:20],
+            )
+        )
         image_map.setdefault(norm, url)
         image_map.setdefault(parts[-1], url)
     return image_map
