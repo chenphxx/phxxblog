@@ -305,7 +305,8 @@ html:root .el-button--info:not(.is-plain):not(.is-text):not(.is-link) {
 .admin-toolbar {
   position: sticky;
   top: -24px;
-  z-index: 2;
+  /* 必须高于媒体卡片绝对定位的勾选框等页内控件, 否则滚动后会盖住吸顶工具栏 */
+  z-index: 10;
   display: flex;
   align-items: center;
   gap: 10px 12px;
