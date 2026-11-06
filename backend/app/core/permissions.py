@@ -26,4 +26,3 @@ class Perm:
     # 日记与更新日志原本是硬编码"仅 admin 角色", 抽成语义化权限码
     DIARY_MANAGE = "diary:manage"
     CHANGELOG_MANAGE = "changelog:manage"
-    CHRONICLE_MANAGE = "chronicle:manage"

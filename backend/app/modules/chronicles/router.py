@@ -58,7 +58,7 @@ def get_chronicle(chronicle_id: int, db: Session = Depends(get_db)):
 def create_chronicle(
     data: ChronicleIn,
     request: Request,
-    user: User = Depends(require_permission(Perm.CHRONICLE_MANAGE)),
+    user: User = Depends(require_permission(Perm.POST_MANAGE)),
     db: Session = Depends(get_db),
 ):
     """新增纪事"""
@@ -83,7 +83,7 @@ def update_chronicle(
     chronicle_id: int,
     data: ChronicleIn,
     request: Request,
-    user: User = Depends(require_permission(Perm.CHRONICLE_MANAGE)),
+    user: User = Depends(require_permission(Perm.POST_MANAGE)),
     db: Session = Depends(get_db),
 ):
     """编辑纪事"""
@@ -108,7 +108,7 @@ def update_chronicle(
 def delete_chronicle(
     chronicle_id: int,
     request: Request,
-    user: User = Depends(require_permission(Perm.CHRONICLE_MANAGE)),
+    user: User = Depends(require_permission(Perm.POST_MANAGE)),
     db: Session = Depends(get_db),
 ):
     """删除纪事"""
