@@ -101,10 +101,18 @@ function applySeoMeta() {
 }
 
 /** 切换路由后收起导航面板(窄屏点完导航就该看到内容) */
+function trackPageView(path: string) {
+  if (!modules.isEnabled('tracking')) return
+  // 文章详情在 GET /posts/{id} 中由后端记录阅读量与访问明细, 这里跳过以免重复计数
+  if (route.name === 'post-detail') return
+  trackingApi.track({ url: path.startsWith('/') ? path : `/${path}` }).catch(() => {})
+}
+
 watch(
   () => route.fullPath,
-  () => {
+  (path) => {
     navOpen.value = false
+    trackPageView(path)
   },
 )
 
@@ -135,10 +143,8 @@ onMounted(async () => {
   await modules.load()
   // 看板娘的总开关现在就是模块开关: 模块被禁用时连运行时与模型都不下载
   kanbanniang.setAllowed(modules.isEnabled('kanbanniang'))
-  // 页面访问埋点(PV/UV): 埋点模块被禁用时不再产生请求
-  if (modules.isEnabled('tracking')) {
-    trackingApi.track({ url: location.hash || '/' }).catch(() => {})
-  }
+  // 初次进入站点也记录一次; 后续页面切换由上面的路由监听负责
+  trackPageView(route.fullPath)
   try {
     settings.value = await settingsApi.public()
     // 浏览器标签页名称(留空回退到站点名称)

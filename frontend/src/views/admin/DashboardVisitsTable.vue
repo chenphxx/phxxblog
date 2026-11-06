@@ -16,6 +16,24 @@ const visitsPage = ref(1)
 const visitsPageSize = 10
 const visitsLoading = ref(false)
 
+/** 统一去掉旧版埋点可能带上的 hash 前缀 */
+function pagePath(url?: string | null): string {
+  return (url || '').replace(/^#/, '') || '/'
+}
+
+/** 将访问 URL 转成仪表盘中更易读的页面名称 */
+function pageLabel(url?: string | null): string {
+  const path = pagePath(url)
+  if (path === '/') return '首页'
+  if (path === '/chronicles') return '互联网纪事'
+  if (path.startsWith('/chronicles/')) return `互联网纪事 · #${path.split('/').pop()}`
+  if (path === '/archive') return '归档'
+  if (path === '/search') return '全部文章'
+  if (path === '/diary') return '日记'
+  if (path === '/changelog') return '更新日志'
+  return path
+}
+
 async function loadVisits() {
   visitsLoading.value = true
   try {
@@ -55,11 +73,12 @@ defineExpose({ refresh: refreshVisits })
       </el-table-column>
       <el-table-column prop="browser" label="浏览器" width="90" />
       <el-table-column prop="os" label="系统" width="90" />
-      <el-table-column label="文章" min-width="140" show-overflow-tooltip>
+      <el-table-column label="访问页面" min-width="160" show-overflow-tooltip>
         <template #default="{ row }">
           <router-link v-if="row.post_id" :to="`/post/${row.post_id}`">{{
             row.post_title || `#${row.post_id}`
           }}</router-link>
+          <router-link v-else-if="row.url" :to="pagePath(row.url)">{{ pageLabel(row.url) }}</router-link>
           <span v-else>-</span>
         </template>
       </el-table-column>
