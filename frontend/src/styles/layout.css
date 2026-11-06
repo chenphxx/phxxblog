@@ -1,45 +1,48 @@
 /* ============================================================
- * 应用外壳 (桌面侧栏 + 灰画布 + 可滚动主内容区)
+ * 应用外壳 (顶部导航 + 灰画布 + 主内容区)
  * ------------------------------------------------------------
- * 桌面端: 固定宽度侧栏 + 主内容区, 页面底色是浅灰画布, 内容承载在白色面板里
- * 移动端(<1024px): 侧栏变成抽屉, 顶部保留一条细导航条
+ * 桌面端: 吸顶顶部导航 + 主内容区, 页面底色是浅灰画布, 内容承载在白色面板里
+ * 移动端(<1024px): 导航收进顶部菜单面板
  *
  * 这里只写外壳与导航, 页面内部的面板/列表/排版在 theme.css
  * ============================================================ */
 
-:root {
-  /* 侧栏宽度: 参考稿的量级, 只此一处 */
-  --sidebar-w: 248px;
-}
-
 .app-shell {
-  display: grid;
-  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
   background: var(--bg);
 }
 
-/* ---------- 侧栏 ---------- */
-.app-sidebar {
+/* ---------- 顶部导航 ---------- */
+.app-header {
   position: sticky;
   top: 0;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
-  padding: var(--space-6) var(--space-4) var(--space-5);
-  background: var(--bg);
-  /* 侧栏与主内容区同底色, 靠留白与内容本身分层, 不画分割线; 内容过宽时只在自己内部滚 */
-  overflow-x: hidden;
-  overflow-y: auto;
   z-index: 80;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+.app-header-inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 2.4vw, 32px);
+  width: 100%;
+  max-width: 1240px;
+  min-height: 76px;
+  margin: 0 auto;
+  padding: 10px var(--space-10);
 }
 
 .app-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 0 var(--space-3);
+  gap: 11px;
+  min-width: 0;
+  max-width: 240px;
+  flex-shrink: 0;
 }
 
 .app-brand:hover {
@@ -47,64 +50,76 @@
 }
 
 .app-brand-mark {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   flex-shrink: 0;
   border-radius: var(--radius-control);
   background: linear-gradient(140deg, var(--grad-from), var(--grad-to));
 }
 
+.app-brand-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+
 .app-brand-name {
+  color: var(--text);
   font-size: 16px;
   font-weight: 650;
   letter-spacing: -0.02em;
-  color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .app-brand-bio {
-  margin: var(--space-3) 0 0;
-  padding: 0 var(--space-3);
+  max-width: 190px;
+  margin-top: 2px;
   color: var(--muted);
-  font-size: 12.5px;
-  line-height: 1.6;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
+  font-size: 11.5px;
+  white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* ---------- 导航 ---------- */
+.app-nav-panel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
 .app-nav {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 2px;
+  min-width: 0;
 }
 
 .app-nav a {
   display: flex;
   align-items: center;
-  gap: 10px;
-  height: 44px;
-  padding: 0 var(--space-3);
+  gap: 7px;
+  height: 38px;
+  padding: 0 11px;
   border-radius: var(--radius-control);
   color: var(--muted);
-  font-size: 14px;
+  font-size: 13.5px;
+  white-space: nowrap;
   transition:
     background-color var(--dur) var(--ease),
     color var(--dur) var(--ease);
 }
 
 .app-nav a:hover {
-  background: var(--card-bg);
+  background: color-mix(in srgb, var(--card-bg) 72%, transparent);
   color: var(--text);
   text-decoration: none;
 }
 
-/* 选中态是一枚白色圆角胶囊(深色下是提亮一档的卡片色), 不用高饱和色块 */
 .app-nav a.router-link-active {
   background: var(--card-bg);
   color: var(--text);
@@ -115,97 +130,40 @@
 }
 
 .app-nav .nav-icon {
-  font-size: 17px;
-  color: currentColor;
-  opacity: 0.9;
   flex-shrink: 0;
+  color: currentColor;
+  font-size: 16px;
+  opacity: 0.9;
 }
 
 .app-nav-divider {
-  height: 1px;
-  margin: var(--space-3) var(--space-3);
+  width: 1px;
+  height: 22px;
+  flex-shrink: 0;
   background: var(--border);
 }
 
-/* 次级导航(写文章/管理后台/登录)比主导航轻一档 */
-.app-nav-secondary a {
-  height: 40px;
-  font-size: 13.5px;
-}
-
-.app-sidebar-foot {
-  margin-top: auto;
+.app-nav-tools {
   display: flex;
   align-items: center;
-  /* 侧栏较窄时两组控件主动换行, 不允许溢出(否则会出现横向滚动条) */
-  flex-wrap: wrap;
   gap: var(--space-2);
-  padding: var(--space-4) var(--space-3) 0;
-  border-top: 1px solid var(--border);
-}
-
-/* 两组控件都可以被压窄: 名称过长时省略, 不撑破侧栏 */
-.app-sidebar-foot > * {
-  min-width: 0;
-}
-
-.app-sidebar-foot :deep(.theme-bar),
-.app-sidebar-foot :deep(.kb-bar) {
   flex-wrap: wrap;
+  margin-left: auto;
+  padding-left: var(--space-3);
+  border-left: 1px solid var(--border);
 }
 
-.app-sidebar-foot :deep(.theme-picker),
-.app-sidebar-foot :deep(.kb-picker) {
+.app-nav-tools > * {
   min-width: 0;
-  max-width: 100%;
-}
-
-.app-sidebar-foot :deep(.picker-name) {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* ---------- 主内容区 ---------- */
-.app-main {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.site-main {
-  flex: 1;
-  min-width: 0;
-}
-
-.app-drawer-mask {
-  position: fixed;
-  inset: 0;
-  z-index: 70;
-  background: color-mix(in srgb, var(--text) 40%, transparent);
-  border: 0;
-  padding: 0;
-}
-
-/* ---------- 移动端顶栏 ---------- */
-.app-topbar {
-  display: none;
-  align-items: center;
-  gap: var(--space-3);
-  position: sticky;
-  top: 0;
-  z-index: 60;
-  padding: 10px var(--space-4);
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
-  border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(12px);
 }
 
 .app-menu-btn {
-  display: inline-flex;
+  display: none;
   align-items: center;
   justify-content: center;
   width: 38px;
   height: 38px;
+  flex-shrink: 0;
   padding: 0;
   border: 1px solid var(--border);
   border-radius: var(--radius-control);
@@ -220,51 +178,114 @@
   border-color: var(--border-strong);
 }
 
-.app-topbar-brand {
-  font-size: 15px;
-  font-weight: 650;
-  letter-spacing: -0.02em;
-  color: var(--text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.app-topbar-brand:hover {
-  text-decoration: none;
-}
-
-/* ---------- 窄屏: 侧栏转抽屉 ---------- */
-@media (max-width: 1023px) {
-  .app-shell {
-    grid-template-columns: minmax(0, 1fr);
+@media (max-width: 1180px) {
+  .app-header-inner {
+    gap: var(--space-4);
   }
 
-  .app-topbar {
+  .app-brand {
+    max-width: 180px;
+  }
+
+  .app-brand-bio {
+    display: none;
+  }
+
+  .app-nav-panel {
+    gap: var(--space-2);
+  }
+
+  .app-nav a {
+    padding: 0 8px;
+  }
+
+  .app-nav-tools .theme-picker .picker-name,
+  .app-nav-tools .kb-picker .picker-name {
+    display: none;
+  }
+}
+
+/* ---------- 主内容区 ---------- */
+.app-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.site-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.app-nav-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: color-mix(in srgb, var(--text) 40%, transparent);
+  border: 0;
+  padding: 0;
+}
+
+/* ---------- 窄屏: 导航收进顶部下拉面板 ---------- */
+@media (max-width: 1023px) {
+  .app-header-inner {
+    min-height: 64px;
+    padding: 10px var(--space-4);
+  }
+
+  .app-brand {
+    max-width: none;
+    flex-shrink: 1;
+  }
+
+  .app-menu-btn {
+    display: inline-flex;
+    margin-left: auto;
+  }
+
+  .app-nav-panel {
+    position: absolute;
+    top: calc(100% + 1px);
+    right: var(--space-4);
+    left: var(--space-4);
+    display: none;
+    max-height: calc(100vh - 76px);
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    background: var(--card-bg);
+    box-shadow: var(--shadow-float);
+  }
+
+  .app-nav-panel.is-open {
     display: flex;
   }
 
-  .app-sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    height: 100%;
-    width: min(300px, 84vw);
-    transform: translateX(-100%);
-    transition: transform var(--dur) var(--ease);
-    box-shadow: var(--shadow-float);
-    background: var(--bg);
+  .app-nav {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
   }
 
-  .app-sidebar.is-open {
-    transform: none;
+  .app-nav a {
+    width: 100%;
+    height: 44px;
   }
-}
 
-/* 没有抽屉需求时(宽屏)给它一个明确的收起点 */
-@media (min-width: 1024px) {
-  .app-sidebar {
-    transform: none;
+  .app-nav-divider {
+    width: 100%;
+    height: 1px;
+  }
+
+  .app-nav-tools {
+    margin-left: 0;
+    padding-top: var(--space-3);
+    padding-left: 0;
+    border-top: 1px solid var(--border);
+    border-left: 0;
   }
 }

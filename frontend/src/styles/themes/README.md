@@ -77,7 +77,7 @@ npm run themes:preview     # 生成到 src/styles/themes/_preview/
 
 ## 运行时切换(已接入)
 
-侧栏底部的主题按钮(`components/ThemeSwitcher.vue`)下拉里就是这 9 套, 只显示"色点 + 主题名", 选中即生效并记入 `localStorage`; 旁边的圆形按钮单独切换深色/浅色 两者互相独立, 前台与后台共用 
+顶部导航右侧的主题按钮(`components/ThemeSwitcher.vue`)下拉里就是这 9 套, 只显示"色点 + 主题名", 选中即生效并记入 `localStorage`; 旁边的圆形按钮单独切换深色/浅色 两者互相独立, 前台与后台共用 
 
 ```
 stores/theme.ts
@@ -132,7 +132,7 @@ npm run themes:preview    # 生成 18 个预览页 + 总览
 ```
 src/styles/
   theme.css                  结构与组件样式(面板/列表行/正文/编辑器/Element Plus 细节)
-  layout.css                 应用外壳(桌面侧栏 + 移动端抽屉 + 画布与主内容区)
+  layout.css                 应用外壳(桌面顶部导航 + 移动端折叠菜单 + 画布与主内容区)
   app.css                    样式入口: theme.css + layout.css + base.css + theme-default.css + 9 套主题 + admin.css
   admin.css                  后台主题层(Element Plus 令牌 -> 主题令牌, 后台外壳与表格)
   fonts.css                  自托管 Cascadia Code(只给 --font-mono 用)
