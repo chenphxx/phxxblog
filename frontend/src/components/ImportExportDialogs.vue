@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * 导入查重 / 导入 / 导出三个弹窗(admin/PostManageView 与 DiaryView 共用)
+ * 导入查重 / 导入 / 导出三个弹窗(文章管理, 互联网纪事管理与日记页共用)
  *
  * 状态与流程都在 useImportExport 里, 这里只做渲染; io 是稳定的 reactive 对象,
  * 因此直接引用 props.io 而不解构. 文案差异(标题与说明)由各自的视图以 prop 传入,

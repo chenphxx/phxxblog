@@ -1,4 +1,4 @@
-"""导入管线: 文章与日记共用的"上传 -> 解析 -> 查重 -> 落库"流程
+"""导入管线: 文章, 日记与互联网纪事共用的"上传 -> 解析 -> 查重 -> 落库"流程
 
 为什么单独抽一个模块:
     文章与日记的导入骨架此前是逐行重复的两份实现, 连"同一份压缩包共用一次图片落盘"
@@ -51,7 +51,7 @@ def run_import(
     @param files 上传的 .md 或 .zip 文件
     @param mode check=只查重不写入, import=执行导入
     @param on_duplicate skip=重复项跳过, all=重复项一并导入
-    @param module 操作日志的模块名(post / diary)
+    @param module 操作日志的模块名(post / diary / chronicles)
     @param parse (文件名, 内容) -> 计划项; 不可用时返回 None
     @param invalid_message 解析失败时拼错误提示的函数
     @param existing_keys 返回库中已有内容的查重键集合

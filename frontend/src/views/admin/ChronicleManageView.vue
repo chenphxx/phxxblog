@@ -3,7 +3,9 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { chronicleApi } from '@/api'
+import ImportExportDialogs from '@/components/ImportExportDialogs.vue'
 import ListPager from '@/components/ListPager.vue'
+import { useImportExport } from '@/composables/useImportExport'
 import { usePagedList } from '@/composables/usePagedList'
 import type { ChronicleItem } from '@/types'
 import { formatDateTime } from '@/utils/datetime'
@@ -22,6 +24,22 @@ const { items, total, page, pageSize, loading, load, reset } = usePagedList<Chro
       status: statusFilter.value,
       keyword: keyword.value.trim() || undefined,
     }),
+})
+
+const io = useImportExport({
+  filePrefix: 'phxxblog-chronicles',
+  entity: '纪事',
+  unit: '则',
+  canExport: () => selected.value.length > 0,
+  exportMessage: () => `已导出 ${selected.value.length} 则纪事`,
+  exportFile: (fmt) =>
+    chronicleApi.exportChronicles(
+      selected.value.map((item) => item.id),
+      fmt,
+    ),
+  checkImports: (files) => chronicleApi.checkImportChronicles(files),
+  submitImports: (files, onDuplicate) => chronicleApi.importChronicles(files, onDuplicate),
+  onImported: () => reset(),
 })
 
 async function changeStatus(item: ChronicleItem, status: number, message: string) {
@@ -132,6 +150,7 @@ async function batchForceDelete() {
       <div class="admin-toolbar-actions">
         <el-input v-model="keyword" placeholder="搜索标题" clearable @keyup.enter="reset()" @clear="reset()" />
         <el-button @click="reset()">搜索</el-button>
+        <el-button @click="io.importDialog = true">导入纪事</el-button>
         <el-button type="primary" @click="router.push('/admin/chronicles/new')">新建纪事</el-button>
       </div>
     </div>
@@ -141,6 +160,7 @@ async function batchForceDelete() {
         <span class="muted">已选 {{ selected.length }} 则</span>
         <el-button size="small" type="warning" @click="batchSetPrivate">设为私密</el-button>
         <el-button size="small" type="info" @click="batchTrash">移入回收站</el-button>
+        <el-button size="small" @click="io.openExportDialog">导出选中</el-button>
         <el-button size="small" type="danger" @click="batchForceDelete">彻底删除</el-button>
       </div>
       <el-table v-loading="loading" :data="items" @selection-change="onSelectionChange">
@@ -218,6 +238,16 @@ async function batchForceDelete() {
       </el-table>
       <ListPager v-model:page="page" :page-size="pageSize" :total="total" />
     </div>
+
+    <ImportExportDialogs
+      :io="io"
+      import-title="导入互联网纪事"
+      dup-title="检测到重复纪事"
+      export-title="导出选中纪事"
+      import-hint="支持 .md 文件或 .zip 压缩包(可多选)。zip 内需包含 .md 纪事文件; 图片可放在任意目录, 在正文中用相对路径引用(如 images/xxx.png), 导入时图片会一并上传并自动改写为可访问的 URL。支持 YAML frontmatter 元信息: title / status / date / summary / cover_image。未提供标题时取文件名或首个一级标题; 未提供概览时从正文自动提取; 未提供状态时导入为草稿。导入前按标题查重(忽略大小写与首尾空格), 有重复时可选择仅导入不重复或全部导入。"
+      dup-hint="重复依据为纪事标题(忽略大小写与首尾空格)。可跳过重复内容, 也可全部导入。"
+      export-hint="导出所选纪事为 zip 压缩包, 正文引用的图片和封面会一并打包, 并自动改写为相对路径。"
+    />
   </div>
 </template>
 

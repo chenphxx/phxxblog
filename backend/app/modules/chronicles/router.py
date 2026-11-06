@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, Response, UploadFile
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
@@ -19,6 +19,9 @@ from app.schemas.chronicle import (
     ChronicleListItem,
     ChronicleStatusIn,
 )
+from app.services import chronicle_archive
+from app.services.archive import title_key
+from app.services.import_pipeline import run_import
 from app.services.log import write_operation_log
 from app.services.markdown import render_markdown
 
@@ -88,6 +91,64 @@ def admin_list_chronicles(
         )
     query = query.order_by(ChronicleEntry.updated_at.desc(), ChronicleEntry.id.desc())
     return ok(paginate(query, page, page_size, ChronicleListItem))
+
+
+@router.get("/export", response_model=None)
+def export_chronicles(
+    ids: str | None = Query(None, description="逗号分隔的纪事ID, 不传则导出全部"),
+    fmt: str = Query(
+        "markdown", pattern="^(markdown|html)$", description="导出格式: markdown / html"
+    ),
+    _user: User = Depends(require_permission(Perm.POST_MANAGE)),
+    db: Session = Depends(get_db),
+):
+    """导出纪事压缩包(Markdown/HTML, 图片一并打包)"""
+    query = db.query(ChronicleEntry)
+    if ids:
+        id_list = [int(i) for i in ids.split(",") if i.strip().isdigit()]
+        if id_list:
+            query = query.filter(ChronicleEntry.id.in_(id_list))
+    entries = query.order_by(ChronicleEntry.created_at.desc()).all()
+    stamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    return Response(
+        chronicle_archive.build_zip(entries, fmt),
+        media_type="application/zip",
+        headers={"Content-Disposition": f'attachment; filename="phxxblog-chronicles-{stamp}.zip"'},
+    )
+
+
+@router.post("/import", response_model=dict)
+def import_chronicles(
+    request: Request,
+    files: list[UploadFile] = File(...),
+    mode: str = Query(
+        "import", pattern="^(check|import)$", description="check=只查重不写入, import=执行导入"
+    ),
+    on_duplicate: str = Query(
+        "skip", pattern="^(skip|all)$", description="重复时: skip=仅导入不重复, all=一并导入"
+    ),
+    user: User = Depends(require_permission(Perm.POST_MANAGE)),
+    db: Session = Depends(get_db),
+):
+    """导入纪事: 支持 .md 文件或包含 .md 的 zip 压缩包"""
+    payload, message = run_import(
+        db=db,
+        user=user,
+        request=request,
+        files=files,
+        mode=mode,
+        on_duplicate=on_duplicate,
+        module="chronicles",
+        parse=chronicle_archive.parse_import,
+        invalid_message=lambda fname: f"{fname}: 无法识别标题",
+        existing_keys=lambda: chronicle_archive.existing_title_keys(db),
+        dedup_key=lambda plan: title_key(plan["title"]),
+        label=lambda plan: plan["title"],
+        create=lambda plan, image_map: chronicle_archive.create_from_plan(
+            db, user, plan, image_map
+        ),
+    )
+    return ok(payload, message)
 
 
 @router.get("/{chronicle_id}", response_model=dict)

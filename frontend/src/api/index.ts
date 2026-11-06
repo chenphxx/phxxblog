@@ -179,6 +179,24 @@ export const chronicleApi = {
   forceDelete: (id: number) => http.delete<null>(`/chronicles/${id}/force`),
   restore: (id: number) => http.post<ChronicleDetail>(`/chronicles/${id}/restore`),
   changeStatus: (id: number, status: number) => http.post<ChronicleDetail>(`/chronicles/${id}/status`, { status }),
+  exportChronicles: async (ids: number[] = [], fmt = 'markdown') => {
+    const token = getAccessToken()
+    const query = new URLSearchParams({ fmt })
+    if (ids.length) query.set('ids', ids.join(','))
+    const response = await fetch(`/api/v1/chronicles/export?${query.toString()}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (!response.ok) {
+      throw new Error(`导出失败(${response.status})`)
+    }
+    return response.blob()
+  },
+  checkImportChronicles: (files: File[]) =>
+    http.post<ImportCheckResult>('/chronicles/import', importForm(files), { params: { mode: 'check' } }),
+  importChronicles: (files: File[], onDuplicate: 'skip' | 'all' = 'skip') =>
+    http.post<ImportResult>('/chronicles/import', importForm(files), {
+      params: { mode: 'import', on_duplicate: onDuplicate },
+    }),
 }
 
 /** 杂项 */

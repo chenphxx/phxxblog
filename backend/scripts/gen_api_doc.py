@@ -42,7 +42,8 @@ MODULE_NOTES: dict[str, str] = {
     "(`services/archive.py`) ",
     "互联网纪事": "前台列表只返回已发布纪事, 详情对私密内容按管理员权限放行; 后台列表与全部写操作需 "
     "`post:manage` 状态与文章一致: 0草稿 / 1审核中 / 2已发布 / 3私密 / 4回收站 "
-    "删除会先移入回收站, 彻底删除使用 `/chronicles/{id}/force` ",
+    "删除会先移入回收站, 彻底删除使用 `/chronicles/{id}/force`; 导入导出支持 zip 与 markdown/html, "
+    "frontmatter 支持 title/status/date/summary/cover_image, 图片随压缩包导入导出 ",
     "媒体": "整组接口需 `media:manage`; 上传有**扩展名白名单**与图片文件头校验, "
     "拒绝 .svg/.html/.js 等可执行文档(上传目录与站点同源, 否则等于开放 XSS); "
     "单文件上限默认见 `PHXXBLOG_MAX_UPLOAD_SIZE`(默认 100MB), 后台系统设置页可按 MB 覆盖, "
