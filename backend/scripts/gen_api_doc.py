@@ -18,7 +18,8 @@ DOC = ROOT / "docs" / "接口文档.md"
 MODULE_NOTES: dict[str, str] = {
     "认证": "`/auth/register` 是否可用由 `PHXXBLOG_ALLOW_REGISTER` 控制, 个人博客默认关闭 "
     "登录带失败限流(同一 IP+账号 5 分钟内 10 次失败即 429); 刷新令牌一次性, 轮换后旧令牌立即失效 "
-    "`/auth/logout` 只需请求体里的 refresh_token, 因此不需要访问令牌 ",
+    "`/auth/logout` 只需请求体里的 refresh_token, 因此不需要访问令牌; `/auth/me` 同时返回当前账号的 "
+    "`role_codes` 与 `permission_codes`, 供编辑页在进入时提前校验保存权限 ",
     "文章": "列表仅返回已发布文章; 状态为 0草稿/1审核中/2已发布/3私密/4回收站 "
     "无 `post:publish` 者提交 status=2 会被**静默降级**为审核中(作者提交发布请求不该收到报错), "
     "而状态流转接口 `PATCH /posts/{id}/status` 对越权直接返回 403 "

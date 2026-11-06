@@ -20,6 +20,7 @@ class UserOut(BaseModel):
     social: dict | None = None
     status: int
     role_codes: list[str] = []
+    permission_codes: list[str] = []
     last_login_at: datetime | None = None
     created_at: datetime
 

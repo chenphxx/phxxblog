@@ -19,21 +19,29 @@ function save(targetStatus?: number) {
 </script>
 
 <template>
-  <div class="edit-page">
-    <h2>{{ editor.isEdit ? '编辑文章' : '新建文章' }}</h2>
+  <div v-loading="editor.checkingAccess" class="edit-page">
+    <el-result v-if="editor.accessDenied" icon="warning" title="无权编辑文章" :sub-title="editor.accessMessage">
+      <template #extra>
+        <el-button type="primary" @click="router.push('/admin/posts')">返回文章列表</el-button>
+      </template>
+    </el-result>
 
-    <div class="admin-toolbar">
-      <div class="admin-toolbar-actions">
-        <el-button @click="editor.cancel">取消</el-button>
-        <el-button :loading="editor.saving" @click="save(0)">存草稿</el-button>
-        <el-button type="primary" :loading="editor.saving" @click="save()">保存</el-button>
-        <el-button v-if="editor.isEdit" type="danger" plain @click="editor.removePost">删除</el-button>
+    <template v-else-if="!editor.checkingAccess">
+      <h2>{{ editor.isEdit ? '编辑文章' : '新建文章' }}</h2>
+
+      <div class="admin-toolbar">
+        <div class="admin-toolbar-actions">
+          <el-button @click="editor.cancel">取消</el-button>
+          <el-button :loading="editor.saving" @click="save(0)">存草稿</el-button>
+          <el-button type="primary" :loading="editor.saving" @click="save()">保存</el-button>
+          <el-button v-if="editor.isEdit" type="danger" plain @click="editor.removePost">删除</el-button>
+        </div>
       </div>
-    </div>
 
-    <div class="card edit-card">
-      <PostFormFields ref="formRef" :editor="editor" />
-    </div>
+      <div class="card edit-card">
+        <PostFormFields ref="formRef" :editor="editor" />
+      </div>
+    </template>
   </div>
 </template>
 

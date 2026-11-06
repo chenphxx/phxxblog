@@ -14,7 +14,9 @@ import { onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { categoryApi, mediaApi, postApi, tagApi } from '@/api'
+import { useAuthStore } from '@/stores/auth'
 import type { Category, PostDetail, Tag } from '@/types'
+import { hasPermission } from '@/utils/permission'
 import { POST_STATUS_TEXT } from '@/utils/postStatus'
 
 /** 编辑器表单模型 */
@@ -44,13 +46,19 @@ export interface PostEditorState {
   postId: number
   categories: Category[]
   tags: Tag[]
+  /** 正在向后端确认当前用户与文章权限 */
+  checkingAccess: boolean
+  /** 当前账号无权进入或继续编辑 */
+  accessDenied: boolean
+  /** 无权限时在页面上展示的原因 */
+  accessMessage: string
   saving: boolean
   uploadingCover: boolean
   form: PostForm
-  /** 首次挂载: 并行拉取分类/标签与文章详情 */
+  /** 首次挂载: 先刷新当前用户权限, 确认可编辑后再加载文章与选项 */
   init: () => Promise<void>
   loadOptions: () => Promise<void>
-  loadPost: () => Promise<void>
+  loadPost: () => Promise<PostDetail | null>
   onCategoriesChange: (values: unknown) => Promise<void>
   onTagsChange: (values: unknown) => Promise<void>
   uploadCover: (options: { file: File }) => Promise<void>
@@ -77,12 +85,16 @@ function emptyForm(): PostForm {
 export function usePostEditor(options: UsePostEditorOptions): PostEditorState {
   const route = useRoute()
   const router = useRouter()
+  const auth = useAuthStore()
 
   const state = reactive({
     isEdit: Boolean(route.params.id),
     postId: Number(route.params.id) || 0,
     categories: [] as Category[],
     tags: [] as Tag[],
+    checkingAccess: true,
+    accessDenied: false,
+    accessMessage: '',
     saving: false,
     uploadingCover: false,
     form: emptyForm(),
@@ -95,7 +107,7 @@ export function usePostEditor(options: UsePostEditorOptions): PostEditorState {
     },
 
     async loadPost() {
-      if (!state.isEdit) return
+      if (!state.isEdit) return null
       const post: PostDetail = await postApi.detail(state.postId)
       state.form = {
         title: post.title,
@@ -108,10 +120,65 @@ export function usePostEditor(options: UsePostEditorOptions): PostEditorState {
         status: post.status,
         public_visible: post.status !== 3,
       }
+      return post
     },
 
     async init() {
-      await Promise.all([state.loadOptions(), state.loadPost()])
+      state.checkingAccess = true
+      state.accessDenied = false
+      state.accessMessage = ''
+      try {
+        // 进编辑页先重新读取当前用户, 同时让过期令牌走统一刷新流程, 不依赖本地缓存权限
+        let user
+        try {
+          user = await auth.fetchMe()
+        } catch {
+          state.accessDenied = true
+          state.accessMessage = '无法确认当前账号的文章编辑权限, 请重新登录后再试。'
+          return
+        }
+        if (!state.isEdit) {
+          if (!hasPermission(user, 'post:create')) {
+            state.accessDenied = true
+            state.accessMessage = '当前账号缺少创建文章权限(post:create), 请联系管理员分配权限后再试。'
+            return
+          }
+          try {
+            await state.loadOptions()
+          } catch {
+            state.accessDenied = true
+            state.accessMessage = '文章编辑选项加载失败, 请刷新页面后重试。'
+          }
+          return
+        }
+
+        if (!hasPermission(user, 'post:edit')) {
+          state.accessDenied = true
+          state.accessMessage = '当前账号缺少编辑文章权限(post:edit), 无法进入文章编辑器。'
+          return
+        }
+        let post: PostDetail | null
+        try {
+          post = await state.loadPost()
+        } catch {
+          state.accessDenied = true
+          state.accessMessage = '无法加载文章或确认当前账号的编辑权限, 请刷新页面后重试。'
+          return
+        }
+        if (post && post.author?.id !== user.id && !hasPermission(user, 'post:manage')) {
+          state.accessDenied = true
+          state.accessMessage = '当前账号不是这篇文章的作者, 也没有文章管理权限(post:manage)。'
+          return
+        }
+        try {
+          await state.loadOptions()
+        } catch {
+          state.accessDenied = true
+          state.accessMessage = '文章编辑选项加载失败, 请刷新页面后重试。'
+        }
+      } finally {
+        state.checkingAccess = false
+      }
     },
 
     /** 编辑器内直接新建分类: 与标签一样走 el-select 的 allow-create, 新项作为 string 传回 */
@@ -161,6 +228,7 @@ export function usePostEditor(options: UsePostEditorOptions): PostEditorState {
     },
 
     async save(targetStatus?: number) {
+      if (state.accessDenied) return
       if (!state.form.title.trim()) {
         ElMessage.warning(options.missingTitleMessage ?? '请填写文章标题')
         return

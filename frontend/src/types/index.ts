@@ -11,6 +11,7 @@ export interface User {
   social?: Record<string, unknown> | null
   status: number
   role_codes: string[]
+  permission_codes: string[]
   last_login_at?: string | null
   created_at: string
 }

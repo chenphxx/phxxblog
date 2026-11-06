@@ -20,26 +20,34 @@ function save(targetStatus?: number) {
 </script>
 
 <template>
-  <div class="page-container write-page">
-    <div class="write-header">
-      <div>
-        <p class="eyebrow" style="margin: 0 0 4px">editor — {{ editor.isEdit ? '编辑文章' : '写文章' }}</p>
-        <h1 style="margin: 0">{{ editor.isEdit ? '编辑文章' : '写文章' }}</h1>
-      </div>
-      <div>
-        <el-button @click="editor.cancel">取消</el-button>
-        <el-button :loading="editor.saving" @click="save(0)">保存草稿</el-button>
-        <el-button :loading="editor.saving" @click="save(1)">提交审核</el-button>
-        <el-button type="primary" :loading="editor.saving" @click="save()">
-          {{ editor.form.public_visible ? '发布' : '保存为私密' }}
-        </el-button>
-        <el-button v-if="editor.isEdit" type="danger" plain @click="editor.removePost">删除</el-button>
-      </div>
-    </div>
+  <div v-loading="editor.checkingAccess" class="page-container write-page">
+    <el-result v-if="editor.accessDenied" icon="warning" title="无权编辑文章" :sub-title="editor.accessMessage">
+      <template #extra>
+        <el-button type="primary" @click="router.back()">返回上一页</el-button>
+      </template>
+    </el-result>
 
-    <div class="card write-card" style="margin-top: 16px">
-      <PostFormFields ref="formRef" :editor="editor" />
-    </div>
+    <template v-else-if="!editor.checkingAccess">
+      <div class="write-header">
+        <div>
+          <p class="eyebrow" style="margin: 0 0 4px">editor — {{ editor.isEdit ? '编辑文章' : '写文章' }}</p>
+          <h1 style="margin: 0">{{ editor.isEdit ? '编辑文章' : '写文章' }}</h1>
+        </div>
+        <div>
+          <el-button @click="editor.cancel">取消</el-button>
+          <el-button :loading="editor.saving" @click="save(0)">保存草稿</el-button>
+          <el-button :loading="editor.saving" @click="save(1)">提交审核</el-button>
+          <el-button type="primary" :loading="editor.saving" @click="save()">
+            {{ editor.form.public_visible ? '发布' : '保存为私密' }}
+          </el-button>
+          <el-button v-if="editor.isEdit" type="danger" plain @click="editor.removePost">删除</el-button>
+        </div>
+      </div>
+
+      <div class="card write-card" style="margin-top: 16px">
+        <PostFormFields ref="formRef" :editor="editor" />
+      </div>
+    </template>
   </div>
 </template>
 

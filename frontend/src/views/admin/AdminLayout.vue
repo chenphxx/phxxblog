@@ -52,8 +52,8 @@ async function logout() {
 onMounted(() => {
   // 先拿模块开关, 菜单才能正确过滤(拿不到时按"全部可用"处理)
   modules.load()
-  // 已有令牌但本地无用户信息时, 从后端拉取
-  if (!auth.user && auth.accessToken) {
+  // 每次进入后台都用当前令牌重新确认用户与权限, 同时触发过期令牌的静默刷新
+  if (auth.accessToken) {
     auth.fetchMe().catch(() => {})
   }
   // 浏览器标签页名称(与前台保持一致)
