@@ -267,6 +267,22 @@ export interface DiaryEntry {
   updated_at: string
 }
 
+/** 互联网纪事卡片 */
+export interface ChronicleItem {
+  id: number
+  title: string
+  summary: string
+  cover_image?: string | null
+  created_at: string
+  updated_at: string
+}
+
+/** 互联网纪事详情 */
+export interface ChronicleDetail extends ChronicleItem {
+  content_md: string
+  content_html?: string | null
+}
+
 /** 程序员历史上的今天-事件 */
 export interface HistoryEvent {
   year: number

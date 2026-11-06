@@ -2,7 +2,7 @@
  * 应用外壳 (顶部导航 + 灰画布 + 主内容区)
  * ------------------------------------------------------------
  * 桌面端: 吸顶顶部导航 + 主内容区, 页面底色是浅灰画布, 内容承载在白色面板里
- * 移动端(<1024px): 导航收进顶部菜单面板
+ * 窄屏(<=1240px): 导航收进顶部菜单面板
  *
  * 这里只写外壳与导航, 页面内部的面板/列表/排版在 theme.css
  * ============================================================ */
@@ -41,7 +41,7 @@
   align-items: center;
   gap: 11px;
   min-width: 0;
-  max-width: 240px;
+  max-width: 200px;
   flex-shrink: 0;
 }
 
@@ -178,13 +178,13 @@
   border-color: var(--border-strong);
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 1450px) {
   .app-header-inner {
     gap: var(--space-4);
   }
 
   .app-brand {
-    max-width: 180px;
+    max-width: 160px;
   }
 
   .app-brand-bio {
@@ -227,7 +227,7 @@
 }
 
 /* ---------- 窄屏: 导航收进顶部下拉面板 ---------- */
-@media (max-width: 1023px) {
+@media (max-width: 1240px) {
   .app-header-inner {
     min-height: 64px;
     padding: 10px var(--space-4);

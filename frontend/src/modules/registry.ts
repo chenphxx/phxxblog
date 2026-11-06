@@ -28,6 +28,7 @@ import {
   Grid,
   Notebook,
   Picture,
+  Reading,
   Setting,
   Tickets,
   User,
@@ -226,6 +227,42 @@ export const MODULES: FrontModule[] = [
     frontRoutes: [{ path: 'diary', name: 'diary', component: () => import('@/views/DiaryView.vue') }],
   },
   {
+    id: 'chronicles',
+    name: '互联网纪事',
+    description: '以杂志网格记录令人印象深刻的人物与事件',
+    frontNav: [{ to: '/chronicles', label: '互联网纪事', icon: Reading, group: 'primary' }],
+    adminNav: [{ to: '/admin/chronicles', label: '互联网纪事', icon: Reading, adminOnly: true }],
+    frontRoutes: [
+      {
+        path: 'chronicles',
+        name: 'chronicles',
+        component: () => import('@/views/ChroniclesView.vue'),
+      },
+      {
+        path: 'chronicles/:id',
+        name: 'chronicle-detail',
+        component: () => import('@/views/ChronicleDetailView.vue'),
+      },
+    ],
+    adminRoutes: [
+      {
+        path: 'chronicles',
+        name: 'admin-chronicles',
+        component: () => import('@/views/admin/ChronicleManageView.vue'),
+      },
+      {
+        path: 'chronicles/new',
+        name: 'admin-chronicle-new',
+        component: () => import('@/views/admin/ChronicleEditView.vue'),
+      },
+      {
+        path: 'chronicles/:id/edit',
+        name: 'admin-chronicle-edit',
+        component: () => import('@/views/admin/ChronicleEditView.vue'),
+      },
+    ],
+  },
+  {
     id: 'changelog',
     name: '更新日志',
     description: '站点更新日志的展示与编辑',
@@ -346,6 +383,7 @@ export interface ResolvedNavItem extends ModuleNavItem {
 const ADMIN_NAV_ORDER = [
   'dashboard',
   'posts',
+  'chronicles',
   'taxonomy',
   'comments',
   'media',

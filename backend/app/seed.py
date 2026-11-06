@@ -31,6 +31,7 @@ PERMISSIONS = [
     (Perm.DATA_EXPORT, "导出数据", "data:export"),
     (Perm.DIARY_MANAGE, "管理日记", "diary:manage"),
     (Perm.CHANGELOG_MANAGE, "管理更新日志", "changelog:manage"),
+    (Perm.CHRONICLE_MANAGE, "管理互联网纪事", "chronicle:manage"),
 ]
 
 

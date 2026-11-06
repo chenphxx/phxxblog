@@ -39,6 +39,7 @@ def build_registry() -> ModuleRegistry:
         auth,
         backtotop,
         changelog,
+        chronicles,
         codefont,
         comments,
         contributions,

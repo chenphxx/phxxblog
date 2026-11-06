@@ -12,6 +12,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     BackToTopBar: typeof import('./components/reading/BackToTopBar.vue')['default']
+    ChronicleCard: typeof import('./components/ChronicleCard.vue')['default']
     CommentNode: typeof import('./components/CommentNode.vue')['default']
     CommentSection: typeof import('./components/CommentSection.vue')['default']
     ContributionsChart: typeof import('./components/ContributionsChart.vue')['default']

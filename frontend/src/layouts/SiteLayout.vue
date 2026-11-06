@@ -19,7 +19,7 @@ import { rowsOf, textOf } from '@/utils/moduleConfig'
  * 布局只负责: 品牌区, 顶部主导航, 创作入口, 主题与看板娘开关, 站脚
  * 页面内容全部由 views/ 里的页面自己渲染, 布局层不关心页面内部结构
  *
- * 移动端(<1024px)导航收进顶部菜单面板, 点遮罩或切换路由后自动关闭
+ * 窄屏(<=1240px)导航收进顶部菜单面板, 点遮罩或切换路由后自动关闭
  */
 
 const auth = useAuthStore()
@@ -121,7 +121,7 @@ function closeNavOnDesktop(event: MediaQueryListEvent) {
 
 onMounted(() => {
   document.addEventListener('keydown', closeNavOnEscape)
-  desktopNavQuery = window.matchMedia('(min-width: 1024px)')
+  desktopNavQuery = window.matchMedia('(min-width: 1241px)')
   desktopNavQuery.addEventListener('change', closeNavOnDesktop)
 })
 

@@ -1,6 +1,7 @@
 """ORM 模型汇总, 确保所有表注册到 Base.metadata"""
 
 from app.models.analytics import DailyStat, VisitLog
+from app.models.chronicle import ChronicleEntry
 from app.models.comment import Comment
 from app.models.diary import DiaryEntry
 from app.models.log import OperationLog
@@ -23,6 +24,7 @@ __all__ = [
     "post_tags",
     "Comment",
     "DiaryEntry",
+    "ChronicleEntry",
     "Media",
     "VisitLog",
     "DailyStat",

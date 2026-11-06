@@ -15,6 +15,7 @@ const route = useRoute()
 
 const activeMenu = computed(() => {
   if (route.path.startsWith('/admin/posts/')) return '/admin/posts'
+  if (route.path.startsWith('/admin/chronicles/')) return '/admin/chronicles'
   return route.path
 })
 

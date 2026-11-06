@@ -39,6 +39,8 @@ MODULE_NOTES: dict[str, str] = {
     "日记": "读取列表有 `diary:manage` 权限码, 或日记模块的可见范围配成公开时放行(其余接口仍需 "
     "`diary:manage`); 导入/导出支持 zip 与 markdown, 导入的 frontmatter 与文章导入共用同一套解析"
     "(`services/archive.py`) ",
+    "互联网纪事": "读取列表与详情公开; 新增、编辑与删除需 `chronicle:manage` "
+    "列表按创建时间倒序并提供标题/概览关键词筛选 ",
     "媒体": "整组接口需 `media:manage`; 上传有**扩展名白名单**与图片文件头校验, "
     "拒绝 .svg/.html/.js 等可执行文档(上传目录与站点同源, 否则等于开放 XSS); "
     "单文件上限默认见 `PHXXBLOG_MAX_UPLOAD_SIZE`(默认 100MB), 后台系统设置页可按 MB 覆盖, "
