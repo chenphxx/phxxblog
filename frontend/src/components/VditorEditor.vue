@@ -162,7 +162,7 @@ defineExpose({ getValue })
 
 <style scoped>
 /*
- * 编辑器跟随外层高度: 写作页会把卡片拉满视口(见 WriteView), 这里以 flex 让 .vditor 吃掉
+ * 编辑器跟随外层高度: 文章编辑页会把卡片拉满视口, 这里以 flex 让 .vditor 吃掉
  * 表单项里的剩余高度, 内容更多时仍按内容继续变长(高度本身是 auto, 见 onMounted 的 height 选项)
  * 外层不是 flex 容器时(如日记对话框)高度仍只由内容决定
  */

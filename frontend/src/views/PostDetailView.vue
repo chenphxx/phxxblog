@@ -94,12 +94,8 @@ function goBack() {
   }
 }
 
-/** 当前用户是否可编辑该文章(作者本人或管理员/编辑) */
-const canEdit = computed(() => {
-  if (!auth.user || !post.value) return false
-  const roles = auth.user.role_codes
-  return roles.includes('admin') || roles.includes('editor') || post.value.author?.id === auth.user.id
-})
+/** 管理员可从文章详情页直接进入管理后台编辑器 */
+const isAdmin = computed(() => auth.user?.role_codes.includes('admin') ?? false)
 
 /**
  * 加载右侧栏的热门文章
@@ -212,7 +208,9 @@ onBeforeUnmount(() => {
                   :max-step="fontRange.maxStep"
                   @update:step="applyFontStep"
                 />
-                <el-button v-if="canEdit" size="small" @click="$router.push(`/write/${post.id}`)">编辑</el-button>
+                <el-button v-if="isAdmin" size="small" @click="$router.push(`/admin/posts/${post.id}/edit`)">
+                  编辑
+                </el-button>
               </div>
             </div>
             <h1 class="post-detail-title">{{ post.title }}</h1>

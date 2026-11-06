@@ -39,9 +39,9 @@ rawAxios.interceptors.request.use((config) => {
 /**
  * 需要登录的前台路由前缀
  * 这些页面在令牌过期时也要跳登录页, 不能只判断 /admin
- * 否则用户在 /write, /diary, /changelog 上会看到错误提示却停在空白页
+ * 否则用户在 /diary, /changelog 上会看到错误提示却停在空白页
  */
-const PROTECTED_PREFIXES = ['/admin', '/write', '/diary', '/changelog']
+const PROTECTED_PREFIXES = ['/admin', '/diary', '/changelog']
 
 /** 当前是否为受保护页面(基于 hash 路由) */
 function isProtectedRoute(hash: string): boolean {

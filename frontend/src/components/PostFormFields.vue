@@ -2,7 +2,7 @@
 /**
  * 文章表单字段(标题/别名/摘要/分类/标签/可见性/封面/正文)
  *
- * WriteView 与 admin/PostEditView 共用: 状态由 usePostEditor 持有并通过 editor 传入,
+ * 管理后台文章编辑页使用: 状态由 usePostEditor 持有并通过 editor 传入,
  * 本组件只负责渲染与事件转发, 不持有任何表单状态
  * editor 是稳定的 reactive 对象, 因此这里直接引用 props.editor 而不是解构
  */
@@ -122,7 +122,7 @@ defineExpose({ syncContent })
 }
 
 /*
- * 表单本身参与"铺满高度": 写作页会把卡片拉满视口(见 WriteView), 这里让表单纵向铺开,
+ * 表单本身参与"铺满高度": 文章编辑页会把卡片拉满视口, 这里让表单纵向铺开,
  * 由正文(最后一个表单项)吃掉剩余高度, 多出来的高度归编辑器而不是变成卡片里的一块空白
  * 外层不是 flex 容器时(如后台文章编辑页)这些声明不生效, 表单项仍按内容排布
  * el-form-item 内部的 .el-form-item__content 属于 Element Plus 自己的模板, 必须用 :deep

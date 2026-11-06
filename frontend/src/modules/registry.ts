@@ -24,7 +24,6 @@ import {
   Collection,
   DataAnalysis,
   Document,
-  EditPen,
   Grid,
   Notebook,
   Picture,
@@ -131,27 +130,12 @@ export const MODULES: FrontModule[] = [
   {
     id: 'posts',
     name: '文章',
-    description: '文章详情, 列表, 归档与写作',
-    frontNav: [
-      { to: '/archive', label: '归档', group: 'primary' },
-      { to: '/write', label: '写文章', icon: EditPen, group: 'secondary', requiresAuth: true },
-    ],
+    description: '文章详情, 列表与归档',
+    frontNav: [{ to: '/archive', label: '归档', group: 'primary' }],
     adminNav: [{ to: '/admin/posts', label: '文章管理', icon: Document }],
     frontRoutes: [
       { path: 'post/:id', name: 'post-detail', component: () => import('@/views/PostDetailView.vue') },
       { path: 'archive', name: 'archive', component: () => import('@/views/ArchiveView.vue') },
-      {
-        path: 'write',
-        name: 'write',
-        component: () => import('@/views/WriteView.vue'),
-        meta: { requiresAuth: true },
-      },
-      {
-        path: 'write/:id',
-        name: 'write-edit',
-        component: () => import('@/views/WriteView.vue'),
-        meta: { requiresAuth: true },
-      },
     ],
     adminRoutes: [
       { path: 'posts', name: 'admin-posts', component: () => import('@/views/admin/PostManageView.vue') },
