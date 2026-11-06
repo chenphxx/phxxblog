@@ -23,6 +23,13 @@ class ChronicleIn(BaseModel):
     summary: ChronicleSummary
     cover_image: str | None = Field(default=None, max_length=255)
     content_md: ChronicleContent
+    status: int = Field(default=0, ge=0, le=4)
+
+
+class ChronicleStatusIn(BaseModel):
+    """互联网纪事状态流转请求"""
+
+    status: int = Field(ge=0, le=4)
 
 
 class ChronicleListItem(BaseModel):
@@ -34,6 +41,8 @@ class ChronicleListItem(BaseModel):
     title: str
     summary: str
     cover_image: str | None = None
+    status: int
+    published_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
 

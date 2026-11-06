@@ -274,6 +274,8 @@ export interface ChronicleItem {
   title: string
   summary: string
   cover_image?: string | null
+  status: number
+  published_at?: string | null
   created_at: string
   updated_at: string
 }

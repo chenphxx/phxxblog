@@ -6,6 +6,7 @@ import { chronicleApi, mediaApi } from '@/api'
 import VditorEditor from '@/components/VditorEditor.vue'
 import { useAuthStore } from '@/stores/auth'
 import { hasPermission } from '@/utils/permission'
+import { POST_STATUS_TEXT } from '@/utils/postStatus'
 
 const route = useRoute()
 const router = useRouter()
@@ -23,6 +24,8 @@ const form = reactive({
   summary: '',
   cover_image: '',
   content_md: '',
+  status: 0,
+  public_visible: true,
 })
 
 const currentId = computed(() => Number(route.params.id) || 0)
@@ -33,6 +36,8 @@ function resetForm() {
   form.summary = ''
   form.cover_image = ''
   form.content_md = ''
+  form.status = 0
+  form.public_visible = true
 }
 
 async function load() {
@@ -55,6 +60,8 @@ async function load() {
     form.summary = item.summary
     form.cover_image = item.cover_image || ''
     form.content_md = item.content_md
+    form.status = item.status
+    form.public_visible = item.status !== 3
   } catch {
     accessDenied.value = true
     accessMessage.value = '无法加载纪事或确认当前账号权限, 请重新登录后再试。'
@@ -77,7 +84,7 @@ async function uploadCover(options: { file: File }) {
   }
 }
 
-async function save() {
+async function save(targetStatus?: number) {
   if (accessDenied.value) return
   // 中文输入法组字期间 v-model 可能落后于编辑器, 保存时直接读取编辑器内容
   form.content_md = editorRef.value?.getValue() ?? form.content_md
@@ -94,6 +101,7 @@ async function save() {
     return
   }
 
+  const status = targetStatus ?? (form.public_visible ? 2 : 3)
   saving.value = true
   try {
     const payload = {
@@ -101,10 +109,11 @@ async function save() {
       summary: form.summary.trim(),
       cover_image: form.cover_image.trim() || null,
       content_md: form.content_md,
+      status,
     }
     if (isEdit.value) await chronicleApi.update(currentId.value, payload)
     else await chronicleApi.create(payload)
-    ElMessage.success('纪事已保存')
+    ElMessage.success(`已保存为${POST_STATUS_TEXT[status] ?? ''}`)
     router.push('/admin/chronicles')
   } finally {
     saving.value = false
@@ -113,12 +122,12 @@ async function save() {
 
 async function remove() {
   if (accessDenied.value) return
-  await ElMessageBox.confirm(`确定删除《${form.title}》吗? 该操作不可恢复。`, '删除纪事', {
+  await ElMessageBox.confirm(`确定删除《${form.title}》吗? 将移入回收站。`, '删除纪事', {
     type: 'warning',
     confirmButtonText: '删除',
   })
   await chronicleApi.remove(currentId.value)
-  ElMessage.success('已删除')
+  ElMessage.success('已移入回收站')
   router.push('/admin/chronicles')
 }
 </script>
@@ -132,7 +141,7 @@ async function remove() {
     </el-result>
 
     <template v-else-if="!checkingAccess && !loading">
-      <h2>{{ isEdit ? '编辑纪事' : '新增纪事' }}</h2>
+      <h2>{{ isEdit ? '编辑纪事' : '新建纪事' }}</h2>
 
       <div class="admin-toolbar">
         <div class="admin-toolbar-filters">
@@ -140,7 +149,8 @@ async function remove() {
         </div>
         <div class="admin-toolbar-actions">
           <el-button @click="router.push('/admin/chronicles')">取消</el-button>
-          <el-button type="primary" :loading="saving" @click="save">保存纪事</el-button>
+          <el-button :loading="saving" @click="save(0)">存草稿</el-button>
+          <el-button type="primary" :loading="saving" @click="save()">保存</el-button>
           <el-button v-if="isEdit" type="danger" plain @click="remove">删除</el-button>
         </div>
       </div>
@@ -174,6 +184,15 @@ async function remove() {
                 <img :src="form.cover_image" alt="纪事封面预览" />
               </div>
             </div>
+          </el-form-item>
+
+          <el-form-item label="是否公开可见">
+            <el-switch
+              v-model="form.public_visible"
+              active-text="公开可见"
+              inactive-text="仅管理员可见"
+              inline-prompt
+            />
           </el-form-item>
 
           <el-form-item class="content-field" label="正文(Markdown, 支持图片/视频/附件/代码高亮)">

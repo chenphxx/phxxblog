@@ -171,10 +171,14 @@ export const diaryApi = {
 /** 互联网纪事 */
 export const chronicleApi = {
   list: (params?: Record<string, unknown>) => http.get<Page<ChronicleItem>>('/chronicles', { params }),
+  adminList: (params?: Record<string, unknown>) => http.get<Page<ChronicleItem>>('/chronicles/admin', { params }),
   detail: (id: number) => http.get<ChronicleDetail>(`/chronicles/${id}`),
   create: (data: Record<string, unknown>) => http.post<ChronicleDetail>('/chronicles', data),
   update: (id: number, data: Record<string, unknown>) => http.put<ChronicleDetail>(`/chronicles/${id}`, data),
   remove: (id: number) => http.delete<null>(`/chronicles/${id}`),
+  forceDelete: (id: number) => http.delete<null>(`/chronicles/${id}/force`),
+  restore: (id: number) => http.post<ChronicleDetail>(`/chronicles/${id}/restore`),
+  changeStatus: (id: number, status: number) => http.post<ChronicleDetail>(`/chronicles/${id}/status`, { status }),
 }
 
 /** 杂项 */
