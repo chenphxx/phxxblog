@@ -122,13 +122,25 @@ html:root .el-button--info:not(.is-plain):not(.is-text):not(.is-link) {
   letter-spacing: -0.01em;
 }
 
-.admin-brand::before {
-  content: '';
+.admin-brand-mark {
+  display: block;
   width: 28px;
   height: 28px;
   flex-shrink: 0;
+  overflow: hidden;
   border-radius: var(--radius-control);
   background: linear-gradient(140deg, var(--grad-from), var(--grad-to));
+}
+
+.admin-brand-mark img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-brand-mark.has-site-icon {
+  background: transparent;
 }
 
 /* 侧边栏菜单: 选中态用主题色淡底 + 主题色文字, 悬停用代码底色 */

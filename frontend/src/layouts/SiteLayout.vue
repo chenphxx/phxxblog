@@ -172,7 +172,9 @@ onMounted(async () => {
     <header class="app-header">
       <div class="app-header-inner">
         <router-link to="/" class="app-brand">
-          <span class="app-brand-mark" aria-hidden="true" />
+          <span class="app-brand-mark" :class="{ 'has-site-icon': settings?.site_icon }" aria-hidden="true">
+            <img v-if="settings?.site_icon" :src="settings.site_icon" alt="" />
+          </span>
           <span class="app-brand-copy">
             <span class="app-brand-name">{{ settings?.site_name || 'phxxblog' }}</span>
             <span v-if="settings?.site_bio" class="app-brand-bio">{{ settings.site_bio }}</span>

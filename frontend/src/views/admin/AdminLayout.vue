@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
 import { HomeFilled, Notebook } from '@element-plus/icons-vue'
@@ -12,6 +12,7 @@ const auth = useAuthStore()
 const modules = useModulesStore()
 const router = useRouter()
 const route = useRoute()
+const siteIcon = ref('')
 
 const activeMenu = computed(() => {
   if (route.path.startsWith('/admin/posts/')) return '/admin/posts'
@@ -62,6 +63,7 @@ onMounted(() => {
       .public()
       .then((data) => {
         document.title = data.site_title || data.site_name || 'phxxblog'
+        siteIcon.value = data.site_icon
       })
       .catch(() => {}),
   )
@@ -71,7 +73,12 @@ onMounted(() => {
 <template>
   <el-container class="admin-layout">
     <el-aside width="240px" class="admin-aside">
-      <div class="admin-brand">博客管理</div>
+      <div class="admin-brand">
+        <span class="admin-brand-mark" :class="{ 'has-site-icon': siteIcon }" aria-hidden="true">
+          <img v-if="siteIcon" :src="siteIcon" alt="" />
+        </span>
+        <span>博客管理</span>
+      </div>
       <el-menu :default-active="activeMenu" router background-color="transparent">
         <el-menu-item v-for="item in menuItems" :key="item.to" :index="item.to">
           <el-icon v-if="item.icon"><component :is="item.icon" /></el-icon>
@@ -128,6 +135,7 @@ onMounted(() => {
   height: 64px;
   display: flex;
   align-items: center;
+  gap: 10px;
   padding: 0 18px;
   font-weight: 700;
   font-size: 16px;
