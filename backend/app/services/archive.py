@@ -97,15 +97,24 @@ def pack_images(
     text_for_images: str,
     folder: str,
 ) -> str:
-    """把正文引用的上传图片写进压缩包的 folder/ 下, 并把 URL 改写为包内相对路径"""
+    """把正文引用的上传图片扁平写入压缩包, 并把 URL 改写为包内相对路径"""
+    used_names: set[str] = set()
     for url in collect_uploaded_images(text_for_images):
         path = image_url_to_path(url)
         if path is None:
             continue
-        rel = path.relative_to(PROJECT_ROOT / "assets")
-        zpath = f"{folder}/{rel.as_posix()}"
+        name = path.name
+        candidate = name
+        index = 2
+        while candidate.lower() in used_names:
+            candidate = f"{path.stem}-{index}{path.suffix}"
+            index += 1
+        used_names.add(candidate.lower())
+        zpath = f"{folder}/{candidate}"
         if zpath not in zf.namelist():
-            zf.write(str(path), zpath)
+            # writestr 会保留 zip 标准要求的 / 分隔符; Windows 下 zf.write 会把
+            # arcname 当成文件系统路径, 可能写入反斜杠并在重新读取时损坏名称
+            zf.writestr(zpath, path.read_bytes())
         body = body.replace(url, zpath)
     return body
 
@@ -126,22 +135,18 @@ def save_import_images(
         if suffix not in IMPORT_IMAGE_EXTS:
             continue
         norm = normalize_rel(name)
-        parts = [part for part in norm.split("/") if part not in ("", ".", "..")]
-        if not parts:
-            continue
-        safe_rel = "/".join(parts)
-        dest = (uploads_root / safe_rel).resolve()
-        if dest != uploads_root and uploads_root not in dest.parents:
-            continue
-        dest.parent.mkdir(parents=True, exist_ok=True)
+        original_name = Path(name).name[:255] or f"image{suffix}"
+        stored_name = f"{uuid.uuid4().hex}{suffix}"
+        dest = (uploads_root / stored_name).resolve()
+        uploads_root.mkdir(parents=True, exist_ok=True)
         dest.write_bytes(data)
-        url = f"/assets/uploads/import/{date_dir}/{safe_rel}"
-        mime_type = mimetypes.guess_type(parts[-1])[0] or f"image/{suffix.lstrip('.')}"
+        url = f"/assets/uploads/import/{date_dir}/{stored_name}"
+        mime_type = mimetypes.guess_type(original_name)[0] or f"image/{suffix.lstrip('.')}"
         db.add(
             Media(
                 uploader_id=uploader_id,
-                original_name=parts[-1][:255],
-                filename=f"import-{uuid.uuid4().hex}{suffix}",
+                original_name=original_name,
+                filename=stored_name,
                 path=str(dest).replace("\\", "/"),
                 url=url,
                 mime_type=mime_type,
@@ -151,7 +156,7 @@ def save_import_images(
             )
         )
         image_map.setdefault(norm, url)
-        image_map.setdefault(parts[-1], url)
+        image_map.setdefault(original_name, url)
     return image_map
 
 
