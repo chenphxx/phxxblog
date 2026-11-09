@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Category, PublicSettings } from '@/types'
+import LazyImage from '@/components/LazyImage.vue'
 import { chipStyle } from '@/utils/chipColor'
 import { faviconOf, linkName, onFaviconError } from '@/utils/linkIcon'
 
@@ -58,7 +59,7 @@ defineEmits<{ (e: 'open-avatar'): void }>()
           class="social-link"
           :title="linkName(link)"
         >
-          <img
+          <LazyImage
             v-if="faviconOf(link.url)"
             :src="faviconOf(link.url)"
             alt=""

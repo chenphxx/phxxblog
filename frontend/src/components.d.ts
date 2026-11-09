@@ -71,6 +71,7 @@ declare module 'vue' {
     ImportExportDialogs: typeof import('./components/ImportExportDialogs.vue')['default']
     Kanbanniang: typeof import('./components/Kanbanniang.vue')['default']
     KanbanniangSwitcher: typeof import('./components/KanbanniangSwitcher.vue')['default']
+    LazyImage: typeof import('./components/LazyImage.vue')['default']
     LinkCard: typeof import('./components/LinkCard.vue')['default']
     ListPager: typeof import('./components/ListPager.vue')['default']
     MarkdownView: typeof import('./components/MarkdownView.vue')['default']

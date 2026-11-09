@@ -166,6 +166,12 @@ async function highlightCode(root: HTMLDivElement) {
 /** 超过该行数的代码块默认折叠 */
 const CODE_FOLD_LINES = 20
 
+/** Vditor 的 lazyLoadImage 参数是占位图地址, 使用内联透明图避免额外网络请求 */
+const LAZY_IMAGE_PLACEHOLDER = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=='
+
+/** 防止离开页面后, 旧的异步 Markdown 渲染继续修改已卸载的 DOM */
+let renderSequence = 0
+
 /**
  * 已展开的代码块(按代码块序号记录; 主题切换会重新渲染, 借此保持展开状态)
  *
@@ -191,7 +197,23 @@ function openImagePreview(event: MouseEvent) {
   const target = event.target
   if (!(target instanceof HTMLImageElement)) return
   event.preventDefault()
-  previewSrc.value = target.currentSrc || target.src
+  previewSrc.value = target.dataset.src || target.currentSrc || target.src || ''
+}
+
+/**
+ * @brief 降低正文图片对页面交互的抢占
+ *
+ * 图片延迟解码且只加载视口附近内容, 避免长文章中的大量图片同时占满网络连接,
+ * 或同步解码造成主线程卡顿而影响路由切换等操作
+ *
+ * @param root Markdown 渲染后的根节点
+ */
+function optimizeImageLoading(root: HTMLDivElement) {
+  root.querySelectorAll<HTMLImageElement>('img').forEach((image) => {
+    image.loading = 'lazy'
+    image.decoding = 'async'
+    image.setAttribute('fetchpriority', 'low')
+  })
 }
 
 /**
@@ -279,26 +301,32 @@ function buildHeadings(root: HTMLDivElement): MarkdownHeading[] {
 }
 
 async function render() {
-  if (!el.value) return
+  const root = el.value
+  if (!root) return
+  const sequence = ++renderSequence
   const currentTheme = theme.isDark ? 'dark' : 'light'
-  el.value.innerHTML = ''
-  await Vditor.preview(el.value, props.content || '', {
+  root.innerHTML = ''
+  await Vditor.preview(root, props.content || '', {
     // 本地资源, 避免依赖 CDN(同时保证 hljs 样式从 /vditor 加载)
     cdn: '/vditor',
     mode: currentTheme,
     theme: { current: currentTheme },
     hljs: { lineNumber: true, style: codeStyle() },
+    lazyLoadImage: LAZY_IMAGE_PLACEHOLDER,
   })
+  if (sequence !== renderSequence || root !== el.value) return
+  optimizeImageLoading(root)
   // 代码块一键复制按钮
-  Vditor.codeRender(el.value)
+  Vditor.codeRender(root)
   // 视频/音频/iframe 渲染
-  Vditor.mediaRender(el.value)
+  Vditor.mediaRender(root)
   // 代码块语法高亮(未标注语言的自动识别)
-  await highlightCode(el.value)
+  await highlightCode(root)
+  if (sequence !== renderSequence || root !== el.value) return
   // 长代码块折叠
-  applyCodeFold(el.value)
+  applyCodeFold(root)
   // 标题锚点与目录(必须在 DOM 完整之后, 否则收集不到标题)
-  emit('headings', buildHeadings(el.value))
+  emit('headings', buildHeadings(root))
 }
 
 onMounted(render)
@@ -331,6 +359,7 @@ watch(
 
 // 组件卸载时清掉待执行的定时器, 避免在已销毁的实例上重渲染
 onBeforeUnmount(() => {
+  renderSequence++
   if (themeRenderTimer !== undefined) window.clearTimeout(themeRenderTimer)
 })
 </script>

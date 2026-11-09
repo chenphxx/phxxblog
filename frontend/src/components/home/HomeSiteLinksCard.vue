@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import LazyImage from '@/components/LazyImage.vue'
 import { faviconOf, linkName, onFaviconError } from '@/utils/linkIcon'
 
 /**
@@ -22,7 +23,7 @@ defineProps<{ links: { name: string; url: string }[] }>()
       rel="noopener noreferrer"
       class="site-link"
     >
-      <img
+      <LazyImage
         v-if="faviconOf(link.url)"
         :src="faviconOf(link.url)"
         alt=""

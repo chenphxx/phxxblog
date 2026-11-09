@@ -144,6 +144,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
             :src="current.url"
             :alt="current.original_name"
             class="viewer-image"
+            decoding="async"
           />
           <video
             v-else-if="kind === 'video'"

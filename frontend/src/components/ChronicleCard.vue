@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import LazyImage from '@/components/LazyImage.vue'
 import type { ChronicleItem } from '@/types'
 import { formatDateTime } from '@/utils/datetime'
 
@@ -38,11 +39,10 @@ function displayDate(value: string): string {
     :aria-label="`阅读互联网纪事: ${item.title}`"
   >
     <div class="chronicle-cover">
-      <img
+      <LazyImage
         v-if="item.cover_image && !imageFailed"
         :src="item.cover_image"
         :alt="item.title"
-        loading="lazy"
         @error="imageFailed = true"
       />
       <div v-else class="chronicle-cover-placeholder" aria-hidden="true">

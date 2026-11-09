@@ -181,7 +181,7 @@ async function remove() {
                 </el-upload>
               </div>
               <div v-if="form.cover_image" class="cover-preview">
-                <img :src="form.cover_image" alt="纪事封面预览" />
+                <img :src="form.cover_image" alt="纪事封面预览" decoding="async" />
               </div>
             </div>
           </el-form-item>

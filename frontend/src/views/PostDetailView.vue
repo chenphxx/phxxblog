@@ -7,6 +7,7 @@ import type { MarkdownHeading, PostDetail, PostItem } from '@/types'
 import MarkdownView from '@/components/MarkdownView.vue'
 import CommentSection from '@/components/CommentSection.vue'
 import HotPostsCard from '@/components/HotPostsCard.vue'
+import LazyImage from '@/components/LazyImage.vue'
 import MetaIcon from '@/components/MetaIcon.vue'
 import PostAdjacentNav from '@/components/post/PostAdjacentNav.vue'
 import PostTocNav from '@/components/post/PostTocNav.vue'
@@ -274,7 +275,7 @@ onBeforeUnmount(() => {
             </div>
 
             <p v-if="post.summary" class="post-detail-summary">{{ post.summary }}</p>
-            <img v-if="post.cover_image" :src="post.cover_image" class="post-cover" alt="封面" />
+            <LazyImage v-if="post.cover_image" :src="post.cover_image" class="post-cover" alt="封面" />
             <!-- 阅读增强: 字号由档位换算成 CSS 变量, 代码块字体由外层类提高选择器特异性 -->
             <div
               class="reading-body"

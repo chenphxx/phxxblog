@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { chronicleApi } from '@/api'
 import ImportExportDialogs from '@/components/ImportExportDialogs.vue'
+import LazyImage from '@/components/LazyImage.vue'
 import ListPager from '@/components/ListPager.vue'
 import { useImportExport } from '@/composables/useImportExport'
 import { usePagedList } from '@/composables/usePagedList'
@@ -169,7 +170,7 @@ async function batchForceDelete() {
         <el-table-column label="封面" width="112">
           <template #default="{ row }">
             <div class="cover-thumb">
-              <img v-if="row.cover_image" :src="row.cover_image" :alt="row.title" />
+              <LazyImage v-if="row.cover_image" :src="row.cover_image" :alt="row.title" />
               <span v-else>纪</span>
             </div>
           </template>

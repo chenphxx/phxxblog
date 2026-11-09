@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { chronicleApi } from '@/api'
+import LazyImage from '@/components/LazyImage.vue'
 import MarkdownView from '@/components/MarkdownView.vue'
 import { useAuthStore } from '@/stores/auth'
 import type { ChronicleDetail } from '@/types'
@@ -44,7 +45,7 @@ watch(() => route.params.id, load, { immediate: true })
 
       <article class="chronicle-detail">
         <div v-if="chronicle.cover_image" class="detail-cover">
-          <img :src="chronicle.cover_image" :alt="chronicle.title" />
+          <LazyImage :src="chronicle.cover_image" :alt="chronicle.title" />
         </div>
 
         <header class="detail-header">

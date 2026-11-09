@@ -3,6 +3,7 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { mediaApi } from '@/api'
 import type { MediaItem } from '@/types'
+import LazyImage from '@/components/LazyImage.vue'
 import MediaPreview from '@/components/MediaPreview.vue'
 import ListPager from '@/components/ListPager.vue'
 import { formatFileSize } from '@/utils/format'
@@ -204,7 +205,7 @@ onBeforeUnmount(() => {
         -->
         <el-checkbox v-model="selected as never" :value="media.id" class="media-check" @click.stop />
         <div class="media-preview">
-          <img v-if="media.type === 'image'" :src="media.url" :alt="media.original_name" loading="lazy" />
+          <LazyImage v-if="media.type === 'image'" :src="media.url" :alt="media.original_name" />
           <!-- 卡片里只当缩略图: 点任意位置进浮层播放(缩略图带 controls 会和"点击预览"打架) -->
           <template v-else-if="media.type === 'video'">
             <video :src="media.url" preload="metadata" muted />

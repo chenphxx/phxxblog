@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { linkApi } from '@/api'
+import LazyImage from '@/components/LazyImage.vue'
 import type { LinkPreview } from '@/types'
 
 const props = defineProps<{ url: string }>()
@@ -24,7 +25,7 @@ onMounted(async () => {
 
 <template>
   <a v-if="preview" :href="preview.url" target="_blank" rel="noopener noreferrer" class="link-card">
-    <img v-if="preview.image" :src="preview.image" class="link-card-img" alt="" />
+    <LazyImage v-if="preview.image" :src="preview.image" class="link-card-img" alt="" />
     <div class="link-card-body">
       <div class="link-card-title">{{ preview.title || preview.url }}</div>
       <div v-if="preview.description" class="link-card-desc">{{ preview.description }}</div>
