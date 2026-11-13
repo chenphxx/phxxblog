@@ -1,0 +1,40 @@
+/// <reference types="./types" />
+export declare class Find {
+    private vditor;
+    element: HTMLElement;
+    private query;
+    private replacement;
+    private sensitive;
+    private count;
+    private replaceRow;
+    private replaceButtons;
+    private navigationButtons;
+    private index;
+    private total;
+    private composing;
+    private timer;
+    private observer;
+    private events;
+    private highlightName;
+    private highlightStyle;
+    private sourceHighlight;
+    private sourceContent;
+    private sourceMatch;
+    private resizeObserver;
+    constructor(vditor: IVditor);
+    open(): void;
+    close(focus?: boolean): void;
+    refresh(): void;
+    find(query: string, options?: IFindOptions): IFindResult;
+    replace(query: string, replacement: string, options?: IFindOptions): number;
+    destroy(): void;
+    private editable;
+    private replaceCurrent;
+    private move;
+    private schedule;
+    private clearHighlight;
+    private input;
+    private button;
+    private highlightSource;
+    private scrollSourceHighlight;
+}

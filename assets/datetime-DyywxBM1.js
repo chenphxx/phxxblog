@@ -1,0 +1,1 @@
+function e(e){return e?e.replace(`T`,` `).slice(0,19):`-`}function t(t){return e(t).slice(0,10)}export{e as n,t};
