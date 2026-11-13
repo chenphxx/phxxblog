@@ -55,7 +55,6 @@ onMounted(async () => {
     <div class="page-head">
       <div>
         <h1 class="page-title">归档</h1>
-        <p class="page-subtitle">按时间倒序排列的全部文章</p>
       </div>
       <span class="count-label num">共 {{ totalPosts }} 篇</span>
     </div>

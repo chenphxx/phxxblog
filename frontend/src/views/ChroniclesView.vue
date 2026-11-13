@@ -19,9 +19,7 @@ const { items, total, page, pageSize, loading } = usePagedList<ChronicleItem>({
   <div v-loading="loading" class="page-container chronicles-page">
     <header class="chronicles-header">
       <div class="chronicles-heading">
-        <p class="eyebrow">INTERNET CHRONICLE / 人物与事件档案</p>
         <h1 class="page-title">互联网纪事</h1>
-        <p class="page-subtitle">记录在互联网世界里遇见的人、发生的事, 以及值得留下的片刻</p>
       </div>
       <div class="chronicles-count" aria-label="纪事总数">
         <strong>{{ total }}</strong>
@@ -64,14 +62,9 @@ const { items, total, page, pageSize, loading } = usePagedList<ChronicleItem>({
 }
 
 .chronicles-heading .page-title {
-  margin-bottom: var(--space-2);
+  margin: 0;
   font-size: clamp(34px, 5vw, 56px);
   letter-spacing: -0.05em;
-}
-
-.chronicles-heading .page-subtitle {
-  max-width: 680px;
-  font-size: 15px;
 }
 
 .chronicles-count {

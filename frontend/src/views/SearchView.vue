@@ -92,7 +92,6 @@ onMounted(async () => {
     <div class="page-head">
       <div>
         <h1 class="page-title">全部文章</h1>
-        <p class="page-subtitle">按关键词, 分类, 标签或时间范围查找</p>
       </div>
       <span class="count-label num">共 {{ total }} 篇</span>
     </div>

@@ -118,12 +118,6 @@ h3 {
   letter-spacing: -0.03em;
 }
 
-.page-subtitle {
-  margin: var(--space-2) 0 0;
-  color: var(--muted);
-  font-size: 14px;
-}
-
 /* ---------- 面板 ---------- */
 /* 页面分区用大面板承载, 面板内部靠间距与细分隔线组织, 不要层层嵌套卡片 */
 .card {

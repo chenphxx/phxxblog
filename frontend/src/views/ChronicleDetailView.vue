@@ -49,7 +49,6 @@ watch(() => route.params.id, load, { immediate: true })
         </div>
 
         <header class="detail-header">
-          <p class="eyebrow">INTERNET CHRONICLE / 档案 {{ String(chronicle.id).padStart(3, '0') }}</p>
           <h1>{{ chronicle.title }}</h1>
           <p class="detail-summary">{{ chronicle.summary }}</p>
           <div class="detail-meta">
@@ -127,7 +126,7 @@ watch(() => route.params.id, load, { immediate: true })
 }
 
 .detail-header h1 {
-  margin: var(--space-4) 0;
+  margin: 0 0 var(--space-4);
   color: var(--text);
   font-size: clamp(34px, 5.6vw, 62px);
   font-weight: 680;

@@ -201,7 +201,6 @@ onMounted(load)
     <div class="page-head diary-header">
       <div>
         <h1 class="page-title">日记</h1>
-        <p class="page-subtitle">按时间记录日常与片刻</p>
       </div>
       <div v-if="canManage" class="diary-actions-bar">
         <el-button @click="io.importDialog = true">导入日记</el-button>
