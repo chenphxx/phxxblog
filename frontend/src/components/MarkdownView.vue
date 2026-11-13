@@ -313,6 +313,8 @@ async function render() {
     theme: { current: currentTheme },
     hljs: { lineNumber: true, style: codeStyle() },
     lazyLoadImage: LAZY_IMAGE_PLACEHOLDER,
+    // 导入的 Markdown 可能使用未转义的空格图片路径
+    markdown: { imgPathAllowSpace: true },
   })
   if (sequence !== renderSequence || root !== el.value) return
   optimizeImageLoading(root)

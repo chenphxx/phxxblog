@@ -39,7 +39,11 @@ onMounted(() => {
       theme: { current: theme.isDark ? 'dark' : 'light' },
       // 对齐 VSCode 默认配色: 浅色 vs(Visual Studio), 深色 vs2015
       hljs: { lineNumber: true, style: theme.isDark ? 'vs2015' : 'vs' },
+      // 导入的 Markdown 可能使用未转义的空格图片路径, 与正文预览保持相同解析规则
+      markdown: { imgPathAllowSpace: true },
     },
+    // 编辑时普通点击用于定位光标, 按住 Ctrl/Cmd 点击才打开链接, 避免误跳转丢失输入状态
+    link: { ctrlClick: true },
     toolbar: [
       'headings',
       'bold',
@@ -65,6 +69,8 @@ onMounted(() => {
       '|',
       'undo',
       'redo',
+      '|',
+      'find',
       '|',
       'fullscreen',
       'preview',
