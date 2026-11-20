@@ -16,9 +16,10 @@ export const MAX_PAGE_SIZE = 100
 export const MAX_PAGE_ROWS = 10
 
 /** 一页的容量 */
-export interface MediaGridMetrics {
-  /** 一页的格子数(列 × 每页行数) */
-  capacity: number
+export interface MediaGridMetrics
+{
+    /** 一页的格子数(列 × 每页行数) */
+    capacity: number
 }
 
 /**
@@ -27,8 +28,9 @@ export interface MediaGridMetrics {
  * @param width 栅格容器宽度(px)
  * @return 一页的格子数; 宽度为 0(尚未布局)时返回 null, 由调用方沿用上一次的值
  */
-export function mediaGridMetrics(width: number): MediaGridMetrics | null {
-  if (width <= 0) return null
-  const columns = Math.max(1, Math.floor((width + GRID_GAP) / (CELL_MIN_WIDTH + GRID_GAP)))
-  return { capacity: Math.min(columns * MAX_PAGE_ROWS, MAX_PAGE_SIZE) }
+export function mediaGridMetrics(width: number): MediaGridMetrics | null
+{
+    if (width <= 0) return null
+    const columns = Math.max(1, Math.floor((width + GRID_GAP) / (CELL_MIN_WIDTH + GRID_GAP)))
+    return { capacity: Math.min(columns * MAX_PAGE_ROWS, MAX_PAGE_SIZE) }
 }

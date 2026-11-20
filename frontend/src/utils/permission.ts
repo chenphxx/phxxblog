@@ -10,6 +10,7 @@ import type { User } from '@/types'
  * @param code 权限码
  * @returns 拥有权限时为 true
  */
-export function hasPermission(user: User | null | undefined, code: string): boolean {
-  return user?.permission_codes?.includes(code) ?? false
+export function hasPermission(user: User | null | undefined, code: string): boolean
+{
+    return user?.permission_codes?.includes(code) ?? false
 }

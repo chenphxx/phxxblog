@@ -72,12 +72,6 @@ run("前端: 主题与生成物一致", [npm, "run", "themes:audit"], FRONTEND, 
 run("前端: 图标路径", [npm, "run", "check:icons"], FRONTEND, ok_hint="ALL OK")
 run("前端: 程序式组件样式", [npm, "run", "check:element-styles"], FRONTEND, ok_hint="ALL OK")
 run("前端: 静态检查(eslint)", [npx, "eslint", "."], FRONTEND)
-run(
-    "前端: 格式一致(prettier)",
-    [npm, "run", "check:format"],
-    FRONTEND,
-    ok_hint="All matched files use Prettier code style",
-)
 
 # 个别检查的输出可能含当前代码页无法表示的字符,
 # 打印时用替换而不是抛 UnicodeEncodeError

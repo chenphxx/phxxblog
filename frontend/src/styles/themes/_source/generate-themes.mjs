@@ -18,14 +18,15 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { THEMES } from './tokens.mjs'
-import {
-  COLOR_VARS,
-  DARK_SHADOW_TOKENS,
-  FONT_MONO,
-  FONT_SANS,
-  STRUCTURE_TOKENS,
-  deriveMode,
-  elementScale,
+import
+{
+    COLOR_VARS,
+    DARK_SHADOW_TOKENS,
+    FONT_MONO,
+    FONT_SANS,
+    STRUCTURE_TOKENS,
+    deriveMode,
+    elementScale,
 } from './derive.mjs'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
@@ -36,8 +37,9 @@ const repo = path.resolve(here, '../../../..')
 const REL_SOURCE = 'src/styles/themes/_source/generate-themes.mjs'
 
 /** @brief 生成文件头部注释 */
-function header(title, extra) {
-  return `/* ============================================================
+function header(title, extra)
+{
+    return `/* ============================================================
  * ${title}
  * ${extra}
  * ------------------------------------------------------------
@@ -48,8 +50,9 @@ function header(title, extra) {
 }
 
 /** @brief 把令牌表渲染成缩进过的 CSS 声明行 */
-function declarations(entries) {
-  return entries.map(([name, value]) => `  ${name}: ${value};`).join('\n')
+function declarations(entries)
+{
+    return entries.map(([name, value]) => `    ${name}: ${value};`).join('\n')
 }
 
 /**
@@ -59,20 +62,21 @@ function declarations(entries) {
  * @param {'light'|'dark'} mode 模式
  * @return {string} 颜色令牌声明行
  */
-function renderColors(theme, mode) {
-  const tokens = deriveMode(theme, mode)
-  const scale = elementScale(tokens.primary)
-  const lines = declarations(COLOR_VARS.map(([key, name]) => [name, tokens[key]]))
-  const el = declarations([
-    ['--el-color-primary', tokens.primary],
-    ['--el-color-primary-light-3', scale.light3],
-    ['--el-color-primary-light-5', scale.light5],
-    ['--el-color-primary-light-7', scale.light7],
-    ['--el-color-primary-light-8', scale.light8],
-    ['--el-color-primary-light-9', scale.light9],
-    ['--el-color-primary-dark-2', scale.dark2],
-  ])
-  return `${lines}\n\n  /* Element Plus 主色色阶由品牌色推导, 组件与主题保持一致 */\n${el}`
+function renderColors(theme, mode)
+{
+    const tokens = deriveMode(theme, mode)
+    const scale = elementScale(tokens.primary)
+    const lines = declarations(COLOR_VARS.map(([key, name]) => [name, tokens[key]]))
+    const el = declarations([
+        ['--el-color-primary', tokens.primary],
+        ['--el-color-primary-light-3', scale.light3],
+        ['--el-color-primary-light-5', scale.light5],
+        ['--el-color-primary-light-7', scale.light7],
+        ['--el-color-primary-light-8', scale.light8],
+        ['--el-color-primary-light-9', scale.light9],
+        ['--el-color-primary-dark-2', scale.dark2],
+    ])
+    return `${lines}\n\n    /* Element Plus 主色色阶由品牌色推导, 组件与主题保持一致 */\n${el}`
 }
 
 fs.mkdirSync(outDir, { recursive: true })
@@ -82,21 +86,23 @@ fs.mkdirSync(outDir, { recursive: true })
  * ------------------------------------------------------------- */
 const baseCss = `${header('共享结构令牌(间距, 圆角, 阴影, 动效)与字体', '主题只负责颜色, 结构令牌在这里统一')}
 
-:root {
-  /* 字体: UI 文字用系统无衬线, 等宽字体只留给代码块, 终端与数字指标 */
-  --font-sans: ${FONT_SANS};
-  --font-mono: ${FONT_MONO};
+:root
+{
+    /* 字体: UI 文字用系统无衬线, 等宽字体只留给代码块, 终端与数字指标 */
+    --font-sans: ${FONT_SANS};
+    --font-mono: ${FONT_MONO};
 
 ${declarations(STRUCTURE_TOKENS)}
 
-  /* Element Plus 的圆角跟随结构令牌, 组件外观与页面保持一致 */
-  --el-border-radius-base: var(--radius-control);
-  --el-border-radius-small: calc(var(--radius-control) - 2px);
-  --el-border-radius-round: var(--radius-pill);
+    /* Element Plus 的圆角跟随结构令牌, 组件外观与页面保持一致 */
+    --el-border-radius-base: var(--radius-control);
+    --el-border-radius-small: calc(var(--radius-control) - 2px);
+    --el-border-radius-round: var(--radius-pill);
 }
 
 /* 深色下阴影需要更重才看得出来 */
-html.dark {
+html.dark
+{
 ${declarations(DARK_SHADOW_TOKENS)}
 }
 `
@@ -111,11 +117,12 @@ console.log('written:', path.relative(repo, path.join(outDir, 'base.css')))
  * ------------------------------------------------------------- */
 const defaultTheme = THEMES[0]
 const defaultCss = `${header(
-  `默认主题: ${defaultTheme.name} (${defaultTheme.en})`,
-  `新访客(未在 localStorage 里存过主题)看到的就是这一套\n * 想换默认主题: 把 tokens.mjs 里想用的那套挪到 THEMES 数组第一位`,
+    `默认主题: ${defaultTheme.name} (${defaultTheme.en})`,
+    `新访客(未在 localStorage 里存过主题)看到的就是这一套\n * 想换默认主题: 把 tokens.mjs 里想用的那套挪到 THEMES 数组第一位`,
 )}
 
-:root {
+:root
+{
 ${renderColors(defaultTheme, 'light')}
 }
 `
@@ -127,23 +134,26 @@ console.log('written:', path.relative(repo, path.join(outDir, 'theme-default.css
  * ------------------------------------------------------------- */
 const ids = new Set()
 
-for (const t of THEMES) {
-  if (ids.has(t.id)) throw new Error(`主题 id 重复: ${t.id}`)
-  ids.add(t.id)
+for (const t of THEMES)
+{
+    if (ids.has(t.id)) throw new Error(`主题 id 重复: ${t.id}`)
+    ids.add(t.id)
 
-  const css = `${header(`主题: ${t.name} (${t.en})`, `${t.desc}\n * 切换方式: html[data-theme='${t.id}'] (见 stores/theme.ts), 深色再加 .dark`)}
+    const css = `${header(`主题: ${t.name} (${t.en})`, `${t.desc}\n * 切换方式: html[data-theme='${t.id}'] (见 stores/theme.ts), 深色再加 .dark`)}
 
-html[data-theme='${t.id}'] {
+html[data-theme='${t.id}']
+{
 ${renderColors(t, 'light')}
 }
 
-html[data-theme='${t.id}'].dark {
+html[data-theme='${t.id}'].dark
+{
 ${renderColors(t, 'dark')}
 }
 `
-  const out = path.join(outDir, `theme-${t.id}.css`)
-  fs.writeFileSync(out, css, 'utf8')
-  console.log('written:', path.relative(repo, out), '(' + Math.round(css.length / 1024) + ' KB)')
+    const out = path.join(outDir, `theme-${t.id}.css`)
+    fs.writeFileSync(out, css, 'utf8')
+    console.log('written:', path.relative(repo, out), '(' + Math.round(css.length / 1024) + ' KB)')
 }
 
 /* ---------------------------------------------------------------
@@ -155,23 +165,25 @@ const registry = `/**
  */
 
 export type ThemeId =
-${THEMES.map((t) => `  | '${t.id}'`).join('\n')}
+${THEMES.map((t) => `    | '${t.id}'`).join('\n')}
 
-export interface ThemeOption {
-  id: ThemeId
-  name: string
-  en: string
-  desc: string
-  /** 预览用的两个代表色, 供下拉菜单左侧色点显示(品牌色 + 画布色) */
-  swatch: string[]
+export interface ThemeOption
+{
+    id: ThemeId
+    name: string
+    en: string
+    desc: string
+    /** 预览用的两个代表色, 供下拉菜单左侧色点显示(品牌色 + 画布色) */
+    swatch: string[]
 }
 
 export const DEFAULT_THEME: ThemeId = '${THEMES[0].id}'
 
-export const THEME_OPTIONS: ThemeOption[] = [
+export const THEME_OPTIONS: ThemeOption[] =
+[
 ${THEMES.map(
-  (t) =>
-    `  {\n    id: '${t.id}',\n    name: '${t.name}',\n    en: '${t.en}',\n    desc: '${t.desc}',\n    swatch: ['${t.light.primary}', '${t.light.bg}'],\n  },`,
+    (t) =>
+        `    {\n        id: '${t.id}',\n        name: '${t.name}',\n        en: '${t.en}',\n        desc: '${t.desc}',\n        swatch: ['${t.light.primary}', '${t.light.bg}'],\n    },`,
 ).join('\n')}
 ]
 
@@ -180,6 +192,7 @@ export const THEME_IDS = THEME_OPTIONS.map((t) => t.id)
 fs.writeFileSync(path.join(outDir, 'registry.ts'), registry, 'utf8')
 console.log('written:', path.relative(repo, path.join(outDir, 'registry.ts')))
 
-console.log(
-  `\n共 ${THEMES.length} 套主题, 默认: ${defaultTheme.name} (${defaultTheme.id}); 结构令牌集中在 themes/base.css`,
+console.log
+(
+    `\n共 ${THEMES.length} 套主题, 默认: ${defaultTheme.name} (${defaultTheme.id}); 结构令牌集中在 themes/base.css`,
 )

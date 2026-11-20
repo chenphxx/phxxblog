@@ -17,20 +17,23 @@ export const VIEWS_COLOR = '#0284c7'
 export const LIKES_COLOR = '#e11d48'
 
 /** 名称 -> 稳定色相(0-359) */
-function hueFromName(name: string): number {
-  let hash = 0
-  for (let i = 0; i < name.length; i += 1) {
-    hash = (hash * 31 + name.charCodeAt(i)) % 360
-  }
-  return hash
+function hueFromName(name: string): number
+{
+    let hash = 0
+    for (let i = 0; i < name.length; i += 1)
+    {
+        hash = (hash * 31 + name.charCodeAt(i)) % 360
+    }
+    return hash
 }
 
 /** 生成标签背景色样式(浅色/深色模式均自动适配) */
-export function chipStyle(name: string, color?: string | null): CSSProperties {
-  const base = color && HEX_RE.test(color) ? color : `hsl(${hueFromName(name)} 42% 44%)`
-  return {
-    background: `color-mix(in srgb, ${base} 10%, transparent)`,
-    borderColor: `color-mix(in srgb, ${base} 26%, transparent)`,
-    color: `color-mix(in srgb, ${base} 76%, var(--text))`,
-  }
+export function chipStyle(name: string, color?: string | null): CSSProperties
+{
+    const base = color && HEX_RE.test(color) ? color : `hsl(${hueFromName(name)} 42% 44%)`
+    return {
+        background: `color-mix(in srgb, ${base} 10%, transparent)`,
+        borderColor: `color-mix(in srgb, ${base} 26%, transparent)`,
+        color: `color-mix(in srgb, ${base} 76%, var(--text))`,
+    }
 }

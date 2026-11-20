@@ -23,70 +23,84 @@ const dist = path.resolve(here, '..', 'dist')
 const kb = (bytes) => `${(bytes / 1024).toFixed(1)} KB`
 
 let html
-try {
-  html = readFileSync(path.join(dist, 'index.html'), 'utf8')
-} catch {
-  console.error(`找不到 ${dist}/index.html, 请先执行 npm run build`)
-  process.exit(1)
+try
+{
+    html = readFileSync(path.join(dist, 'index.html'), 'utf8')
+} catch
+{
+    console.error(`找不到 ${dist}/index.html, 请先执行 npm run build`)
+    process.exit(1)
 }
 
 /** 从 index.html 中收集首屏必须加载的资源路径 */
-function firstPaintAssets(source) {
-  const files = new Set()
-  // <script type="module" crossorigin src="/assets/xxx.js">
-  for (const match of source.matchAll(/<script[^>]+src="([^"]+)"/g)) files.add(match[1])
-  // <link rel="modulepreload" href="/assets/xxx.js"> 与 <link rel="stylesheet" href="...">
-  for (const match of source.matchAll(/<link[^>]+href="([^"]+\.(?:js|css))"/g)) files.add(match[1])
-  return [...files].map((href) => path.join(dist, href.replace(/^\//, '')))
+function firstPaintAssets(source)
+{
+    const files = new Set()
+    // <script type="module" crossorigin src="/assets/xxx.js">
+    for (const match of source.matchAll(/<script[^>]+src="([^"]+)"/g)) files.add(match[1])
+    // <link rel="modulepreload" href="/assets/xxx.js"> 与 <link rel="stylesheet" href="...">
+    for (const match of source.matchAll(/<link[^>]+href="([^"]+\.(?:js|css))"/g)) files.add(match[1])
+    return [...files].map((href) => path.join(dist, href.replace(/^\//, '')))
 }
 
 /** 递归列出 dist 下的 .js/.css/.html(按需加载的 vditor 与字体不计入) */
-function walk(dir, out = []) {
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const full = path.join(dir, entry.name)
-    if (entry.isDirectory()) {
-      if (entry.name === 'vditor' || entry.name === 'fonts') continue
-      walk(full, out)
-    } else if (/\.(js|css|html)$/.test(entry.name)) {
-      out.push(full)
+function walk(dir, out = [])
+{
+    for (const entry of readdirSync(dir, { withFileTypes: true }))
+    {
+        const full = path.join(dir, entry.name)
+        if (entry.isDirectory())
+        {
+            if (entry.name === 'vditor' || entry.name === 'fonts') continue
+            walk(full, out)
+        } else if (/\.(js|css|html)$/.test(entry.name))
+        {
+            out.push(full)
+        }
     }
-  }
-  return out
+    return out
 }
 
 /** 返回 [原始字节, gzip 字节] */
-function measure(file) {
-  const raw = readFileSync(file)
-  return [raw.length, gzipSync(raw).length]
+function measure(file)
+{
+    const raw = readFileSync(file)
+    return [raw.length, gzipSync(raw).length]
 }
 
 const firstPaint = firstPaintAssets(html)
-if (!firstPaint.length) {
-  console.error('index.html 里没有解析到任何脚本/样式引用, 打包格式可能变了')
-  process.exit(1)
+if (!firstPaint.length)
+{
+    console.error('index.html 里没有解析到任何脚本/样式引用, 打包格式可能变了')
+    process.exit(1)
 }
 
-const [fpRaw, fpGzip] = firstPaint.reduce(
-  ([r, g], file) => {
-    const [raw, gz] = measure(file)
-    return [r + raw, g + gz]
-  },
-  [0, 0],
+const [fpRaw, fpGzip] = firstPaint.reduce
+(
+    ([r, g], file) =>
+    {
+        const [raw, gz] = measure(file)
+        return [r + raw, g + gz]
+    },
+    [0, 0],
 )
 
 const bundle = walk(dist).filter((file) => !firstPaint.includes(file))
-const [bundleRaw, bundleGzip] = bundle.reduce(
-  ([r, g], file) => {
-    const [raw, gz] = measure(file)
-    return [r + raw, g + gz]
-  },
-  [0, 0],
+const [bundleRaw, bundleGzip] = bundle.reduce
+(
+    ([r, g], file) =>
+    {
+        const [raw, gz] = measure(file)
+        return [r + raw, g + gz]
+    },
+    [0, 0],
 )
 
 console.log('首屏资源(渲染首屏前必须下载):')
-for (const file of firstPaint) {
-  const [raw, gz] = measure(file)
-  console.log(`  ${path.relative(dist, file).padEnd(38)} ${kb(raw).padStart(10)}  gzip ${kb(gz).padStart(9)}`)
+for (const file of firstPaint)
+{
+    const [raw, gz] = measure(file)
+    console.log(`  ${path.relative(dist, file).padEnd(38)} ${kb(raw).padStart(10)}  gzip ${kb(gz).padStart(9)}`)
 }
 console.log(`  ${'合计'.padEnd(36)} ${kb(fpRaw).padStart(10)}  gzip ${kb(fpGzip).padStart(9)}`)
 console.log()
@@ -99,11 +113,12 @@ console.log()
 console.log('提示: vditor/(约 21MB)与 fonts/ 未计入, 它们是编辑器与字体按需资源。')
 
 // 供 CI 判断是否需要重新生成文档中的数字
-if (process.argv.includes('--json')) {
-  console.log(
-    JSON.stringify({
-      firstPaint: { raw: fpRaw, gzip: fpGzip },
-      lazy: { raw: bundleRaw, gzip: bundleGzip, files: bundle.length },
-    }),
-  )
+if (process.argv.includes('--json'))
+{
+    console.log(
+        JSON.stringify({
+            firstPaint: { raw: fpRaw, gzip: fpGzip },
+            lazy: { raw: bundleRaw, gzip: bundleGzip, files: bundle.length },
+        }),
+    )
 }

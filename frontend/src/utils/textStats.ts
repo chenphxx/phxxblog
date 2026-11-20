@@ -11,13 +11,15 @@ const WORD_RE = /[A-Za-z0-9_']+/g
 const READING_SPEED = 300
 
 /** 统计字数: 中日韩字符按字计, 英文/数字按单词计 */
-export function countWords(text: string): number {
-  if (!text) return 0
-  return (text.match(CJK_RE)?.length ?? 0) + (text.match(WORD_RE)?.length ?? 0)
+export function countWords(text: string): number
+{
+    if (!text) return 0
+    return (text.match(CJK_RE)?.length ?? 0) + (text.match(WORD_RE)?.length ?? 0)
 }
 
 /** 按固定速度估算阅读时间(分钟), 不足 1 分钟按 1 分钟计 */
-export function readingMinutes(words: number): number {
-  if (words <= 0) return 0
-  return Math.max(1, Math.ceil(words / READING_SPEED))
+export function readingMinutes(words: number): number
+{
+    if (words <= 0) return 0
+    return Math.max(1, Math.ceil(words / READING_SPEED))
 }

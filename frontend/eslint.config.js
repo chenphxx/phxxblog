@@ -6,43 +6,47 @@ import tseslint from 'typescript-eslint'
 import pluginVue from 'eslint-plugin-vue'
 import prettier from 'eslint-config-prettier'
 
-export default [
-  {
-    ignores: [
-      'dist/**',
-      // 由 unplugin-vue-components 生成
-      'src/components.d.ts',
-      // 主题子系统的生成物(生成器自己写出来的, 格式由生成器决定)
-      'src/styles/themes/*.css',
-      'src/styles/themes/registry.ts',
-      'public/**',
-    ],
-  },
-  js.configs.recommended,
-  ...tseslint.configs.recommended,
-  ...pluginVue.configs['flat/recommended'],
-  {
-    files: ['**/*.vue'],
-    languageOptions: {
-      parserOptions: { parser: tseslint.parser },
+export default
+[
+    {
+        ignores: [
+            'dist/**',
+            // 由 unplugin-vue-components 生成
+            'src/components.d.ts',
+            // 主题子系统的生成物(生成器自己写出来的, 格式由生成器决定)
+            'src/styles/themes/*.css',
+            'src/styles/themes/registry.ts',
+            'public/**',
+        ],
     },
-  },
-  {
-    files: ['src/**/*.{ts,vue}'],
-    languageOptions: {
-      globals: { ...globals.browser },
+    js.configs.recommended,
+    ...tseslint.configs.recommended,
+    ...pluginVue.configs['flat/recommended'],
+    {
+        files: ['**/*.vue'],
+        languageOptions:
+        {
+            parserOptions: { parser: tseslint.parser },
+        },
     },
-  },
-  {
-    // 看板娘的形象名是专有名词, 不适用"组件名必须是多个单词"的约定
-    files: ['src/components/Kanbanniang.vue'],
-    rules: { 'vue/multi-word-component-names': 'off' },
-  },
-  {
-    files: ['scripts/**/*.mjs', 'src/styles/themes/_source/**/*.mjs', '*.{ts,mjs}'],
-    languageOptions: {
-      globals: { ...globals.node },
+    {
+        files: ['src/**/*.{ts,vue}'],
+        languageOptions:
+        {
+            globals: { ...globals.browser },
+        },
     },
-  },
-  prettier,
+    {
+        // 看板娘的形象名是专有名词, 不适用"组件名必须是多个单词"的约定
+        files: ['src/components/Kanbanniang.vue'],
+        rules: { 'vue/multi-word-component-names': 'off' },
+    },
+    {
+        files: ['scripts/**/*.mjs', 'src/styles/themes/_source/**/*.mjs', '*.{ts,mjs}'],
+        languageOptions:
+        {
+            globals: { ...globals.node },
+        },
+    },
+    prettier,
 ]

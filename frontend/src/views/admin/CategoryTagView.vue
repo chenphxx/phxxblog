@@ -10,17 +10,18 @@ const categories = ref<Category[]>([])
 const tags = ref<Tag[]>([])
 
 /** 颜色预设(留空则由前端按名称自动生成) */
-const COLOR_PRESETS = [
-  '#0e7490',
-  '#2563eb',
-  '#7c3aed',
-  '#db2777',
-  '#dc2626',
-  '#ea580c',
-  '#ca8a04',
-  '#16a34a',
-  '#0d9488',
-  '#64748b',
+const COLOR_PRESETS =
+[
+    '#0e7490',
+    '#2563eb',
+    '#7c3aed',
+    '#db2777',
+    '#dc2626',
+    '#ea580c',
+    '#ca8a04',
+    '#16a34a',
+    '#0d9488',
+    '#64748b',
 ]
 
 const categoryForm = ref({ id: 0, name: '', slug: '', description: '', color: '', sort_order: 0 })
@@ -28,202 +29,222 @@ const categoryDialog = ref(false)
 const tagForm = ref({ id: 0, name: '', slug: '', color: '' })
 const tagDialog = ref(false)
 
-async function load() {
-  categories.value = await categoryApi.list()
-  tags.value = await tagApi.list()
+async function load()
+{
+    categories.value = await categoryApi.list()
+    tags.value = await tagApi.list()
 }
 
-function openCategoryDialog(category?: Category) {
-  categoryForm.value = category
-    ? {
-        id: category.id,
-        name: category.name,
-        slug: category.slug,
-        description: category.description || '',
-        color: category.color || '',
-        sort_order: category.sort_order,
-      }
-    : { id: 0, name: '', slug: '', description: '', color: '', sort_order: 0 }
-  categoryDialog.value = true
+function openCategoryDialog(category?: Category)
+{
+    categoryForm.value = category
+        ?
+        {
+              id: category.id,
+              name: category.name,
+              slug: category.slug,
+              description: category.description || '',
+              color: category.color || '',
+              sort_order: category.sort_order,
+          }
+        : { id: 0, name: '', slug: '', description: '', color: '', sort_order: 0 }
+    categoryDialog.value = true
 }
 
-async function saveCategory() {
-  // 空值在这里就拦下: 直接提交只会拿到后端 422 的英文校验信息(如 "body.slug: String ...")
-  if (!categoryForm.value.name.trim()) {
-    ElMessage.warning('名称不能为空')
-    return
-  }
-  if (!categoryForm.value.slug.trim()) {
-    ElMessage.warning('别名不能为空')
-    return
-  }
-  const payload = {
-    ...categoryForm.value,
-    name: categoryForm.value.name.trim(),
-    slug: categoryForm.value.slug.trim(),
-  }
-  if (payload.id) {
-    await categoryApi.update(payload.id, payload)
-  } else {
-    await categoryApi.create(payload)
-  }
-  ElMessage.success('保存成功')
-  categoryDialog.value = false
-  load()
+async function saveCategory()
+{
+    // 空值在这里就拦下: 直接提交只会拿到后端 422 的英文校验信息(如 "body.slug: String ...")
+    if (!categoryForm.value.name.trim())
+    {
+        ElMessage.warning('名称不能为空')
+        return
+    }
+    if (!categoryForm.value.slug.trim())
+    {
+        ElMessage.warning('别名不能为空')
+        return
+    }
+    const payload =
+    {
+        ...categoryForm.value,
+        name: categoryForm.value.name.trim(),
+        slug: categoryForm.value.slug.trim(),
+    }
+    if (payload.id)
+    {
+        await categoryApi.update(payload.id, payload)
+    } else
+    {
+        await categoryApi.create(payload)
+    }
+    ElMessage.success('保存成功')
+    categoryDialog.value = false
+    load()
 }
 
-async function removeCategory(category: Category) {
-  await ElMessageBox.confirm(`删除分类「${category.name}」? 文章将变为未分类。`, '确认', { type: 'warning' })
-  await categoryApi.remove(category.id)
-  ElMessage.success('删除成功')
-  load()
+async function removeCategory(category: Category)
+{
+    await ElMessageBox.confirm(`删除分类「${category.name}」? 文章将变为未分类。`, '确认', { type: 'warning' })
+    await categoryApi.remove(category.id)
+    ElMessage.success('删除成功')
+    load()
 }
 
-function openTagDialog(tag?: Tag) {
-  tagForm.value = tag
-    ? { id: tag.id, name: tag.name, slug: tag.slug, color: tag.color || '' }
-    : { id: 0, name: '', slug: '', color: '' }
-  tagDialog.value = true
+function openTagDialog(tag?: Tag)
+{
+    tagForm.value = tag
+        ? { id: tag.id, name: tag.name, slug: tag.slug, color: tag.color || '' }
+        : { id: 0, name: '', slug: '', color: '' }
+    tagDialog.value = true
 }
 
-async function saveTag() {
-  if (!tagForm.value.name.trim()) {
-    ElMessage.warning('名称不能为空')
-    return
-  }
-  if (!tagForm.value.slug.trim()) {
-    ElMessage.warning('别名不能为空')
-    return
-  }
-  const payload = {
-    ...tagForm.value,
-    name: tagForm.value.name.trim(),
-    slug: tagForm.value.slug.trim(),
-  }
-  if (tagForm.value.id) {
-    await tagApi.update(tagForm.value.id, payload)
-  } else {
-    await tagApi.create(payload)
-  }
-  ElMessage.success('保存成功')
-  tagDialog.value = false
-  load()
+async function saveTag()
+{
+    if (!tagForm.value.name.trim())
+    {
+        ElMessage.warning('名称不能为空')
+        return
+    }
+    if (!tagForm.value.slug.trim())
+    {
+        ElMessage.warning('别名不能为空')
+        return
+    }
+    const payload =
+    {
+        ...tagForm.value,
+        name: tagForm.value.name.trim(),
+        slug: tagForm.value.slug.trim(),
+    }
+    if (tagForm.value.id)
+    {
+        await tagApi.update(tagForm.value.id, payload)
+    } else
+    {
+        await tagApi.create(payload)
+    }
+    ElMessage.success('保存成功')
+    tagDialog.value = false
+    load()
 }
 
-async function removeTag(tag: Tag) {
-  await ElMessageBox.confirm(`删除标签「${tag.name}」?`, '确认', { type: 'warning' })
-  await tagApi.remove(tag.id)
-  ElMessage.success('删除成功')
-  load()
+async function removeTag(tag: Tag)
+{
+    await ElMessageBox.confirm(`删除标签「${tag.name}」?`, '确认', { type: 'warning' })
+    await tagApi.remove(tag.id)
+    ElMessage.success('删除成功')
+    load()
 }
 
 onMounted(load)
 </script>
 
 <template>
-  <div>
-    <h2>分类与标签</h2>
+    <div>
+        <h2>分类与标签</h2>
 
-    <!-- 页眉与其它后台页一致: 标题独占一行, 工具条左侧放说明, 右侧放主操作 -->
-    <div class="admin-toolbar">
-      <div class="admin-toolbar-filters">
-        <span class="muted">
-          <template v-if="tab === 'category'">共 {{ categories.length }} 个分类</template>
-          <template v-else>共 {{ tags.length }} 个标签</template>
-        </span>
-      </div>
-      <div class="admin-toolbar-actions">
-        <el-button v-if="tab === 'category'" type="primary" @click="openCategoryDialog()">新增分类</el-button>
-        <el-button v-else type="primary" @click="openTagDialog()">新增标签</el-button>
-      </div>
-    </div>
+        <!-- 页眉与其它后台页一致: 标题独占一行, 工具条左侧放说明, 右侧放主操作 -->
+        <div class="admin-toolbar">
+            <div class="admin-toolbar-filters">
+                <span class="muted">
+                    <template v-if="tab === 'category'">共 {{ categories.length }} 个分类</template>
+                    <template v-else>共 {{ tags.length }} 个标签</template>
+                </span>
+            </div>
+            <div class="admin-toolbar-actions">
+                <el-button v-if="tab === 'category'" type="primary" @click="openCategoryDialog()">新增分类</el-button>
+                <el-button v-else type="primary" @click="openTagDialog()">新增标签</el-button>
+            </div>
+        </div>
 
-    <el-tabs v-model="tab">
-      <el-tab-pane label="分类" name="category">
-        <div class="card">
-          <el-table :data="categories">
-            <el-table-column prop="name" label="名称" />
-            <el-table-column prop="slug" label="别名" />
-            <el-table-column prop="post_count" label="文章数" width="90" />
-            <el-table-column prop="sort_order" label="排序" width="70" />
-            <el-table-column prop="description" label="描述" min-width="160" show-overflow-tooltip />
-            <el-table-column label="颜色" width="130">
-              <template #default="{ row }">
-                <span class="chip" :style="chipStyle(row.name, row.color)">{{ row.name }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column label="操作" width="140">
-              <template #default="{ row }">
-                <!-- el-table 的插槽 row 是 DefaultRow(相当于 Record<string, any>),
+        <el-tabs v-model="tab">
+            <el-tab-pane label="分类" name="category">
+                <div class="card">
+                    <el-table :data="categories">
+                        <el-table-column prop="name" label="名称" />
+                        <el-table-column prop="slug" label="别名" />
+                        <el-table-column prop="post_count" label="文章数" width="90" />
+                        <el-table-column prop="sort_order" label="排序" width="70" />
+                        <el-table-column prop="description" label="描述" min-width="160" show-overflow-tooltip />
+                        <el-table-column label="颜色" width="130">
+                            <template #default="{ row }">
+                                <span class="chip" :style="chipStyle(row.name, row.color)">{{ row.name }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="操作" width="140">
+                            <template #default="{ row }">
+                                <!-- el-table 的插槽 row 是 DefaultRow(相当于 Record<string, any>),
                      这里显式断言成实际行类型: 类型更安全, 也不需要改函数签名 -->
-                <el-button size="small" @click="openCategoryDialog(row as Category)">编辑</el-button>
-                <el-button size="small" type="danger" @click="removeCategory(row as Category)">删除</el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-      </el-tab-pane>
+                                <el-button size="small" @click="openCategoryDialog(row as Category)">编辑</el-button>
+                                <el-button size="small" type="danger" @click="removeCategory(row as Category)"
+                                    >删除</el-button
+                                >
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </div>
+            </el-tab-pane>
 
-      <el-tab-pane label="标签" name="tag">
-        <div class="card">
-          <el-table :data="tags">
-            <el-table-column prop="name" label="名称" />
-            <el-table-column prop="slug" label="别名" />
-            <el-table-column prop="post_count" label="文章数" width="90" />
-            <el-table-column label="颜色" width="130">
-              <template #default="{ row }">
-                <span class="chip" :style="chipStyle(row.name, row.color)">#{{ row.name }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column label="操作" width="140">
-              <template #default="{ row }">
-                <el-button size="small" @click="openTagDialog(row as Tag)">编辑</el-button>
-                <el-button size="small" type="danger" @click="removeTag(row as Tag)">删除</el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-      </el-tab-pane>
-    </el-tabs>
+            <el-tab-pane label="标签" name="tag">
+                <div class="card">
+                    <el-table :data="tags">
+                        <el-table-column prop="name" label="名称" />
+                        <el-table-column prop="slug" label="别名" />
+                        <el-table-column prop="post_count" label="文章数" width="90" />
+                        <el-table-column label="颜色" width="130">
+                            <template #default="{ row }">
+                                <span class="chip" :style="chipStyle(row.name, row.color)">#{{ row.name }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="操作" width="140">
+                            <template #default="{ row }">
+                                <el-button size="small" @click="openTagDialog(row as Tag)">编辑</el-button>
+                                <el-button size="small" type="danger" @click="removeTag(row as Tag)">删除</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </div>
+            </el-tab-pane>
+        </el-tabs>
 
-    <el-dialog v-model="categoryDialog" :title="categoryForm.id ? '编辑分类' : '新增分类'" width="480px">
-      <el-form label-position="top">
-        <el-form-item label="名称"><el-input v-model="categoryForm.name" /></el-form-item>
-        <el-form-item label="别名"><el-input v-model="categoryForm.slug" /></el-form-item>
-        <el-form-item label="描述"><el-input v-model="categoryForm.description" /></el-form-item>
-        <el-form-item label="颜色(留空自动生成)">
-          <div style="display: flex; align-items: center; gap: 10px">
-            <el-color-picker v-model="categoryForm.color" :predefine="COLOR_PRESETS" />
-            <span class="chip" :style="chipStyle(categoryForm.name || '分类', categoryForm.color)">
-              {{ categoryForm.name || '分类' }}
-            </span>
-          </div>
-        </el-form-item>
-        <el-form-item label="排序(小在前)"><el-input-number v-model="categoryForm.sort_order" /></el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="categoryDialog = false">取消</el-button>
-        <el-button type="primary" @click="saveCategory">保存</el-button>
-      </template>
-    </el-dialog>
+        <el-dialog v-model="categoryDialog" :title="categoryForm.id ? '编辑分类' : '新增分类'" width="480px">
+            <el-form label-position="top">
+                <el-form-item label="名称"><el-input v-model="categoryForm.name" /></el-form-item>
+                <el-form-item label="别名"><el-input v-model="categoryForm.slug" /></el-form-item>
+                <el-form-item label="描述"><el-input v-model="categoryForm.description" /></el-form-item>
+                <el-form-item label="颜色(留空自动生成)">
+                    <div style="display: flex; align-items: center; gap: 10px">
+                        <el-color-picker v-model="categoryForm.color" :predefine="COLOR_PRESETS" />
+                        <span class="chip" :style="chipStyle(categoryForm.name || '分类', categoryForm.color)">
+                            {{ categoryForm.name || '分类' }}
+                        </span>
+                    </div>
+                </el-form-item>
+                <el-form-item label="排序(小在前)"><el-input-number v-model="categoryForm.sort_order" /></el-form-item>
+            </el-form>
+            <template #footer>
+                <el-button @click="categoryDialog = false">取消</el-button>
+                <el-button type="primary" @click="saveCategory">保存</el-button>
+            </template>
+        </el-dialog>
 
-    <el-dialog v-model="tagDialog" :title="tagForm.id ? '编辑标签' : '新增标签'" width="420px">
-      <el-form label-position="top">
-        <el-form-item label="名称"><el-input v-model="tagForm.name" /></el-form-item>
-        <el-form-item label="别名"><el-input v-model="tagForm.slug" /></el-form-item>
-        <el-form-item label="颜色(留空自动生成)">
-          <div style="display: flex; align-items: center; gap: 10px">
-            <el-color-picker v-model="tagForm.color" :predefine="COLOR_PRESETS" />
-            <span class="chip" :style="chipStyle(tagForm.name || '标签', tagForm.color)">
-              #{{ tagForm.name || '标签' }}
-            </span>
-          </div>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="tagDialog = false">取消</el-button>
-        <el-button type="primary" @click="saveTag">保存</el-button>
-      </template>
-    </el-dialog>
-  </div>
+        <el-dialog v-model="tagDialog" :title="tagForm.id ? '编辑标签' : '新增标签'" width="420px">
+            <el-form label-position="top">
+                <el-form-item label="名称"><el-input v-model="tagForm.name" /></el-form-item>
+                <el-form-item label="别名"><el-input v-model="tagForm.slug" /></el-form-item>
+                <el-form-item label="颜色(留空自动生成)">
+                    <div style="display: flex; align-items: center; gap: 10px">
+                        <el-color-picker v-model="tagForm.color" :predefine="COLOR_PRESETS" />
+                        <span class="chip" :style="chipStyle(tagForm.name || '标签', tagForm.color)">
+                            #{{ tagForm.name || '标签' }}
+                        </span>
+                    </div>
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <el-button @click="tagDialog = false">取消</el-button>
+                <el-button type="primary" @click="saveTag">保存</el-button>
+            </template>
+        </el-dialog>
+    </div>
 </template>

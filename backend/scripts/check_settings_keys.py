@@ -51,10 +51,10 @@ def check(condition: bool, message: str) -> None:
 
 def interface_keys(source: str, name: str) -> set[str]:
     """从 TS 源码里取出某个 interface 的顶层字段名(只处理扁平接口)"""
-    match = re.search(rf"export interface {name} \{{(.*?)\n\}}", source, re.S)
+    match = re.search(rf"export interface {name}\s*\{{(.*?)\n\}}", source, re.S)
     if match is None:
         raise SystemExit(f"  FAIL 在 {TYPES_TS.name} 里找不到 interface {name}")
-    return set(re.findall(r"^\s{2}(\w+)\??:", match.group(1), re.M))
+    return set(re.findall(r"^\s+(\w+)\??:", match.group(1), re.M))
 
 
 print("后端: 键与默认值")
@@ -105,7 +105,7 @@ NOT_IN_FORM = {
 form_match = re.search(r"const form = ref\(\{(.*?)\n\}\)", view_src, re.S)
 if form_match is None:
     raise SystemExit("  FAIL 在 SettingsView.vue 里找不到 form 定义")
-form_keys = set(re.findall(r"^\s{2}(\w+):", form_match.group(1), re.M))
+form_keys = set(re.findall(r"^\s+(\w+):", form_match.group(1), re.M))
 expected_form = (set(PUBLIC_KEYS) | set(ADMIN_ONLY_KEYS)) - NOT_IN_FORM
 check(
     form_keys == expected_form,

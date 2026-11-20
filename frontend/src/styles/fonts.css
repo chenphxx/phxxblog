@@ -16,18 +16,20 @@
  * font-display: swap - 字体未就绪时先用回退字体渲染, 避免文字长时间不可见
  * ============================================================ */
 
-@font-face {
-  font-family: 'Cascadia Code';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/fonts/cascadia-code-latin-400-normal.woff2') format('woff2');
+@font-face
+{
+    font-family: 'Cascadia Code';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('/fonts/cascadia-code-latin-400-normal.woff2') format('woff2');
 }
 
-@font-face {
-  font-family: 'Cascadia Code';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('/fonts/cascadia-code-latin-700-normal.woff2') format('woff2');
+@font-face
+{
+    font-family: 'Cascadia Code';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('/fonts/cascadia-code-latin-700-normal.woff2') format('woff2');
 }

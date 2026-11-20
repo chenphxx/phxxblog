@@ -37,13 +37,14 @@ const footerConfig = computed(() => modules.moduleConfig('footer'))
 
 /** 页脚版权信息(支持 {year}/{site_name} 占位符; 留空则不显示) */
 const DEFAULT_FOOTER_TEXT = '© {year} {site_name} · Vue3 + FastAPI'
-const footerText = computed(() => {
-  // 配置项缺失(模块状态还没加载)时用默认文案, 模块里显式留空则不显示
-  const raw = textOf(footerConfig.value.footer_text, DEFAULT_FOOTER_TEXT).trim()
-  if (!raw) return ''
-  return raw
-    .replaceAll('{year}', String(new Date().getFullYear()))
-    .replaceAll('{site_name}', settings.value?.site_name || 'phxxblog')
+const footerText = computed(() =>
+{
+    // 配置项缺失(模块状态还没加载)时用默认文案, 模块里显式留空则不显示
+    const raw = textOf(footerConfig.value.footer_text, DEFAULT_FOOTER_TEXT).trim()
+    if (!raw) return ''
+    return raw
+        .replaceAll('{year}', String(new Date().getFullYear()))
+        .replaceAll('{site_name}', settings.value?.site_name || 'phxxblog')
 })
 const beianList = computed(() => rowsOf(footerConfig.value.beian_info).filter((b) => b.name))
 /** 模块被禁用, 或页脚确实没有任何内容时, 页脚整体不渲染 */
@@ -57,14 +58,16 @@ const hasFooter = computed(() => modules.isEnabled('footer') && (beianList.value
  * @param group primary 主导航 / secondary 次级导航
  * @returns 需要渲染的导航项
  */
-function visibleNav(group: 'primary' | 'secondary') {
-  return FRONT_NAV_ITEMS.filter((item) => {
-    if ((item.group ?? 'primary') !== group) return false
-    if (item.requiresAuth && !hasToken.value) return false
-    if (item.adminOnly && !isAdmin.value) return false
-    if (item.gated !== false && item.moduleId && !modules.isEnabled(item.moduleId)) return false
-    return true
-  })
+function visibleNav(group: 'primary' | 'secondary')
+{
+    return FRONT_NAV_ITEMS.filter((item) =>
+    {
+        if ((item.group ?? 'primary') !== group) return false
+        if (item.requiresAuth && !hasToken.value) return false
+        if (item.adminOnly && !isAdmin.value) return false
+        if (item.gated !== false && item.moduleId && !modules.isEnabled(item.moduleId)) return false
+        return true
+    })
 }
 
 const primaryNav = computed(() => visibleNav('primary'))
@@ -76,16 +79,18 @@ const secondaryNav = computed(() => visibleNav('secondary'))
  * @param name meta 的 name
  * @param content 内容; 为空时移除已有标签(模块被禁用时不留残迹)
  */
-function setMeta(name: string, content: string) {
-  const existing = document.head.querySelector<HTMLMetaElement>(`meta[name="${name}"]`)
-  if (!content) {
-    existing?.remove()
-    return
-  }
-  const meta = existing ?? document.createElement('meta')
-  meta.name = name
-  meta.content = content
-  if (!existing) document.head.appendChild(meta)
+function setMeta(name: string, content: string)
+{
+    const existing = document.head.querySelector<HTMLMetaElement>(`meta[name="${name}"]`)
+    if (!content)
+    {
+        existing?.remove()
+        return
+    }
+    const meta = existing ?? document.createElement('meta')
+    meta.name = name
+    meta.content = content
+    if (!existing) document.head.appendChild(meta)
 }
 
 /**
@@ -94,170 +99,189 @@ function setMeta(name: string, content: string) {
  * 关键词取自 seo 模块配置, 描述取自站点设置里的 site_desc(它同时是 RSS 的订阅摘要,
  * 属于各模块共享的站点身份信息); 模块被禁用时两处都不输出
  */
-function applySeoMeta() {
-  const enabled = modules.isEnabled('seo')
-  setMeta('keywords', enabled ? textOf(modules.moduleConfig('seo').keywords).trim() : '')
-  setMeta('description', enabled ? (settings.value?.site_desc || '').trim() : '')
+function applySeoMeta()
+{
+    const enabled = modules.isEnabled('seo')
+    setMeta('keywords', enabled ? textOf(modules.moduleConfig('seo').keywords).trim() : '')
+    setMeta('description', enabled ? (settings.value?.site_desc || '').trim() : '')
 }
 
 /** 切换路由后收起导航面板(窄屏点完导航就该看到内容) */
-function trackPageView(path: string) {
-  if (!modules.isEnabled('tracking')) return
-  // 文章详情在 GET /posts/{id} 中由后端记录阅读量与访问明细, 这里跳过以免重复计数
-  if (route.name === 'post-detail') return
-  trackingApi.track({ url: path.startsWith('/') ? path : `/${path}` }).catch(() => {})
+function trackPageView(path: string)
+{
+    if (!modules.isEnabled('tracking')) return
+    // 文章详情在 GET /posts/{id} 中由后端记录阅读量与访问明细, 这里跳过以免重复计数
+    if (route.name === 'post-detail') return
+    trackingApi.track({ url: path.startsWith('/') ? path : `/${path}` }).catch(() => {})
 }
 
-watch(
-  () => route.fullPath,
-  (path) => {
-    navOpen.value = false
-    trackPageView(path)
-  },
+watch
+(
+    () => route.fullPath,
+    (path) =>
+    {
+        navOpen.value = false
+        trackPageView(path)
+    },
 )
 
 /** Esc 关闭移动端导航面板, 避免只能通过遮罩或切换页面退出 */
-function closeNavOnEscape(event: KeyboardEvent) {
-  if (event.key === 'Escape') navOpen.value = false
+function closeNavOnEscape(event: KeyboardEvent)
+{
+    if (event.key === 'Escape') navOpen.value = false
 }
 
 /** 窗口跨过断点进入桌面布局时收起移动导航, 避免遮罩残留在页面内容上 */
 let desktopNavQuery: MediaQueryList | undefined
-function closeNavOnDesktop(event: MediaQueryListEvent) {
-  if (event.matches) navOpen.value = false
+function closeNavOnDesktop(event: MediaQueryListEvent)
+{
+    if (event.matches) navOpen.value = false
 }
 
-onMounted(() => {
-  document.addEventListener('keydown', closeNavOnEscape)
-  desktopNavQuery = window.matchMedia('(min-width: 1241px)')
-  desktopNavQuery.addEventListener('change', closeNavOnDesktop)
+onMounted(() =>
+{
+    document.addEventListener('keydown', closeNavOnEscape)
+    desktopNavQuery = window.matchMedia('(min-width: 1241px)')
+    desktopNavQuery.addEventListener('change', closeNavOnDesktop)
 })
 
-onBeforeUnmount(() => {
-  document.removeEventListener('keydown', closeNavOnEscape)
-  desktopNavQuery?.removeEventListener('change', closeNavOnDesktop)
+onBeforeUnmount(() =>
+{
+    document.removeEventListener('keydown', closeNavOnEscape)
+    desktopNavQuery?.removeEventListener('change', closeNavOnDesktop)
 })
 
-onMounted(async () => {
-  // 站点设置与模块开关一起取: 首页各模块的展示条件要用到两者
-  await modules.load()
-  // 看板娘的总开关现在就是模块开关: 模块被禁用时连运行时与模型都不下载
-  kanbanniang.setAllowed(modules.isEnabled('kanbanniang'))
-  // 初次进入站点也记录一次; 后续页面切换由上面的路由监听负责
-  trackPageView(route.fullPath)
-  try {
-    settings.value = await settingsApi.public()
-    // 浏览器标签页名称(留空回退到站点名称)
-    document.title = settings.value.site_title || settings.value.site_name || 'phxxblog'
-    // 动态站点图标
-    const icon = settings.value.site_icon || settings.value.site_avatar
-    if (icon) {
-      let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]')
-      if (!link) {
-        link = document.createElement('link')
-        link.rel = 'icon'
-        document.head.appendChild(link)
-      }
-      link.href = icon
+onMounted(async () =>
+{
+    // 站点设置与模块开关一起取: 首页各模块的展示条件要用到两者
+    await modules.load()
+    // 看板娘的总开关现在就是模块开关: 模块被禁用时连运行时与模型都不下载
+    kanbanniang.setAllowed(modules.isEnabled('kanbanniang'))
+    // 初次进入站点也记录一次; 后续页面切换由上面的路由监听负责
+    trackPageView(route.fullPath)
+    try
+    {
+        settings.value = await settingsApi.public()
+        // 浏览器标签页名称(留空回退到站点名称)
+        document.title = settings.value.site_title || settings.value.site_name || 'phxxblog'
+        // 动态站点图标
+        const icon = settings.value.site_icon || settings.value.site_avatar
+        if (icon)
+        {
+            let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]')
+            if (!link)
+            {
+                link = document.createElement('link')
+                link.rel = 'icon'
+                document.head.appendChild(link)
+            }
+            link.href = icon
+        }
+        applySeoMeta()
+    } catch
+    {
+        // 设置加载失败不影响页面: 看板娘的总开关已按模块状态决定
     }
-    applySeoMeta()
-  } catch {
-    // 设置加载失败不影响页面: 看板娘的总开关已按模块状态决定
-  }
 })
 </script>
 
 <template>
-  <div class="app-shell">
-    <header class="app-header">
-      <div class="app-header-inner">
-        <router-link to="/" class="app-brand">
-          <span class="app-brand-mark" :class="{ 'has-site-icon': settings?.site_icon }" aria-hidden="true">
-            <img v-if="settings?.site_icon" :src="settings.site_icon" alt="" />
-          </span>
-          <span class="app-brand-copy">
-            <span class="app-brand-name">{{ settings?.site_name || 'phxxblog' }}</span>
-            <span v-if="settings?.site_bio" class="app-brand-bio">{{ settings.site_bio }}</span>
-          </span>
-        </router-link>
+    <div class="app-shell">
+        <header class="app-header">
+            <div class="app-header-inner">
+                <router-link to="/" class="app-brand">
+                    <span class="app-brand-mark" :class="{ 'has-site-icon': settings?.site_icon }" aria-hidden="true">
+                        <img v-if="settings?.site_icon" :src="settings.site_icon" alt="" />
+                    </span>
+                    <span class="app-brand-copy">
+                        <span class="app-brand-name">{{ settings?.site_name || 'phxxblog' }}</span>
+                        <span v-if="settings?.site_bio" class="app-brand-bio">{{ settings.site_bio }}</span>
+                    </span>
+                </router-link>
 
-        <button
-          class="app-menu-btn"
-          type="button"
-          :aria-label="navOpen ? '关闭导航' : '打开导航'"
-          :aria-expanded="navOpen"
-          aria-controls="site-nav-panel"
-          @click="navOpen = !navOpen"
-        >
-          <el-icon><component :is="navOpen ? Close : Menu" /></el-icon>
-        </button>
+                <button
+                    class="app-menu-btn"
+                    type="button"
+                    :aria-label="navOpen ? '关闭导航' : '打开导航'"
+                    :aria-expanded="navOpen"
+                    aria-controls="site-nav-panel"
+                    @click="navOpen = !navOpen"
+                >
+                    <el-icon><component :is="navOpen ? Close : Menu" /></el-icon>
+                </button>
 
-        <div id="site-nav-panel" class="app-nav-panel" :class="{ 'is-open': navOpen }">
-          <nav class="app-nav app-nav-primary" aria-label="主导航">
-            <!-- 导航项来自模块注册表: 首页是父路由的默认子路由, 记录路径与父路由相同,
+                <div id="site-nav-panel" class="app-nav-panel" :class="{ 'is-open': navOpen }">
+                    <nav class="app-nav app-nav-primary" aria-label="主导航">
+                        <!-- 导航项来自模块注册表: 首页是父路由的默认子路由, 记录路径与父路由相同,
                  Vue Router 会把它当作任意子路由的 active 记录, 因此对 exact 的入口关掉
                  默认的前缀匹配, 只在精确命中时才套用激活样式 -->
-            <router-link
-              v-for="item in primaryNav"
-              :key="item.to"
-              :to="item.to"
-              :active-class="item.exact ? '' : 'router-link-active'"
-              exact-active-class="router-link-active"
-            >
-              <el-icon v-if="item.icon" class="nav-icon"><component :is="item.icon" /></el-icon>
-              <span>{{ item.label }}</span>
-            </router-link>
-          </nav>
+                        <router-link
+                            v-for="item in primaryNav"
+                            :key="item.to"
+                            :to="item.to"
+                            :active-class="item.exact ? '' : 'router-link-active'"
+                            exact-active-class="router-link-active"
+                        >
+                            <el-icon v-if="item.icon" class="nav-icon"><component :is="item.icon" /></el-icon>
+                            <span>{{ item.label }}</span>
+                        </router-link>
+                    </nav>
 
-          <span class="app-nav-divider" aria-hidden="true" />
+                    <span class="app-nav-divider" aria-hidden="true" />
 
-          <nav class="app-nav app-nav-secondary" aria-label="创作与后台">
-            <router-link v-for="item in secondaryNav" :key="item.to" :to="item.to">
-              <el-icon v-if="item.icon" class="nav-icon"><component :is="item.icon" /></el-icon>
-              <span>{{ item.label }}</span>
-            </router-link>
-            <!-- 这两条与模块无关, 由布局自己渲染: 未登录只给登录入口, 登录后再给后台入口 -->
-            <router-link v-if="hasToken" to="/admin">
-              <el-icon class="nav-icon"><Setting /></el-icon>
-              <span>管理后台</span>
-            </router-link>
-            <router-link v-else to="/admin/login">
-              <el-icon class="nav-icon"><User /></el-icon>
-              <span>登录</span>
-            </router-link>
-          </nav>
+                    <nav class="app-nav app-nav-secondary" aria-label="创作与后台">
+                        <router-link v-for="item in secondaryNav" :key="item.to" :to="item.to">
+                            <el-icon v-if="item.icon" class="nav-icon"><component :is="item.icon" /></el-icon>
+                            <span>{{ item.label }}</span>
+                        </router-link>
+                        <!-- 这两条与模块无关, 由布局自己渲染: 未登录只给登录入口, 登录后再给后台入口 -->
+                        <router-link v-if="hasToken" to="/admin">
+                            <el-icon class="nav-icon"><Setting /></el-icon>
+                            <span>管理后台</span>
+                        </router-link>
+                        <router-link v-else to="/admin/login">
+                            <el-icon class="nav-icon"><User /></el-icon>
+                            <span>登录</span>
+                        </router-link>
+                    </nav>
 
-          <div class="app-nav-tools">
-            <KanbanniangSwitcher v-if="modules.isEnabled('kanbanniang')" />
-            <ThemeSwitcher />
-          </div>
+                    <div class="app-nav-tools">
+                        <KanbanniangSwitcher v-if="modules.isEnabled('kanbanniang')" />
+                        <ThemeSwitcher />
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <button v-if="navOpen" class="app-nav-mask" type="button" aria-label="关闭导航" @click="navOpen = false" />
+
+        <div class="app-main">
+            <main class="site-main">
+                <router-view v-slot="{ Component }">
+                    <keep-alive include="HomeView,ArchiveView,SearchView">
+                        <component :is="Component" />
+                    </keep-alive>
+                </router-view>
+            </main>
+
+            <footer v-if="hasFooter" class="site-footer">
+                <div v-if="beianList.length" class="footer-icp">
+                    <a
+                        v-for="(item, index) in beianList"
+                        :key="index"
+                        :href="item.url"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        <span v-if="item.icon" class="beian-icon">{{ item.icon }}</span>
+                        {{ item.name }}
+                    </a>
+                </div>
+                <div v-if="footerText" class="footer-meta">{{ footerText }}</div>
+            </footer>
         </div>
-      </div>
-    </header>
 
-    <button v-if="navOpen" class="app-nav-mask" type="button" aria-label="关闭导航" @click="navOpen = false" />
-
-    <div class="app-main">
-      <main class="site-main">
-        <router-view v-slot="{ Component }">
-          <keep-alive include="HomeView,ArchiveView,SearchView">
-            <component :is="Component" />
-          </keep-alive>
-        </router-view>
-      </main>
-
-      <footer v-if="hasFooter" class="site-footer">
-        <div v-if="beianList.length" class="footer-icp">
-          <a v-for="(item, index) in beianList" :key="index" :href="item.url" target="_blank" rel="noopener noreferrer">
-            <span v-if="item.icon" class="beian-icon">{{ item.icon }}</span>
-            {{ item.name }}
-          </a>
-        </div>
-        <div v-if="footerText" class="footer-meta">{{ footerText }}</div>
-      </footer>
+        <!-- 看板娘: 固定浮层, 只在后台之外的前台布局里挂载; 模块禁用时连运行时都不加载 -->
+        <Kanbanniang v-if="modules.isEnabled('kanbanniang')" />
     </div>
-
-    <!-- 看板娘: 固定浮层, 只在后台之外的前台布局里挂载; 模块禁用时连运行时都不加载 -->
-    <Kanbanniang v-if="modules.isEnabled('kanbanniang')" />
-  </div>
 </template>

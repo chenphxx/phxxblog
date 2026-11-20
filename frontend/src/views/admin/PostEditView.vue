@@ -7,42 +7,43 @@ import PostFormFields from '@/components/PostFormFields.vue'
 const router = useRouter()
 const formRef = ref<InstanceType<typeof PostFormFields> | null>(null)
 const editor = usePostEditor({
-  // 后台编辑器点"取消"回到文章管理列表
-  cancelFallback: () => router.push('/admin/posts'),
+    // 后台编辑器点"取消"回到文章管理列表
+    cancelFallback: () => router.push('/admin/posts'),
 })
 
 /** 保存前先把编辑器里的正文同步进表单(理由见 PostFormFields.syncContent) */
-function save(targetStatus?: number) {
-  formRef.value?.syncContent()
-  return editor.save(targetStatus)
+function save(targetStatus?: number)
+{
+    formRef.value?.syncContent()
+    return editor.save(targetStatus)
 }
 </script>
 
 <template>
-  <div v-loading="editor.checkingAccess" class="edit-page">
-    <el-result v-if="editor.accessDenied" icon="warning" title="无权编辑文章" :sub-title="editor.accessMessage">
-      <template #extra>
-        <el-button type="primary" @click="router.push('/admin/posts')">返回文章列表</el-button>
-      </template>
-    </el-result>
+    <div v-loading="editor.checkingAccess" class="edit-page">
+        <el-result v-if="editor.accessDenied" icon="warning" title="无权编辑文章" :sub-title="editor.accessMessage">
+            <template #extra>
+                <el-button type="primary" @click="router.push('/admin/posts')">返回文章列表</el-button>
+            </template>
+        </el-result>
 
-    <template v-else-if="!editor.checkingAccess">
-      <h2>{{ editor.isEdit ? '编辑文章' : '新建文章' }}</h2>
+        <template v-else-if="!editor.checkingAccess">
+            <h2>{{ editor.isEdit ? '编辑文章' : '新建文章' }}</h2>
 
-      <div class="admin-toolbar">
-        <div class="admin-toolbar-actions">
-          <el-button @click="editor.cancel">取消</el-button>
-          <el-button :loading="editor.saving" @click="save(0)">存草稿</el-button>
-          <el-button type="primary" :loading="editor.saving" @click="save()">保存</el-button>
-          <el-button v-if="editor.isEdit" type="danger" plain @click="editor.removePost">删除</el-button>
-        </div>
-      </div>
+            <div class="admin-toolbar">
+                <div class="admin-toolbar-actions">
+                    <el-button @click="editor.cancel">取消</el-button>
+                    <el-button :loading="editor.saving" @click="save(0)">存草稿</el-button>
+                    <el-button type="primary" :loading="editor.saving" @click="save()">保存</el-button>
+                    <el-button v-if="editor.isEdit" type="danger" plain @click="editor.removePost">删除</el-button>
+                </div>
+            </div>
 
-      <div class="card edit-card">
-        <PostFormFields ref="formRef" :editor="editor" />
-      </div>
-    </template>
-  </div>
+            <div class="card edit-card">
+                <PostFormFields ref="formRef" :editor="editor" />
+            </div>
+        </template>
+    </div>
 </template>
 
 <style scoped>
@@ -51,15 +52,17 @@ function save(targetStatus?: number) {
  * 见 PostFormFields / VditorEditor), 打开新建文章时正文编辑框就是铺满的, 不用手动拉
  * 内容变长时按内容继续变高, 由 .admin-main 负责滚动
  */
-.edit-page {
-  display: flex;
-  flex-direction: column;
-  min-height: 100%;
+.edit-page
+{
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
 }
 
-.edit-card {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
+.edit-card
+{
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 </style>

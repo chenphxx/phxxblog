@@ -9,9 +9,10 @@ import type { ConfigRow, ModuleSettingValue } from '@/types'
  * @param value 模块配置里的原始值
  * @returns 行列表, 每行是"列名 -> 值"
  */
-export function rowsOf(value: ModuleSettingValue | undefined): ConfigRow[] {
-  if (!Array.isArray(value)) return []
-  return value
+export function rowsOf(value: ModuleSettingValue | undefined): ConfigRow[]
+{
+    if (!Array.isArray(value)) return []
+    return value
 }
 
 /**
@@ -23,8 +24,9 @@ export function rowsOf(value: ModuleSettingValue | undefined): ConfigRow[] {
  * @param value 模块配置里的原始值
  * @returns 形如 { name, url } 的链接列表
  */
-export function linkRowsOf(value: ModuleSettingValue | undefined): { name: string; url: string }[] {
-  return rowsOf(value).map((row) => ({ name: row.name ?? '', url: row.url ?? '' }))
+export function linkRowsOf(value: ModuleSettingValue | undefined): { name: string; url: string }[]
+{
+    return rowsOf(value).map((row) => ({ name: row.name ?? '', url: row.url ?? '' }))
 }
 
 /**
@@ -34,6 +36,7 @@ export function linkRowsOf(value: ModuleSettingValue | undefined): { name: strin
  * @param fallback 值不是字符串时使用的兜底文案(值本身是空串时保留空串)
  * @returns 文本
  */
-export function textOf(value: ModuleSettingValue | undefined, fallback = ''): string {
-  return typeof value === 'string' ? value : fallback
+export function textOf(value: ModuleSettingValue | undefined, fallback = ''): string
+{
+    return typeof value === 'string' ? value : fallback
 }

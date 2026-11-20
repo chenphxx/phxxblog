@@ -20,65 +20,73 @@ import { computed, ref } from 'vue'
 import { modulesApi } from '@/api'
 import type { ModuleSettingValue, PublicModuleState } from '@/types'
 
-export const useModulesStore = defineStore('modules', () => {
-  const ids = ref<string[]>([])
-  const config = ref<PublicModuleState['config']>({})
-  const loaded = ref(false)
-  /** 首次拉取是否已经有结果(成功或失败); 会取数的模块区块据此决定何时挂载 */
-  const ready = ref(false)
-  /** 正在进行的加载(并发调用共用同一个请求) */
-  let pending: Promise<void> | null = null
+export const useModulesStore = defineStore('modules', () =>
+{
+    const ids = ref<string[]>([])
+    const config = ref<PublicModuleState['config']>({})
+    const loaded = ref(false)
+    /** 首次拉取是否已经有结果(成功或失败); 会取数的模块区块据此决定何时挂载 */
+    const ready = ref(false)
+    /** 正在进行的加载(并发调用共用同一个请求) */
+    let pending: Promise<void> | null = null
 
-  /** 模块 id -> 是否可用 */
-  const enabledMap = computed(() => new Set(ids.value))
+    /** 模块 id -> 是否可用 */
+    const enabledMap = computed(() => new Set(ids.value))
 
-  /**
-   * 判断模块是否已启用
-   *
-   * 状态还没加载完时按"可用"处理: 否则首屏(还没等到接口返回)会把所有入口都藏起来,
-   * 页面看起来像空的; 真正禁用后的兜底由路由守卫负责
-   *
-   * @param id 模块 id
-   * @returns 可用返回 true
-   */
-  function isEnabled(id: string): boolean {
-    if (!loaded.value) return true
-    return enabledMap.value.has(id)
-  }
+    /**
+     * 判断模块是否已启用
+     *
+     * 状态还没加载完时按"可用"处理: 否则首屏(还没等到接口返回)会把所有入口都藏起来,
+     * 页面看起来像空的; 真正禁用后的兜底由路由守卫负责
+     *
+     * @param id 模块 id
+     * @returns 可用返回 true
+     */
+    function isEnabled(id: string): boolean
+    {
+        if (!loaded.value) return true
+        return enabledMap.value.has(id)
+    }
 
-  /**
-   * 取模块的公开配置
-   *
-   * @param id 模块 id
-   * @returns 该模块的公开配置(没有则返回空对象)
-   */
-  function moduleConfig(id: string): Record<string, ModuleSettingValue> {
-    return config.value[id] ?? {}
-  }
+    /**
+     * 取模块的公开配置
+     *
+     * @param id 模块 id
+     * @returns 该模块的公开配置(没有则返回空对象)
+     */
+    function moduleConfig(id: string): Record<string, ModuleSettingValue>
+    {
+        return config.value[id] ?? {}
+    }
 
-  /**
-   * 拉取模块状态(幂等)
-   *
-   * @param force 为 true 时忽略缓存重新拉取
-   */
-  async function load(force = false): Promise<void> {
-    if (loaded.value && !force) return
-    if (pending) return pending
-    pending = (async () => {
-      try {
-        const data = await modulesApi.public()
-        ids.value = data.ids
-        config.value = data.config
-        loaded.value = true
-      } catch {
-        // 拉不到就保持"全部可用"的保守状态: 接口本身不可用时, 页面入口不该跟着消失
-      } finally {
-        ready.value = true
-        pending = null
-      }
-    })()
-    return pending
-  }
+    /**
+     * 拉取模块状态(幂等)
+     *
+     * @param force 为 true 时忽略缓存重新拉取
+     */
+    async function load(force = false): Promise<void>
+    {
+        if (loaded.value && !force) return
+        if (pending) return pending
+        pending = (async () =>
+        {
+            try
+            {
+                const data = await modulesApi.public()
+                ids.value = data.ids
+                config.value = data.config
+                loaded.value = true
+            } catch
+            {
+                // 拉不到就保持"全部可用"的保守状态: 接口本身不可用时, 页面入口不该跟着消失
+            } finally
+            {
+                ready.value = true
+                pending = null
+            }
+        })()
+        return pending
+    }
 
-  return { ids, config, loaded, ready, isEnabled, moduleConfig, load }
+    return { ids, config, loaded, ready, isEnabled, moduleConfig, load }
 })

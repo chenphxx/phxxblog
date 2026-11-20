@@ -11,9 +11,10 @@ const frontendRoot = dirname(dirname(fileURLToPath(import.meta.url)))
 const src = join(frontendRoot, 'node_modules', 'vditor', 'dist')
 const dest = join(frontendRoot, 'public', 'vditor', 'dist')
 
-if (!existsSync(src)) {
-  console.error('[copy-vditor-assets] 未找到 node_modules/vditor, 请先执行 npm install')
-  process.exit(1)
+if (!existsSync(src))
+{
+    console.error('[copy-vditor-assets] 未找到 node_modules/vditor, 请先执行 npm install')
+    process.exit(1)
 }
 
 mkdirSync(dirname(dest), { recursive: true })

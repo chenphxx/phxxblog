@@ -13,54 +13,59 @@ defineProps<{ links: { name: string; url: string }[] }>()
 </script>
 
 <template>
-  <aside class="card site-links-card">
-    <h3>常用网站</h3>
-    <a
-      v-for="link in links"
-      :key="link.url"
-      :href="link.url"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="site-link"
-    >
-      <LazyImage
-        v-if="faviconOf(link.url)"
-        :src="faviconOf(link.url)"
-        alt=""
-        class="site-link-icon"
-        @error="onFaviconError($event, link.url)"
-      />
-      <span>{{ linkName(link) }}</span>
-    </a>
-  </aside>
+    <aside class="card site-links-card">
+        <h3>常用网站</h3>
+        <a
+            v-for="link in links"
+            :key="link.url"
+            :href="link.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="site-link"
+        >
+            <LazyImage
+                v-if="faviconOf(link.url)"
+                :src="faviconOf(link.url)"
+                alt=""
+                class="site-link-icon"
+                @error="onFaviconError($event, link.url)"
+            />
+            <span>{{ linkName(link) }}</span>
+        </a>
+    </aside>
 </template>
 
 <style scoped>
-.site-links-card {
-  padding: var(--space-5);
-  text-align: left;
+.site-links-card
+{
+    padding: var(--space-5);
+    text-align: left;
 }
-.site-links-card h3 {
-  margin: 0 0 var(--space-3);
-  font-size: 15px;
-  font-weight: 600;
+.site-links-card h3
+{
+    margin: 0 0 var(--space-3);
+    font-size: 15px;
+    font-weight: 600;
 }
-.site-link {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 0;
-  color: var(--text);
-  font-size: 13.5px;
-  text-decoration: none;
+.site-link
+{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    color: var(--text);
+    font-size: 13.5px;
+    text-decoration: none;
 }
-.site-link:hover {
-  color: var(--link);
+.site-link:hover
+{
+    color: var(--link);
 }
-.site-link-icon {
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
-  flex-shrink: 0;
+.site-link-icon
+{
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    flex-shrink: 0;
 }
 </style>

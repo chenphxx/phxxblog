@@ -20,38 +20,42 @@ const dateRange = ref<[string, string] | null>(null)
  * 分页与取数交给 usePagedList: 三个分支的差异只在"取哪一页", 翻页与"回到第 1 页"
  * 的规则由 composable 统一处理
  */
-const {
-  items: posts,
-  total,
-  page,
-  pageSize,
-  loading,
-  load,
-  reset,
+const
+{
+    items: posts,
+    total,
+    page,
+    pageSize,
+    loading,
+    load,
+    reset,
 } = usePagedList<PostItem>({
-  autoLoad: false, // 挂载时要先取分类/标签, 由 onMounted 统一触发
-  fetch: (page, pageSize) => {
-    const start_date = dateRange.value?.[0] || undefined
-    const end_date = dateRange.value?.[1] || undefined
-    // 0 是"未分类/无标签"这个选项, 所以判断要用 !== null 而不是真值判断
-    if (categoryId.value !== null || tagId.value !== null) {
-      return postApi.list({
-        page,
-        page_size: pageSize,
-        category: categoryId.value || undefined,
-        no_category: categoryId.value === 0 || undefined,
-        tag: tagId.value || undefined,
-        no_tag: tagId.value === 0 || undefined,
-        keyword: keyword.value.trim() || undefined,
-        start_date,
-        end_date,
-      })
-    }
-    if (keyword.value.trim()) {
-      return searchApi.search(keyword.value.trim(), { page, page_size: pageSize, start_date, end_date })
-    }
-    return postApi.list({ page, page_size: pageSize, start_date, end_date })
-  },
+    autoLoad: false, // 挂载时要先取分类/标签, 由 onMounted 统一触发
+    fetch: (page, pageSize) =>
+    {
+        const start_date = dateRange.value?.[0] || undefined
+        const end_date = dateRange.value?.[1] || undefined
+        // 0 是"未分类/无标签"这个选项, 所以判断要用 !== null 而不是真值判断
+        if (categoryId.value !== null || tagId.value !== null)
+        {
+            return postApi.list({
+                page,
+                page_size: pageSize,
+                category: categoryId.value || undefined,
+                no_category: categoryId.value === 0 || undefined,
+                tag: tagId.value || undefined,
+                no_tag: tagId.value === 0 || undefined,
+                keyword: keyword.value.trim() || undefined,
+                start_date,
+                end_date,
+            })
+        }
+        if (keyword.value.trim())
+        {
+            return searchApi.search(keyword.value.trim(), { page, page_size: pageSize, start_date, end_date })
+        }
+        return postApi.list({ page, page_size: pageSize, start_date, end_date })
+    },
 })
 
 /**
@@ -63,103 +67,122 @@ const {
  *   onMounted 都不会再跑. 以前只在 setup 里读一次 route.query, 结果就是
  *   URL 变了, 列表还是上一个分类的内容
  */
-function syncFromQuery() {
-  const q = route.query
-  keyword.value = (q.q as string) || ''
-  categoryId.value = q.category ? Number(q.category) : null
-  tagId.value = q.tag ? Number(q.tag) : null
+function syncFromQuery()
+{
+    const q = route.query
+    keyword.value = (q.q as string) || ''
+    categoryId.value = q.category ? Number(q.category) : null
+    tagId.value = q.tag ? Number(q.tag) : null
 }
 
-watch(
-  () => route.fullPath,
-  () => {
-    // 仅在本路由内处理; 离开该页时不必发请求
-    if (route.name !== 'search') return
-    syncFromQuery()
-    // 换了分类/标签/关键词必须回到第 1 页: 否则会拿新条件去取旧条件下的第 N 页, 结果是空列表
-    reset()
-  },
+watch
+(
+    () => route.fullPath,
+    () =>
+    {
+        // 仅在本路由内处理; 离开该页时不必发请求
+        if (route.name !== 'search') return
+        syncFromQuery()
+        // 换了分类/标签/关键词必须回到第 1 页: 否则会拿新条件去取旧条件下的第 N 页, 结果是空列表
+        reset()
+    },
 )
 
-onMounted(async () => {
-  ;[categories.value, tags.value] = await Promise.all([categoryApi.list(), tagApi.list()])
-  load()
+onMounted(async () =>
+{
+    ;[categories.value, tags.value] = await Promise.all([categoryApi.list(), tagApi.list()])
+    load()
 })
 </script>
 
 <template>
-  <div class="page-container">
-    <div class="page-head">
-      <div>
-        <h1 class="page-title">全部文章</h1>
-      </div>
-      <span class="count-label num">共 {{ total }} 篇</span>
+    <div class="page-container">
+        <div class="page-head">
+            <div>
+                <h1 class="page-title">全部文章</h1>
+            </div>
+            <span class="count-label num">共 {{ total }} 篇</span>
+        </div>
+
+        <section class="panel">
+            <div class="search-bar">
+                <el-input
+                    v-model="keyword"
+                    placeholder="输入关键词搜索文章..."
+                    :prefix-icon="Search"
+                    clearable
+                    @keyup.enter="reset()"
+                    @clear="reset()"
+                />
+                <el-select
+                    v-model="categoryId"
+                    placeholder="按分类筛选"
+                    clearable
+                    style="width: 180px"
+                    @change="reset()"
+                >
+                    <el-option label="未分类" :value="0" />
+                    <el-option
+                        v-for="cat in categories"
+                        :key="cat.id"
+                        :label="`${cat.name} (${cat.post_count})`"
+                        :value="cat.id"
+                    />
+                </el-select>
+                <el-select v-model="tagId" placeholder="按标签筛选" clearable style="width: 180px" @change="reset()">
+                    <el-option label="无标签" :value="0" />
+                    <el-option
+                        v-for="tag in tags"
+                        :key="tag.id"
+                        :label="`#${tag.name} (${tag.post_count})`"
+                        :value="tag.id"
+                    />
+                </el-select>
+                <el-date-picker
+                    v-model="dateRange"
+                    type="daterange"
+                    value-format="YYYY-MM-DD"
+                    range-separator="至"
+                    start-placeholder="开始日期"
+                    end-placeholder="结束日期"
+                    style="width: 260px"
+                    @change="reset()"
+                />
+                <el-button type="primary" @click="reset()">搜索</el-button>
+            </div>
+
+            <div v-loading="loading" class="posts-list">
+                <PostCard v-for="post in posts" :key="post.id" :post="post" />
+                <el-empty v-if="!loading && posts.length === 0" description="没有找到相关文章" />
+            </div>
+            <ListPager v-model:page="page" :page-size="pageSize" :total="total" />
+        </section>
     </div>
-
-    <section class="panel">
-      <div class="search-bar">
-        <el-input
-          v-model="keyword"
-          placeholder="输入关键词搜索文章..."
-          :prefix-icon="Search"
-          clearable
-          @keyup.enter="reset()"
-          @clear="reset()"
-        />
-        <el-select v-model="categoryId" placeholder="按分类筛选" clearable style="width: 180px" @change="reset()">
-          <el-option label="未分类" :value="0" />
-          <el-option
-            v-for="cat in categories"
-            :key="cat.id"
-            :label="`${cat.name} (${cat.post_count})`"
-            :value="cat.id"
-          />
-        </el-select>
-        <el-select v-model="tagId" placeholder="按标签筛选" clearable style="width: 180px" @change="reset()">
-          <el-option label="无标签" :value="0" />
-          <el-option v-for="tag in tags" :key="tag.id" :label="`#${tag.name} (${tag.post_count})`" :value="tag.id" />
-        </el-select>
-        <el-date-picker
-          v-model="dateRange"
-          type="daterange"
-          value-format="YYYY-MM-DD"
-          range-separator="至"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          style="width: 260px"
-          @change="reset()"
-        />
-        <el-button type="primary" @click="reset()">搜索</el-button>
-      </div>
-
-      <div v-loading="loading" class="posts-list">
-        <PostCard v-for="post in posts" :key="post.id" :post="post" />
-        <el-empty v-if="!loading && posts.length === 0" description="没有找到相关文章" />
-      </div>
-      <ListPager v-model:page="page" :page-size="pageSize" :total="total" />
-    </section>
-  </div>
 </template>
 
 <style scoped>
 /* 筛选区是面板的头部: 与结果列表之间用一条细线分隔 */
-.search-bar {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  padding-bottom: var(--space-5);
-  margin-bottom: var(--space-3);
-  border-bottom: 1px solid var(--border);
+.search-bar
+{
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding-bottom: var(--space-5);
+    margin-bottom: var(--space-3);
+    border-bottom: 1px solid var(--border);
 }
-.search-bar .el-input {
-  flex: 1;
-  min-width: 220px;
+.search-bar .el-input
+{
+    flex: 1;
+    min-width: 220px;
 }
-.count-label {
-  font-size: 13px;
-  color: var(--muted);
+.count-label
+{
+    font-size: 13px;
+    color: var(--muted);
 }
-.posts-list {
-  min-height: 120px;
+.posts-list
+{
+    min-height: 120px;
 }
 </style>

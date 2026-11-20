@@ -79,12 +79,9 @@ jobs:
       - name: Verify Element Plus programmatic styles
         run: npm run check:element-styles
 
-      # 配置在 frontend/eslint.config.js 与 frontend/.prettierrc.json
+      # 配置在 frontend/eslint.config.js
       - name: Lint (eslint)
         run: npm run check:lint
-
-      - name: Check formatting (prettier)
-        run: npm run check:format
 
       - name: Type check
         run: npx vue-tsc -b --force

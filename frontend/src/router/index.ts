@@ -7,70 +7,79 @@ import { getAccessToken } from '@/utils/tokenStorage'
 const savedScrollPositions = new Map<string, number>()
 
 const router = createRouter({
-  history: createWebHashHistory(),
-  scrollBehavior(to, from, savedPosition) {
-    if (savedPosition) {
-      return savedPosition
-    }
-    if (from.fullPath && from.fullPath !== to.fullPath) {
-      savedScrollPositions.set(from.fullPath, window.scrollY || 0)
-    }
-    const top = savedScrollPositions.get(to.fullPath) ?? 0
-    if (top > 0) {
-      return { top, behavior: 'smooth' }
-    }
-    return { top: 0 }
-  },
-  routes: [
+    history: createWebHashHistory(),
+    scrollBehavior(to, from, savedPosition)
     {
-      path: '/',
-      component: () => import('@/layouts/SiteLayout.vue'),
-      children: [
-        // 首页属于布局自身: 即使模块全被禁用, 站点也要有一个可访问的落地页
-        { path: '', name: 'home', component: () => import('@/views/HomeView.vue') },
-        // 其余页面由模块注册表提供(见 modules/registry.ts)
-        ...FRONT_MODULE_ROUTES,
-      ],
+        if (savedPosition)
+        {
+            return savedPosition
+        }
+        if (from.fullPath && from.fullPath !== to.fullPath)
+        {
+            savedScrollPositions.set(from.fullPath, window.scrollY || 0)
+        }
+        const top = savedScrollPositions.get(to.fullPath) ?? 0
+        if (top > 0)
+        {
+            return { top, behavior: 'smooth' }
+        }
+        return { top: 0 }
     },
-    {
-      path: '/admin/login',
-      name: 'admin-login',
-      component: () => import('@/views/admin/LoginView.vue'),
-    },
-    {
-      path: '/admin',
-      component: () => import('@/views/admin/AdminLayout.vue'),
-      meta: { requiresAuth: true },
-      children: [{ path: '', redirect: '/admin/dashboard' }, ...ADMIN_MODULE_ROUTES],
-    },
-    { path: '/:pathMatch(.*)*', redirect: '/' },
-  ],
+    routes: [
+        {
+            path: '/',
+            component: () => import('@/layouts/SiteLayout.vue'),
+            children: [
+                // 首页属于布局自身: 即使模块全被禁用, 站点也要有一个可访问的落地页
+                { path: '', name: 'home', component: () => import('@/views/HomeView.vue') },
+                // 其余页面由模块注册表提供(见 modules/registry.ts)
+                ...FRONT_MODULE_ROUTES,
+            ],
+        },
+        {
+            path: '/admin/login',
+            name: 'admin-login',
+            component: () => import('@/views/admin/LoginView.vue'),
+        },
+        {
+            path: '/admin',
+            component: () => import('@/views/admin/AdminLayout.vue'),
+            meta: { requiresAuth: true },
+            children: [{ path: '', redirect: '/admin/dashboard' }, ...ADMIN_MODULE_ROUTES],
+        },
+        { path: '/:pathMatch(.*)*', redirect: '/' },
+    ],
 })
 
-router.beforeEach(async (to) => {
-  if (to.meta.requiresAuth && !getAccessToken()) {
-    return { name: 'admin-login', query: { redirect: to.fullPath } }
-  }
+router.beforeEach(async (to) =>
+{
+    if (to.meta.requiresAuth && !getAccessToken())
+    {
+        return { name: 'admin-login', query: { redirect: to.fullPath } }
+    }
 
-  // 模块开关: 页面属于某个模块时, 先确认该模块当前可用
-  const moduleId = to.meta.module as string | undefined
-  if (!moduleId) {
-    return true
-  }
-  const modules = useModulesStore()
-  await modules.load()
-  if (modules.isEnabled(moduleId)) {
-    return true
-  }
-  /*
-   * 模块被禁用, 或者当前身份看不到它(配成了"仅管理员"): 后台页面回落到"个人资料",
-   * 它属于 admin 模块; 前台回首页 若"个人资料"本身也不可用(例如非管理员账号), 直接回前台,
-   * 否则会一直往同一个地址跳(守卫拦下自己跳自己的重定向)
-   */
-  if (to.path.startsWith('/admin')) {
-    return { path: modules.isEnabled('admin') ? '/admin/profile' : '/' }
-  }
-  return { path: '/' }
+    // 模块开关: 页面属于某个模块时, 先确认该模块当前可用
+    const moduleId = to.meta.module as string | undefined
+    if (!moduleId)
+    {
+        return true
+    }
+    const modules = useModulesStore()
+    await modules.load()
+    if (modules.isEnabled(moduleId))
+    {
+        return true
+    }
+    /*
+     * 模块被禁用, 或者当前身份看不到它(配成了"仅管理员"): 后台页面回落到"个人资料",
+     * 它属于 admin 模块; 前台回首页 若"个人资料"本身也不可用(例如非管理员账号), 直接回前台,
+     * 否则会一直往同一个地址跳(守卫拦下自己跳自己的重定向)
+     */
+    if (to.path.startsWith('/admin'))
+    {
+        return { path: modules.isEnabled('admin') ? '/admin/profile' : '/' }
+    }
+    return { path: '/' }
 })
 
 export default router

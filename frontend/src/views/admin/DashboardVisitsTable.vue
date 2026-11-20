@@ -17,38 +17,44 @@ const visitsPageSize = 10
 const visitsLoading = ref(false)
 
 /** 统一去掉旧版埋点可能带上的 hash 前缀 */
-function pagePath(url?: string | null): string {
-  return (url || '').replace(/^#/, '') || '/'
+function pagePath(url?: string | null): string
+{
+    return (url || '').replace(/^#/, '') || '/'
 }
 
 /** 将访问 URL 转成仪表盘中更易读的页面名称 */
-function pageLabel(url?: string | null): string {
-  const path = pagePath(url)
-  if (path === '/') return '首页'
-  if (path === '/chronicles') return '互联网纪事'
-  if (path.startsWith('/chronicles/')) return `互联网纪事 · #${path.split('/').pop()}`
-  if (path === '/archive') return '归档'
-  if (path === '/search') return '全部文章'
-  if (path === '/diary') return '日记'
-  if (path === '/changelog') return '更新日志'
-  return path
+function pageLabel(url?: string | null): string
+{
+    const path = pagePath(url)
+    if (path === '/') return '首页'
+    if (path === '/chronicles') return '互联网纪事'
+    if (path.startsWith('/chronicles/')) return `互联网纪事 · #${path.split('/').pop()}`
+    if (path === '/archive') return '归档'
+    if (path === '/search') return '全部文章'
+    if (path === '/diary') return '日记'
+    if (path === '/changelog') return '更新日志'
+    return path
 }
 
-async function loadVisits() {
-  visitsLoading.value = true
-  try {
-    const data = await statsApi.visits({ page: visitsPage.value, page_size: visitsPageSize })
-    visits.value = data.items
-    visitsTotal.value = data.total
-  } finally {
-    visitsLoading.value = false
-  }
+async function loadVisits()
+{
+    visitsLoading.value = true
+    try
+    {
+        const data = await statsApi.visits({ page: visitsPage.value, page_size: visitsPageSize })
+        visits.value = data.items
+        visitsTotal.value = data.total
+    } finally
+    {
+        visitsLoading.value = false
+    }
 }
 
 /** 刷新访问记录: 回到第 1 页再取数(分页不变时 watch 不会触发) */
-async function refreshVisits() {
-  visitsPage.value = 1
-  await loadVisits()
+async function refreshVisits()
+{
+    visitsPage.value = 1
+    await loadVisits()
 }
 
 watch(visitsPage, loadVisits)
@@ -57,35 +63,35 @@ defineExpose({ refresh: refreshVisits })
 </script>
 
 <template>
-  <div id="visits-section" class="card">
-    <div class="trend-header">
-      <h3 style="margin: 0">访问记录</h3>
-      <el-button size="small" @click="refreshVisits()">刷新</el-button>
+    <div id="visits-section" class="card">
+        <div class="trend-header">
+            <h3 style="margin: 0">访问记录</h3>
+            <el-button size="small" @click="refreshVisits()">刷新</el-button>
+        </div>
+        <el-table v-loading="visitsLoading" :data="visits" size="small">
+            <el-table-column prop="visit_time" label="时间" width="150">
+                <template #default="{ row }">{{ (row.visit_time || '').replace('T', ' ').slice(0, 16) }}</template>
+            </el-table-column>
+            <el-table-column prop="ip" label="IP" width="120" />
+            <el-table-column prop="location" label="省市区" width="110" />
+            <el-table-column label="设备" width="90">
+                <template #default="{ row }">{{ row.device || '-' }}</template>
+            </el-table-column>
+            <el-table-column prop="browser" label="浏览器" width="90" />
+            <el-table-column prop="os" label="系统" width="90" />
+            <el-table-column label="访问页面" min-width="160" show-overflow-tooltip>
+                <template #default="{ row }">
+                    <router-link v-if="row.post_id" :to="`/post/${row.post_id}`">{{
+                        row.post_title || `#${row.post_id}`
+                    }}</router-link>
+                    <router-link v-else-if="row.url" :to="pagePath(row.url)">{{ pageLabel(row.url) }}</router-link>
+                    <span v-else>-</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="referer" label="来源" min-width="140" show-overflow-tooltip>
+                <template #default="{ row }">{{ row.referer || '-' }}</template>
+            </el-table-column>
+        </el-table>
+        <ListPager v-model:page="visitsPage" :page-size="visitsPageSize" :total="visitsTotal" />
     </div>
-    <el-table v-loading="visitsLoading" :data="visits" size="small">
-      <el-table-column prop="visit_time" label="时间" width="150">
-        <template #default="{ row }">{{ (row.visit_time || '').replace('T', ' ').slice(0, 16) }}</template>
-      </el-table-column>
-      <el-table-column prop="ip" label="IP" width="120" />
-      <el-table-column prop="location" label="省市区" width="110" />
-      <el-table-column label="设备" width="90">
-        <template #default="{ row }">{{ row.device || '-' }}</template>
-      </el-table-column>
-      <el-table-column prop="browser" label="浏览器" width="90" />
-      <el-table-column prop="os" label="系统" width="90" />
-      <el-table-column label="访问页面" min-width="160" show-overflow-tooltip>
-        <template #default="{ row }">
-          <router-link v-if="row.post_id" :to="`/post/${row.post_id}`">{{
-            row.post_title || `#${row.post_id}`
-          }}</router-link>
-          <router-link v-else-if="row.url" :to="pagePath(row.url)">{{ pageLabel(row.url) }}</router-link>
-          <span v-else>-</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="referer" label="来源" min-width="140" show-overflow-tooltip>
-        <template #default="{ row }">{{ row.referer || '-' }}</template>
-      </el-table-column>
-    </el-table>
-    <ListPager v-model:page="visitsPage" :page-size="visitsPageSize" :total="visitsTotal" />
-  </div>
 </template>

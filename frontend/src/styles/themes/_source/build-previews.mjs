@@ -24,14 +24,14 @@ const repo = path.resolve(here, '../../../..')
 
 /** 主题清单来自 tokens.mjs, 与前端 registry.ts 同源 */
 const THEMES = TOKENS.map((t) => ({
-  key: t.id,
-  id: t.id,
-  file: `theme-${t.id}.css`,
-  name: t.name,
-  en: t.en,
-  desc: t.desc,
-  tag: t.desc,
-  swatch: [t.light.primary, t.light.bg, t.dark.primary],
+    key: t.id,
+    id: t.id,
+    file: `theme-${t.id}.css`,
+    name: t.name,
+    en: t.en,
+    desc: t.desc,
+    tag: t.desc,
+    swatch: [t.light.primary, t.light.bg, t.dark.primary],
 }))
 
 /**
@@ -41,20 +41,24 @@ const THEMES = TOKENS.map((t) => ({
  * @param {string} selector 选择器(如 ":root" 或 "html[data-theme='mist'].dark")
  * @return {string} 大括号内的声明, 找不到时返回空串
  */
-function blockOf(css, selector) {
-  const start = css.indexOf(`${selector} {`)
-  if (start < 0) return ''
-  const open = css.indexOf('{', start)
-  const end = css.indexOf('\n}', open)
-  return css.slice(open + 1, end).trim()
+function blockOf(css, selector)
+{
+    const start = css.indexOf(selector)
+    if (start < 0) return ''
+    const open = css.indexOf('{', start + selector.length)
+    if (open < 0) return ''
+    const end = css.indexOf('\n}', open)
+    if (end < 0) return ''
+    return css.slice(open + 1, end).trim()
 }
 
 /** @brief 缩进整段 CSS */
-function indent(text, pad) {
-  return text
-    .split('\n')
-    .map((line) => (line.trim() ? pad + line : line))
-    .join('\n')
+function indent(text, pad)
+{
+    return text
+        .split('\n')
+        .map((line) => (line.trim() ? pad + line : line))
+        .join('\n')
 }
 
 const base = fs.readFileSync(path.join(themeDir, 'base.css'), 'utf8')
@@ -84,25 +88,30 @@ const PAGE = (opts) => `<!DOCTYPE html>
  * ============================================================ */
 
 /* ---------- 共享结构令牌(源文件: themes/base.css) ---------- */
-:root {
+:root
+{
 ${indent(blockOf(base, ':root'), '  ')}
 }
 
-html.dark {
+html.dark
+{
 ${indent(blockOf(base, 'html.dark'), '  ')}
 }
 
 /* ---------- 默认主题的裸 :root 颜色令牌(源文件: themes/theme-default.css) ---------- */
-:root {
+:root
+{
 ${indent(blockOf(defaultRoot, ':root'), '  ')}
 }
 
 /* ---------- 当前主题的颜色令牌(源文件: themes/${opts.file}) ---------- */
-html[data-theme='${opts.id}'] {
+html[data-theme='${opts.id}']
+{
 ${indent(opts.light, '  ')}
 }
 
-html[data-theme='${opts.id}'].dark {
+html[data-theme='${opts.id}'].dark
+{
 ${indent(opts.dark, '  ')}
 }
 
@@ -114,7 +123,8 @@ ${layoutCss ? '/* ---------- 应用外壳(源文件: layout.css) ---------- */\n
 /* ============================================================
  * 预览脚手架: 只用于把组件摆成首页/详情页的样子, 不属于项目样式
  * ============================================================ */
-.preview-banner {
+.preview-banner
+{
   display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between;
   padding: 10px 0 0; font-size: 12px; color: var(--muted);
 }
@@ -127,14 +137,16 @@ ${layoutCss ? '/* ---------- 应用外壳(源文件: layout.css) ---------- */\n
 .preview-title a { color: var(--text); }
 .preview-summary { margin: 8px 0 12px; color: var(--muted); font-size: 14px; line-height: 1.7; }
 .preview-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: 12.5px; }
-.preview-btn {
+.preview-btn
+{
   font-family: var(--font-sans); font-size: 14px; padding: 8px 18px;
   border-radius: var(--radius-control); border: 1px solid var(--border-strong);
   background: var(--card-bg); color: var(--text); cursor: pointer;
 }
 .preview-btn-primary { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
 .preview-pager { display: flex; gap: 6px; }
-.preview-pager span {
+.preview-pager span
+{
   min-width: 32px; height: 32px; display: grid; place-items: center;
   border: 1px solid var(--border); border-radius: var(--radius-control);
   font-size: 13px; color: var(--muted);
@@ -152,7 +164,8 @@ ${layoutCss ? '/* ---------- 应用外壳(源文件: layout.css) ---------- */\n
 .term-line { margin: 8px 0 0; color: var(--term-prompt); }
 .term-prompt { color: var(--term-accent); margin-right: 8px; }
 .term-out { margin: 0 0 2px 20px; color: var(--term-text); }
-@media (max-width: 900px) {
+@media (max-width: 900px)
+{
   .preview-grid { grid-template-columns: 1fr; }
 }
 </style>
@@ -282,28 +295,32 @@ ${layoutCss ? '/* ---------- 应用外壳(源文件: layout.css) ---------- */\n
 `
 
 /** 生成 52 周 x 7 天的热力图占位 */
-function cells() {
-  const levels = [1, 2, 3, 4, 0, 2, 1, 3, 0, 1, 2, 2, 4, 1, 0, 3, 2, 1, 1, 0, 2, 3, 1, 4, 0, 2, 1, 3]
-  let out = ''
-  for (let i = 0; i < 52 * 7; i += 1) {
-    const lv = levels[i % levels.length]
-    out += `<i style="background: var(--cell-${lv})"></i>`
-  }
-  return out
+function cells()
+{
+    const levels = [1, 2, 3, 4, 0, 2, 1, 3, 0, 1, 2, 2, 4, 1, 0, 3, 2, 1, 1, 0, 2, 3, 1, 4, 0, 2, 1, 3]
+    let out = ''
+    for (let i = 0; i < 52 * 7; i += 1)
+    {
+        const lv = levels[i % levels.length]
+        out += `<i style="background: var(--cell-${lv})"></i>`
+    }
+    return out
 }
 
 fs.mkdirSync(outDir, { recursive: true })
 
-for (const t of THEMES) {
-  const css = fs.readFileSync(path.join(themeDir, t.file), 'utf8')
-  const light = blockOf(css, `html[data-theme='${t.id}']`)
-  const dark = blockOf(css, `html[data-theme='${t.id}'].dark`)
+for (const t of THEMES)
+{
+    const css = fs.readFileSync(path.join(themeDir, t.file), 'utf8')
+    const light = blockOf(css, `html[data-theme='${t.id}']`)
+    const dark = blockOf(css, `html[data-theme='${t.id}'].dark`)
 
-  for (const mode of ['light', 'dark']) {
-    const out = path.join(outDir, `${t.id}-${mode}.html`)
-    fs.writeFileSync(out, PAGE({ ...t, mode, light, dark, cells: cells() }), 'utf8')
-    console.log('written:', path.relative(repo, out))
-  }
+    for (const mode of ['light', 'dark'])
+    {
+        const out = path.join(outDir, `${t.id}-${mode}.html`)
+        fs.writeFileSync(out, PAGE({ ...t, mode, light, dark, cells: cells() }), 'utf8')
+        console.log('written:', path.relative(repo, out))
+    }
 }
 
 /* ---------------------------------------------------------------

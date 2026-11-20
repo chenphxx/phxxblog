@@ -21,104 +21,111 @@ const contentEditor = ref<InstanceType<typeof VditorEditor> | null>(null)
  * 保存前必须调用: 中文输入法组字期间 Vditor 不回调 input, v-model 可能落后于编辑器,
  * 直接用 form.content_md 会丢掉最后输入的内容(见 VditorEditor.getValue 的说明)
  */
-function syncContent() {
-  const value = contentEditor.value?.getValue()
-  if (typeof value === 'string') {
-    editor.form.content_md = value
-  }
+function syncContent()
+{
+    const value = contentEditor.value?.getValue()
+    if (typeof value === 'string')
+    {
+        editor.form.content_md = value
+    }
 }
 
 defineExpose({ syncContent })
 </script>
 
 <template>
-  <el-form label-position="top">
-    <el-row :gutter="16">
-      <el-col :span="16">
-        <el-form-item label="标题">
-          <el-input v-model="editor.form.title" placeholder="文章标题" maxlength="200" show-word-limit />
-        </el-form-item>
-      </el-col>
-      <el-col :span="8">
-        <el-form-item label="别名(留空自动生成)">
-          <el-input v-model="editor.form.slug" placeholder="post-xxxx" />
-        </el-form-item>
-      </el-col>
-    </el-row>
+    <el-form label-position="top">
+        <el-row :gutter="16">
+            <el-col :span="16">
+                <el-form-item label="标题">
+                    <el-input v-model="editor.form.title" placeholder="文章标题" maxlength="200" show-word-limit />
+                </el-form-item>
+            </el-col>
+            <el-col :span="8">
+                <el-form-item label="别名(留空自动生成)">
+                    <el-input v-model="editor.form.slug" placeholder="post-xxxx" />
+                </el-form-item>
+            </el-col>
+        </el-row>
 
-    <el-form-item label="摘要">
-      <el-input v-model="editor.form.summary" type="textarea" :rows="2" maxlength="500" show-word-limit />
-    </el-form-item>
-
-    <el-row :gutter="16">
-      <el-col :span="8">
-        <el-form-item label="分类(可输入新增)">
-          <el-select
-            v-model="editor.form.category_ids"
-            multiple
-            filterable
-            allow-create
-            default-first-option
-            :reserve-keyword="false"
-            clearable
-            placeholder="选择或输入新分类"
-            style="width: 100%"
-            @change="editor.onCategoriesChange"
-          >
-            <el-option v-for="cat in editor.categories" :key="cat.id" :label="cat.name" :value="cat.id" />
-          </el-select>
+        <el-form-item label="摘要">
+            <el-input v-model="editor.form.summary" type="textarea" :rows="2" maxlength="500" show-word-limit />
         </el-form-item>
-      </el-col>
-      <el-col :span="8">
-        <el-form-item label="标签(可输入新增)">
-          <el-select
-            v-model="editor.form.tag_ids"
-            multiple
-            filterable
-            allow-create
-            default-first-option
-            :reserve-keyword="false"
-            clearable
-            placeholder="选择或输入新标签"
-            style="width: 100%"
-            @change="editor.onTagsChange"
-          >
-            <el-option v-for="tag in editor.tags" :key="tag.id" :label="tag.name" :value="tag.id" />
-          </el-select>
-        </el-form-item>
-      </el-col>
-      <el-col :span="8">
-        <el-form-item label="是否公开可见">
-          <el-switch
-            v-model="editor.form.public_visible"
-            active-text="公开可见"
-            inactive-text="仅管理员可见"
-            inline-prompt
-          />
-        </el-form-item>
-      </el-col>
-    </el-row>
 
-    <el-form-item label="封面图(可上传或填写 URL)">
-      <div class="cover-row">
-        <el-input v-model="editor.form.cover_image" placeholder="/assets/uploads/... 或 https://..." style="flex: 1" />
-        <el-upload :show-file-list="false" :http-request="editor.uploadCover" accept="image/*">
-          <el-button :loading="editor.uploadingCover">本地上传</el-button>
-        </el-upload>
-      </div>
-    </el-form-item>
+        <el-row :gutter="16">
+            <el-col :span="8">
+                <el-form-item label="分类(可输入新增)">
+                    <el-select
+                        v-model="editor.form.category_ids"
+                        multiple
+                        filterable
+                        allow-create
+                        default-first-option
+                        :reserve-keyword="false"
+                        clearable
+                        placeholder="选择或输入新分类"
+                        style="width: 100%"
+                        @change="editor.onCategoriesChange"
+                    >
+                        <el-option v-for="cat in editor.categories" :key="cat.id" :label="cat.name" :value="cat.id" />
+                    </el-select>
+                </el-form-item>
+            </el-col>
+            <el-col :span="8">
+                <el-form-item label="标签(可输入新增)">
+                    <el-select
+                        v-model="editor.form.tag_ids"
+                        multiple
+                        filterable
+                        allow-create
+                        default-first-option
+                        :reserve-keyword="false"
+                        clearable
+                        placeholder="选择或输入新标签"
+                        style="width: 100%"
+                        @change="editor.onTagsChange"
+                    >
+                        <el-option v-for="tag in editor.tags" :key="tag.id" :label="tag.name" :value="tag.id" />
+                    </el-select>
+                </el-form-item>
+            </el-col>
+            <el-col :span="8">
+                <el-form-item label="是否公开可见">
+                    <el-switch
+                        v-model="editor.form.public_visible"
+                        active-text="公开可见"
+                        inactive-text="仅管理员可见"
+                        inline-prompt
+                    />
+                </el-form-item>
+            </el-col>
+        </el-row>
 
-    <el-form-item class="content-field" label="正文(Markdown, 支持图片/视频/附件/代码高亮)">
-      <VditorEditor ref="contentEditor" v-model="editor.form.content_md" />
-    </el-form-item>
-  </el-form>
+        <el-form-item label="封面图(可上传或填写 URL)">
+            <div class="cover-row">
+                <el-input
+                    v-model="editor.form.cover_image"
+                    placeholder="/assets/uploads/... 或 https://..."
+                    style="flex: 1"
+                />
+                <el-upload :show-file-list="false" :http-request="editor.uploadCover" accept="image/*">
+                    <el-button :loading="editor.uploadingCover">本地上传</el-button>
+                </el-upload>
+            </div>
+        </el-form-item>
+
+        <el-form-item class="content-field" label="正文(Markdown, 支持图片/视频/附件/代码高亮)">
+            <VditorEditor ref="contentEditor" v-model="editor.form.content_md" />
+        </el-form-item>
+    </el-form>
 </template>
 
 <style scoped>
-.cover-row {
-  display: flex;
-  gap: 12px;
-  width: 100%;
+.cover-row
+{
+    display: flex;
+    gap: 12px;
+    width: 100%;
 }
 
 /*
@@ -131,16 +138,18 @@ defineExpose({ syncContent })
  * el-row 里也是最后一个 el-col, 用 :last-child 会连它一起变成纵向 flex, 它的 content
  * 又带 align-items: center, 结果 72px 宽的开关被水平居中, 看起来像缩进错位
  */
-.el-form {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
+.el-form
+{
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
 .content-field,
-.content-field :deep(.el-form-item__content) {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
+.content-field :deep(.el-form-item__content)
+{
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 </style>

@@ -8,16 +8,18 @@
 export const DOC_TOKEN_COOKIE = 'phxxblog_doc_token'
 
 /** 写入 access token(SameSite=Lax); 传空字符串表示清除 */
-export function setDocTokenCookie(token: string) {
-  if (typeof document === 'undefined') return
-  // Secure 仅在 https 下附加, 否则本地 http 开发环境会被浏览器丢弃
-  const secure = location.protocol === 'https:' ? '; Secure' : ''
-  const maxAge = token ? `; Max-Age=${60 * 60 * 24 * 7}` : '; Max-Age=0'
-  const value = token ? encodeURIComponent(token) : ''
-  document.cookie = `${DOC_TOKEN_COOKIE}=${value}; Path=/; SameSite=Lax${secure}${maxAge}`
+export function setDocTokenCookie(token: string)
+{
+    if (typeof document === 'undefined') return
+    // Secure 仅在 https 下附加, 否则本地 http 开发环境会被浏览器丢弃
+    const secure = location.protocol === 'https:' ? '; Secure' : ''
+    const maxAge = token ? `; Max-Age=${60 * 60 * 24 * 7}` : '; Max-Age=0'
+    const value = token ? encodeURIComponent(token) : ''
+    document.cookie = `${DOC_TOKEN_COOKIE}=${value}; Path=/; SameSite=Lax${secure}${maxAge}`
 }
 
 /** 清除 API 文档鉴权 cookie(登出或令牌失效时调用) */
-export function clearDocTokenCookie() {
-  setDocTokenCookie('')
+export function clearDocTokenCookie()
+{
+    setDocTokenCookie('')
 }

@@ -15,72 +15,80 @@ defineProps<{ posts: PostItem[] }>()
 </script>
 
 <template>
-  <aside v-if="posts.length" class="card hot-card">
-    <p class="eyebrow">热门文章</p>
-    <ol class="hot-list">
-      <li v-for="(item, index) in posts" :key="item.id" class="hot-item">
-        <span class="hot-rank" :class="{ 'is-top': index < 3 }">{{ index + 1 }}</span>
-        <router-link class="hot-link" :to="`/post/${item.id}`" :title="item.title">
-          {{ item.title }}
-        </router-link>
-        <span class="chip chip-icon hot-views" :style="chipStyle('views', VIEWS_COLOR)">
-          <MetaIcon name="eye" />
-          <span>{{ item.views }}</span>
-        </span>
-      </li>
-    </ol>
-  </aside>
+    <aside v-if="posts.length" class="card hot-card">
+        <p class="eyebrow">热门文章</p>
+        <ol class="hot-list">
+            <li v-for="(item, index) in posts" :key="item.id" class="hot-item">
+                <span class="hot-rank" :class="{ 'is-top': index < 3 }">{{ index + 1 }}</span>
+                <router-link class="hot-link" :to="`/post/${item.id}`" :title="item.title">
+                    {{ item.title }}
+                </router-link>
+                <span class="chip chip-icon hot-views" :style="chipStyle('views', VIEWS_COLOR)">
+                    <MetaIcon name="eye" />
+                    <span>{{ item.views }}</span>
+                </span>
+            </li>
+        </ol>
+    </aside>
 </template>
 
 <style scoped>
-.hot-list {
-  list-style: none;
-  margin: 12px 0 0;
-  padding: 0;
+.hot-list
+{
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0;
 }
-.hot-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 0;
-  border-bottom: 1px solid var(--border);
+.hot-item
+{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
 }
-.hot-item:last-child {
-  border-bottom: none;
+.hot-item:last-child
+{
+    border-bottom: none;
 }
-.hot-rank {
-  flex-shrink: 0;
-  width: 18px;
-  display: inline-block;
-  color: var(--muted);
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  font-variant-numeric: tabular-nums;
-  text-align: center;
+.hot-rank
+{
+    flex-shrink: 0;
+    width: 18px;
+    display: inline-block;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
 }
 /* 前三名给一点强调, 与站内彩色标签用同一套配色语言 */
-.hot-rank.is-top {
-  color: var(--link);
-  font-weight: 600;
+.hot-rank.is-top
+{
+    color: var(--link);
+    font-weight: 600;
 }
-.hot-link {
-  flex: 1;
-  min-width: 0;
-  color: var(--text);
-  font-size: 13px;
-  line-height: 1.5;
-  /* 标题过长时截断, 保证右侧阅读量始终对齐 */
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.hot-link
+{
+    flex: 1;
+    min-width: 0;
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.5;
+    /* 标题过长时截断, 保证右侧阅读量始终对齐 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
-.hot-link:hover {
-  color: var(--link);
-  text-decoration: none;
+.hot-link:hover
+{
+    color: var(--link);
+    text-decoration: none;
 }
-.hot-views {
-  flex-shrink: 0;
-  padding: 1px 7px;
-  font-size: 10.5px;
+.hot-views
+{
+    flex-shrink: 0;
+    padding: 1px 7px;
+    font-size: 10.5px;
 }
 </style>

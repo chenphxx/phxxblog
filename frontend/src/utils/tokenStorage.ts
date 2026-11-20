@@ -23,44 +23,52 @@ export const USER_KEY = 'blog_user'
 const tokenRevision = ref(0)
 
 /** 当前 access token(未登录时为空字符串) */
-export function getAccessToken(): string {
-  void tokenRevision.value
-  return localStorage.getItem(ACCESS_TOKEN_KEY) || ''
+export function getAccessToken(): string
+{
+    void tokenRevision.value
+    return localStorage.getItem(ACCESS_TOKEN_KEY) || ''
 }
 
 /** 当前 refresh token(未登录时为空字符串) */
-export function getRefreshToken(): string {
-  void tokenRevision.value
-  return localStorage.getItem(REFRESH_TOKEN_KEY) || ''
+export function getRefreshToken(): string
+{
+    void tokenRevision.value
+    return localStorage.getItem(REFRESH_TOKEN_KEY) || ''
 }
 
 /** 写入令牌对, 并同步 API 文档鉴权 cookie */
-export function saveTokens(accessToken: string, refreshToken: string) {
-  localStorage.setItem(ACCESS_TOKEN_KEY, accessToken)
-  localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
-  setDocTokenCookie(accessToken)
-  tokenRevision.value++
+export function saveTokens(accessToken: string, refreshToken: string)
+{
+    localStorage.setItem(ACCESS_TOKEN_KEY, accessToken)
+    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
+    setDocTokenCookie(accessToken)
+    tokenRevision.value++
 }
 
 /** 读取缓存的用户信息; JSON 损坏时返回 null 而不是抛错 */
-export function readStoredUser(): User | null {
-  try {
-    return JSON.parse(localStorage.getItem(USER_KEY) || 'null')
-  } catch {
-    return null
-  }
+export function readStoredUser(): User | null
+{
+    try
+    {
+        return JSON.parse(localStorage.getItem(USER_KEY) || 'null')
+    } catch
+    {
+        return null
+    }
 }
 
 /** 缓存用户信息 */
-export function saveStoredUser(user: User) {
-  localStorage.setItem(USER_KEY, JSON.stringify(user))
+export function saveStoredUser(user: User)
+{
+    localStorage.setItem(USER_KEY, JSON.stringify(user))
 }
 
 /** 清空全部登录态(令牌, 用户信息与文档 cookie) */
-export function clearSession() {
-  localStorage.removeItem(ACCESS_TOKEN_KEY)
-  localStorage.removeItem(REFRESH_TOKEN_KEY)
-  localStorage.removeItem(USER_KEY)
-  clearDocTokenCookie()
-  tokenRevision.value++
+export function clearSession()
+{
+    localStorage.removeItem(ACCESS_TOKEN_KEY)
+    localStorage.removeItem(REFRESH_TOKEN_KEY)
+    localStorage.removeItem(USER_KEY)
+    clearDocTokenCookie()
+    tokenRevision.value++
 }

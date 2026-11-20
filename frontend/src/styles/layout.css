@@ -7,298 +7,340 @@
  * 这里只写外壳与导航, 页面内部的面板/列表/排版在 theme.css
  * ============================================================ */
 
-.app-shell {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background: var(--bg);
+.app-shell
+{
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: var(--bg);
 }
 
 /* ---------- 顶部导航 ---------- */
-.app-header {
-  position: sticky;
-  top: 0;
-  z-index: 80;
-  border-bottom: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: blur(16px);
+.app-header
+{
+    position: sticky;
+    top: 0;
+    z-index: 80;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(16px);
 }
 
-.app-header-inner {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: clamp(16px, 2.4vw, 32px);
-  width: 100%;
-  max-width: 1240px;
-  min-height: 76px;
-  margin: 0 auto;
-  padding: 10px var(--space-10);
+.app-header-inner
+{
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: clamp(16px, 2.4vw, 32px);
+    width: 100%;
+    max-width: 1240px;
+    min-height: 76px;
+    margin: 0 auto;
+    padding: 10px var(--space-10);
 }
 
-.app-brand {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  min-width: 0;
-  max-width: 200px;
-  flex-shrink: 0;
+.app-brand
+{
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 0;
+    max-width: 200px;
+    flex-shrink: 0;
 }
 
-.app-brand:hover {
-  text-decoration: none;
+.app-brand:hover
+{
+    text-decoration: none;
 }
 
-.app-brand-mark {
-  display: block;
-  width: 36px;
-  height: 36px;
-  flex-shrink: 0;
-  overflow: hidden;
-  border-radius: var(--radius-control);
-  background: linear-gradient(140deg, var(--grad-from), var(--grad-to));
+.app-brand-mark
+{
+    display: block;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    overflow: hidden;
+    border-radius: var(--radius-control);
+    background: linear-gradient(140deg, var(--grad-from), var(--grad-to));
 }
 
-.app-brand-mark img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.app-brand-mark img
+{
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
-.app-brand-mark.has-site-icon {
-  background: transparent;
+.app-brand-mark.has-site-icon
+{
+    background: transparent;
 }
 
-.app-brand-copy {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  line-height: 1.25;
+.app-brand-copy
+{
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.25;
 }
 
-.app-brand-name {
-  color: var(--text);
-  font-size: 16px;
-  font-weight: 650;
-  letter-spacing: -0.02em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.app-brand-name
+{
+    color: var(--text);
+    font-size: 16px;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.app-brand-bio {
-  max-width: 190px;
-  margin-top: 2px;
-  color: var(--muted);
-  font-size: 11.5px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.app-brand-bio
+{
+    max-width: 190px;
+    margin-top: 2px;
+    color: var(--muted);
+    font-size: 11.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.app-nav-panel {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex: 1;
-  min-width: 0;
+.app-nav-panel
+{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
 }
 
-.app-nav {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  min-width: 0;
+.app-nav
+{
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    min-width: 0;
 }
 
-.app-nav a {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  height: 38px;
-  padding: 0 11px;
-  border-radius: var(--radius-control);
-  color: var(--muted);
-  font-size: 13.5px;
-  white-space: nowrap;
-  transition:
-    background-color var(--dur) var(--ease),
-    color var(--dur) var(--ease);
+.app-nav a
+{
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    height: 38px;
+    padding: 0 11px;
+    border-radius: var(--radius-control);
+    color: var(--muted);
+    font-size: 13.5px;
+    white-space: nowrap;
+    transition:
+        background-color var(--dur) var(--ease),
+        color var(--dur) var(--ease);
 }
 
-.app-nav a:hover {
-  background: color-mix(in srgb, var(--card-bg) 72%, transparent);
-  color: var(--text);
-  text-decoration: none;
+.app-nav a:hover
+{
+    background: color-mix(in srgb, var(--card-bg) 72%, transparent);
+    color: var(--text);
+    text-decoration: none;
 }
 
-.app-nav a.router-link-active {
-  background: var(--card-bg);
-  color: var(--text);
-  font-weight: 600;
-  box-shadow:
-    0 1px 2px rgba(17, 17, 17, 0.04),
-    0 10px 24px -18px rgba(17, 17, 17, 0.4);
+.app-nav a.router-link-active
+{
+    background: var(--card-bg);
+    color: var(--text);
+    font-weight: 600;
+    box-shadow:
+        0 1px 2px rgba(17, 17, 17, 0.04),
+        0 10px 24px -18px rgba(17, 17, 17, 0.4);
 }
 
-.app-nav .nav-icon {
-  flex-shrink: 0;
-  color: currentColor;
-  font-size: 16px;
-  opacity: 0.9;
+.app-nav .nav-icon
+{
+    flex-shrink: 0;
+    color: currentColor;
+    font-size: 16px;
+    opacity: 0.9;
 }
 
-.app-nav-divider {
-  width: 1px;
-  height: 22px;
-  flex-shrink: 0;
-  background: var(--border);
+.app-nav-divider
+{
+    width: 1px;
+    height: 22px;
+    flex-shrink: 0;
+    background: var(--border);
 }
 
-.app-nav-tools {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  flex-wrap: wrap;
-  margin-left: auto;
-  padding-left: var(--space-3);
-  border-left: 1px solid var(--border);
-}
-
-.app-nav-tools > * {
-  min-width: 0;
-}
-
-.app-menu-btn {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  flex-shrink: 0;
-  padding: 0;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-control);
-  background: var(--card-bg);
-  color: var(--text);
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.app-menu-btn:hover {
-  color: var(--primary);
-  border-color: var(--border-strong);
-}
-
-@media (max-width: 1450px) {
-  .app-header-inner {
-    gap: var(--space-4);
-  }
-
-  .app-brand {
-    max-width: 160px;
-  }
-
-  .app-brand-bio {
-    display: none;
-  }
-
-  .app-nav-panel {
+.app-nav-tools
+{
+    display: flex;
+    align-items: center;
     gap: var(--space-2);
-  }
+    flex-wrap: wrap;
+    margin-left: auto;
+    padding-left: var(--space-3);
+    border-left: 1px solid var(--border);
+}
 
-  .app-nav a {
-    padding: 0 8px;
-  }
+.app-nav-tools > *
+{
+    min-width: 0;
+}
 
-  .app-nav-tools .theme-picker .picker-name,
-  .app-nav-tools .kb-picker .picker-name {
+.app-menu-btn
+{
     display: none;
-  }
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--card-bg);
+    color: var(--text);
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.app-menu-btn:hover
+{
+    color: var(--primary);
+    border-color: var(--border-strong);
+}
+
+@media (max-width: 1450px)
+{
+    .app-header-inner
+    {
+        gap: var(--space-4);
+    }
+
+    .app-brand
+    {
+        max-width: 160px;
+    }
+
+    .app-brand-bio
+    {
+        display: none;
+    }
+
+    .app-nav-panel
+    {
+        gap: var(--space-2);
+    }
+
+    .app-nav a
+    {
+        padding: 0 8px;
+    }
+
+    .app-nav-tools .theme-picker .picker-name,
+    .app-nav-tools .kb-picker .picker-name
+    {
+        display: none;
+    }
 }
 
 /* ---------- 主内容区 ---------- */
-.app-main {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
+.app-main
+{
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
 }
 
-.site-main {
-  flex: 1;
-  min-width: 0;
+.site-main
+{
+    flex: 1;
+    min-width: 0;
 }
 
-.app-nav-mask {
-  position: fixed;
-  inset: 0;
-  z-index: 70;
-  background: color-mix(in srgb, var(--text) 40%, transparent);
-  border: 0;
-  padding: 0;
+.app-nav-mask
+{
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    background: color-mix(in srgb, var(--text) 40%, transparent);
+    border: 0;
+    padding: 0;
 }
 
 /* ---------- 窄屏: 导航收进顶部下拉面板 ---------- */
-@media (max-width: 1240px) {
-  .app-header-inner {
-    min-height: 64px;
-    padding: 10px var(--space-4);
-  }
+@media (max-width: 1240px)
+{
+    .app-header-inner
+    {
+        min-height: 64px;
+        padding: 10px var(--space-4);
+    }
 
-  .app-brand {
-    max-width: none;
-    flex-shrink: 1;
-  }
+    .app-brand
+    {
+        max-width: none;
+        flex-shrink: 1;
+    }
 
-  .app-menu-btn {
-    display: inline-flex;
-    margin-left: auto;
-  }
+    .app-menu-btn
+    {
+        display: inline-flex;
+        margin-left: auto;
+    }
 
-  .app-nav-panel {
-    position: absolute;
-    top: calc(100% + 1px);
-    right: var(--space-4);
-    left: var(--space-4);
-    display: none;
-    max-height: calc(100vh - 76px);
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--space-3);
-    padding: var(--space-3);
-    overflow-y: auto;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-card);
-    background: var(--card-bg);
-    box-shadow: var(--shadow-float);
-  }
+    .app-nav-panel
+    {
+        position: absolute;
+        top: calc(100% + 1px);
+        right: var(--space-4);
+        left: var(--space-4);
+        display: none;
+        max-height: calc(100vh - 76px);
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-3);
+        padding: var(--space-3);
+        overflow-y: auto;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-card);
+        background: var(--card-bg);
+        box-shadow: var(--shadow-float);
+    }
 
-  .app-nav-panel.is-open {
-    display: flex;
-  }
+    .app-nav-panel.is-open
+    {
+        display: flex;
+    }
 
-  .app-nav {
-    width: 100%;
-    flex-direction: column;
-    align-items: stretch;
-  }
+    .app-nav
+    {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+    }
 
-  .app-nav a {
-    width: 100%;
-    height: 44px;
-  }
+    .app-nav a
+    {
+        width: 100%;
+        height: 44px;
+    }
 
-  .app-nav-divider {
-    width: 100%;
-    height: 1px;
-  }
+    .app-nav-divider
+    {
+        width: 100%;
+        height: 1px;
+    }
 
-  .app-nav-tools {
-    margin-left: 0;
-    padding-top: var(--space-3);
-    padding-left: 0;
-    border-top: 1px solid var(--border);
-    border-left: 0;
-  }
+    .app-nav-tools
+    {
+        margin-left: 0;
+        padding-top: var(--space-3);
+        padding-left: 0;
+        border-top: 1px solid var(--border);
+        border-left: 0;
+    }
 }

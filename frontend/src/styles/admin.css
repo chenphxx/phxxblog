@@ -9,34 +9,35 @@
  * ============================================================ */
 
 /* ---------- 1. Element Plus 主色跟随主题 ---------- */
-:root {
-  --el-color-primary: var(--primary);
-  --el-color-primary-light-3: color-mix(in srgb, var(--primary) 70%, var(--card-bg));
-  --el-color-primary-light-5: color-mix(in srgb, var(--primary) 50%, var(--card-bg));
-  --el-color-primary-light-7: color-mix(in srgb, var(--primary) 30%, var(--card-bg));
-  --el-color-primary-light-8: color-mix(in srgb, var(--primary) 20%, var(--card-bg));
-  --el-color-primary-light-9: color-mix(in srgb, var(--primary) 10%, var(--card-bg));
-  --el-color-primary-dark-2: var(--primary-strong);
+:root
+{
+    --el-color-primary: var(--primary);
+    --el-color-primary-light-3: color-mix(in srgb, var(--primary) 70%, var(--card-bg));
+    --el-color-primary-light-5: color-mix(in srgb, var(--primary) 50%, var(--card-bg));
+    --el-color-primary-light-7: color-mix(in srgb, var(--primary) 30%, var(--card-bg));
+    --el-color-primary-light-8: color-mix(in srgb, var(--primary) 20%, var(--card-bg));
+    --el-color-primary-light-9: color-mix(in srgb, var(--primary) 10%, var(--card-bg));
+    --el-color-primary-dark-2: var(--primary-strong);
 
-  --el-border-radius-base: var(--radius-control);
-  --el-border-radius-small: calc(var(--radius-control) - 2px);
-  --el-border-radius-round: var(--radius-pill);
+    --el-border-radius-base: var(--radius-control);
+    --el-border-radius-small: calc(var(--radius-control) - 2px);
+    --el-border-radius-round: var(--radius-pill);
 
-  --el-bg-color: var(--card-bg);
-  --el-bg-color-overlay: var(--card-bg);
-  --el-bg-color-page: var(--bg);
-  --el-text-color-primary: var(--text);
-  --el-text-color-regular: color-mix(in srgb, var(--text) 80%, var(--muted));
-  --el-text-color-secondary: var(--muted);
-  --el-text-color-placeholder: var(--muted);
-  --el-border-color: var(--border-strong);
-  --el-border-color-light: var(--border);
-  --el-border-color-lighter: var(--border);
-  --el-fill-color: var(--code-bg);
-  --el-fill-color-light: color-mix(in srgb, var(--code-bg) 60%, var(--card-bg));
-  --el-fill-color-lighter: color-mix(in srgb, var(--code-bg) 30%, var(--card-bg));
-  --el-fill-color-blank: var(--card-bg);
-  --el-mask-color: color-mix(in srgb, var(--text) 45%, transparent);
+    --el-bg-color: var(--card-bg);
+    --el-bg-color-overlay: var(--card-bg);
+    --el-bg-color-page: var(--bg);
+    --el-text-color-primary: var(--text);
+    --el-text-color-regular: color-mix(in srgb, var(--text) 80%, var(--muted));
+    --el-text-color-secondary: var(--muted);
+    --el-text-color-placeholder: var(--muted);
+    --el-border-color: var(--border-strong);
+    --el-border-color-light: var(--border);
+    --el-border-color-lighter: var(--border);
+    --el-fill-color: var(--code-bg);
+    --el-fill-color-light: color-mix(in srgb, var(--code-bg) 60%, var(--card-bg));
+    --el-fill-color-lighter: color-mix(in srgb, var(--code-bg) 30%, var(--card-bg));
+    --el-fill-color-blank: var(--card-bg);
+    --el-mask-color: color-mix(in srgb, var(--text) 45%, transparent);
 }
 
 /*
@@ -52,46 +53,47 @@
  * 选择器写 html:root 而不是 :root: 组件样式是运行时按需注入的, 可能晚于本文件, 同特异性下
  * 后加载的会覆盖先加载的(EP 深色变量用的 html.dark 也是同一档特异性)
  */
-html:root {
-  --el-color-success: var(--ok);
-  --el-color-success-light-3: color-mix(in srgb, var(--ok) 70%, var(--card-bg));
-  --el-color-success-light-5: color-mix(in srgb, var(--ok) 50%, var(--card-bg));
-  --el-color-success-light-7: color-mix(in srgb, var(--ok) 30%, var(--card-bg));
-  --el-color-success-light-8: color-mix(in srgb, var(--ok) 20%, var(--card-bg));
-  --el-color-success-light-9: color-mix(in srgb, var(--ok) 10%, var(--card-bg));
-  --el-color-success-dark-2: color-mix(in srgb, var(--ok) 78%, var(--text));
+html:root
+{
+    --el-color-success: var(--ok);
+    --el-color-success-light-3: color-mix(in srgb, var(--ok) 70%, var(--card-bg));
+    --el-color-success-light-5: color-mix(in srgb, var(--ok) 50%, var(--card-bg));
+    --el-color-success-light-7: color-mix(in srgb, var(--ok) 30%, var(--card-bg));
+    --el-color-success-light-8: color-mix(in srgb, var(--ok) 20%, var(--card-bg));
+    --el-color-success-light-9: color-mix(in srgb, var(--ok) 10%, var(--card-bg));
+    --el-color-success-dark-2: color-mix(in srgb, var(--ok) 78%, var(--text));
 
-  --el-color-warning: var(--warn);
-  --el-color-warning-light-3: color-mix(in srgb, var(--warn) 70%, var(--card-bg));
-  --el-color-warning-light-5: color-mix(in srgb, var(--warn) 50%, var(--card-bg));
-  --el-color-warning-light-7: color-mix(in srgb, var(--warn) 30%, var(--card-bg));
-  --el-color-warning-light-8: color-mix(in srgb, var(--warn) 20%, var(--card-bg));
-  --el-color-warning-light-9: color-mix(in srgb, var(--warn) 10%, var(--card-bg));
-  --el-color-warning-dark-2: color-mix(in srgb, var(--warn) 78%, var(--text));
+    --el-color-warning: var(--warn);
+    --el-color-warning-light-3: color-mix(in srgb, var(--warn) 70%, var(--card-bg));
+    --el-color-warning-light-5: color-mix(in srgb, var(--warn) 50%, var(--card-bg));
+    --el-color-warning-light-7: color-mix(in srgb, var(--warn) 30%, var(--card-bg));
+    --el-color-warning-light-8: color-mix(in srgb, var(--warn) 20%, var(--card-bg));
+    --el-color-warning-light-9: color-mix(in srgb, var(--warn) 10%, var(--card-bg));
+    --el-color-warning-dark-2: color-mix(in srgb, var(--warn) 78%, var(--text));
 
-  --el-color-danger: var(--danger);
-  --el-color-danger-light-3: color-mix(in srgb, var(--danger) 70%, var(--card-bg));
-  --el-color-danger-light-5: color-mix(in srgb, var(--danger) 50%, var(--card-bg));
-  --el-color-danger-light-7: color-mix(in srgb, var(--danger) 30%, var(--card-bg));
-  --el-color-danger-light-8: color-mix(in srgb, var(--danger) 20%, var(--card-bg));
-  --el-color-danger-light-9: color-mix(in srgb, var(--danger) 10%, var(--card-bg));
-  --el-color-danger-dark-2: color-mix(in srgb, var(--danger) 78%, var(--text));
-  /* error 与 danger 在 Element Plus 里是两套变量(提示条 / 警告块用 error), 这里跟着 danger 走 */
-  --el-color-error: var(--el-color-danger);
-  --el-color-error-light-3: var(--el-color-danger-light-3);
-  --el-color-error-light-5: var(--el-color-danger-light-5);
-  --el-color-error-light-7: var(--el-color-danger-light-7);
-  --el-color-error-light-8: var(--el-color-danger-light-8);
-  --el-color-error-light-9: var(--el-color-danger-light-9);
-  --el-color-error-dark-2: var(--el-color-danger-dark-2);
+    --el-color-danger: var(--danger);
+    --el-color-danger-light-3: color-mix(in srgb, var(--danger) 70%, var(--card-bg));
+    --el-color-danger-light-5: color-mix(in srgb, var(--danger) 50%, var(--card-bg));
+    --el-color-danger-light-7: color-mix(in srgb, var(--danger) 30%, var(--card-bg));
+    --el-color-danger-light-8: color-mix(in srgb, var(--danger) 20%, var(--card-bg));
+    --el-color-danger-light-9: color-mix(in srgb, var(--danger) 10%, var(--card-bg));
+    --el-color-danger-dark-2: color-mix(in srgb, var(--danger) 78%, var(--text));
+    /* error 与 danger 在 Element Plus 里是两套变量(提示条 / 警告块用 error), 这里跟着 danger 走 */
+    --el-color-error: var(--el-color-danger);
+    --el-color-error-light-3: var(--el-color-danger-light-3);
+    --el-color-error-light-5: var(--el-color-danger-light-5);
+    --el-color-error-light-7: var(--el-color-danger-light-7);
+    --el-color-error-light-8: var(--el-color-danger-light-8);
+    --el-color-error-light-9: var(--el-color-danger-light-9);
+    --el-color-error-dark-2: var(--el-color-danger-dark-2);
 
-  --el-color-info: var(--muted);
-  --el-color-info-light-3: color-mix(in srgb, var(--muted) 70%, var(--card-bg));
-  --el-color-info-light-5: color-mix(in srgb, var(--muted) 50%, var(--card-bg));
-  --el-color-info-light-7: color-mix(in srgb, var(--muted) 30%, var(--card-bg));
-  --el-color-info-light-8: color-mix(in srgb, var(--muted) 20%, var(--card-bg));
-  --el-color-info-light-9: color-mix(in srgb, var(--muted) 10%, var(--card-bg));
-  --el-color-info-dark-2: color-mix(in srgb, var(--muted) 78%, var(--text));
+    --el-color-info: var(--muted);
+    --el-color-info-light-3: color-mix(in srgb, var(--muted) 70%, var(--card-bg));
+    --el-color-info-light-5: color-mix(in srgb, var(--muted) 50%, var(--card-bg));
+    --el-color-info-light-7: color-mix(in srgb, var(--muted) 30%, var(--card-bg));
+    --el-color-info-light-8: color-mix(in srgb, var(--muted) 20%, var(--card-bg));
+    --el-color-info-light-9: color-mix(in srgb, var(--muted) 10%, var(--card-bg));
+    --el-color-info-dark-2: color-mix(in srgb, var(--muted) 78%, var(--text));
 }
 
 /*
@@ -104,269 +106,304 @@ html:root {
 html:root .el-button--success:not(.is-plain):not(.is-text):not(.is-link),
 html:root .el-button--warning:not(.is-plain):not(.is-text):not(.is-link),
 html:root .el-button--danger:not(.is-plain):not(.is-text):not(.is-link),
-html:root .el-button--info:not(.is-plain):not(.is-text):not(.is-link) {
-  --el-button-text-color: var(--bg);
-  --el-button-hover-text-color: var(--bg);
-  --el-button-active-text-color: var(--bg);
-  --el-button-disabled-text-color: color-mix(in srgb, var(--bg) 60%, transparent);
+html:root .el-button--info:not(.is-plain):not(.is-text):not(.is-link)
+{
+    --el-button-text-color: var(--bg);
+    --el-button-hover-text-color: var(--bg);
+    --el-button-active-text-color: var(--bg);
+    --el-button-disabled-text-color: color-mix(in srgb, var(--bg) 60%, transparent);
 }
 
 /* ---------- 2. 后台外壳 ---------- */
 
-.admin-aside {
-  --admin-sidebar-inline: var(--space-3);
-  --admin-nav-item-height: 44px;
-  --admin-nav-item-gap: var(--space-1);
-  --admin-nav-group-gap: var(--space-6);
-  display: flex;
-  flex-direction: column;
-  background: var(--bg);
-  overflow-x: hidden;
-  overflow-y: hidden;
+.admin-aside
+{
+    --admin-sidebar-inline: var(--space-3);
+    --admin-nav-item-height: 44px;
+    --admin-nav-item-gap: var(--space-1);
+    --admin-nav-group-gap: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    overflow-x: hidden;
+    overflow-y: hidden;
 }
 
 /* 品牌区与菜单使用同一组左右留白, 避免两侧缩进不一致 */
-.admin-brand {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  height: 56px;
-  margin: var(--space-2) var(--admin-sidebar-inline) var(--space-1);
-  padding: 0 var(--space-3);
-  color: var(--text);
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+.admin-brand
+{
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    height: 56px;
+    margin: var(--space-2) var(--admin-sidebar-inline) var(--space-1);
+    padding: 0 var(--space-3);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
 }
 
-.admin-brand-mark {
-  display: block;
-  width: 28px;
-  height: 28px;
-  flex-shrink: 0;
-  overflow: hidden;
-  border-radius: var(--radius-control);
-  background: linear-gradient(140deg, var(--grad-from), var(--grad-to));
+.admin-brand-mark
+{
+    display: block;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    overflow: hidden;
+    border-radius: var(--radius-control);
+    background: linear-gradient(140deg, var(--grad-from), var(--grad-to));
 }
 
-.admin-brand-mark img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.admin-brand-mark img
+{
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
-.admin-brand-mark.has-site-icon {
-  background: transparent;
+.admin-brand-mark.has-site-icon
+{
+    background: transparent;
 }
 
-.admin-nav {
-  flex: 1;
-  min-height: 0;
-  padding: var(--space-2) var(--admin-sidebar-inline) var(--space-3);
-  overflow-y: auto;
+.admin-nav
+{
+    flex: 1;
+    min-height: 0;
+    padding: var(--space-2) var(--admin-sidebar-inline) var(--space-3);
+    overflow-y: auto;
 }
 
-.admin-nav-footer {
-  flex: 0 0 auto;
-  padding: var(--space-2) var(--admin-sidebar-inline) var(--space-3);
-  border-top: 1px solid var(--border);
-  background: var(--bg);
+.admin-nav-footer
+{
+    flex: 0 0 auto;
+    padding: var(--space-2) var(--admin-sidebar-inline) var(--space-3);
+    border-top: 1px solid var(--border);
+    background: var(--bg);
 }
 
 /*
  * 分组标题放在组间留白里: 字号弱于菜单正文, 左侧与菜单图标对齐.
  * 组间采用 24px, 组内菜单项采用 4px, 形成明确的层级节奏
  */
-.admin-aside .el-menu-item-group + .el-menu-item-group {
-  margin-top: var(--admin-nav-group-gap);
+.admin-aside .el-menu-item-group + .el-menu-item-group
+{
+    margin-top: var(--admin-nav-group-gap);
 }
 
-.admin-aside .el-menu-item-group__title {
-  margin: 0 0 var(--space-2);
-  padding: 0 var(--space-3) !important;
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 1.4;
-  letter-spacing: 0.02em;
+.admin-aside .el-menu-item-group__title
+{
+    margin: 0 0 var(--space-2);
+    padding: 0 var(--space-3) !important;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: 0.02em;
 }
 
-.admin-aside .el-menu {
-  border-right: 0;
-  padding: 0;
+.admin-aside .el-menu
+{
+    border-right: 0;
+    padding: 0;
 }
 
-.admin-aside .el-menu-item {
-  display: flex;
-  align-items: center;
-  column-gap: var(--space-2);
-  height: var(--admin-nav-item-height);
-  margin: 0;
-  padding: 0 var(--space-3) !important;
-  border-radius: var(--radius-card);
-  color: var(--muted);
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.25;
-  transition:
-    background-color var(--dur) var(--ease),
-    color var(--dur) var(--ease);
+.admin-aside .el-menu-item
+{
+    display: flex;
+    align-items: center;
+    column-gap: var(--space-2);
+    height: var(--admin-nav-item-height);
+    margin: 0;
+    padding: 0 var(--space-3) !important;
+    border-radius: var(--radius-card);
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.25;
+    transition:
+        background-color var(--dur) var(--ease),
+        color var(--dur) var(--ease);
 }
 
-.admin-aside .el-menu-item + .el-menu-item {
-  margin-top: var(--admin-nav-item-gap);
+.admin-aside .el-menu-item + .el-menu-item
+{
+    margin-top: var(--admin-nav-item-gap);
 }
 
-.admin-aside .el-menu-item:hover {
-  background: var(--card-bg);
-  color: var(--text);
+.admin-aside .el-menu-item:hover
+{
+    background: var(--card-bg);
+    color: var(--text);
 }
 
 /* 选中态沿用现有白色面板 + 轻投影, 仅把圆角和间距对齐卡片 */
-.admin-aside .el-menu-item.is-active {
-  background: var(--card-bg);
-  color: var(--text);
-  font-weight: 600;
-  box-shadow:
-    0 1px 2px rgba(17, 17, 17, 0.04),
-    0 10px 24px -18px rgba(17, 17, 17, 0.4);
+.admin-aside .el-menu-item.is-active
+{
+    background: var(--card-bg);
+    color: var(--text);
+    font-weight: 600;
+    box-shadow:
+        0 1px 2px rgba(17, 17, 17, 0.04),
+        0 10px 24px -18px rgba(17, 17, 17, 0.4);
 }
 
-.admin-aside .el-menu-item.is-active .el-icon {
-  color: var(--primary);
+.admin-aside .el-menu-item.is-active .el-icon
+{
+    color: var(--primary);
 }
 
-.admin-aside .el-menu-item .el-icon {
-  width: 16px;
-  height: 16px;
-  flex: 0 0 16px;
-  margin-right: 0;
-  color: currentColor;
-  font-size: 13px;
+.admin-aside .el-menu-item .el-icon
+{
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+    margin-right: 0;
+    color: currentColor;
+    font-size: 13px;
 }
 
-.admin-aside .el-menu-item > span {
-  min-width: 0;
-  overflow: hidden;
-  line-height: 1.25;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.admin-aside .el-menu-item > span
+{
+    min-width: 0;
+    overflow: hidden;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* 顶栏: 与前台 sticky header 同样的毛玻璃与细分割线 */
-.admin-header {
-  height: 64px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  background: color-mix(in srgb, var(--bg) 86%, transparent);
+.admin-header
+{
+    height: 64px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    background: color-mix(in srgb, var(--bg) 86%, transparent);
 }
 
 /* 主内容区留白与标题节奏, 与前台 .page-container 对齐 */
-.admin-main {
-  padding: 24px 28px 40px;
+.admin-main
+{
+    padding: 24px 28px 40px;
 }
 
 .admin-main > div > h2:first-child,
-.admin-main > h2:first-child {
-  margin: 0 0 20px;
-  font-size: 26px;
-  font-weight: 650;
-  letter-spacing: -0.02em;
+.admin-main > h2:first-child
+{
+    margin: 0 0 20px;
+    font-size: 26px;
+    font-weight: 650;
+    letter-spacing: -0.02em;
 }
 
 /* ---------- 3. 后台卡片与表格 ---------- */
 
 /* 后台以表格与表单为主, 面板圆角比前台略收一点, 但仍然保持柔和 */
-.admin-main .card {
-  border-radius: var(--radius-card);
+.admin-main .card
+{
+    border-radius: var(--radius-card);
 }
 
 /* 面板标题: 各页的 <h3> 统一节奏(标题在卡片里独占一行) */
-.admin-main .card > h3:first-child {
-  margin: 0 0 var(--space-5);
-  font-size: 17px;
-  font-weight: 650;
-  letter-spacing: -0.01em;
+.admin-main .card > h3:first-child
+{
+    margin: 0 0 var(--space-5);
+    font-size: 17px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
 }
 
-.admin-main .el-table {
-  --el-table-border-color: var(--border);
-  --el-table-header-bg-color: var(--code-bg);
-  --el-table-header-text-color: var(--muted);
-  --el-table-row-hover-bg-color: var(--primary-weak);
-  --el-table-bg-color: var(--card-bg);
-  --el-table-tr-bg-color: var(--card-bg);
-  font-size: 13.5px;
+.admin-main .el-table
+{
+    --el-table-border-color: var(--border);
+    --el-table-header-bg-color: var(--code-bg);
+    --el-table-header-text-color: var(--muted);
+    --el-table-row-hover-bg-color: var(--primary-weak);
+    --el-table-bg-color: var(--card-bg);
+    --el-table-tr-bg-color: var(--card-bg);
+    font-size: 13.5px;
 }
 
-.admin-main .el-table th.el-table__cell {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--muted);
+.admin-main .el-table th.el-table__cell
+{
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--muted);
 }
 
 .admin-main .el-table td.el-table__cell,
-.admin-main .el-table th.el-table__cell {
-  padding: 9px 0;
+.admin-main .el-table th.el-table__cell
+{
+    padding: 9px 0;
 }
 
 /* 表格外的操作按钮间距 */
-.admin-main .el-table .el-button + .el-button {
-  margin-left: 4px;
+.admin-main .el-table .el-button + .el-button
+{
+    margin-left: 4px;
 }
 
 /* 后台页签 */
-.admin-main .el-tabs__item.is-active {
-  color: var(--link);
+.admin-main .el-tabs__item.is-active
+{
+    color: var(--link);
 }
 
-.admin-main .el-tabs__active-bar {
-  background-color: var(--primary);
+.admin-main .el-tabs__active-bar
+{
+    background-color: var(--primary);
 }
 
 /* 描述列表 / 空状态等统一到次要文字色 */
-.admin-main .el-descriptions__label {
-  color: var(--muted);
+.admin-main .el-descriptions__label
+{
+    color: var(--muted);
 }
 
 /* 顶栏左侧的"返回前台"入口 */
-.back-home {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  font-size: 13px;
-  color: var(--muted);
-  text-decoration: none;
-  transition:
-    border-color var(--dur) var(--ease),
-    color var(--dur) var(--ease);
+.back-home
+{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+    transition:
+        border-color var(--dur) var(--ease),
+        color var(--dur) var(--ease);
 }
 
-.back-home:hover {
-  border-color: var(--primary);
-  color: var(--link);
+.back-home:hover
+{
+    border-color: var(--primary);
+    color: var(--link);
 }
 
 /* ---------- 4. 后台登录页 ---------- */
-.login-page {
-  background:
-    radial-gradient(760px 420px at 12% -8%, color-mix(in srgb, var(--primary) 7%, transparent), transparent 62%),
-    radial-gradient(620px 380px at 92% 6%, color-mix(in srgb, var(--grad-to) 6%, transparent), transparent 58%),
-    var(--bg);
+.login-page
+{
+    background:
+        radial-gradient(760px 420px at 12% -8%, color-mix(in srgb, var(--primary) 7%, transparent), transparent 62%),
+        radial-gradient(620px 380px at 92% 6%, color-mix(in srgb, var(--grad-to) 6%, transparent), transparent 58%),
+        var(--bg);
 }
 
-.login-card {
-  border-radius: var(--radius-panel);
-  box-shadow: var(--shadow-float);
+.login-card
+{
+    border-radius: var(--radius-panel);
+    box-shadow: var(--shadow-float);
 }
 
-.login-header h2 {
-  font-size: 19px;
-  letter-spacing: -0.01em;
+.login-header h2
+{
+    font-size: 19px;
+    letter-spacing: -0.01em;
 }
 
 /* ---------- 5. 页内工具条 ---------- */
@@ -389,71 +426,77 @@ html:root .el-button--info:not(.is-plain):not(.is-text):not(.is-link) {
  * (24px), 否则吸顶后工具条上方会留出一条缝, 让卡片文字从缝里透出来
  * 背景用页面底色: 未吸顶时与普通工具条看不出区别, 吸顶后正好盖住下方内容
  */
-.admin-toolbar {
-  position: sticky;
-  top: -24px;
-  /* 必须高于媒体卡片绝对定位的勾选框等页内控件, 否则滚动后会盖住吸顶工具栏 */
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  gap: 10px 12px;
-  flex-wrap: wrap;
-  background: var(--bg);
-  padding: 12px 0;
-  margin-bottom: 16px;
+.admin-toolbar
+{
+    position: sticky;
+    top: -24px;
+    /* 必须高于媒体卡片绝对定位的勾选框等页内控件, 否则滚动后会盖住吸顶工具栏 */
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 10px 12px;
+    flex-wrap: wrap;
+    background: var(--bg);
+    padding: 12px 0;
+    margin-bottom: 16px;
 }
 
 /* 筛选/范围类控件(状态页签, 关键字输入...) */
-.admin-toolbar-filters {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+.admin-toolbar-filters
+{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 /* 操作类控件, 始终靠右且不换行; 整组放不下时由外层 .admin-toolbar 整组换行 */
-.admin-toolbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: nowrap;
-  margin-left: auto;
+.admin-toolbar-actions
+{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+    margin-left: auto;
 }
 
 /*
  * 工具条里的输入框固定宽度: el-input 自身是 width: 100%, 在 flex 行里会撑满剩余空间,
  * 把"搜索"按钮推到很远的地方(这正是文章管理页按钮错位的成因)
  */
-.admin-toolbar .el-input {
-  width: 220px;
+.admin-toolbar .el-input
+{
+    width: 220px;
 }
 
 /*
  * 列表页的批量操作条: 勾选了行之后出现在表格上方
  * 文章管理与评论管理共用同一套样式, 不要再在各自视图里各写一份
  */
-.batch-bar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  margin-bottom: 12px;
-  background: var(--code-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-control);
+.batch-bar
+{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
 }
 
 /*
  * 卡片头部行: 左侧标题 + 右侧操作
  * 仪表盘的"访问趋势"与"访问记录"两张卡片共用, 不要再在各自组件里各写一份
  */
-.trend-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 12px;
+.trend-header
+{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 12px;
 }
 
 /*
@@ -461,27 +504,31 @@ html:root .el-button--info:not(.is-plain):not(.is-text):not(.is-link) {
  * 系统设置拆成多张子卡片后由它们共用, 不要再在各自组件里各写一份
  */
 /* 卡片标题下的一句说明 */
-.section-hint {
-  margin: -4px 0 16px;
+.section-hint
+{
+    margin: -4px 0 16px;
 }
 /* 配置域的可见性说明: 默认"公开可见", is-admin 表示仅管理员可见 */
-.vis-badge {
-  margin-left: 8px;
-  padding: 1px 8px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 400;
-  vertical-align: 2px;
-  color: var(--primary);
-  background: var(--primary-weak);
+.vis-badge
+{
+    margin-left: 8px;
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 400;
+    vertical-align: 2px;
+    color: var(--primary);
+    background: var(--primary-weak);
 }
-.vis-badge.is-admin {
-  color: var(--warn);
-  background: color-mix(in srgb, var(--warn) 12%, transparent);
+.vis-badge.is-admin
+{
+    color: var(--warn);
+    background: color-mix(in srgb, var(--warn) 12%, transparent);
 }
 /* 字段下方的补充说明: 统一字号, 不再写内联样式 */
-.form-hint {
-  width: 100%;
-  font-size: 12px;
-  line-height: 1.6;
+.form-hint
+{
+    width: 100%;
+    font-size: 12px;
+    line-height: 1.6;
 }

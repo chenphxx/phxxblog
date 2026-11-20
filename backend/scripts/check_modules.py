@@ -77,7 +77,7 @@ if collisions:
 print()
 print("前后端: 模块 id 集合")
 front_ids = re.findall(
-    r"^\s{4}id: '([a-z0-9-]+)',$", FRONT_REGISTRY.read_text(encoding="utf-8"), re.M
+    r"^\s+id: '([a-z0-9-]+)',$", FRONT_REGISTRY.read_text(encoding="utf-8"), re.M
 )
 check(len(front_ids) >= 10, f"从前端注册表解析出 {len(front_ids)} 个模块")
 check(set(front_ids) == set(backend_ids), "前端注册表与后端注册表的模块 id 完全一致")

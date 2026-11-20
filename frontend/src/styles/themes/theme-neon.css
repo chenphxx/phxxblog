@@ -8,86 +8,88 @@
  *   npm run themes:generate
  * ============================================================ */
 
-html[data-theme='neon'] {
-  --bg: #f0f1ea;
-  --card-bg: #ffffff;
-  --text: #171717;
-  --muted: #6b6b6b;
-  --border: #e6e6e6;
-  --border-strong: #d4d4d4;
-  --primary: #5f9c00;
-  --primary-strong: #4a7a00;
-  --primary-weak: #eff5e6;
-  --on-primary: #141414;
-  --link: #508400;
-  --code-bg: #f2f2f2;
-  --code-block-bg: #ffffff;
-  --ok: #18794e;
-  --warn: #8a5a1f;
-  --danger: #b8272c;
-  --ring: #5f9c004d;
-  --grad-from: #97bf59;
-  --grad-to: #5f9c00;
-  --term-bg: #121212;
-  --term-border: #2b2b2b;
-  --term-text: #e6e6e6;
-  --term-dim: #909090;
-  --term-accent: #5f9c00;
-  --term-prompt: #fafafa;
-  --cell-0: #ececec;
-  --cell-1: #d3dec2;
-  --cell-2: #b1ca89;
-  --cell-3: #8cb64c;
-  --cell-4: #5f9c00;
+html[data-theme='neon']
+{
+    --bg: #f0f1ea;
+    --card-bg: #ffffff;
+    --text: #171717;
+    --muted: #6b6b6b;
+    --border: #e6e6e6;
+    --border-strong: #d4d4d4;
+    --primary: #5f9c00;
+    --primary-strong: #4a7a00;
+    --primary-weak: #eff5e6;
+    --on-primary: #141414;
+    --link: #508400;
+    --code-bg: #f2f2f2;
+    --code-block-bg: #ffffff;
+    --ok: #18794e;
+    --warn: #8a5a1f;
+    --danger: #b8272c;
+    --ring: #5f9c004d;
+    --grad-from: #97bf59;
+    --grad-to: #5f9c00;
+    --term-bg: #121212;
+    --term-border: #2b2b2b;
+    --term-text: #e6e6e6;
+    --term-dim: #909090;
+    --term-accent: #5f9c00;
+    --term-prompt: #fafafa;
+    --cell-0: #ececec;
+    --cell-1: #d3dec2;
+    --cell-2: #b1ca89;
+    --cell-3: #8cb64c;
+    --cell-4: #5f9c00;
 
-  /* Element Plus 主色色阶由品牌色推导, 组件与主题保持一致 */
-  --el-color-primary: #5f9c00;
-  --el-color-primary-light-3: #8fba4d;
-  --el-color-primary-light-5: #afce80;
-  --el-color-primary-light-7: #cfe1b3;
-  --el-color-primary-light-8: #dfebcc;
-  --el-color-primary-light-9: #eff5e6;
-  --el-color-primary-dark-2: #4c7d00;
+    /* Element Plus 主色色阶由品牌色推导, 组件与主题保持一致 */
+    --el-color-primary: #5f9c00;
+    --el-color-primary-light-3: #8fba4d;
+    --el-color-primary-light-5: #afce80;
+    --el-color-primary-light-7: #cfe1b3;
+    --el-color-primary-light-8: #dfebcc;
+    --el-color-primary-light-9: #eff5e6;
+    --el-color-primary-dark-2: #4c7d00;
 }
 
-html[data-theme='neon'].dark {
-  --bg: #0e100c;
-  --card-bg: #1f211d;
-  --text: #ededed;
-  --muted: #a3a3a3;
-  --border: #2c2c2c;
-  --border-strong: #3c3c3c;
-  --primary: #a3e635;
-  --primary-strong: #b4eb59;
-  --primary-weak: #344121;
-  --on-primary: #141414;
-  --link: #a3e635;
-  --code-bg: #2c2e2b;
-  --code-block-bg: #1e1e1e;
-  --ok: #5cc98d;
-  --warn: #dfb167;
-  --danger: #ef8073;
-  --ring: #a3e6354d;
-  --grad-from: #6a9622;
-  --grad-to: #a3e635;
-  --term-bg: #0c0c0c;
-  --term-border: #272727;
-  --term-text: #e6e6e6;
-  --term-dim: #8b8b8b;
-  --term-accent: #a3e635;
-  --term-prompt: #fafafa;
-  --cell-0: #262626;
-  --cell-1: #3d4929;
-  --cell-2: #5b772c;
-  --cell-3: #7ba930;
-  --cell-4: #a3e635;
+html[data-theme='neon'].dark
+{
+    --bg: #0e100c;
+    --card-bg: #1f211d;
+    --text: #ededed;
+    --muted: #a3a3a3;
+    --border: #2c2c2c;
+    --border-strong: #3c3c3c;
+    --primary: #a3e635;
+    --primary-strong: #b4eb59;
+    --primary-weak: #344121;
+    --on-primary: #141414;
+    --link: #a3e635;
+    --code-bg: #2c2e2b;
+    --code-block-bg: #1e1e1e;
+    --ok: #5cc98d;
+    --warn: #dfb167;
+    --danger: #ef8073;
+    --ring: #a3e6354d;
+    --grad-from: #6a9622;
+    --grad-to: #a3e635;
+    --term-bg: #0c0c0c;
+    --term-border: #272727;
+    --term-text: #e6e6e6;
+    --term-dim: #8b8b8b;
+    --term-accent: #a3e635;
+    --term-prompt: #fafafa;
+    --cell-0: #262626;
+    --cell-1: #3d4929;
+    --cell-2: #5b772c;
+    --cell-3: #7ba930;
+    --cell-4: #a3e635;
 
-  /* Element Plus 主色色阶由品牌色推导, 组件与主题保持一致 */
-  --el-color-primary: #a3e635;
-  --el-color-primary-light-3: #bfee72;
-  --el-color-primary-light-5: #d1f39a;
-  --el-color-primary-light-7: #e3f8c2;
-  --el-color-primary-light-8: #edfad7;
-  --el-color-primary-light-9: #f6fdeb;
-  --el-color-primary-dark-2: #82b82a;
+    /* Element Plus 主色色阶由品牌色推导, 组件与主题保持一致 */
+    --el-color-primary: #a3e635;
+    --el-color-primary-light-3: #bfee72;
+    --el-color-primary-light-5: #d1f39a;
+    --el-color-primary-light-7: #e3f8c2;
+    --el-color-primary-light-8: #edfad7;
+    --el-color-primary-light-9: #f6fdeb;
+    --el-color-primary-dark-2: #82b82a;
 }

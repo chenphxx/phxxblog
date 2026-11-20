@@ -6,262 +6,300 @@
  * 视觉基调: 浅灰画布 + 白色大面板 + 大量留白 + 细分隔线, 少用卡片嵌套
  * ============================================================ */
 
-* {
-  box-sizing: border-box;
+*
+{
+    box-sizing: border-box;
 }
 
-html {
-  scroll-behavior: smooth;
+html
+{
+    scroll-behavior: smooth;
 }
 
 html,
-body {
-  margin: 0;
-  padding: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-sans);
-  font-size: 15.5px;
-  line-height: 1.7;
-  -webkit-font-smoothing: antialiased;
-  transition:
-    background-color 0.25s ease,
-    color 0.25s ease;
+body
+{
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 15.5px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    transition:
+        background-color 0.25s ease,
+        color 0.25s ease;
 }
 
-a {
-  color: var(--link);
-  text-decoration: none;
+a
+{
+    color: var(--link);
+    text-decoration: none;
 }
 
-a:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+a:hover
+{
+    text-decoration: underline;
+    text-underline-offset: 3px;
 }
 
-:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-  border-radius: var(--radius-control);
+:focus-visible
+{
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: var(--radius-control);
 }
 
-::selection {
-  background: color-mix(in srgb, var(--primary) 22%, transparent);
-  color: var(--text);
+::selection
+{
+    background: color-mix(in srgb, var(--primary) 22%, transparent);
+    color: var(--text);
 }
 
 /* ---------- 排版层级 ---------- */
 h1,
 h2,
-h3 {
-  letter-spacing: -0.015em;
+h3
+{
+    letter-spacing: -0.015em;
 }
 
-.muted {
-  color: var(--muted);
-  font-size: 13.5px;
+.muted
+{
+    color: var(--muted);
+    font-size: 13.5px;
 }
 
 /* 区块小标题: 以前是"// 注释"风格的等宽标签, 改成克制的说明文字 */
-.eyebrow {
-  font-size: 12.5px;
-  font-weight: 500;
-  color: var(--muted);
-  letter-spacing: 0.04em;
+.eyebrow
+{
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0.04em;
 }
 
 /* 带图标的普通元信息(字数/时长/日期...) */
-.meta-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  white-space: nowrap;
+.meta-item
+{
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
 }
 
-.meta-item .meta-icon {
-  opacity: 0.72;
+.meta-item .meta-icon
+{
+    opacity: 0.72;
 }
 
 /* 数字型信息用等宽字体对齐位数(日期, 字数, 计数) */
-.num {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
+.num
+{
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
 }
 
 /* ---------- 页面容器 ---------- */
-.page-container {
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: var(--space-8) var(--space-10) var(--space-16);
+.page-container
+{
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: var(--space-8) var(--space-10) var(--space-16);
 }
 
-@media (max-width: 900px) {
-  .page-container {
-    padding: var(--space-5) var(--space-4) var(--space-12);
-  }
+@media (max-width: 900px)
+{
+    .page-container
+    {
+        padding: var(--space-5) var(--space-4) var(--space-12);
+    }
 }
 
 /* 页面标题区: 标题与主面板之间靠留白分区, 不用边框 */
-.page-head {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--space-4);
-  margin-bottom: var(--space-6);
+.page-head
+{
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
 }
 
-.page-title {
-  margin: 0;
-  font-size: clamp(30px, 3.4vw, 38px);
-  font-weight: 650;
-  line-height: 1.15;
-  letter-spacing: -0.03em;
+.page-title
+{
+    margin: 0;
+    font-size: clamp(30px, 3.4vw, 38px);
+    font-weight: 650;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
 }
 
 /* ---------- 面板 ---------- */
 /* 页面分区用大面板承载, 面板内部靠间距与细分隔线组织, 不要层层嵌套卡片 */
-.card {
-  background: var(--card-bg);
-  border: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-panel);
-  padding: var(--space-6);
+.card
+{
+    background: var(--card-bg);
+    border: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-panel);
+    padding: var(--space-6);
 }
 
-.panel {
-  background: var(--card-bg);
-  border: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
-  border-radius: var(--radius-panel);
-  box-shadow: var(--shadow-panel);
-  padding: var(--space-8);
+.panel
+{
+    background: var(--card-bg);
+    border: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+    border-radius: var(--radius-panel);
+    box-shadow: var(--shadow-panel);
+    padding: var(--space-8);
 }
 
-.panel-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  margin-bottom: var(--space-5);
+.panel-head
+{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
 }
 
-.panel-title {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 650;
-  letter-spacing: -0.02em;
+.panel-title
+{
+    margin: 0;
+    font-size: 22px;
+    font-weight: 650;
+    letter-spacing: -0.02em;
 }
 
 /* 面板内的列表行: 只用一条细线分隔, 不再每行一张卡片 */
-.list-row {
-  display: block;
-  padding: var(--space-5) 0;
-  border-bottom: 1px solid var(--border);
+.list-row
+{
+    display: block;
+    padding: var(--space-5) 0;
+    border-bottom: 1px solid var(--border);
 }
 
-.list-row:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
+.list-row:last-child
+{
+    border-bottom: none;
+    padding-bottom: 0;
 }
 
-.list-row:first-child {
-  padding-top: 0;
+.list-row:first-child
+{
+    padding-top: 0;
 }
 
-.list-row-link {
-  color: inherit;
+.list-row-link
+{
+    color: inherit;
 }
 
-.list-row-link:hover {
-  text-decoration: none;
+.list-row-link:hover
+{
+    text-decoration: none;
 }
 
 /* 指标(首页/后台的概览数字) */
-.metric {
-  min-width: 0;
+.metric
+{
+    min-width: 0;
 }
 
-.metric-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--muted);
-  font-size: 14px;
+.metric-label
+{
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    font-size: 14px;
 }
 
-.metric-value {
-  margin: var(--space-3) 0 0;
-  font-size: clamp(32px, 4vw, 44px);
-  font-weight: 600;
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-  font-variant-numeric: tabular-nums;
+.metric-value
+{
+    margin: var(--space-3) 0 0;
+    font-size: clamp(32px, 4vw, 44px);
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
 }
 
-.metric-hint {
-  margin: var(--space-2) 0 0;
-  color: var(--muted);
-  font-size: 13px;
+.metric-hint
+{
+    margin: var(--space-2) 0 0;
+    color: var(--muted);
+    font-size: 13px;
 }
 
-.divider {
-  height: 1px;
-  border: 0;
-  margin: var(--space-6) 0;
-  background: var(--border);
+.divider
+{
+    height: 1px;
+    border: 0;
+    margin: var(--space-6) 0;
+    background: var(--border);
 }
 
 /* ---------- 分类/标签 ---------- */
 /* 背景色由 utils/chipColor.ts 计算(低饱和淡底), 这里只管形状 */
-.chip {
-  display: inline-flex;
-  align-items: center;
-  border: 1px solid transparent;
-  border-radius: var(--radius-chip);
-  padding: 2px 9px;
-  font-size: 12px;
-  line-height: 1.7;
-  white-space: nowrap;
-  transition:
-    background-color var(--dur) var(--ease),
-    border-color var(--dur) var(--ease),
-    color var(--dur) var(--ease);
+.chip
+{
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid transparent;
+    border-radius: var(--radius-chip);
+    padding: 2px 9px;
+    font-size: 12px;
+    line-height: 1.7;
+    white-space: nowrap;
+    transition:
+        background-color var(--dur) var(--ease),
+        border-color var(--dur) var(--ease),
+        color var(--dur) var(--ease);
 }
 
-.chip:hover {
-  text-decoration: none;
+.chip:hover
+{
+    text-decoration: none;
 }
 
 /* 带图标的标签(分类/标签/阅读量...): 图标与文字对齐, 图标略淡不抢戏 */
-.chip-icon {
-  gap: 5px;
-  padding: 2px 10px;
+.chip-icon
+{
+    gap: 5px;
+    padding: 2px 10px;
 }
 
-.chip-icon .meta-icon {
-  opacity: 0.8;
+.chip-icon .meta-icon
+{
+    opacity: 0.8;
 }
 
 /* ---------- 文章正文 ---------- */
-.markdown-body {
-  /* 正文本身不带面板: 承载它的外层已是白色面板(文章页 / 首页"关于") */
-  background: transparent;
-  padding: 0;
-  border: none;
-  border-radius: 0;
-  font-size: 16.5px;
-  line-height: 1.85;
-  color: color-mix(in srgb, var(--text) 92%, var(--muted));
-  overflow-wrap: break-word;
+.markdown-body
+{
+    /* 正文本身不带面板: 承载它的外层已是白色面板(文章页 / 首页"关于") */
+    background: transparent;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    font-size: 16.5px;
+    line-height: 1.85;
+    color: color-mix(in srgb, var(--text) 92%, var(--muted));
+    overflow-wrap: break-word;
 }
 
 .markdown-body h1,
 .markdown-body h2,
 .markdown-body h3,
-.markdown-body h4 {
-  color: var(--text);
-  font-weight: 650;
-  letter-spacing: -0.02em;
-  line-height: 1.35;
+.markdown-body h4
+{
+    color: var(--text);
+    font-weight: 650;
+    letter-spacing: -0.02em;
+    line-height: 1.35;
 }
 
 /*
@@ -273,56 +311,64 @@ h3 {
 .markdown-body h3,
 .markdown-body h4,
 .markdown-body h5,
-.markdown-body h6 {
-  scroll-margin-top: 84px;
+.markdown-body h6
+{
+    scroll-margin-top: 84px;
 }
 
-.markdown-body h1 {
-  font-size: 1.6em;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 0.35em;
+.markdown-body h1
+{
+    font-size: 1.6em;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.35em;
 }
 
-.markdown-body h2 {
-  font-size: 1.32em;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 0.3em;
-  margin-top: 1.6em;
+.markdown-body h2
+{
+    font-size: 1.32em;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.3em;
+    margin-top: 1.6em;
 }
 
-.markdown-body h3 {
-  font-size: 1.12em;
-  margin-top: 1.4em;
+.markdown-body h3
+{
+    font-size: 1.12em;
+    margin-top: 1.4em;
 }
 
-.markdown-body a {
-  color: var(--link);
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
-  text-decoration-color: color-mix(in srgb, var(--primary) 45%, transparent);
-  transition: text-decoration-color var(--dur) var(--ease);
+.markdown-body a
+{
+    color: var(--link);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    text-decoration-color: color-mix(in srgb, var(--primary) 45%, transparent);
+    transition: text-decoration-color var(--dur) var(--ease);
 }
 
-.markdown-body a:hover {
-  text-decoration-color: var(--primary);
+.markdown-body a:hover
+{
+    text-decoration-color: var(--primary);
 }
 
-.markdown-body blockquote {
-  margin: 1em 0;
-  padding: 4px 18px;
-  border-left: 2px solid var(--primary);
-  background: color-mix(in srgb, var(--primary) 5%, transparent);
-  border-radius: 0 var(--radius-control) var(--radius-control) 0;
-  color: var(--muted);
+.markdown-body blockquote
+{
+    margin: 1em 0;
+    padding: 4px 18px;
+    border-left: 2px solid var(--primary);
+    background: color-mix(in srgb, var(--primary) 5%, transparent);
+    border-radius: 0 var(--radius-control) var(--radius-control) 0;
+    color: var(--muted);
 }
 
-.markdown-body code {
-  font-family: var(--font-mono);
-  font-size: 0.88em;
-  background: var(--code-bg);
-  padding: 0.15em 0.4em;
-  border-radius: 6px;
+.markdown-body code
+{
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.15em 0.4em;
+    border-radius: 6px;
 }
 
 /*
@@ -336,8 +382,9 @@ h3 {
  * 这里用同样的 class 特异性, 但更晚加载(主题入口 @import theme.css 在前)把它压回去
  */
 .markdown-body,
-.vditor-reset {
-  font-family: var(--font-sans);
+.vditor-reset
+{
+    font-family: var(--font-sans);
 }
 
 /*
@@ -351,19 +398,21 @@ h3 {
 .markdown-body code,
 .markdown-body pre,
 .vditor-reset code,
-.vditor-reset pre {
-  font-family: var(--font-mono);
+.vditor-reset pre
+{
+    font-family: var(--font-mono);
 }
 
-.markdown-body pre {
-  background: var(--code-block-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-control);
-  padding: 16px;
-  overflow-x: auto;
-  font-family: var(--font-mono);
-  font-size: 14.5px;
-  line-height: 1.7;
+.markdown-body pre
+{
+    background: var(--code-block-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    padding: 16px;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 14.5px;
+    line-height: 1.7;
 }
 
 /*
@@ -372,10 +421,11 @@ h3 {
  * Vditor 的高亮是异步给 code 加 hljs 类的, 否则代码块会先小后大跳动一下
  */
 .markdown-body.vditor-reset pre > code,
-.markdown-body.vditor-reset pre > code:not(.hljs):not(.highlight-chroma) {
-  font-size: 1em;
-  background: transparent;
-  padding: 0;
+.markdown-body.vditor-reset pre > code:not(.hljs):not(.highlight-chroma)
+{
+    font-size: 1em;
+    background: transparent;
+    padding: 0;
 }
 
 /*
@@ -388,56 +438,65 @@ h3 {
  * 必须写到 .markdown-body(它自己声明了 font-size, 只在外层设字号不会生效)
  * 标题与行内代码是 em 单位会跟随缩放; 代码块原本是固定 14.5px, 这里改为跟随
  */
-.reading-body .markdown-body {
-  font-size: var(--reading-font-size, 16.5px);
+.reading-body .markdown-body
+{
+    font-size: var(--reading-font-size, 16.5px);
 }
-.reading-body .markdown-body pre {
-  font-size: var(--reading-code-size, 14.5px);
+.reading-body .markdown-body pre
+{
+    font-size: var(--reading-code-size, 14.5px);
 }
 
 /* 代码块字体: 多带一层类把特异性提到 0,3,2 与 0,5,1, 稳压 Vditor 的两条字体声明 */
 .reading-code-font .markdown-body.vditor-reset pre > code,
-.reading-code-font .markdown-body.vditor-reset code:not(.hljs):not(.highlight-chroma) {
-  font-family: var(--font-mono);
+.reading-code-font .markdown-body.vditor-reset code:not(.hljs):not(.highlight-chroma)
+{
+    font-family: var(--font-mono);
 }
 
 /* 代码块纵向不出现滚动条(长代码用折叠按钮展开) */
 .markdown-body pre,
-.markdown-body.vditor-reset pre > code {
-  overflow-y: hidden;
+.markdown-body.vditor-reset pre > code
+{
+    overflow-y: hidden;
 }
 
 /* 超过 20 行的代码块折叠 */
-.markdown-body .code-block > pre {
-  margin-bottom: 0;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
+.markdown-body .code-block > pre
+{
+    margin-bottom: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
 }
-.markdown-body .code-block.is-collapsed > pre {
-  max-height: var(--code-fold-height);
+.markdown-body .code-block.is-collapsed > pre
+{
+    max-height: var(--code-fold-height);
 }
-.markdown-body .code-fold-toggle {
-  display: block;
-  width: 100%;
-  margin: -1px 0 1em;
-  padding: 7px 0;
-  font-family: var(--font-sans);
-  font-size: 12px;
-  color: var(--muted);
-  background: var(--code-block-bg);
-  border: 1px solid var(--border);
-  border-radius: 0 0 var(--radius-control) var(--radius-control);
-  cursor: pointer;
+.markdown-body .code-fold-toggle
+{
+    display: block;
+    width: 100%;
+    margin: -1px 0 1em;
+    padding: 7px 0;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--code-block-bg);
+    border: 1px solid var(--border);
+    border-radius: 0 0 var(--radius-control) var(--radius-control);
+    cursor: pointer;
 }
-.markdown-body .code-fold-toggle:hover {
-  color: var(--primary);
-  border-color: var(--border-strong);
+.markdown-body .code-fold-toggle:hover
+{
+    color: var(--primary);
+    border-color: var(--border-strong);
 }
 
 /* 代码注释在深色/浅色主题下统一为斜体(vs 浅色主题默认不是斜体) */
 .vditor-reset pre code .hljs-comment,
-.vditor-reset pre code .hljs-quote {
-  font-style: italic;
+.vditor-reset pre code .hljs-quote
+{
+    font-style: italic;
 }
 
 /* ---------- 编辑器(Vditor)外观 ---------- */
@@ -457,14 +516,15 @@ h3 {
  *      Vditor 的展开/收起与光标定位都依赖它自己的 inline/inline-block 切换,
  *      改成 block 会让编辑态的排版散掉
  */
-.vditor-ir .vditor-ir__preview code {
-  background: var(--code-block-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-control);
-  font-family: var(--font-mono);
-  font-size: 14.5px;
-  line-height: 1.7;
-  padding: 14px 16px;
+.vditor-ir .vditor-ir__preview code
+{
+    background: var(--code-block-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    font-family: var(--font-mono);
+    font-size: 14.5px;
+    line-height: 1.7;
+    padding: 14px 16px;
 }
 
 /*
@@ -478,33 +538,38 @@ h3 {
  * 这里把背景一律改为 transparent, 文字颜色交给主题令牌 --text, 与所在的卡片同色
  * :focus 态必须一并覆盖: Vditor 在编辑区获得焦点时会把背景换成 --textarea-background-color
  */
-.vditor {
-  border: none;
+.vditor
+{
+    border: none;
 }
 
-.vditor-toolbar {
-  background-color: transparent;
-  border-bottom: none;
+.vditor-toolbar
+{
+    background-color: transparent;
+    border-bottom: none;
 }
 
 .vditor-ir pre.vditor-reset,
 .vditor-ir pre.vditor-reset:focus,
-.vditor-preview {
-  background-color: transparent;
-  color: var(--text);
+.vditor-preview
+{
+    background-color: transparent;
+    color: var(--text);
 }
 
 /*
  * 全屏时编辑器要盖住整屏, .vditor 必须自带底色:
  * 编辑区背景是透明的, 只加 vditor--fullscreen 的话下层页面(表单)会直接透出来
  */
-.vditor.vditor--fullscreen {
-  background-color: var(--card-bg);
+.vditor.vditor--fullscreen
+{
+    background-color: var(--card-bg);
 }
 
 /* 光标进入代码块时 Vditor 会展开原文, 预览仍在下面重复渲染一份, 这里把它收起来 */
-.vditor-ir .vditor-ir__node--expand[data-type='code-block'] .vditor-ir__preview {
-  display: none;
+.vditor-ir .vditor-ir__node--expand[data-type='code-block'] .vditor-ir__preview
+{
+    display: none;
 }
 
 /*
@@ -512,11 +577,12 @@ h3 {
  * 挂在外层节点上而不是原文容器上: 原文容器的 display 由 Vditor 自己切换, 动它会散架
  * 左侧内边距对齐预览态的行号槽(4em + 1px 边框), 光标进出代码块时文字不会左右跳
  */
-.vditor-ir .vditor-ir__node--expand[data-type='code-block'] {
-  background: var(--code-block-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-control);
-  padding: 14px 16px 14px 61px;
+.vditor-ir .vditor-ir__node--expand[data-type='code-block']
+{
+    background: var(--code-block-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    padding: 14px 16px 14px 61px;
 }
 
 /*
@@ -524,146 +590,169 @@ h3 {
  * 那层样式来自 .vditor-reset code:not(.hljs):not(.highlight-chroma)(编辑器里所有行内代码共用),
  * 所以这里必须带上同样的 :not() 才压得住它. 字号与预览态取平, 光标进出时文字不会跳
  */
-.vditor-ir .vditor-ir__node--expand .vditor-ir__marker--pre code:not(.hljs):not(.highlight-chroma) {
-  background: transparent;
-  border: none;
-  padding: 0;
-  font-size: 14.5px;
-  line-height: 1.7;
+.vditor-ir .vditor-ir__node--expand .vditor-ir__marker--pre code:not(.hljs):not(.highlight-chroma)
+{
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-size: 14.5px;
+    line-height: 1.7;
 }
 
-.markdown-body table {
-  border-collapse: collapse;
-  width: 100%;
-  margin: 1em 0;
-  font-size: 15px;
+.markdown-body table
+{
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
+    font-size: 15px;
 }
 
 .markdown-body th,
-.markdown-body td {
-  border: 1px solid var(--border);
-  padding: 8px 12px;
+.markdown-body td
+{
+    border: 1px solid var(--border);
+    padding: 8px 12px;
 }
 
-.markdown-body th {
-  background: var(--code-bg);
-  font-weight: 600;
+.markdown-body th
+{
+    background: var(--code-bg);
+    font-weight: 600;
 }
 
-.markdown-body img {
-  max-width: 100%;
-  border-radius: var(--radius-control);
+.markdown-body img
+{
+    max-width: 100%;
+    border-radius: var(--radius-control);
 }
 
-.markdown-body hr {
-  border: none;
-  border-top: 1px solid var(--border);
-  margin: 2em 0;
+.markdown-body hr
+{
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2em 0;
 }
 
 /* ---------- 站脚 ---------- */
-.site-footer {
-  margin-top: auto;
-  padding: var(--space-6) var(--space-10) var(--space-8);
-  border-top: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  text-align: center;
+.site-footer
+{
+    margin-top: auto;
+    padding: var(--space-6) var(--space-10) var(--space-8);
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
 }
 
-.site-footer a {
-  color: var(--muted);
-  font-size: 12.5px;
+.site-footer a
+{
+    color: var(--muted);
+    font-size: 12.5px;
 }
 
-.site-footer a:hover {
-  color: var(--text);
+.site-footer a:hover
+{
+    color: var(--text);
 }
 
-.site-footer .footer-meta {
-  color: var(--muted);
-  font-size: 12.5px;
+.site-footer .footer-meta
+{
+    color: var(--muted);
+    font-size: 12.5px;
 }
 
-.site-footer .footer-icp {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--space-4);
+.site-footer .footer-icp
+{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-4);
 }
 
 /* ---------- Element Plus 细节对齐 ---------- */
-.el-button {
-  font-family: var(--font-sans);
-  border-radius: var(--radius-control);
-  transition:
-    background-color var(--dur) var(--ease),
-    border-color var(--dur) var(--ease),
-    color var(--dur) var(--ease),
-    box-shadow var(--dur) var(--ease);
+.el-button
+{
+    font-family: var(--font-sans);
+    border-radius: var(--radius-control);
+    transition:
+        background-color var(--dur) var(--ease),
+        border-color var(--dur) var(--ease),
+        color var(--dur) var(--ease),
+        box-shadow var(--dur) var(--ease);
 }
 
-.el-button--primary:not(.is-text):not(.is-link) {
-  color: var(--on-primary);
-  box-shadow: none;
+.el-button--primary:not(.is-text):not(.is-link)
+{
+    color: var(--on-primary);
+    box-shadow: none;
 }
 
 .el-button--primary:not(.is-text):not(.is-link):hover,
-.el-button--primary:not(.is-text):not(.is-link):focus-visible {
-  box-shadow: 0 8px 18px -12px var(--ring);
+.el-button--primary:not(.is-text):not(.is-link):focus-visible
+{
+    box-shadow: 0 8px 18px -12px var(--ring);
 }
 
 .el-button.is-circle,
-.el-button:not(.is-circle):not(.is-round) {
-  border-radius: var(--radius-control);
+.el-button:not(.is-circle):not(.is-round)
+{
+    border-radius: var(--radius-control);
 }
 
 .el-input__wrapper,
 .el-textarea__inner,
-.el-select__wrapper {
-  border-radius: var(--radius-control);
-  transition:
-    box-shadow var(--dur) var(--ease),
-    background-color var(--dur) var(--ease);
+.el-select__wrapper
+{
+    border-radius: var(--radius-control);
+    transition:
+        box-shadow var(--dur) var(--ease),
+        background-color var(--dur) var(--ease);
 }
 
 .el-input__wrapper.is-focus,
-.el-select__wrapper.is-focused {
-  box-shadow:
-    0 0 0 1px var(--primary) inset,
-    0 0 0 4px var(--ring);
+.el-select__wrapper.is-focused
+{
+    box-shadow:
+        0 0 0 1px var(--primary) inset,
+        0 0 0 4px var(--ring);
 }
 
-.el-pagination.is-background .el-pager li {
-  border-radius: var(--radius-control);
-  transition: background-color var(--dur) var(--ease);
+.el-pagination.is-background .el-pager li
+{
+    border-radius: var(--radius-control);
+    transition: background-color var(--dur) var(--ease);
 }
 
-.el-pagination.is-background .el-pager li.is-active {
-  color: var(--on-primary);
+.el-pagination.is-background .el-pager li.is-active
+{
+    color: var(--on-primary);
 }
 
-.el-message {
-  border-radius: var(--radius-control);
-  box-shadow: var(--shadow-float);
+.el-message
+{
+    border-radius: var(--radius-control);
+    box-shadow: var(--shadow-float);
 }
 
 .el-message-box,
 .el-dialog,
 .el-dropdown__popper,
-.el-popper.is-light {
-  border-radius: var(--radius-card);
+.el-popper.is-light
+{
+    border-radius: var(--radius-card);
 }
 
-.el-dialog {
-  box-shadow: var(--shadow-float);
+.el-dialog
+{
+    box-shadow: var(--shadow-float);
 }
 
-.el-tag {
-  font-size: 12px;
-  border-radius: var(--radius-chip);
+.el-tag
+{
+    font-size: 12px;
+    border-radius: var(--radius-chip);
 }
 
 /* ---------- 入场动画与主题过渡 ---------- */
@@ -675,46 +764,55 @@ h3 {
  * (.page-container)就成了 position: fixed 的定位基准 - 容器里的弹窗会相对"整页高"的
  * 容器居中, 而不是相对视口居中(首页头像弹窗曾因此落在页面下方)
  */
-@keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+@keyframes fade-up
+{
+    from
+    {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to
+    {
+        opacity: 1;
+        transform: none;
+    }
 }
 
-.site-main > * {
-  animation: fade-up 320ms var(--ease) backwards;
+.site-main > *
+{
+    animation: fade-up 320ms var(--ease) backwards;
 }
 
 /* 切换主题/深浅色时让颜色平滑过渡, 不闪白 */
 html.theme-transition,
 html.theme-transition *,
 html.theme-transition *::before,
-html.theme-transition *::after {
-  transition:
-    background-color 320ms var(--ease),
-    border-color 320ms var(--ease),
-    color 320ms var(--ease),
-    fill 320ms var(--ease) !important;
+html.theme-transition *::after
+{
+    transition:
+        background-color 320ms var(--ease),
+        border-color 320ms var(--ease),
+        color 320ms var(--ease),
+        fill 320ms var(--ease) !important;
 }
 
 /* 尊重系统减少动态效果偏好 */
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-  .site-main > * {
-    animation: none !important;
-  }
+@media (prefers-reduced-motion: reduce)
+{
+    html
+    {
+        scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after
+    {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    .site-main > *
+    {
+        animation: none !important;
+    }
 }

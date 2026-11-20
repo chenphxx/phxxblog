@@ -6,132 +6,150 @@ import { usePagedList } from '@/composables/usePagedList'
 import type { ChronicleItem } from '@/types'
 
 const { items, total, page, pageSize, loading } = usePagedList<ChronicleItem>({
-  fetch: (currentPage, currentPageSize) =>
-    chronicleApi.list({
-      page: currentPage,
-      page_size: currentPageSize,
-    }),
-  pageSize: 12,
+    fetch: (currentPage, currentPageSize) =>
+        chronicleApi.list({
+            page: currentPage,
+            page_size: currentPageSize,
+        }),
+    pageSize: 12,
 })
 </script>
 
 <template>
-  <div v-loading="loading" class="page-container chronicles-page">
-    <header class="chronicles-header">
-      <div class="chronicles-heading">
-        <h1 class="page-title">互联网纪事</h1>
-      </div>
-      <div class="chronicles-count" aria-label="纪事总数">
-        <strong>{{ total }}</strong>
-        <span>则记录</span>
-      </div>
-    </header>
+    <div v-loading="loading" class="page-container chronicles-page">
+        <header class="chronicles-header">
+            <div class="chronicles-heading">
+                <h1 class="page-title">互联网纪事</h1>
+            </div>
+            <div class="chronicles-count" aria-label="纪事总数">
+                <strong>{{ total }}</strong>
+                <span>则记录</span>
+            </div>
+        </header>
 
-    <div v-if="items.length" class="chronicle-grid" :class="{ 'is-single': items.length === 1 }">
-      <ChronicleCard
-        v-for="(item, index) in items"
-        :key="item.id"
-        :item="item"
-        :index="index"
-        :featured="index === 0 && items.length > 1"
-      />
+        <div v-if="items.length" class="chronicle-grid" :class="{ 'is-single': items.length === 1 }">
+            <ChronicleCard
+                v-for="(item, index) in items"
+                :key="item.id"
+                :item="item"
+                :index="index"
+                :featured="index === 0 && items.length > 1"
+            />
+        </div>
+        <el-empty v-else-if="!loading" description="还没有纪事, 从一段值得记住的故事开始吧" />
+
+        <ListPager v-model:page="page" :page-size="pageSize" :total="total" />
     </div>
-    <el-empty v-else-if="!loading" description="还没有纪事, 从一段值得记住的故事开始吧" />
-
-    <ListPager v-model:page="page" :page-size="pageSize" :total="total" />
-  </div>
 </template>
 
 <style scoped>
-.chronicles-page {
-  max-width: 1240px;
+.chronicles-page
+{
+    max-width: 1240px;
 }
 
-.chronicles-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--space-8);
-  margin-bottom: var(--space-8);
-  padding-bottom: var(--space-6);
-  border-bottom: 1px solid var(--border);
+.chronicles-header
+{
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-8);
+    margin-bottom: var(--space-8);
+    padding-bottom: var(--space-6);
+    border-bottom: 1px solid var(--border);
 }
 
-.chronicles-heading {
-  min-width: 0;
+.chronicles-heading
+{
+    min-width: 0;
 }
 
-.chronicles-heading .page-title {
-  margin: 0;
-  font-size: clamp(34px, 5vw, 56px);
-  letter-spacing: -0.05em;
+.chronicles-heading .page-title
+{
+    margin: 0;
+    font-size: clamp(34px, 5vw, 56px);
+    letter-spacing: -0.05em;
 }
 
-.chronicles-count {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  flex-shrink: 0;
-  padding-left: var(--space-6);
-  border-left: 1px solid var(--border);
-}
-
-.chronicles-count strong {
-  color: var(--primary-strong);
-  font-family: var(--font-mono);
-  font-size: 34px;
-  line-height: 1;
-}
-
-.chronicles-count span {
-  margin-top: 5px;
-  color: var(--muted);
-  font-size: 11px;
-  letter-spacing: 0.12em;
-}
-
-.chronicle-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-6);
-  align-items: stretch;
-}
-
-.chronicle-grid.is-single {
-  grid-template-columns: minmax(0, 760px);
-  justify-content: center;
-}
-
-@media (max-width: 1100px) {
-  .chronicle-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 900px) {
-  .chronicles-header {
-    align-items: flex-start;
-  }
-
-  .chronicle-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-@media (max-width: 600px) {
-  .chronicles-header {
+.chronicles-count
+{
+    display: flex;
     flex-direction: column;
-    gap: var(--space-4);
-  }
+    align-items: flex-end;
+    flex-shrink: 0;
+    padding-left: var(--space-6);
+    border-left: 1px solid var(--border);
+}
 
-  .chronicles-count {
-    align-items: flex-start;
-    padding: 0;
-    border-left: 0;
-  }
+.chronicles-count strong
+{
+    color: var(--primary-strong);
+    font-family: var(--font-mono);
+    font-size: 34px;
+    line-height: 1;
+}
 
-  .chronicles-heading .page-title {
-    font-size: 36px;
-  }
+.chronicles-count span
+{
+    margin-top: 5px;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+}
+
+.chronicle-grid
+{
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-6);
+    align-items: stretch;
+}
+
+.chronicle-grid.is-single
+{
+    grid-template-columns: minmax(0, 760px);
+    justify-content: center;
+}
+
+@media (max-width: 1100px)
+{
+    .chronicle-grid
+    {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 900px)
+{
+    .chronicles-header
+    {
+        align-items: flex-start;
+    }
+
+    .chronicle-grid
+    {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 600px)
+{
+    .chronicles-header
+    {
+        flex-direction: column;
+        gap: var(--space-4);
+    }
+
+    .chronicles-count
+    {
+        align-items: flex-start;
+        padding: 0;
+        border-left: 0;
+    }
+
+    .chronicles-heading .page-title
+    {
+        font-size: 36px;
+    }
 }
 </style>

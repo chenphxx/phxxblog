@@ -17,262 +17,308 @@ import { hasPermission } from '@/utils/permission'
 import { POST_STATUS_TEXT } from '@/utils/postStatus'
 
 /** 编辑器表单模型 */
-export interface PostForm {
-  title: string
-  slug: string
-  summary: string
-  content_md: string
-  cover_image: string
-  category_ids: number[]
-  tag_ids: number[]
-  status: number
-  public_visible: boolean
+export interface PostForm
+{
+    title: string
+    slug: string
+    summary: string
+    content_md: string
+    cover_image: string
+    category_ids: number[]
+    tag_ids: number[]
+    status: number
+    public_visible: boolean
 }
 
-export interface UsePostEditorOptions {
-  /** 非编辑态点"取消"时执行的跳转; 编辑态一律返回文章页 */
-  cancelFallback: () => void
-  /** 标题为空时的提示, 默认"请填写文章标题" */
-  missingTitleMessage?: string
-  /** 删除确认框正文 */
-  removeConfirmText?: string
+export interface UsePostEditorOptions
+{
+    /** 非编辑态点"取消"时执行的跳转; 编辑态一律返回文章页 */
+    cancelFallback: () => void
+    /** 标题为空时的提示, 默认"请填写文章标题" */
+    missingTitleMessage?: string
+    /** 删除确认框正文 */
+    removeConfirmText?: string
 }
 
-export interface PostEditorState {
-  isEdit: boolean
-  postId: number
-  categories: Category[]
-  tags: Tag[]
-  /** 正在向后端确认当前用户与文章权限 */
-  checkingAccess: boolean
-  /** 当前账号无权进入或继续编辑 */
-  accessDenied: boolean
-  /** 无权限时在页面上展示的原因 */
-  accessMessage: string
-  saving: boolean
-  uploadingCover: boolean
-  form: PostForm
-  /** 首次挂载: 先刷新当前用户权限, 确认可编辑后再加载文章与选项 */
-  init: () => Promise<void>
-  loadOptions: () => Promise<void>
-  loadPost: () => Promise<PostDetail | null>
-  onCategoriesChange: (values: unknown) => Promise<void>
-  onTagsChange: (values: unknown) => Promise<void>
-  uploadCover: (options: { file: File }) => Promise<void>
-  /** 不传 targetStatus 时按 public_visible 推导(公开 -> 已发布, 否则 -> 私密) */
-  save: (targetStatus?: number) => Promise<void>
-  cancel: () => void
-  removePost: () => Promise<void>
+export interface PostEditorState
+{
+    isEdit: boolean
+    postId: number
+    categories: Category[]
+    tags: Tag[]
+    /** 正在向后端确认当前用户与文章权限 */
+    checkingAccess: boolean
+    /** 当前账号无权进入或继续编辑 */
+    accessDenied: boolean
+    /** 无权限时在页面上展示的原因 */
+    accessMessage: string
+    saving: boolean
+    uploadingCover: boolean
+    form: PostForm
+    /** 首次挂载: 先刷新当前用户权限, 确认可编辑后再加载文章与选项 */
+    init: () => Promise<void>
+    loadOptions: () => Promise<void>
+    loadPost: () => Promise<PostDetail | null>
+    onCategoriesChange: (values: unknown) => Promise<void>
+    onTagsChange: (values: unknown) => Promise<void>
+    uploadCover: (options: { file: File }) => Promise<void>
+    /** 不传 targetStatus 时按 public_visible 推导(公开 -> 已发布, 否则 -> 私密) */
+    save: (targetStatus?: number) => Promise<void>
+    cancel: () => void
+    removePost: () => Promise<void>
 }
 
-function emptyForm(): PostForm {
-  return {
-    title: '',
-    slug: '',
-    summary: '',
-    content_md: '',
-    cover_image: '',
-    category_ids: [],
-    tag_ids: [],
-    status: 0,
-    public_visible: true,
-  }
+function emptyForm(): PostForm
+{
+    return {
+        title: '',
+        slug: '',
+        summary: '',
+        content_md: '',
+        cover_image: '',
+        category_ids: [],
+        tag_ids: [],
+        status: 0,
+        public_visible: true,
+    }
 }
 
-export function usePostEditor(options: UsePostEditorOptions): PostEditorState {
-  const route = useRoute()
-  const router = useRouter()
-  const auth = useAuthStore()
+export function usePostEditor(options: UsePostEditorOptions): PostEditorState
+{
+    const route = useRoute()
+    const router = useRouter()
+    const auth = useAuthStore()
 
-  const state = reactive({
-    isEdit: Boolean(route.params.id),
-    postId: Number(route.params.id) || 0,
-    categories: [] as Category[],
-    tags: [] as Tag[],
-    checkingAccess: true,
-    accessDenied: false,
-    accessMessage: '',
-    saving: false,
-    uploadingCover: false,
-    form: emptyForm(),
+    const state = reactive({
+        isEdit: Boolean(route.params.id),
+        postId: Number(route.params.id) || 0,
+        categories: [] as Category[],
+        tags: [] as Tag[],
+        checkingAccess: true,
+        accessDenied: false,
+        accessMessage: '',
+        saving: false,
+        uploadingCover: false,
+        form: emptyForm(),
 
-    async loadOptions() {
-      // 两个请求互不依赖, 并行发出
-      const [cats, tagList] = await Promise.all([categoryApi.list(), tagApi.list()])
-      state.categories = cats
-      state.tags = tagList
-    },
+        async loadOptions()
+        {
+            // 两个请求互不依赖, 并行发出
+            const [cats, tagList] = await Promise.all([categoryApi.list(), tagApi.list()])
+            state.categories = cats
+            state.tags = tagList
+        },
 
-    async loadPost() {
-      if (!state.isEdit) return null
-      const post: PostDetail = await postApi.detail(state.postId)
-      state.form = {
-        title: post.title,
-        slug: post.slug,
-        summary: post.summary || '',
-        content_md: post.content_md,
-        cover_image: post.cover_image || '',
-        category_ids: post.categories.map((c) => c.id),
-        tag_ids: post.tags.map((t) => t.id),
-        status: post.status,
-        public_visible: post.status !== 3,
-      }
-      return post
-    },
+        async loadPost()
+        {
+            if (!state.isEdit) return null
+            const post: PostDetail = await postApi.detail(state.postId)
+            state.form =
+            {
+                title: post.title,
+                slug: post.slug,
+                summary: post.summary || '',
+                content_md: post.content_md,
+                cover_image: post.cover_image || '',
+                category_ids: post.categories.map((c) => c.id),
+                tag_ids: post.tags.map((t) => t.id),
+                status: post.status,
+                public_visible: post.status !== 3,
+            }
+            return post
+        },
 
-    async init() {
-      state.checkingAccess = true
-      state.accessDenied = false
-      state.accessMessage = ''
-      try {
-        // 进编辑页先重新读取当前用户, 同时让过期令牌走统一刷新流程, 不依赖本地缓存权限
-        let user
-        try {
-          user = await auth.fetchMe()
-        } catch {
-          state.accessDenied = true
-          state.accessMessage = '无法确认当前账号的文章编辑权限, 请重新登录后再试。'
-          return
-        }
-        if (!state.isEdit) {
-          if (!hasPermission(user, 'post:create')) {
-            state.accessDenied = true
-            state.accessMessage = '当前账号缺少创建文章权限(post:create), 请联系管理员分配权限后再试。'
-            return
-          }
-          try {
-            await state.loadOptions()
-          } catch {
-            state.accessDenied = true
-            state.accessMessage = '文章编辑选项加载失败, 请刷新页面后重试。'
-          }
-          return
-        }
+        async init()
+        {
+            state.checkingAccess = true
+            state.accessDenied = false
+            state.accessMessage = ''
+            try
+            {
+                // 进编辑页先重新读取当前用户, 同时让过期令牌走统一刷新流程, 不依赖本地缓存权限
+                let user
+                try
+                {
+                    user = await auth.fetchMe()
+                } catch
+                {
+                    state.accessDenied = true
+                    state.accessMessage = '无法确认当前账号的文章编辑权限, 请重新登录后再试。'
+                    return
+                }
+                if (!state.isEdit)
+                {
+                    if (!hasPermission(user, 'post:create'))
+                    {
+                        state.accessDenied = true
+                        state.accessMessage = '当前账号缺少创建文章权限(post:create), 请联系管理员分配权限后再试。'
+                        return
+                    }
+                    try
+                    {
+                        await state.loadOptions()
+                    } catch
+                    {
+                        state.accessDenied = true
+                        state.accessMessage = '文章编辑选项加载失败, 请刷新页面后重试。'
+                    }
+                    return
+                }
 
-        if (!hasPermission(user, 'post:edit')) {
-          state.accessDenied = true
-          state.accessMessage = '当前账号缺少编辑文章权限(post:edit), 无法进入文章编辑器。'
-          return
-        }
-        let post: PostDetail | null
-        try {
-          post = await state.loadPost()
-        } catch {
-          state.accessDenied = true
-          state.accessMessage = '无法加载文章或确认当前账号的编辑权限, 请刷新页面后重试。'
-          return
-        }
-        if (post && post.author?.id !== user.id && !hasPermission(user, 'post:manage')) {
-          state.accessDenied = true
-          state.accessMessage = '当前账号不是这篇文章的作者, 也没有文章管理权限(post:manage)。'
-          return
-        }
-        try {
-          await state.loadOptions()
-        } catch {
-          state.accessDenied = true
-          state.accessMessage = '文章编辑选项加载失败, 请刷新页面后重试。'
-        }
-      } finally {
-        state.checkingAccess = false
-      }
-    },
+                if (!hasPermission(user, 'post:edit'))
+                {
+                    state.accessDenied = true
+                    state.accessMessage = '当前账号缺少编辑文章权限(post:edit), 无法进入文章编辑器。'
+                    return
+                }
+                let post: PostDetail | null
+                try
+                {
+                    post = await state.loadPost()
+                } catch
+                {
+                    state.accessDenied = true
+                    state.accessMessage = '无法加载文章或确认当前账号的编辑权限, 请刷新页面后重试。'
+                    return
+                }
+                if (post && post.author?.id !== user.id && !hasPermission(user, 'post:manage'))
+                {
+                    state.accessDenied = true
+                    state.accessMessage = '当前账号不是这篇文章的作者, 也没有文章管理权限(post:manage)。'
+                    return
+                }
+                try
+                {
+                    await state.loadOptions()
+                } catch
+                {
+                    state.accessDenied = true
+                    state.accessMessage = '文章编辑选项加载失败, 请刷新页面后重试。'
+                }
+            } finally
+            {
+                state.checkingAccess = false
+            }
+        },
 
-    /** 编辑器内直接新建分类: 与标签一样走 el-select 的 allow-create, 新项作为 string 传回 */
-    async onCategoriesChange(values: unknown) {
-      if (!Array.isArray(values)) return
-      const ids: number[] = []
-      let createdCount = 0
-      for (const value of values) {
-        if (typeof value === 'string' && value.trim()) {
-          const created = await categoryApi.create({ name: value.trim(), slug: value.trim() })
-          state.categories.push(created)
-          ids.push(created.id)
-          createdCount += 1
-        } else if (typeof value === 'number') {
-          ids.push(value)
-        }
-      }
-      state.form.category_ids = ids
-      if (createdCount > 0) ElMessage.success('分类已创建')
-    },
+        /** 编辑器内直接新建分类: 与标签一样走 el-select 的 allow-create, 新项作为 string 传回 */
+        async onCategoriesChange(values: unknown)
+        {
+            if (!Array.isArray(values)) return
+            const ids: number[] = []
+            let createdCount = 0
+            for (const value of values)
+            {
+                if (typeof value === 'string' && value.trim())
+                {
+                    const created = await categoryApi.create({ name: value.trim(), slug: value.trim() })
+                    state.categories.push(created)
+                    ids.push(created.id)
+                    createdCount += 1
+                } else if (typeof value === 'number')
+                {
+                    ids.push(value)
+                }
+            }
+            state.form.category_ids = ids
+            if (createdCount > 0) ElMessage.success('分类已创建')
+        },
 
-    /** 编辑器内直接新建标签: el-select 的 allow-create 会把新项作为 string 传回 */
-    async onTagsChange(values: unknown) {
-      if (!Array.isArray(values)) return
-      const ids: number[] = []
-      for (const value of values) {
-        if (typeof value === 'string' && value.trim()) {
-          const created = await tagApi.create({ name: value.trim(), slug: value.trim() })
-          state.tags.push(created)
-          ids.push(created.id)
-        } else if (typeof value === 'number') {
-          ids.push(value)
-        }
-      }
-      state.form.tag_ids = ids
-    },
+        /** 编辑器内直接新建标签: el-select 的 allow-create 会把新项作为 string 传回 */
+        async onTagsChange(values: unknown)
+        {
+            if (!Array.isArray(values)) return
+            const ids: number[] = []
+            for (const value of values)
+            {
+                if (typeof value === 'string' && value.trim())
+                {
+                    const created = await tagApi.create({ name: value.trim(), slug: value.trim() })
+                    state.tags.push(created)
+                    ids.push(created.id)
+                } else if (typeof value === 'number')
+                {
+                    ids.push(value)
+                }
+            }
+            state.form.tag_ids = ids
+        },
 
-    async uploadCover(upload: { file: File }) {
-      state.uploadingCover = true
-      try {
-        const media = await mediaApi.upload(upload.file)
-        state.form.cover_image = media.url
-        ElMessage.success('封面已上传')
-      } finally {
-        state.uploadingCover = false
-      }
-    },
+        async uploadCover(upload: { file: File })
+        {
+            state.uploadingCover = true
+            try
+            {
+                const media = await mediaApi.upload(upload.file)
+                state.form.cover_image = media.url
+                ElMessage.success('封面已上传')
+            } finally
+            {
+                state.uploadingCover = false
+            }
+        },
 
-    async save(targetStatus?: number) {
-      if (state.accessDenied) return
-      if (!state.form.title.trim()) {
-        ElMessage.warning(options.missingTitleMessage ?? '请填写文章标题')
-        return
-      }
-      const status = targetStatus ?? (state.form.public_visible ? 2 : 3)
-      state.saving = true
-      try {
-        const payload = { ...state.form, status }
-        if (state.isEdit) {
-          await postApi.update(state.postId, payload)
-        } else {
-          const created = await postApi.create(payload)
-          state.postId = created.id
-          state.isEdit = true
-        }
-        ElMessage.success(`已保存为${POST_STATUS_TEXT[status] ?? ''}`)
-        router.push('/admin/posts')
-      } finally {
-        state.saving = false
-      }
-    },
+        async save(targetStatus?: number)
+        {
+            if (state.accessDenied) return
+            if (!state.form.title.trim())
+            {
+                ElMessage.warning(options.missingTitleMessage ?? '请填写文章标题')
+                return
+            }
+            const status = targetStatus ?? (state.form.public_visible ? 2 : 3)
+            state.saving = true
+            try
+            {
+                const payload = { ...state.form, status }
+                if (state.isEdit)
+                {
+                    await postApi.update(state.postId, payload)
+                } else
+                {
+                    const created = await postApi.create(payload)
+                    state.postId = created.id
+                    state.isEdit = true
+                }
+                ElMessage.success(`已保存为${POST_STATUS_TEXT[status] ?? ''}`)
+                router.push('/admin/posts')
+            } finally
+            {
+                state.saving = false
+            }
+        },
 
-    cancel() {
-      if (state.isEdit) {
-        router.push(`/post/${state.postId}`)
-      } else {
-        options.cancelFallback()
-      }
-    },
+        cancel()
+        {
+            if (state.isEdit)
+            {
+                router.push(`/post/${state.postId}`)
+            } else
+            {
+                options.cancelFallback()
+            }
+        },
 
-    async removePost() {
-      try {
-        await ElMessageBox.confirm(
-          options.removeConfirmText ?? '确定删除这篇文章吗? 将移入回收站, 可在文章管理中恢复。',
-          '删除确认',
-          { type: 'warning', confirmButtonText: '删除' },
-        )
-      } catch {
-        return // 用户取消, 不做任何事
-      }
-      await postApi.trash(state.postId)
-      ElMessage.success('已删除')
-      router.push('/admin/posts')
-    },
-  })
+        async removePost()
+        {
+            try
+            {
+                await ElMessageBox.confirm(
+                    options.removeConfirmText ?? '确定删除这篇文章吗? 将移入回收站, 可在文章管理中恢复。',
+                    '删除确认',
+                    { type: 'warning', confirmButtonText: '删除' },
+                )
+            } catch
+            {
+                return // 用户取消, 不做任何事
+            }
+            await postApi.trash(state.postId)
+            ElMessage.success('已删除')
+            router.push('/admin/posts')
+        },
+    })
 
-  onMounted(state.init)
+    onMounted(state.init)
 
-  return state
+    return state
 }

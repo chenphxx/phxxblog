@@ -14,10 +14,11 @@ const router = useRouter()
 const route = useRoute()
 const siteIcon = ref('')
 
-const activeMenu = computed(() => {
-  if (route.path.startsWith('/admin/posts/')) return '/admin/posts'
-  if (route.path.startsWith('/admin/chronicles/')) return '/admin/chronicles'
-  return route.path
+const activeMenu = computed(() =>
+{
+    if (route.path.startsWith('/admin/posts/')) return '/admin/posts'
+    if (route.path.startsWith('/admin/chronicles/')) return '/admin/chronicles'
+    return route.path
 })
 
 const isAdmin = computed(() => auth.user?.role_codes.includes('admin'))
@@ -28,11 +29,12 @@ const isAdmin = computed(() => auth.user?.role_codes.includes('admin'))
  * 模块被禁用时对应菜单项直接消失, 布局不需要知道系统里有哪些模块
  */
 const menuItems = computed(() =>
-  ADMIN_NAV_ITEMS.filter((item) => {
-    if (item.adminOnly && !isAdmin.value) return false
-    if (item.gated !== false && item.moduleId && !modules.isEnabled(item.moduleId)) return false
-    return true
-  }),
+    ADMIN_NAV_ITEMS.filter((item) =>
+    {
+        if (item.adminOnly && !isAdmin.value) return false
+        if (item.gated !== false && item.moduleId && !modules.isEnabled(item.moduleId)) return false
+        return true
+    }),
 )
 
 /**
@@ -41,19 +43,20 @@ const menuItems = computed(() =>
  * 分组只负责信息架构, 菜单项仍来自模块注册表并按模块开关过滤; 未归类的模块
  * 会在后续新增时落入"系统", 避免模块入口因新增而消失
  */
-const ADMIN_MENU_GROUPS = [
-  { id: 'overview', label: '概览', moduleIds: ['dashboard'] },
-  {
-    id: 'content',
-    label: '内容',
-    moduleIds: ['posts', 'chronicles', 'taxonomy', 'comments', 'media'],
-  },
-  {
-    id: 'system',
-    label: '系统',
-    moduleIds: ['users', 'settings', 'modules', 'logs'],
-  },
-  { id: 'account', label: '账户', moduleIds: ['admin'] },
+const ADMIN_MENU_GROUPS =
+[
+    { id: 'overview', label: '概览', moduleIds: ['dashboard'] },
+    {
+        id: 'content',
+        label: '内容',
+        moduleIds: ['posts', 'chronicles', 'taxonomy', 'comments', 'media'],
+    },
+    {
+        id: 'system',
+        label: '系统',
+        moduleIds: ['users', 'settings', 'modules', 'logs'],
+    },
+    { id: 'account', label: '账户', moduleIds: ['admin'] },
 ] as const
 
 const groupedModuleIds = new Set<string>(ADMIN_MENU_GROUPS.flatMap((group) => group.moduleIds))
@@ -64,158 +67,185 @@ const scrollableMenuItems = computed(() => menuItems.value.filter((item) => item
 const pinnedMenuItem = computed(() => menuItems.value.find((item) => item.moduleId === PINNED_ADMIN_MODULE_ID))
 
 const menuGroups = computed(() =>
-  ADMIN_MENU_GROUPS.map((group) => ({
-    ...group,
-    items: scrollableMenuItems.value.filter((item) => {
-      if (group.id === 'system') {
-        return (
-          group.moduleIds.some((moduleId) => moduleId === item.moduleId) ||
-          !item.moduleId ||
-          !groupedModuleIds.has(item.moduleId)
-        )
-      }
-      return group.moduleIds.some((moduleId) => moduleId === item.moduleId)
-    }),
-  })).filter((group) => group.items.length > 0),
+    ADMIN_MENU_GROUPS.map((group) => ({
+        ...group,
+        items: scrollableMenuItems.value.filter((item) =>
+        {
+            if (group.id === 'system')
+            {
+                return (
+                    group.moduleIds.some((moduleId) => moduleId === item.moduleId) ||
+                    !item.moduleId ||
+                    !groupedModuleIds.has(item.moduleId)
+                )
+            }
+            return group.moduleIds.some((moduleId) => moduleId === item.moduleId)
+        }),
+    })).filter((group) => group.items.length > 0),
 )
 
 /** 新窗口打开后端 API 文档(仅 admin 可访问) */
-function openDocs() {
-  window.open('/docs', '_blank', 'noopener,noreferrer')
+function openDocs()
+{
+    window.open('/docs', '_blank', 'noopener,noreferrer')
 }
 
-async function logout() {
-  await ElMessageBox.confirm('确定退出登录吗?', '提示', { type: 'warning' })
-  const { authApi } = await import('@/api')
-  if (auth.refreshToken) {
-    authApi.logout(auth.refreshToken).catch(() => {})
-  }
-  auth.logout()
-  router.push('/')
+async function logout()
+{
+    await ElMessageBox.confirm('确定退出登录吗?', '提示', { type: 'warning' })
+    const { authApi } = await import('@/api')
+    if (auth.refreshToken)
+    {
+        authApi.logout(auth.refreshToken).catch(() => {})
+    }
+    auth.logout()
+    router.push('/')
 }
 
-onMounted(() => {
-  // 先拿模块开关, 菜单才能正确过滤(拿不到时按"全部可用"处理)
-  modules.load()
-  // 每次进入后台都用当前令牌重新确认用户与权限, 同时触发过期令牌的静默刷新
-  if (auth.accessToken) {
-    auth.fetchMe().catch(() => {})
-  }
-  // 浏览器标签页名称(与前台保持一致)
-  import('@/api').then(({ settingsApi }) =>
-    settingsApi
-      .public()
-      .then((data) => {
-        document.title = data.site_title || data.site_name || 'phxxblog'
-        siteIcon.value = data.site_icon
-      })
-      .catch(() => {}),
-  )
+onMounted(() =>
+{
+    // 先拿模块开关, 菜单才能正确过滤(拿不到时按"全部可用"处理)
+    modules.load()
+    // 每次进入后台都用当前令牌重新确认用户与权限, 同时触发过期令牌的静默刷新
+    if (auth.accessToken)
+    {
+        auth.fetchMe().catch(() => {})
+    }
+    // 浏览器标签页名称(与前台保持一致)
+    import('@/api').then(({ settingsApi }) =>
+        settingsApi
+            .public()
+            .then((data) =>
+            {
+                document.title = data.site_title || data.site_name || 'phxxblog'
+                siteIcon.value = data.site_icon
+            })
+            .catch(() => {}),
+    )
 })
 </script>
 
 <template>
-  <el-container class="admin-layout">
-    <el-aside width="240px" class="admin-aside">
-      <div class="admin-brand">
-        <span class="admin-brand-mark" :class="{ 'has-site-icon': siteIcon }" aria-hidden="true">
-          <img v-if="siteIcon" :src="siteIcon" alt="" />
-        </span>
-        <span>博客管理</span>
-      </div>
-      <nav class="admin-nav" aria-label="后台功能导航">
-        <el-menu :key="`scroll-menu-${activeMenu}`" :default-active="activeMenu" router background-color="transparent">
-          <el-menu-item-group v-for="group in menuGroups" :key="group.id" :title="group.label">
-            <el-menu-item v-for="item in group.items" :key="item.to" :index="item.to">
-              <el-icon v-if="item.icon"><component :is="item.icon" /></el-icon>
-              <span>{{ item.label }}</span>
-            </el-menu-item>
-          </el-menu-item-group>
-        </el-menu>
-      </nav>
-      <nav v-if="pinnedMenuItem" class="admin-nav-footer" aria-label="固定菜单">
-        <el-menu :key="`footer-menu-${activeMenu}`" :default-active="activeMenu" router background-color="transparent">
-          <el-menu-item :index="pinnedMenuItem.to">
-            <el-icon v-if="pinnedMenuItem.icon"><component :is="pinnedMenuItem.icon" /></el-icon>
-            <span>{{ pinnedMenuItem.label }}</span>
-          </el-menu-item>
-        </el-menu>
-      </nav>
-    </el-aside>
+    <el-container class="admin-layout">
+        <el-aside width="240px" class="admin-aside">
+            <div class="admin-brand">
+                <span class="admin-brand-mark" :class="{ 'has-site-icon': siteIcon }" aria-hidden="true">
+                    <img v-if="siteIcon" :src="siteIcon" alt="" />
+                </span>
+                <span>博客管理</span>
+            </div>
+            <nav class="admin-nav" aria-label="后台功能导航">
+                <el-menu
+                    :key="`scroll-menu-${activeMenu}`"
+                    :default-active="activeMenu"
+                    router
+                    background-color="transparent"
+                >
+                    <el-menu-item-group v-for="group in menuGroups" :key="group.id" :title="group.label">
+                        <el-menu-item v-for="item in group.items" :key="item.to" :index="item.to">
+                            <el-icon v-if="item.icon"><component :is="item.icon" /></el-icon>
+                            <span>{{ item.label }}</span>
+                        </el-menu-item>
+                    </el-menu-item-group>
+                </el-menu>
+            </nav>
+            <nav v-if="pinnedMenuItem" class="admin-nav-footer" aria-label="固定菜单">
+                <el-menu
+                    :key="`footer-menu-${activeMenu}`"
+                    :default-active="activeMenu"
+                    router
+                    background-color="transparent"
+                >
+                    <el-menu-item :index="pinnedMenuItem.to">
+                        <el-icon v-if="pinnedMenuItem.icon"><component :is="pinnedMenuItem.icon" /></el-icon>
+                        <span>{{ pinnedMenuItem.label }}</span>
+                    </el-menu-item>
+                </el-menu>
+            </nav>
+        </el-aside>
 
-    <el-container>
-      <el-header class="admin-header">
-        <router-link to="/" class="back-home">
-          <el-icon><HomeFilled /></el-icon> 返回前台
-        </router-link>
-        <div class="header-right">
-          <el-button v-if="isAdmin" text class="docs-btn" @click="openDocs">
-            <el-icon><Notebook /></el-icon>
-            <span>API 文档</span>
-          </el-button>
-          <ThemeSwitcher />
-          <el-dropdown @command="(cmd: string) => cmd === 'logout' && logout()">
-            <span class="user-chip">
-              <el-avatar :size="28">{{ (auth.user?.nickname || '管')[0] }}</el-avatar>
-              <span>{{ auth.user?.nickname || auth.user?.username || '未登录' }}</span>
-            </span>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item command="profile" @click="router.push('/admin/profile')">个人资料</el-dropdown-item>
-                <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
-        </div>
-      </el-header>
-      <el-main class="admin-main">
-        <router-view />
-      </el-main>
+        <el-container>
+            <el-header class="admin-header">
+                <router-link to="/" class="back-home">
+                    <el-icon><HomeFilled /></el-icon> 返回前台
+                </router-link>
+                <div class="header-right">
+                    <el-button v-if="isAdmin" text class="docs-btn" @click="openDocs">
+                        <el-icon><Notebook /></el-icon>
+                        <span>API 文档</span>
+                    </el-button>
+                    <ThemeSwitcher />
+                    <el-dropdown @command="(cmd: string) => cmd === 'logout' && logout()">
+                        <span class="user-chip">
+                            <el-avatar :size="28">{{ (auth.user?.nickname || '管')[0] }}</el-avatar>
+                            <span>{{ auth.user?.nickname || auth.user?.username || '未登录' }}</span>
+                        </span>
+                        <template #dropdown>
+                            <el-dropdown-menu>
+                                <el-dropdown-item command="profile" @click="router.push('/admin/profile')"
+                                    >个人资料</el-dropdown-item
+                                >
+                                <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
+                            </el-dropdown-menu>
+                        </template>
+                    </el-dropdown>
+                </div>
+            </el-header>
+            <el-main class="admin-main">
+                <router-view />
+            </el-main>
+        </el-container>
     </el-container>
-  </el-container>
 </template>
 
 <style scoped>
-.admin-layout {
-  height: 100vh;
-  overflow: hidden;
+.admin-layout
+{
+    height: 100vh;
+    overflow: hidden;
 }
-.admin-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--border);
+.admin-header
+{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
 }
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.header-right
+{
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
-.user-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 10px 4px 4px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  cursor: pointer;
-  font-size: 13px;
-  color: var(--muted);
-  transition:
-    border-color var(--dur) var(--ease),
-    color var(--dur) var(--ease);
+.user-chip
+{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px 4px 4px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--muted);
+    transition:
+        border-color var(--dur) var(--ease),
+        color var(--dur) var(--ease);
 }
-.user-chip:hover {
-  border-color: var(--primary);
-  color: var(--text);
+.user-chip:hover
+{
+    border-color: var(--primary);
+    color: var(--text);
 }
-.docs-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+.docs-btn
+{
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
-.admin-main {
-  background: var(--bg);
-  overflow-y: auto;
+.admin-main
+{
+    background: var(--bg);
+    overflow-y: auto;
 }
 </style>

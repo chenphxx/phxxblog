@@ -6,9 +6,9 @@ import { useThemeStore } from '@/stores/theme'
 import { getAccessToken } from '@/utils/tokenStorage'
 
 const props = withDefaults(defineProps<{ modelValue: string; height?: number | 'auto' }>(), {
-  // 默认自适应内容高度: 编辑区(以及外层卡片)高度完全跟随正文, 滚动交给页面完成,
-  // 编辑器内部不再出现滚动条, 内容少时也不会留下一块空白. 需要固定高度(内部滚动)时传数字
-  height: 'auto',
+    // 默认自适应内容高度: 编辑区(以及外层卡片)高度完全跟随正文, 滚动交给页面完成,
+    // 编辑器内部不再出现滚动条, 内容少时也不会留下一块空白. 需要固定高度(内部滚动)时传数字
+    height: 'auto',
 })
 const emit = defineEmits<{ (e: 'update:modelValue', value: string): void }>()
 
@@ -17,119 +17,137 @@ let vditor: Vditor | null = null
 let ready = false
 const theme = useThemeStore()
 
-onMounted(() => {
-  if (!el.value) return
-  vditor = new Vditor(el.value, {
-    // 资源全部走本地 public/vditor, 避免依赖 unpkg/jsdelivr CDN 导致编辑器无法初始化
-    cdn: '/vditor',
-    width: '100%',
-    value: props.modelValue,
-    height: props.height,
-    // 全屏层级必须高于站点外壳(侧栏 80 / 窄屏顶栏 60 / 看板娘 90), 否则全屏后
-    // 编辑器的工具栏会被顶栏盖住, 既看不见也点不到(无法退出全屏)
-    fullscreen: { index: 1000 },
-    theme: theme.isDark ? 'dark' : 'classic',
-    mode: 'ir',
-    cache: { enable: false },
-    preview: {
-      // Vditor 的"居中"是 JS 按 (容器宽 - maxWidth) / 2 算出左右行内 padding 实现的,
-      // 默认的 800 会让后台上千像素宽的编辑区两侧各空出 200px 以上;
-      // 放宽到 1100 让写作区更宽, 同时保留少量居中留白(容器变窄时 Vditor 会自动回落到 35px)
-      maxWidth: 1100,
-      theme: { current: theme.isDark ? 'dark' : 'light' },
-      // 对齐 VSCode 默认配色: 浅色 vs(Visual Studio), 深色 vs2015
-      hljs: { lineNumber: true, style: theme.isDark ? 'vs2015' : 'vs' },
-      // 导入的 Markdown 可能使用未转义的空格图片路径, 与正文预览保持相同解析规则
-      markdown: { imgPathAllowSpace: true },
-    },
-    // 编辑时普通点击用于定位光标, 按住 Ctrl/Cmd 点击才打开链接, 避免误跳转丢失输入状态
-    link: { ctrlClick: true },
-    toolbar: [
-      'headings',
-      'bold',
-      'italic',
-      'strike',
-      '|',
-      'list',
-      'ordered-list',
-      'check',
-      'outdent',
-      'indent',
-      '|',
-      'quote',
-      'line',
-      'code',
-      'inline-code',
-      'insert-after',
-      'insert-before',
-      '|',
-      'upload',
-      'link',
-      'table',
-      '|',
-      'undo',
-      'redo',
-      '|',
-      'find',
-      '|',
-      'fullscreen',
-      'preview',
-      'export',
-      'edit-mode',
-    ],
-    upload: {
-      url: '/api/v1/media/upload',
-      fieldName: 'file',
-      max: 100 * 1024 * 1024,
-      headers: {
-        Authorization: `Bearer ${getAccessToken()}`,
-      },
-      // 注意: Vditor 传给 success 的是 responseText 字符串, 需要自行 JSON.parse
-      success: (_editor, responseText) => {
-        try {
-          const result = JSON.parse(responseText) as {
-            code?: number
-            message?: string
-            data?: { original_name: string; url: string }
-          }
-          if (result.code === 0 && result.data?.url) {
-            vditor?.insertValue(`\n![${result.data.original_name}](${result.data.url})\n`)
-          } else {
-            ElMessage.error(result.message || '上传失败')
-          }
-        } catch {
-          ElMessage.error('上传失败: 响应解析错误')
-        }
-      },
-      error: (msg) => {
-        ElMessage.error(`上传失败: ${msg}`)
-      },
-    },
-    input: (value) => emit('update:modelValue', value),
-    after: () => {
-      ready = true
-      // 初始化完成后再同步外部值(编辑文章时带出原文)
-      if (props.modelValue && props.modelValue !== vditor?.getValue()) {
-        vditor?.setValue(props.modelValue)
-      }
-    },
-  })
+onMounted(() =>
+{
+    if (!el.value) return
+    vditor = new Vditor(el.value, {
+        // 资源全部走本地 public/vditor, 避免依赖 unpkg/jsdelivr CDN 导致编辑器无法初始化
+        cdn: '/vditor',
+        width: '100%',
+        value: props.modelValue,
+        height: props.height,
+        // 全屏层级必须高于站点外壳(侧栏 80 / 窄屏顶栏 60 / 看板娘 90), 否则全屏后
+        // 编辑器的工具栏会被顶栏盖住, 既看不见也点不到(无法退出全屏)
+        fullscreen: { index: 1000 },
+        theme: theme.isDark ? 'dark' : 'classic',
+        mode: 'ir',
+        cache: { enable: false },
+        preview:
+        {
+            // Vditor 的"居中"是 JS 按 (容器宽 - maxWidth) / 2 算出左右行内 padding 实现的,
+            // 默认的 800 会让后台上千像素宽的编辑区两侧各空出 200px 以上;
+            // 放宽到 1100 让写作区更宽, 同时保留少量居中留白(容器变窄时 Vditor 会自动回落到 35px)
+            maxWidth: 1100,
+            theme: { current: theme.isDark ? 'dark' : 'light' },
+            // 对齐 VSCode 默认配色: 浅色 vs(Visual Studio), 深色 vs2015
+            hljs: { lineNumber: true, style: theme.isDark ? 'vs2015' : 'vs' },
+            // 导入的 Markdown 可能使用未转义的空格图片路径, 与正文预览保持相同解析规则
+            markdown: { imgPathAllowSpace: true },
+        },
+        // 编辑时普通点击用于定位光标, 按住 Ctrl/Cmd 点击才打开链接, 避免误跳转丢失输入状态
+        link: { ctrlClick: true },
+        toolbar:
+        [
+            'headings',
+            'bold',
+            'italic',
+            'strike',
+            '|',
+            'list',
+            'ordered-list',
+            'check',
+            'outdent',
+            'indent',
+            '|',
+            'quote',
+            'line',
+            'code',
+            'inline-code',
+            'insert-after',
+            'insert-before',
+            '|',
+            'upload',
+            'link',
+            'table',
+            '|',
+            'undo',
+            'redo',
+            '|',
+            'find',
+            '|',
+            'fullscreen',
+            'preview',
+            'export',
+            'edit-mode',
+        ],
+        upload:
+        {
+            url: '/api/v1/media/upload',
+            fieldName: 'file',
+            max: 100 * 1024 * 1024,
+            headers:
+            {
+                Authorization: `Bearer ${getAccessToken()}`,
+            },
+            // 注意: Vditor 传给 success 的是 responseText 字符串, 需要自行 JSON.parse
+            success: (_editor, responseText) =>
+            {
+                try
+                {
+                    const result = JSON.parse(responseText) as
+                    {
+                        code?: number
+                        message?: string
+                        data?: { original_name: string; url: string }
+                    }
+                    if (result.code === 0 && result.data?.url)
+                    {
+                        vditor?.insertValue(`\n![${result.data.original_name}](${result.data.url})\n`)
+                    } else
+                    {
+                        ElMessage.error(result.message || '上传失败')
+                    }
+                } catch
+                {
+                    ElMessage.error('上传失败: 响应解析错误')
+                }
+            },
+            error: (msg) =>
+            {
+                ElMessage.error(`上传失败: ${msg}`)
+            },
+        },
+        input: (value) => emit('update:modelValue', value),
+        after: () =>
+        {
+            ready = true
+            // 初始化完成后再同步外部值(编辑文章时带出原文)
+            if (props.modelValue && props.modelValue !== vditor?.getValue())
+            {
+                vditor?.setValue(props.modelValue)
+            }
+        },
+    })
 })
 
-onBeforeUnmount(() => {
-  ready = false
-  vditor?.destroy()
-  vditor = null
+onBeforeUnmount(() =>
+{
+    ready = false
+    vditor?.destroy()
+    vditor = null
 })
 
 // 外部传入的值变化时同步到编辑器; 编辑器未初始化完成前跳过, 由 after 回调接管
-watch(
-  () => props.modelValue,
-  (value) => {
-    if (ready && vditor && value !== vditor.getValue()) {
-      vditor.setValue(value)
-    }
-  },
+watch
+(
+    () => props.modelValue,
+    (value) =>
+    {
+        if (ready && vditor && value !== vditor.getValue())
+        {
+            vditor.setValue(value)
+        }
+    },
 )
 
 /**
@@ -139,11 +157,13 @@ watch(
  * 也是按主题名单独加载的样式表, 因此只在初始化时读一次主题是不够的:
  * 运行中切换深浅色后编辑器会一直保持初始化时的浅色(白底), 与页面其余部分割裂
  */
-watch(
-  () => theme.isDark,
-  (isDark) => {
-    vditor?.setTheme(isDark ? 'dark' : 'classic', isDark ? 'dark' : 'light', isDark ? 'vs2015' : 'vs')
-  },
+watch
+(
+    () => theme.isDark,
+    (isDark) =>
+    {
+        vditor?.setTheme(isDark ? 'dark' : 'classic', isDark ? 'dark' : 'light', isDark ? 'vs2015' : 'vs')
+    },
 )
 
 /**
@@ -155,15 +175,16 @@ watch(
  * 用户看到的现象是"点一次没反应, 再点一次才行"
  * 因此保存前应调用本方法取值, 而不是相信 props.modelValue
  */
-function getValue(): string {
-  return vditor?.getValue() ?? props.modelValue
+function getValue(): string
+{
+    return vditor?.getValue() ?? props.modelValue
 }
 
 defineExpose({ getValue })
 </script>
 
 <template>
-  <div ref="el" class="vditor-editor" />
+    <div ref="el" class="vditor-editor" />
 </template>
 
 <style scoped>
@@ -172,13 +193,15 @@ defineExpose({ getValue })
  * 表单项里的剩余高度, 内容更多时仍按内容继续变长(高度本身是 auto, 见 onMounted 的 height 选项)
  * 外层不是 flex 容器时(如日记对话框)高度仍只由内容决定
  */
-.vditor-editor {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
+.vditor-editor
+{
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
-.vditor-editor :deep(.vditor) {
-  flex: 1 1 auto;
+.vditor-editor :deep(.vditor)
+{
+    flex: 1 1 auto;
 }
 </style>

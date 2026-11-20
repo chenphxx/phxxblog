@@ -7,61 +7,62 @@ import { usePagedList } from '@/composables/usePagedList'
 
 const moduleFilter = ref('')
 /** 列表分页与取数; 换筛选条件时调 reset() 回到第 1 页 */
-const {
-  items: logs,
-  total,
-  page,
-  pageSize,
-  loading,
-  reset,
+const
+{
+    items: logs,
+    total,
+    page,
+    pageSize,
+    loading,
+    reset,
 } = usePagedList<OperationLog>({
-  pageSize: 20,
-  fetch: (page, pageSize) => logApi.list({ page, page_size: pageSize, module: moduleFilter.value || undefined }),
+    pageSize: 20,
+    fetch: (page, pageSize) => logApi.list({ page, page_size: pageSize, module: moduleFilter.value || undefined }),
 })
 </script>
 
 <template>
-  <div>
-    <h2>操作日志</h2>
+    <div>
+        <h2>操作日志</h2>
 
-    <div class="admin-toolbar">
-      <div class="admin-toolbar-filters">
-        <el-input
-          v-model="moduleFilter"
-          placeholder="按模块筛选(post/user/comment...)"
-          clearable
-          @keyup.enter="reset()"
-          @clear="reset()"
-        />
-      </div>
-    </div>
+        <div class="admin-toolbar">
+            <div class="admin-toolbar-filters">
+                <el-input
+                    v-model="moduleFilter"
+                    placeholder="按模块筛选(post/user/comment...)"
+                    clearable
+                    @keyup.enter="reset()"
+                    @clear="reset()"
+                />
+            </div>
+        </div>
 
-    <div class="card">
-      <el-table v-loading="loading" :data="logs">
-        <el-table-column prop="id" label="ID" width="70" />
-        <el-table-column prop="username" label="操作人" width="120">
-          <template #default="{ row }">{{ row.username || '游客/系统' }}</template>
-        </el-table-column>
-        <el-table-column prop="module" label="模块" width="100" />
-        <el-table-column prop="action" label="动作" width="120" />
-        <el-table-column label="目标" min-width="120">
-          <template #default="{ row }">
-            <span v-if="row.target_type">{{ row.target_type }} #{{ row.target_id }}</span>
-            <span v-else>-</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="detail" label="详情" min-width="160" show-overflow-tooltip>
-          <template #default="{ row }">{{ row.detail ? JSON.stringify(row.detail) : '-' }}</template>
-        </el-table-column>
-        <el-table-column prop="ip" label="IP" width="120" />
-        <el-table-column prop="location" label="省市区" width="120">
-          <template #default="{ row }">{{ row.location || '-' }}</template>
-        </el-table-column>
-        <el-table-column label="时间" width="160">
-          <template #default="{ row }">{{ row.created_at.replace('T', ' ') }}</template>
-        </el-table-column>
-      </el-table>
-      <ListPager v-model:page="page" :page-size="pageSize" :total="total" />
+        <div class="card">
+            <el-table v-loading="loading" :data="logs">
+                <el-table-column prop="id" label="ID" width="70" />
+                <el-table-column prop="username" label="操作人" width="120">
+                    <template #default="{ row }">{{ row.username || '游客/系统' }}</template>
+                </el-table-column>
+                <el-table-column prop="module" label="模块" width="100" />
+                <el-table-column prop="action" label="动作" width="120" />
+                <el-table-column label="目标" min-width="120">
+                    <template #default="{ row }">
+                        <span v-if="row.target_type">{{ row.target_type }} #{{ row.target_id }}</span>
+                        <span v-else>-</span>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="detail" label="详情" min-width="160" show-overflow-tooltip>
+                    <template #default="{ row }">{{ row.detail ? JSON.stringify(row.detail) : '-' }}</template>
+                </el-table-column>
+                <el-table-column prop="ip" label="IP" width="120" />
+                <el-table-column prop="location" label="省市区" width="120">
+                    <template #default="{ row }">{{ row.location || '-' }}</template>
+                </el-table-column>
+                <el-table-column label="时间" width="160">
+                    <template #default="{ row }">{{ row.created_at.replace('T', ' ') }}</template>
+                </el-table-column>
+            </el-table>
+            <ListPager v-model:page="page" :page-size="pageSize" :total="total" />
+        </div>
     </div>
-  </div>
 </template>

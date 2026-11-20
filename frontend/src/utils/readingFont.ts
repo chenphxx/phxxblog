@@ -35,11 +35,12 @@ export const READING_CODE_SIZE_DELTA = 2
  * @param maxStep 允许的最大档位
  * @returns 落在 [1, 5] 且在允许范围内的整数档位
  */
-export function clampStep(step: number, minStep: number, maxStep: number): number {
-  const low = Math.max(1, Math.min(minStep, maxStep))
-  const high = Math.min(READING_FONT_MAX_STEP, Math.max(minStep, maxStep))
-  const value = Number.isFinite(step) ? Math.round(step) : READING_FONT_FALLBACK_STEP
-  return Math.min(high, Math.max(low, value))
+export function clampStep(step: number, minStep: number, maxStep: number): number
+{
+    const low = Math.max(1, Math.min(minStep, maxStep))
+    const high = Math.min(READING_FONT_MAX_STEP, Math.max(minStep, maxStep))
+    const value = Number.isFinite(step) ? Math.round(step) : READING_FONT_FALLBACK_STEP
+    return Math.min(high, Math.max(low, value))
 }
 
 /**
@@ -48,8 +49,9 @@ export function clampStep(step: number, minStep: number, maxStep: number): numbe
  * @param step 档位(1 起)
  * @returns 该档位的正文像素值
  */
-export function stepToFontSize(step: number): number {
-  return READING_FONT_STEPS[clampStep(step, 1, READING_FONT_MAX_STEP) - 1]
+export function stepToFontSize(step: number): number
+{
+    return READING_FONT_STEPS[clampStep(step, 1, READING_FONT_MAX_STEP) - 1]
 }
 
 /**
@@ -58,8 +60,9 @@ export function stepToFontSize(step: number): number {
  * @param step 档位(1 起)
  * @returns 该档位的代码块像素值
  */
-export function stepToCodeSize(step: number): number {
-  return stepToFontSize(step) - READING_CODE_SIZE_DELTA
+export function stepToCodeSize(step: number): number
+{
+    return stepToFontSize(step) - READING_CODE_SIZE_DELTA
 }
 
 /**
@@ -67,16 +70,19 @@ export function stepToCodeSize(step: number): number {
  *
  * @returns 档位; 没有存过或存的值非法时返回 null, 由调用方回落到默认档
  */
-export function readStoredStep(): number | null {
-  try {
-    const raw = window.localStorage.getItem(READING_FONT_SIZE_KEY)
-    if (!raw) return null
-    const value = Number(raw)
-    return Number.isFinite(value) ? value : null
-  } catch {
-    // 隐私模式等禁用本地存储的场景: 当作没存过, 不影响阅读
-    return null
-  }
+export function readStoredStep(): number | null
+{
+    try
+    {
+        const raw = window.localStorage.getItem(READING_FONT_SIZE_KEY)
+        if (!raw) return null
+        const value = Number(raw)
+        return Number.isFinite(value) ? value : null
+    } catch
+    {
+        // 隐私模式等禁用本地存储的场景: 当作没存过, 不影响阅读
+        return null
+    }
 }
 
 /**
@@ -84,10 +90,13 @@ export function readStoredStep(): number | null {
  *
  * @param step 档位(1 起)
  */
-export function writeStoredStep(step: number): void {
-  try {
-    window.localStorage.setItem(READING_FONT_SIZE_KEY, String(step))
-  } catch {
-    // 写不进去不影响本次阅读, 只是下次打开回到默认档
-  }
+export function writeStoredStep(step: number): void
+{
+    try
+    {
+        window.localStorage.setItem(READING_FONT_SIZE_KEY, String(step))
+    } catch
+    {
+        // 写不进去不影响本次阅读, 只是下次打开回到默认档
+    }
 }

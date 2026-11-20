@@ -3,12 +3,12 @@ import { computed, ref } from 'vue'
 import type { User } from '@/types'
 import { useModulesStore } from '@/stores/modules'
 import {
-  clearSession,
-  getAccessToken,
-  getRefreshToken,
-  readStoredUser,
-  saveStoredUser,
-  saveTokens,
+    clearSession,
+    getAccessToken,
+    getRefreshToken,
+    readStoredUser,
+    saveStoredUser,
+    saveTokens,
 } from '@/utils/tokenStorage'
 
 /**
@@ -17,57 +17,66 @@ import {
  * accessToken / refreshToken 是 computed 而不是 ref: 静默刷新会直接改写 localStorage,
  * 只有从存储读取才能保证 UI 看到的是最新令牌(见 tokenStorage 的 tokenRevision)
  */
-export const useAuthStore = defineStore('auth', () => {
-  const accessToken = computed(() => getAccessToken())
-  const refreshToken = computed(() => getRefreshToken())
-  const user = ref<User | null>(readStoredUser())
+export const useAuthStore = defineStore('auth', () =>
+{
+    const accessToken = computed(() => getAccessToken())
+    const refreshToken = computed(() => getRefreshToken())
+    const user = ref<User | null>(readStoredUser())
 
-  // 会话恢复: 用本地已有的 access token 同步 API 文档鉴权 cookie
-  if (accessToken.value) {
-    saveTokens(accessToken.value, refreshToken.value)
-  }
-
-  /**
-   * 重新拉取前台模块状态
-   *
-   * 模块状态是按访问者过滤的(配成"仅管理员"的模块只对管理员下发), 换了身份就必须
-   * 重新拉一次, 否则侧栏与后台菜单还按上一个身份显示
-   */
-  function refreshModules() {
-    void useModulesStore().load(true)
-  }
-
-  function setSession(access: string, refresh: string, userData: User) {
-    user.value = userData
-    saveTokens(access, refresh)
-    saveStoredUser(userData)
-    refreshModules()
-  }
-
-  function setUser(userData: User) {
-    user.value = userData
-    saveStoredUser(userData)
-  }
-
-  function logout() {
-    user.value = null
-    clearSession()
-    refreshModules()
-    // 退出登录后回前台首页(不再停在登录页): 后台页面在退出后本来也访问不了
-    if (location.hash.includes('/admin')) {
-      location.hash = '#/'
+    // 会话恢复: 用本地已有的 access token 同步 API 文档鉴权 cookie
+    if (accessToken.value)
+    {
+        saveTokens(accessToken.value, refreshToken.value)
     }
-  }
 
-  async function fetchMe() {
-    const { authApi } = await import('@/api')
-    const data = await authApi.me()
-    setUser(data as User)
-    if (accessToken.value) {
-      saveTokens(accessToken.value, refreshToken.value)
+    /**
+     * 重新拉取前台模块状态
+     *
+     * 模块状态是按访问者过滤的(配成"仅管理员"的模块只对管理员下发), 换了身份就必须
+     * 重新拉一次, 否则侧栏与后台菜单还按上一个身份显示
+     */
+    function refreshModules()
+    {
+        void useModulesStore().load(true)
     }
-    return data as User
-  }
 
-  return { accessToken, refreshToken, user, setSession, setUser, logout, fetchMe }
+    function setSession(access: string, refresh: string, userData: User)
+    {
+        user.value = userData
+        saveTokens(access, refresh)
+        saveStoredUser(userData)
+        refreshModules()
+    }
+
+    function setUser(userData: User)
+    {
+        user.value = userData
+        saveStoredUser(userData)
+    }
+
+    function logout()
+    {
+        user.value = null
+        clearSession()
+        refreshModules()
+        // 退出登录后回前台首页(不再停在登录页): 后台页面在退出后本来也访问不了
+        if (location.hash.includes('/admin'))
+        {
+            location.hash = '#/'
+        }
+    }
+
+    async function fetchMe()
+    {
+        const { authApi } = await import('@/api')
+        const data = await authApi.me()
+        setUser(data as User)
+        if (accessToken.value)
+        {
+            saveTokens(accessToken.value, refreshToken.value)
+        }
+        return data as User
+    }
+
+    return { accessToken, refreshToken, user, setSession, setUser, logout, fetchMe }
 })

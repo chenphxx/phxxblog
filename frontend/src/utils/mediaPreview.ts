@@ -25,13 +25,14 @@ const TEXT_EXTS = ['.txt', '.md', '.csv', '.json']
  * @param item 媒体(只需 type / original_name / size)
  * @return 预览方式; 文本类超过 MAX_TEXT_PREVIEW 时同样返回 unsupported
  */
-export function previewKind(item: Pick<MediaItem, 'type' | 'original_name' | 'size'>): MediaPreviewKind {
-  if (item.type === 'image') return 'image'
-  if (item.type === 'video') return 'video'
-  if (item.type === 'audio') return 'audio'
-  const dot = item.original_name.lastIndexOf('.')
-  const ext = dot >= 0 ? item.original_name.slice(dot).toLowerCase() : ''
-  if (ext === '.pdf') return 'pdf'
-  if (TEXT_EXTS.includes(ext)) return item.size <= MAX_TEXT_PREVIEW ? 'text' : 'unsupported'
-  return 'unsupported'
+export function previewKind(item: Pick<MediaItem, 'type' | 'original_name' | 'size'>): MediaPreviewKind
+{
+    if (item.type === 'image') return 'image'
+    if (item.type === 'video') return 'video'
+    if (item.type === 'audio') return 'audio'
+    const dot = item.original_name.lastIndexOf('.')
+    const ext = dot >= 0 ? item.original_name.slice(dot).toLowerCase() : ''
+    if (ext === '.pdf') return 'pdf'
+    if (TEXT_EXTS.includes(ext)) return item.size <= MAX_TEXT_PREVIEW ? 'text' : 'unsupported'
+    return 'unsupported'
 }

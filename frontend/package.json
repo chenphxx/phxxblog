@@ -1,53 +1,55 @@
 {
-  "name": "frontend",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "//engines": "CI 与 .nvmrc 用 Node 24; 改版本时与本字段, README 及 workflow 一起改. ",
-  "engines": {
-    "node": ">=22.19.0"
-  },
-  "scripts": {
-    "predev": "node scripts/copy-vditor-assets.mjs",
-    "dev": "vite",
-    "prebuild": "node scripts/copy-vditor-assets.mjs",
-    "build": "vue-tsc -b && vite build",
-    "preview": "vite preview",
-    "lint:fix": "eslint . --fix",
-    "format": "prettier --write \"src/**/*.{ts,vue,css,mjs,html}\" \"scripts/**/*.mjs\" \"*.{ts,js}\"",
-    "themes:generate": "node src/styles/themes/_source/generate-themes.mjs",
-    "themes:audit": "node src/styles/themes/_source/audit.mjs",
-    "themes:preview": "node src/styles/themes/_source/build-previews.mjs",
-    "check:lint": "eslint .",
-    "check:format": "prettier --check \"src/**/*.{ts,vue,css,mjs,html}\" \"scripts/**/*.mjs\" \"*.{ts,js}\"",
-    "check:icons": "node scripts/check-icons.mjs",
-    "check:element-styles": "node scripts/check-element-styles.mjs",
-    "check:size": "node scripts/measure-first-paint.mjs"
-  },
-  "dependencies": {
-    "@element-plus/icons-vue": "^2.3.2",
-    "axios": "^1.19.0",
-    "element-plus": "^2.14.4",
-    "pinia": "^4.0.2",
-    "vditor": "4.0.2-alpha.9",
-    "vue": "^3.5.40",
-    "vue-router": "^5.2.0"
-  },
-  "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "@types/node": "^24.13.3",
-    "@vitejs/plugin-vue": "^6.0.8",
-    "@vue/tsconfig": "^0.9.1",
-    "eslint": "^10.10.0",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-vue": "^10.11.0",
-    "globals": "^17.12.0",
-    "prettier": "^3.9.8",
-    "typescript": "~6.0.2",
-    "typescript-eslint": "^8.70.0",
-    "unplugin-auto-import": "^21.1.0",
-    "unplugin-vue-components": "^32.1.0",
-    "vite": "^8.2.0",
-    "vue-tsc": "^3.3.8"
-  }
+    "name": "frontend",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "//engines": "CI 与 .nvmrc 用 Node 24; 改版本时与本字段, README 及 workflow 一起改. ",
+    "engines":
+    {
+        "node": ">=22.19.0"
+    },
+    "scripts":
+    {
+        "predev": "node scripts/copy-vditor-assets.mjs",
+        "dev": "vite",
+        "prebuild": "node scripts/copy-vditor-assets.mjs",
+        "build": "vue-tsc -b && vite build",
+        "preview": "vite preview",
+        "lint:fix": "eslint . --fix",
+        "themes:generate": "node src/styles/themes/_source/generate-themes.mjs",
+        "themes:audit": "node src/styles/themes/_source/audit.mjs",
+        "themes:preview": "node src/styles/themes/_source/build-previews.mjs",
+        "check:lint": "eslint .",
+        "check:icons": "node scripts/check-icons.mjs",
+        "check:element-styles": "node scripts/check-element-styles.mjs",
+        "check:size": "node scripts/measure-first-paint.mjs"
+    },
+    "dependencies":
+    {
+        "@element-plus/icons-vue": "^2.3.2",
+        "axios": "^1.19.0",
+        "element-plus": "^2.14.4",
+        "pinia": "^4.0.2",
+        "vditor": "4.0.2-alpha.9",
+        "vue": "^3.5.40",
+        "vue-router": "^5.2.0"
+    },
+    "devDependencies":
+    {
+        "@eslint/js": "^10.0.1",
+        "@types/node": "^24.13.3",
+        "@vitejs/plugin-vue": "^6.0.8",
+        "@vue/tsconfig": "^0.9.1",
+        "eslint": "^10.10.0",
+        "eslint-config-prettier": "^10.1.8",
+        "eslint-plugin-vue": "^10.11.0",
+        "globals": "^17.12.0",
+        "prettier": "^3.9.8",
+        "typescript": "~6.0.2",
+        "typescript-eslint": "^8.70.0",
+        "unplugin-auto-import": "^21.1.0",
+        "unplugin-vue-components": "^32.1.0",
+        "vite": "^8.2.0",
+        "vue-tsc": "^3.3.8"
+    }
 }

@@ -11,12 +11,15 @@
  * @param url 目标站点地址
  * @return 图标地址; url 不是合法地址时返回空串, 调用方据此不渲染 img
  */
-export function faviconOf(url: string): string {
-  try {
-    return `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=64`
-  } catch {
-    return ''
-  }
+export function faviconOf(url: string): string
+{
+    try
+    {
+        return `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=64`
+    } catch
+    {
+        return ''
+    }
 }
 
 /**
@@ -27,13 +30,16 @@ export function faviconOf(url: string): string {
  * @param event img 的 error 事件
  * @param url 目标站点地址
  */
-export function onFaviconError(event: Event, url: string): void {
-  const img = event.target as HTMLImageElement
-  try {
-    img.src = `https://${new URL(url).hostname}/favicon.ico`
-  } catch {
-    img.style.visibility = 'hidden'
-  }
+export function onFaviconError(event: Event, url: string): void
+{
+    const img = event.target as HTMLImageElement
+    try
+    {
+        img.src = `https://${new URL(url).hostname}/favicon.ico`
+    } catch
+    {
+        img.style.visibility = 'hidden'
+    }
 }
 
 /**
@@ -41,11 +47,14 @@ export function onFaviconError(event: Event, url: string): void {
  * @param link 链接配置, 可带自定义名称
  * @return 优先用配置的名称, 其次域名, 最后原样返回 url
  */
-export function linkName(link: { name?: string; url: string }): string {
-  if (link.name) return link.name
-  try {
-    return new URL(link.url).hostname
-  } catch {
-    return link.url
-  }
+export function linkName(link: { name?: string; url: string }): string
+{
+    if (link.name) return link.name
+    try
+    {
+        return new URL(link.url).hostname
+    } catch
+    {
+        return link.url
+    }
 }

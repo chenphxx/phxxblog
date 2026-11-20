@@ -15,25 +15,30 @@ const year = ref<number | null>(null)
 const loading = ref(false)
 
 /** 可筛选年份(近 6 年) */
-const years = computed(() => {
-  const current = new Date().getFullYear()
-  return Array.from({ length: 6 }, (_, i) => current - i)
+const years = computed(() =>
+{
+    const current = new Date().getFullYear()
+    return Array.from({ length: 6 }, (_, i) => current - i)
 })
 
 /** @brief 按当前年份重新取记录; 也供首页在 keep-alive 重新激活时调用 */
-async function refresh() {
-  loading.value = true
-  try {
-    points.value = await contributionsApi.contributions({
-      source: 'post',
-      weeks: 52,
-      year: year.value || undefined,
-    })
-  } catch {
-    points.value = []
-  } finally {
-    loading.value = false
-  }
+async function refresh()
+{
+    loading.value = true
+    try
+    {
+        points.value = await contributionsApi.contributions({
+            source: 'post',
+            weeks: 52,
+            year: year.value || undefined,
+        })
+    } catch
+    {
+        points.value = []
+    } finally
+    {
+        loading.value = false
+    }
 }
 
 watch(year, refresh)
@@ -44,15 +49,16 @@ defineExpose({ refresh })
 </script>
 
 <template>
-  <section v-loading="loading" class="card section-card">
-    <p class="eyebrow" style="margin-bottom: 12px">文章发布记录</p>
-    <ContributionsChart :points="points" :years="years" :year="year" @update:year="year = $event" />
-  </section>
+    <section v-loading="loading" class="card section-card">
+        <p class="eyebrow" style="margin-bottom: 12px">文章发布记录</p>
+        <ContributionsChart :points="points" :years="years" :year="year" @update:year="year = $event" />
+    </section>
 </template>
 
 <style scoped>
 /* 取数期间给足占位高度, 避免区块从一条细线跳成完整热力图 */
-.section-card {
-  min-height: 150px;
+.section-card
+{
+    min-height: 150px;
 }
 </style>

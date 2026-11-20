@@ -14,12 +14,15 @@ import HotPostsCard from '@/components/HotPostsCard.vue'
 const posts = ref<PostItem[]>([])
 
 /** @brief 重新取热门文章; 也供首页在重新激活时调用 */
-async function refresh() {
-  try {
-    posts.value = await postApi.hot(7)
-  } catch {
-    posts.value = []
-  }
+async function refresh()
+{
+    try
+    {
+        posts.value = await postApi.hot(7)
+    } catch
+    {
+        posts.value = []
+    }
 }
 
 onMounted(refresh)
@@ -28,5 +31,5 @@ defineExpose({ refresh })
 </script>
 
 <template>
-  <HotPostsCard :posts="posts" />
+    <HotPostsCard :posts="posts" />
 </template>

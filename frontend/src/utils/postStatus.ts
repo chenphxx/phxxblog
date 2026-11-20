@@ -11,21 +11,23 @@
 export type PostStatusTagType = 'primary' | 'success' | 'warning' | 'info' | 'danger'
 
 /** 状态码 -> 文案 */
-export const POST_STATUS_TEXT: Record<number, string> = {
-  0: '草稿',
-  1: '审核中',
-  2: '已发布',
-  3: '私密',
-  4: '回收站',
+export const POST_STATUS_TEXT: Record<number, string> =
+{
+    0: '草稿',
+    1: '审核中',
+    2: '已发布',
+    3: '私密',
+    4: '回收站',
 }
 
 /** 状态码 -> el-tag 配色 */
-export const POST_STATUS_TYPE: Record<number, PostStatusTagType> = {
-  0: 'info',
-  1: 'warning',
-  2: 'success',
-  3: 'danger',
-  4: 'info',
+export const POST_STATUS_TYPE: Record<number, PostStatusTagType> =
+{
+    0: 'info',
+    1: 'warning',
+    2: 'success',
+    3: 'danger',
+    4: 'info',
 }
 
 /**
@@ -34,6 +36,6 @@ export const POST_STATUS_TYPE: Record<number, PostStatusTagType> = {
  * 供只能按序号渲染的控件使用(例如后台列表的筛选按钮组)
  */
 export const POST_STATUS_ORDERED: readonly string[] = Object.keys(POST_STATUS_TEXT)
-  .map(Number)
-  .sort((a, b) => a - b)
-  .map((status) => POST_STATUS_TEXT[status])
+    .map(Number)
+    .sort((a, b) => a - b)
+    .map((status) => POST_STATUS_TEXT[status])
