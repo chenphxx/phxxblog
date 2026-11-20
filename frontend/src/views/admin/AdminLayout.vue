@@ -58,10 +58,15 @@ const ADMIN_MENU_GROUPS = [
 
 const groupedModuleIds = new Set<string>(ADMIN_MENU_GROUPS.flatMap((group) => group.moduleIds))
 
+/** 系统设置固定在侧栏底部, 不参与其余菜单滚动 */
+const PINNED_ADMIN_MODULE_ID = 'settings'
+const scrollableMenuItems = computed(() => menuItems.value.filter((item) => item.moduleId !== PINNED_ADMIN_MODULE_ID))
+const pinnedMenuItem = computed(() => menuItems.value.find((item) => item.moduleId === PINNED_ADMIN_MODULE_ID))
+
 const menuGroups = computed(() =>
   ADMIN_MENU_GROUPS.map((group) => ({
     ...group,
-    items: menuItems.value.filter((item) => {
+    items: scrollableMenuItems.value.filter((item) => {
       if (group.id === 'system') {
         return (
           group.moduleIds.some((moduleId) => moduleId === item.moduleId) ||
@@ -119,13 +124,21 @@ onMounted(() => {
         <span>博客管理</span>
       </div>
       <nav class="admin-nav" aria-label="后台功能导航">
-        <el-menu :default-active="activeMenu" router background-color="transparent">
+        <el-menu :key="`scroll-menu-${activeMenu}`" :default-active="activeMenu" router background-color="transparent">
           <el-menu-item-group v-for="group in menuGroups" :key="group.id" :title="group.label">
             <el-menu-item v-for="item in group.items" :key="item.to" :index="item.to">
               <el-icon v-if="item.icon"><component :is="item.icon" /></el-icon>
               <span>{{ item.label }}</span>
             </el-menu-item>
           </el-menu-item-group>
+        </el-menu>
+      </nav>
+      <nav v-if="pinnedMenuItem" class="admin-nav-footer" aria-label="固定菜单">
+        <el-menu :key="`footer-menu-${activeMenu}`" :default-active="activeMenu" router background-color="transparent">
+          <el-menu-item :index="pinnedMenuItem.to">
+            <el-icon v-if="pinnedMenuItem.icon"><component :is="pinnedMenuItem.icon" /></el-icon>
+            <span>{{ pinnedMenuItem.label }}</span>
+          </el-menu-item>
         </el-menu>
       </nav>
     </el-aside>
