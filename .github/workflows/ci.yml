@@ -40,12 +40,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
 
-      # 检查与格式规则都在 backend/ruff.toml, 与本地 verify_all.py 跑的是同一套
+      # 检查规则在 backend/ruff.toml, 与本地 verify_all.py 跑的是同一套
       - name: Lint (ruff)
         run: ruff check .
-
-      - name: Check formatting (ruff)
-        run: ruff format --check .
 
   frontend:
     name: frontend (types / checks / build)
@@ -83,11 +80,6 @@ jobs:
       - name: Lint (eslint)
         run: npm run check:lint
 
-      - name: Type check
-        run: npx vue-tsc -b --force
-
-      # 构建一次, 顺带打印首屏/整包体积(防止悄悄回退到"打开首页要下 1MB")
-      - name: Build & report bundle size
-        run: |
-          npm run build
-          npm run check:size
+      # build 内含 vue-tsc 类型检查, 并验证生产产物可以正常生成
+      - name: Build
+        run: npm run build

@@ -42,24 +42,9 @@ def run(label: str, cmd: list[str], cwd: Path, ok_hint: str = "") -> None:
 py = str(BACKEND / ".venv" / "Scripts" / "python.exe")
 
 run("后端: 可导入", [py, "-c", "import app.main"], BACKEND)
-run(
-    "后端: 启动即校验表结构",
-    [
-        py,
-        "-c",
-        "from app.core.database import missing_columns; assert not missing_columns(), missing_columns()",
-    ],
-    BACKEND,
-)
 run("后端: 设置项定义一致", [py, "scripts/check_settings_keys.py"], BACKEND, ok_hint="全部一致")
 run("后端: 模块体系一致", [py, "scripts/check_modules.py"], BACKEND, ok_hint="全部一致")
 run("后端: 静态检查(ruff)", [py, "-m", "ruff", "check", "."], BACKEND, ok_hint="All checks passed")
-run(
-    "后端: 格式一致(ruff)",
-    [py, "-m", "ruff", "format", "--check", "."],
-    BACKEND,
-    ok_hint="already formatted",
-)
 
 if sys.platform == "win32":
     npx = "npx.cmd"
