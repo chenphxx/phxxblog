@@ -35,6 +35,45 @@ const menuItems = computed(() =>
   }),
 )
 
+/**
+ * 后台侧栏分组
+ *
+ * 分组只负责信息架构, 菜单项仍来自模块注册表并按模块开关过滤; 未归类的模块
+ * 会在后续新增时落入"系统", 避免模块入口因新增而消失
+ */
+const ADMIN_MENU_GROUPS = [
+  { id: 'overview', label: '概览', moduleIds: ['dashboard'] },
+  {
+    id: 'content',
+    label: '内容',
+    moduleIds: ['posts', 'chronicles', 'taxonomy', 'comments', 'media'],
+  },
+  {
+    id: 'system',
+    label: '系统',
+    moduleIds: ['users', 'settings', 'modules', 'logs'],
+  },
+  { id: 'account', label: '账户', moduleIds: ['admin'] },
+] as const
+
+const groupedModuleIds = new Set<string>(ADMIN_MENU_GROUPS.flatMap((group) => group.moduleIds))
+
+const menuGroups = computed(() =>
+  ADMIN_MENU_GROUPS.map((group) => ({
+    ...group,
+    items: menuItems.value.filter((item) => {
+      if (group.id === 'system') {
+        return (
+          group.moduleIds.some((moduleId) => moduleId === item.moduleId) ||
+          !item.moduleId ||
+          !groupedModuleIds.has(item.moduleId)
+        )
+      }
+      return group.moduleIds.some((moduleId) => moduleId === item.moduleId)
+    }),
+  })).filter((group) => group.items.length > 0),
+)
+
 /** 新窗口打开后端 API 文档(仅 admin 可访问) */
 function openDocs() {
   window.open('/docs', '_blank', 'noopener,noreferrer')
@@ -79,12 +118,16 @@ onMounted(() => {
         </span>
         <span>博客管理</span>
       </div>
-      <el-menu :default-active="activeMenu" router background-color="transparent">
-        <el-menu-item v-for="item in menuItems" :key="item.to" :index="item.to">
-          <el-icon v-if="item.icon"><component :is="item.icon" /></el-icon>
-          <span>{{ item.label }}</span>
-        </el-menu-item>
-      </el-menu>
+      <nav class="admin-nav" aria-label="后台功能导航">
+        <el-menu :default-active="activeMenu" router background-color="transparent">
+          <el-menu-item-group v-for="group in menuGroups" :key="group.id" :title="group.label">
+            <el-menu-item v-for="item in group.items" :key="item.to" :index="item.to">
+              <el-icon v-if="item.icon"><component :is="item.icon" /></el-icon>
+              <span>{{ item.label }}</span>
+            </el-menu-item>
+          </el-menu-item-group>
+        </el-menu>
+      </nav>
     </el-aside>
 
     <el-container>
@@ -123,23 +166,6 @@ onMounted(() => {
 .admin-layout {
   height: 100vh;
   overflow: hidden;
-}
-.admin-aside {
-  background: var(--bg);
-  /* 与前台侧栏一致: 不画分割线, 靠留白与选中态分层 */
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-/* 品牌区其余样式(主题色方块, 字重, 间距)在全局 admin.css 里, 便于与前台统一 */
-.admin-brand {
-  height: 64px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 18px;
-  font-weight: 700;
-  font-size: 16px;
-  color: var(--text);
 }
 .admin-header {
   display: flex;

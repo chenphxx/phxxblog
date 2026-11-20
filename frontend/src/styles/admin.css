@@ -116,9 +116,27 @@ html:root .el-button--info:not(.is-plain):not(.is-text):not(.is-link) {
 
 /* ---------- 2. 后台外壳 ---------- */
 
-/* 侧边栏顶部的品牌区: 与前台站名一致的等宽排版 + 主题色圆点 */
+.admin-aside {
+  --admin-sidebar-inline: var(--space-3);
+  --admin-nav-item-height: 44px;
+  --admin-nav-item-gap: var(--space-1);
+  --admin-nav-group-gap: var(--space-6);
+  background: var(--bg);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* 品牌区与菜单使用同一组左右留白, 避免两侧缩进不一致 */
 .admin-brand {
-  gap: 10px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 56px;
+  margin: var(--space-2) var(--admin-sidebar-inline) var(--space-1);
+  padding: 0 var(--space-3);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
   letter-spacing: -0.01em;
 }
 
@@ -143,21 +161,52 @@ html:root .el-button--info:not(.is-plain):not(.is-text):not(.is-link) {
   background: transparent;
 }
 
-/* 侧边栏菜单: 选中态用主题色淡底 + 主题色文字, 悬停用代码底色 */
+.admin-nav {
+  padding: var(--space-2) var(--admin-sidebar-inline) var(--space-5);
+}
+
+/*
+ * 分组标题放在组间留白里: 字号弱于菜单正文, 左侧与菜单图标对齐.
+ * 组间采用 24px, 组内菜单项采用 4px, 形成明确的层级节奏
+ */
+.admin-aside .el-menu-item-group + .el-menu-item-group {
+  margin-top: var(--admin-nav-group-gap);
+}
+
+.admin-aside .el-menu-item-group__title {
+  margin: 0 0 var(--space-2);
+  padding: 0 var(--space-3) !important;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+
 .admin-aside .el-menu {
   border-right: 0;
-  padding: 10px;
+  padding: 0;
 }
 
 .admin-aside .el-menu-item {
-  height: 46px;
-  line-height: 46px;
-  margin-bottom: 2px;
-  border-radius: var(--radius-control);
+  display: flex;
+  align-items: center;
+  column-gap: var(--space-2);
+  height: var(--admin-nav-item-height);
+  margin: 0;
+  padding: 0 var(--space-3) !important;
+  border-radius: var(--radius-card);
   color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.25;
   transition:
     background-color var(--dur) var(--ease),
     color var(--dur) var(--ease);
+}
+
+.admin-aside .el-menu-item + .el-menu-item {
+  margin-top: var(--admin-nav-item-gap);
 }
 
 .admin-aside .el-menu-item:hover {
@@ -165,7 +214,7 @@ html:root .el-button--info:not(.is-plain):not(.is-text):not(.is-link) {
   color: var(--text);
 }
 
-/* 选中态与前台侧栏一致: 白色胶囊 + 极淡投影, 不用高饱和色块 */
+/* 选中态沿用现有白色面板 + 轻投影, 仅把圆角和间距对齐卡片 */
 .admin-aside .el-menu-item.is-active {
   background: var(--card-bg);
   color: var(--text);
@@ -177,6 +226,23 @@ html:root .el-button--info:not(.is-plain):not(.is-text):not(.is-link) {
 
 .admin-aside .el-menu-item.is-active .el-icon {
   color: var(--primary);
+}
+
+.admin-aside .el-menu-item .el-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  margin-right: 0;
+  color: currentColor;
+  font-size: 13px;
+}
+
+.admin-aside .el-menu-item > span {
+  min-width: 0;
+  overflow: hidden;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* 顶栏: 与前台 sticky header 同样的毛玻璃与细分割线 */
