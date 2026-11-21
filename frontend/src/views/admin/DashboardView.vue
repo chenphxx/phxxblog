@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { statsApi } from '@/api'
 import type { CommentItem, PostItem } from '@/types'
 import MetaIcon, { type IconName } from '@/components/MetaIcon.vue'
+import AdminPageHeader from '@/components/admin/AdminPageHeader.vue'
 import { POST_STATUS_TEXT } from '@/utils/postStatus'
 import DashboardTrendPanel from './DashboardTrendPanel.vue'
 import DashboardVisitsTable from './DashboardVisitsTable.vue'
@@ -23,15 +24,30 @@ const router = useRouter()
 const trendPanelRef = ref<InstanceType<typeof DashboardTrendPanel> | null>(null)
 const visitsTableRef = ref<InstanceType<typeof DashboardVisitsTable> | null>(null)
 
-/*
- * 数据卡片: 强调色不再写死十六进制, 而是引用主题令牌
- * 这样换主题时后台的强调色会跟着变(旧代码写死 GitHub 蓝/红/绿/黄, 换主题后很突兀)
- */
-const cards =
+const todayLabel = computed(() =>
+    new Intl.DateTimeFormat
+    (
+        'zh-CN',
+        {
+            month: 'long',
+            day: 'numeric',
+            weekday: 'long',
+        },
+    ).format(new Date()),
+)
+
+/** 概览数字按当前语言添加千位分隔符, 避免长数字难以扫读 */
+function formatNumber(value: number | undefined): string
+{
+    return (value ?? 0).toLocaleString('zh-CN')
+}
+
+const cards = computed(() =>
 [
     {
         key: 'posts',
         label: '文章',
+        description: '全部内容',
         icon: 'file' as IconName,
         color: 'var(--primary)',
         to: '/admin/posts',
@@ -39,6 +55,7 @@ const cards =
     {
         key: 'views',
         label: '访问',
+        description: `今日 ${overview.value.today_pv ?? 0} PV · ${overview.value.today_uv ?? 0} UV`,
         icon: 'eye' as IconName,
         color: 'var(--grad-to)',
         scroll: 'visits-section',
@@ -46,6 +63,7 @@ const cards =
     {
         key: 'comments',
         label: '评论',
+        description: '已收录评论',
         icon: 'hash' as IconName,
         color: 'var(--ok)',
         to: '/admin/comments',
@@ -53,18 +71,20 @@ const cards =
     {
         key: 'users',
         label: '用户',
+        description: '站点账号',
         icon: 'user' as IconName,
         color: 'var(--warn)',
         to: '/admin/users',
     },
-]
+])
 
-function onCardClick(card: (typeof cards)[number])
+function onCardClick(card: (typeof cards.value)[number])
 {
     if (card.to)
     {
         router.push(card.to)
-    } else if (card.scroll)
+    }
+    else if (card.scroll)
     {
         document.getElementById(card.scroll)?.scrollIntoView({ behavior: 'smooth' })
     }
@@ -74,7 +94,6 @@ onMounted(async () =>
 {
     try
     {
-        // 返回类型由 statsApi.dashboard() 的 DashboardData 保证, 不再需要 as 断言
         const data = await statsApi.dashboard()
         overview.value = data.overview
         recentPosts.value = data.recent_posts
@@ -88,133 +107,261 @@ onMounted(async () =>
 </script>
 
 <template>
-    <div v-loading="loading">
-        <h2>仪表盘</h2>
+    <div v-loading="loading" class="dashboard-page">
+        <AdminPageHeader eyebrow="Overview" title="仪表盘" description="集中查看内容规模、访问趋势与近期动态。">
+            <template #actions>
+                <span class="dashboard-date">{{ todayLabel }}</span>
+                <el-button @click="router.push('/')">查看前台</el-button>
+                <el-button type="primary" @click="router.push('/admin/posts/new')">新建文章</el-button>
+            </template>
+        </AdminPageHeader>
 
-        <!-- 数据卡片 -->
-        <el-row :gutter="16">
-            <el-col v-for="card in cards" :key="card.key" :xs="12" :sm="6">
-                <div
-                    class="card stat-card clickable"
-                    :style="{ '--stat-color': card.color }"
-                    @click="onCardClick(card)"
-                >
-                    <div class="stat-head">
-                        <span class="stat-label">{{ card.label }}</span>
-                        <span class="stat-icon"><MetaIcon :name="card.icon" size="16" /></span>
-                    </div>
-                    <div class="stat-value">{{ overview[card.key] ?? 0 }}</div>
-                </div>
-            </el-col>
-        </el-row>
+        <div class="stats-grid">
+            <button
+                v-for="card in cards"
+                :key="card.key"
+                class="card stat-card"
+                type="button"
+                :style="{ '--stat-color': card.color }"
+                @click="onCardClick(card)"
+            >
+                <span class="stat-head">
+                    <span class="stat-label">{{ card.label }}</span>
+                    <span class="stat-icon"><MetaIcon :name="card.icon" size="16" /></span>
+                </span>
+                <strong class="stat-value">{{ formatNumber(overview[card.key]) }}</strong>
+                <span class="stat-description">{{ card.description }}</span>
+            </button>
+        </div>
 
-        <!-- 访问趋势 -->
         <DashboardTrendPanel
             ref="trendPanelRef"
-            style="margin-top: 20px"
+            class="dashboard-block"
             :today-pv="overview.today_pv ?? 0"
             :today-uv="overview.today_uv ?? 0"
             :page-loading="loading"
         />
 
-        <!-- 访问记录 -->
-        <DashboardVisitsTable ref="visitsTableRef" style="margin-top: 20px" />
+        <DashboardVisitsTable ref="visitsTableRef" class="dashboard-block" />
 
-        <el-row :gutter="16" style="margin-top: 20px">
-            <el-col :xs="24" :md="12">
-                <div class="card">
-                    <h3>最新文章</h3>
-                    <el-table
-                        :data="recentPosts"
-                        size="small"
-                        style="cursor: pointer"
-                        @row-click="(row: PostItem) => router.push(`/admin/posts/${row.id}/edit`)"
-                    >
-                        <el-table-column prop="title" label="标题" min-width="160" show-overflow-tooltip />
-                        <el-table-column prop="status" label="状态" width="80">
-                            <template #default="{ row }">
-                                <el-tag size="small" :type="row.status === 2 ? 'success' : 'info'">
-                                    {{ POST_STATUS_TEXT[row.status] }}
-                                </el-tag>
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="views" label="阅读" width="70" />
-                    </el-table>
+        <div class="recent-grid">
+            <section class="card recent-card">
+                <div class="recent-head">
+                    <div>
+                        <h3>最新文章</h3>
+                        <p>最近创建或更新的内容</p>
+                    </div>
+                    <el-button text @click="router.push('/admin/posts')">查看全部</el-button>
                 </div>
-            </el-col>
-            <el-col :xs="24" :md="12">
-                <div class="card">
-                    <h3>最新评论</h3>
-                    <el-table
-                        :data="recentComments"
-                        size="small"
-                        style="cursor: pointer"
-                        @row-click="(row: CommentItem) => router.push(`/post/${row.post_id}`)"
-                    >
-                        <el-table-column label="评论人" width="100">
-                            <template #default="{ row }">{{ row.author_name || '匿名' }}</template>
-                        </el-table-column>
-                        <el-table-column prop="content" label="内容" min-width="160" show-overflow-tooltip />
-                        <el-table-column label="时间" width="100">
-                            <template #default="{ row }">{{ row.created_at.slice(0, 10) }}</template>
-                        </el-table-column>
-                    </el-table>
+                <el-table
+                    :data="recentPosts"
+                    size="small"
+                    class="recent-table"
+                    @row-click="(row: PostItem) => router.push(`/admin/posts/${row.id}/edit`)"
+                >
+                    <el-table-column prop="title" label="标题" min-width="160" show-overflow-tooltip />
+                    <el-table-column prop="status" label="状态" width="80">
+                        <template #default="{ row }">
+                            <el-tag size="small" :type="row.status === 2 ? 'success' : 'info'">
+                                {{ POST_STATUS_TEXT[row.status] }}
+                            </el-tag>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="views" label="阅读" width="70" />
+                </el-table>
+            </section>
+
+            <section class="card recent-card">
+                <div class="recent-head">
+                    <div>
+                        <h3>最新评论</h3>
+                        <p>最近收到的读者反馈</p>
+                    </div>
+                    <el-button text @click="router.push('/admin/comments')">管理评论</el-button>
                 </div>
-            </el-col>
-        </el-row>
+                <el-table
+                    :data="recentComments"
+                    size="small"
+                    class="recent-table"
+                    @row-click="(row: CommentItem) => router.push(`/post/${row.post_id}`)"
+                >
+                    <el-table-column label="评论人" width="100">
+                        <template #default="{ row }">{{ row.author_name || '匿名' }}</template>
+                    </el-table-column>
+                    <el-table-column prop="content" label="内容" min-width="160" show-overflow-tooltip />
+                    <el-table-column label="时间" width="100">
+                        <template #default="{ row }">{{ row.created_at.slice(0, 10) }}</template>
+                    </el-table-column>
+                </el-table>
+            </section>
+        </div>
     </div>
 </template>
 
 <style scoped>
-/* 数据卡片: 用主题强调色做淡底图标, 数字用正文色, 不再写死颜色 */
+.dashboard-date
+{
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.stats-grid
+{
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+}
+
 .stat-card
 {
-    margin-bottom: 16px;
-    padding: var(--space-5);
-}
-.clickable
-{
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 18px;
+    color: var(--text);
+    font-family: inherit;
+    text-align: left;
     cursor: pointer;
     transition:
-        box-shadow var(--dur) var(--ease),
-        border-color var(--dur) var(--ease);
+        border-color var(--dur) var(--ease),
+        background-color var(--dur) var(--ease),
+        transform var(--dur) var(--ease);
 }
-.clickable:hover
+
+.stat-card:hover
 {
-    border-color: var(--border-strong);
-    box-shadow: var(--shadow-hover);
+    border-color: var(--admin-border-strong);
+    background: color-mix(in srgb, var(--admin-surface) 94%, var(--admin-surface-muted));
+    transform: translateY(-1px);
 }
+
 .stat-head
 {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
+    gap: 12px;
 }
+
 .stat-label
 {
-    font-size: 14px;
     color: var(--muted);
+    font-size: 12px;
+    font-weight: 550;
 }
+
 .stat-icon
 {
     display: inline-flex;
+    width: 28px;
+    height: 28px;
     align-items: center;
     justify-content: center;
-    width: 30px;
-    height: 30px;
-    border-radius: var(--radius-control);
+    border: 1px solid color-mix(in srgb, var(--stat-color, var(--primary)) 18%, var(--admin-border));
+    border-radius: var(--admin-radius-sm);
+    background: color-mix(in srgb, var(--stat-color, var(--primary)) 8%, var(--admin-surface));
     color: var(--stat-color, var(--primary));
-    background: color-mix(in srgb, var(--stat-color, var(--primary)) 14%, transparent);
 }
+
 .stat-value
 {
-    font-size: 40px;
-    font-weight: 600;
-    line-height: 1.1;
-    letter-spacing: -0.03em;
-    margin-top: var(--space-4);
-    font-variant-numeric: tabular-nums;
+    margin-top: 18px;
     color: var(--text);
+    font-size: 32px;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.045em;
+    line-height: 1;
+}
+
+.stat-description
+{
+    margin-top: 8px;
+    overflow: hidden;
+    color: var(--muted);
+    font-size: 11.5px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dashboard-block
+{
+    margin-top: 16px;
+}
+
+.recent-grid
+{
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.recent-card
+{
+    min-width: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.recent-head
+{
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 18px 12px;
+}
+
+.recent-head h3
+{
+    margin: 0;
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 650;
+}
+
+.recent-head p
+{
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 11.5px;
+}
+
+.recent-table
+{
+    cursor: pointer;
+}
+
+@media (max-width: 1100px)
+{
+    .stats-grid
+    {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px)
+{
+    .dashboard-date
+    {
+        width: 100%;
+    }
+
+    .recent-grid
+    {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 520px)
+{
+    .stats-grid
+    {
+        grid-template-columns: 1fr;
+    }
 }
 </style>

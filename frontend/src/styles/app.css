@@ -38,7 +38,7 @@
 @import './themes/theme-sailblue.css'; /* 黛蓝      冷白 + 黛蓝, 极简 */
 @import './themes/theme-graphite.css'; /* 石墨      石墨灰 + 黄铜点缀 */
 
-/* ---------- 管理后台主题层 ----------
+/* ---------- 管理后台设计层 ----------
  * 必须放在所有主题之后: 它把 Element Plus 的 --el-color-primary 指向主题令牌,
- * 并统一后台外壳观感, 让后台跟随同一套主题 */
+ * 并提供 shadcn 风格的后台外壳, 页面, 表格, 表单与响应式规范 */
 @import './admin.css';

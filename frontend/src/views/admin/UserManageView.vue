@@ -6,6 +6,7 @@ import type { Role, User } from '@/types'
 import ListPager from '@/components/ListPager.vue'
 import { useAuthStore } from '@/stores/auth'
 import { usePagedList } from '@/composables/usePagedList'
+import AdminPageHeader from '@/components/admin/AdminPageHeader.vue'
 
 const auth = useAuthStore()
 
@@ -135,7 +136,7 @@ async function resetPassword()
 
 <template>
     <div>
-        <h2>用户管理</h2>
+        <AdminPageHeader title="用户管理" description="管理账号、角色与启用状态。" />
 
         <div class="admin-toolbar">
             <div class="admin-toolbar-actions">

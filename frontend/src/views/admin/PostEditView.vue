@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePostEditor } from '@/composables/usePostEditor'
 import PostFormFields from '@/components/PostFormFields.vue'
+import AdminPageHeader from '@/components/admin/AdminPageHeader.vue'
 
 const router = useRouter()
 const formRef = ref<InstanceType<typeof PostFormFields> | null>(null)
@@ -28,7 +29,10 @@ function save(targetStatus?: number)
         </el-result>
 
         <template v-else-if="!editor.checkingAccess">
-            <h2>{{ editor.isEdit ? '编辑文章' : '新建文章' }}</h2>
+            <AdminPageHeader
+                :title="editor.isEdit ? '编辑文章' : '新建文章'"
+                description="编写内容、整理分类并设置发布状态。"
+            />
 
             <div class="admin-toolbar">
                 <div class="admin-toolbar-actions">

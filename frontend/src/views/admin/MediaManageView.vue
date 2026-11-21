@@ -6,6 +6,7 @@ import type { MediaItem } from '@/types'
 import LazyImage from '@/components/LazyImage.vue'
 import MediaPreview from '@/components/MediaPreview.vue'
 import ListPager from '@/components/ListPager.vue'
+import AdminPageHeader from '@/components/admin/AdminPageHeader.vue'
 import { formatFileSize } from '@/utils/format'
 import { mediaGridMetrics } from '@/utils/mediaGrid'
 import { usePagedList } from '@/composables/usePagedList'
@@ -173,7 +174,7 @@ onBeforeUnmount(() =>
 
 <template>
     <div class="media-page">
-        <h2>媒体库</h2>
+        <AdminPageHeader title="媒体库" description="管理图片、视频与站内附件。" />
 
         <div class="admin-toolbar">
             <div class="admin-toolbar-filters">

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { authApi } from '@/api'
+import { authApi, settingsApi } from '@/api'
 import { useAuthStore } from '@/stores/auth'
 import { useModulesStore } from '@/stores/modules'
 import ThemeToggle from '@/components/ThemeToggle.vue'
@@ -13,6 +13,8 @@ const auth = useAuthStore()
 
 const form = ref({ username: 'admin', password: '' })
 const loading = ref(false)
+const siteName = ref('phxxblog')
+const siteIcon = ref('')
 
 async function login()
 {
@@ -42,108 +44,77 @@ async function login()
         loading.value = false
     }
 }
+
+onMounted(() =>
+{
+    settingsApi
+        .public()
+        .then((data) =>
+        {
+            siteName.value = data.site_name || data.site_title || 'phxxblog'
+            siteIcon.value = data.site_icon
+            document.title = data.site_title || data.site_name || 'phxxblog'
+        })
+        .catch(() =>
+        {})
+})
 </script>
 
 <template>
     <div class="login-page">
-        <!-- 登录页也要能回到前台: 直接落在 /admin/login 时没有其它出口 -->
         <router-link to="/" class="login-back">
             <span aria-hidden="true">←</span>
             返回前台
         </router-link>
 
-        <div class="login-card card">
-            <div class="login-header">
-                <h2>博客管理后台</h2>
-                <ThemeToggle />
-            </div>
-            <el-form label-position="top" @submit.prevent="login">
-                <el-form-item label="用户名 / 邮箱">
-                    <el-input v-model="form.username" placeholder="admin" />
-                </el-form-item>
-                <el-form-item label="密码">
-                    <el-input
-                        v-model="form.password"
-                        type="password"
-                        show-password
-                        placeholder="请输入密码"
-                        @keyup.enter="login"
-                    />
-                </el-form-item>
-                <el-button type="primary" style="width: 100%" :loading="loading" @click="login">登 录</el-button>
-            </el-form>
-            <div class="login-footer muted">初始管理员: admin, 初始密码见后端 seed 输出(首次登录后请修改)</div>
+        <div class="login-shell">
+            <aside class="login-brand-panel">
+                <div class="login-brand">
+                    <span class="login-brand-mark" aria-hidden="true">
+                        <img v-if="siteIcon" :src="siteIcon" alt="" />
+                        <template v-else>PX</template>
+                    </span>
+                    <span class="login-brand-copy">
+                        <strong>{{ siteName }}</strong>
+                        <span>Content workspace</span>
+                    </span>
+                </div>
+
+                <div class="login-statement">
+                    <span>Editorial control</span>
+                    <h1>让内容保持清晰，<br />让管理保持安静。</h1>
+                    <p>发布文章、整理内容、查看访问数据，并在同一套工作流中完成站点维护。</p>
+                </div>
+            </aside>
+
+            <main class="login-card">
+                <div class="login-header">
+                    <div class="login-header-copy">
+                        <span>Sign in</span>
+                        <h2>登录管理后台</h2>
+                        <p>使用管理员账号继续</p>
+                    </div>
+                    <ThemeToggle />
+                </div>
+
+                <el-form class="login-form" label-position="top" @submit.prevent="login">
+                    <el-form-item label="用户名 / 邮箱">
+                        <el-input v-model="form.username" placeholder="admin" />
+                    </el-form-item>
+                    <el-form-item label="密码">
+                        <el-input
+                            v-model="form.password"
+                            type="password"
+                            show-password
+                            placeholder="请输入密码"
+                            @keyup.enter="login"
+                        />
+                    </el-form-item>
+                    <el-button class="login-submit" type="primary" :loading="loading" @click="login">登录</el-button>
+                </el-form>
+
+                <p class="login-footer">初始管理员为 admin，初始密码见后端 seed 输出。首次登录后请及时修改密码。</p>
+            </main>
         </div>
     </div>
 </template>
-
-<style scoped>
-.login-page
-{
-    position: relative;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-}
-
-/* 左上角的返回入口: 与卡片同级, 不参与卡片内的纵向排版 */
-.login-back
-{
-    position: absolute;
-    top: var(--space-6);
-    left: var(--space-6);
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-chip);
-    background: var(--card-bg);
-    color: var(--muted);
-    font-size: 13px;
-    transition:
-        color var(--dur) var(--ease),
-        border-color var(--dur) var(--ease);
-}
-
-.login-back:hover
-{
-    color: var(--text);
-    border-color: var(--border-strong);
-    text-decoration: none;
-}
-
-@media (max-width: 640px)
-{
-    .login-back
-    {
-        top: var(--space-4);
-        left: var(--space-4);
-    }
-}
-
-.login-card
-{
-    width: 380px;
-    max-width: 100%;
-}
-.login-header
-{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-}
-.login-header h2
-{
-    margin: 0;
-}
-.login-footer
-{
-    margin-top: 16px;
-    text-align: center;
-    font-size: 12px;
-}
-</style>

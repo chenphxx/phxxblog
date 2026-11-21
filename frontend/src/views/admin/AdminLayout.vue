@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
-import { HomeFilled, Notebook } from '@element-plus/icons-vue'
+import { Close, HomeFilled, Menu as MenuIcon, Notebook } from '@element-plus/icons-vue'
 import { ADMIN_NAV_ITEMS } from '@/modules/registry'
 import { useAuthStore } from '@/stores/auth'
 import { useModulesStore } from '@/stores/modules'
@@ -13,6 +13,8 @@ const modules = useModulesStore()
 const router = useRouter()
 const route = useRoute()
 const siteIcon = ref('')
+const siteName = ref('博客管理')
+const navOpen = ref(false)
 
 const activeMenu = computed(() =>
 {
@@ -84,6 +86,8 @@ const menuGroups = computed(() =>
     })).filter((group) => group.items.length > 0),
 )
 
+const pageTitle = computed(() => menuItems.value.find((item) => item.to === activeMenu.value)?.label ?? '博客管理')
+
 /** 新窗口打开后端 API 文档(仅 admin 可访问) */
 function openDocs()
 {
@@ -96,11 +100,32 @@ async function logout()
     const { authApi } = await import('@/api')
     if (auth.refreshToken)
     {
-        authApi.logout(auth.refreshToken).catch(() => {})
+        authApi.logout(auth.refreshToken).catch(() =>
+        {})
     }
     auth.logout()
     router.push('/')
 }
+
+function handleUserCommand(command: string)
+{
+    navOpen.value = false
+    if (command === 'profile') router.push('/admin/profile')
+    if (command === 'logout') logout()
+}
+
+function closeNavOnEscape(event: KeyboardEvent)
+{
+    if (event.key === 'Escape') navOpen.value = false
+}
+
+watch(
+    () => route.fullPath,
+    () =>
+    {
+        navOpen.value = false
+    },
+)
 
 onMounted(() =>
 {
@@ -109,7 +134,8 @@ onMounted(() =>
     // 每次进入后台都用当前令牌重新确认用户与权限, 同时触发过期令牌的静默刷新
     if (auth.accessToken)
     {
-        auth.fetchMe().catch(() => {})
+        auth.fetchMe().catch(() =>
+        {})
     }
     // 浏览器标签页名称(与前台保持一致)
     import('@/api').then(({ settingsApi }) =>
@@ -119,133 +145,127 @@ onMounted(() =>
             {
                 document.title = data.site_title || data.site_name || 'phxxblog'
                 siteIcon.value = data.site_icon
+                siteName.value = data.site_name || '博客管理'
             })
-            .catch(() => {}),
+            .catch(() =>
+            {}),
     )
+    window.addEventListener('keydown', closeNavOnEscape)
+})
+
+onBeforeUnmount(() =>
+{
+    window.removeEventListener('keydown', closeNavOnEscape)
 })
 </script>
 
 <template>
-    <el-container class="admin-layout">
-        <el-aside width="240px" class="admin-aside">
-            <div class="admin-brand">
-                <span class="admin-brand-mark" :class="{ 'has-site-icon': siteIcon }" aria-hidden="true">
-                    <img v-if="siteIcon" :src="siteIcon" alt="" />
-                </span>
-                <span>博客管理</span>
+    <div class="admin-shell">
+        <button
+            v-if="navOpen"
+            class="admin-sidebar-backdrop"
+            type="button"
+            aria-label="关闭导航"
+            @click="navOpen = false"
+        />
+
+        <aside id="admin-sidebar" class="admin-sidebar" :class="{ 'is-open': navOpen }">
+            <div class="admin-sidebar-head">
+                <router-link to="/admin/dashboard" class="admin-brand">
+                    <span class="admin-brand-mark" :class="{ 'has-site-icon': siteIcon }" aria-hidden="true">
+                        <img v-if="siteIcon" :src="siteIcon" alt="" />
+                        <template v-else>PX</template>
+                    </span>
+                    <span class="admin-brand-copy">
+                        <strong>{{ siteName }}</strong>
+                        <span>Admin console</span>
+                    </span>
+                </router-link>
+                <button class="admin-sidebar-close" type="button" aria-label="关闭导航" @click="navOpen = false">
+                    <el-icon><Close /></el-icon>
+                </button>
             </div>
+
             <nav class="admin-nav" aria-label="后台功能导航">
-                <el-menu
-                    :key="`scroll-menu-${activeMenu}`"
-                    :default-active="activeMenu"
-                    router
-                    background-color="transparent"
-                >
-                    <el-menu-item-group v-for="group in menuGroups" :key="group.id" :aria-label="group.label">
-                        <el-menu-item v-for="item in group.items" :key="item.to" :index="item.to">
-                            <el-icon v-if="item.icon"><component :is="item.icon" /></el-icon>
-                            <span>{{ item.label }}</span>
-                        </el-menu-item>
-                    </el-menu-item-group>
-                </el-menu>
+                <section v-for="group in menuGroups" :key="group.id" class="admin-nav-group">
+                    <p class="admin-nav-group-label">{{ group.label }}</p>
+                    <router-link
+                        v-for="item in group.items"
+                        :key="item.to"
+                        :to="item.to"
+                        class="admin-nav-link"
+                        :class="{ 'is-active': activeMenu === item.to }"
+                        @click="navOpen = false"
+                    >
+                        <el-icon v-if="item.icon"><component :is="item.icon" /></el-icon>
+                        <span>{{ item.label }}</span>
+                    </router-link>
+                </section>
             </nav>
-            <nav v-if="pinnedMenuItem" class="admin-nav-footer" aria-label="固定菜单">
-                <el-menu
-                    :key="`footer-menu-${activeMenu}`"
-                    :default-active="activeMenu"
-                    router
-                    background-color="transparent"
-                >
-                    <el-menu-item :index="pinnedMenuItem.to">
+
+            <div v-if="pinnedMenuItem" class="admin-sidebar-footer">
+                <nav aria-label="固定菜单">
+                    <router-link
+                        :to="pinnedMenuItem.to"
+                        class="admin-nav-link"
+                        :class="{ 'is-active': activeMenu === pinnedMenuItem.to }"
+                        @click="navOpen = false"
+                    >
                         <el-icon v-if="pinnedMenuItem.icon"><component :is="pinnedMenuItem.icon" /></el-icon>
                         <span>{{ pinnedMenuItem.label }}</span>
-                    </el-menu-item>
-                </el-menu>
-            </nav>
-        </el-aside>
+                    </router-link>
+                </nav>
+            </div>
+        </aside>
 
-        <el-container>
-            <el-header class="admin-header">
-                <router-link to="/" class="back-home">
-                    <el-icon><HomeFilled /></el-icon> 返回前台
-                </router-link>
-                <div class="header-right">
-                    <el-button v-if="isAdmin" text class="docs-btn" @click="openDocs">
+        <div class="admin-workspace">
+            <header class="admin-header">
+                <div class="admin-header-left">
+                    <button
+                        class="admin-mobile-trigger"
+                        type="button"
+                        aria-controls="admin-sidebar"
+                        :aria-expanded="navOpen"
+                        aria-label="打开导航"
+                        @click="navOpen = true"
+                    >
+                        <el-icon><MenuIcon /></el-icon>
+                    </button>
+                    <div class="admin-header-context">
+                        <span>管理后台</span>
+                        <strong>{{ pageTitle }}</strong>
+                    </div>
+                </div>
+                <div class="admin-header-right">
+                    <router-link to="/" class="back-home" aria-label="返回前台">
+                        <el-icon><HomeFilled /></el-icon>
+                        <span>返回前台</span>
+                    </router-link>
+                    <el-button v-if="isAdmin" class="docs-btn" aria-label="API 文档" @click="openDocs">
                         <el-icon><Notebook /></el-icon>
                         <span>API 文档</span>
                     </el-button>
                     <ThemeSwitcher />
-                    <el-dropdown @command="(cmd: string) => cmd === 'logout' && logout()">
+                    <el-dropdown @command="handleUserCommand">
                         <span class="user-chip">
                             <el-avatar :size="28">{{ (auth.user?.nickname || '管')[0] }}</el-avatar>
                             <span>{{ auth.user?.nickname || auth.user?.username || '未登录' }}</span>
                         </span>
                         <template #dropdown>
                             <el-dropdown-menu>
-                                <el-dropdown-item command="profile" @click="router.push('/admin/profile')"
-                                    >个人资料</el-dropdown-item
-                                >
+                                <el-dropdown-item command="profile">个人资料</el-dropdown-item>
                                 <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
                             </el-dropdown-menu>
                         </template>
                     </el-dropdown>
                 </div>
-            </el-header>
-            <el-main class="admin-main">
-                <router-view />
-            </el-main>
-        </el-container>
-    </el-container>
-</template>
+            </header>
 
-<style scoped>
-.admin-layout
-{
-    height: 100vh;
-    overflow: hidden;
-}
-.admin-header
-{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid var(--border);
-}
-.header-right
-{
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-.user-chip
-{
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 10px 4px 4px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    cursor: pointer;
-    font-size: 13px;
-    color: var(--muted);
-    transition:
-        border-color var(--dur) var(--ease),
-        color var(--dur) var(--ease);
-}
-.user-chip:hover
-{
-    border-color: var(--primary);
-    color: var(--text);
-}
-.docs-btn
-{
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-}
-.admin-main
-{
-    background: var(--bg);
-    overflow-y: auto;
-}
-</style>
+            <main class="admin-main">
+                <div class="admin-main-inner">
+                    <router-view />
+                </div>
+            </main>
+        </div>
+    </div>
+</template>

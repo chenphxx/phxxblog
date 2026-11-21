@@ -7,6 +7,7 @@ import type { ModuleInfo, ModuleSettingValue } from '@/types'
 import ModuleSettingField from './settings/ModuleSettingField.vue'
 import SiteBasicCard from './settings/SiteBasicCard.vue'
 import UploadCard from './settings/UploadCard.vue'
+import AdminPageHeader from '@/components/admin/AdminPageHeader.vue'
 
 /** 单文件上传上限(MB)的默认值, 与后端 core/settings_schema.py 保持一致 */
 const UPLOAD_SIZE_DEFAULT_MB = 100
@@ -163,16 +164,12 @@ onMounted(load)
 
 <template>
     <div>
-        <h2>系统设置</h2>
-
-        <div class="admin-toolbar">
-            <div class="admin-toolbar-filters">
+        <AdminPageHeader title="系统设置" description="配置站点身份、模块参数与上传限制。">
+            <template #actions>
                 <span v-if="dirty" class="muted">有未保存的修改</span>
-            </div>
-            <div class="admin-toolbar-actions">
                 <el-button type="primary" :loading="saving" @click="save">保存设置</el-button>
-            </div>
-        </div>
+            </template>
+        </AdminPageHeader>
 
         <div class="settings-cards">
             <SiteBasicCard :form="form" :uploading-icon="uploadingIcon" :upload-icon="uploadIcon" />

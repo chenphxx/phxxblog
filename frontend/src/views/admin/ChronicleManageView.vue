@@ -6,6 +6,7 @@ import { chronicleApi } from '@/api'
 import ImportExportDialogs from '@/components/ImportExportDialogs.vue'
 import LazyImage from '@/components/LazyImage.vue'
 import ListPager from '@/components/ListPager.vue'
+import AdminPageHeader from '@/components/admin/AdminPageHeader.vue'
 import { useImportExport } from '@/composables/useImportExport'
 import { usePagedList } from '@/composables/usePagedList'
 import type { ChronicleItem } from '@/types'
@@ -17,32 +18,41 @@ const statusFilter = ref<number | undefined>(undefined)
 const keyword = ref('')
 const selected = ref<ChronicleItem[]>([])
 
-const { items, total, page, pageSize, loading, load, reset } = usePagedList<ChronicleItem>({
-    fetch: (currentPage, currentPageSize) =>
-        chronicleApi.adminList({
-            page: currentPage,
-            page_size: currentPageSize,
-            status: statusFilter.value,
-            keyword: keyword.value.trim() || undefined,
-        }),
-})
+const { items, total, page, pageSize, loading, load, reset } = usePagedList<ChronicleItem>
+(
+    {
+        fetch: (currentPage, currentPageSize) =>
+            chronicleApi.adminList
+            (
+                {
+                    page: currentPage,
+                    page_size: currentPageSize,
+                    status: statusFilter.value,
+                    keyword: keyword.value.trim() || undefined,
+                }
+            ),
+    }
+)
 
-const io = useImportExport({
-    filePrefix: 'phxxblog-chronicles',
-    entity: '纪事',
-    unit: '则',
-    canExport: () => selected.value.length > 0,
-    exportMessage: () => `已导出 ${selected.value.length} 则纪事`,
-    exportFile: (fmt) =>
-        chronicleApi.exportChronicles
-        (
-            selected.value.map((item) => item.id),
-            fmt,
-        ),
-    checkImports: (files) => chronicleApi.checkImportChronicles(files),
-    submitImports: (files, onDuplicate) => chronicleApi.importChronicles(files, onDuplicate),
-    onImported: () => reset(),
-})
+const io = useImportExport
+(
+    {
+        filePrefix: 'phxxblog-chronicles',
+        entity: '纪事',
+        unit: '则',
+        canExport: () => selected.value.length > 0,
+        exportMessage: () => `已导出 ${selected.value.length} 则纪事`,
+        exportFile: (fmt) =>
+            chronicleApi.exportChronicles
+            (
+                selected.value.map((item) => item.id),
+                fmt,
+            ),
+        checkImports: (files) => chronicleApi.checkImportChronicles(files),
+        submitImports: (files, onDuplicate) => chronicleApi.importChronicles(files, onDuplicate),
+        onImported: () => reset(),
+    }
+)
 
 async function changeStatus(item: ChronicleItem, status: number, message: string)
 {
@@ -69,10 +79,14 @@ async function restore(item: ChronicleItem)
 
 async function forceDelete(item: ChronicleItem)
 {
-    await ElMessageBox.confirm(`彻底删除《${item.title}》? 该操作不可恢复!`, '危险操作', {
-        type: 'error',
-        confirmButtonText: '彻底删除',
-    })
+    await ElMessageBox.confirm
+    (
+        `彻底删除《${item.title}》? 该操作不可恢复!`, '危险操作',
+        {
+            type: 'error',
+            confirmButtonText: '彻底删除',
+        }
+    )
     await chronicleApi.forceDelete(item.id)
     ElMessage.success('已彻底删除')
     load()
@@ -94,15 +108,15 @@ async function togglePrivate(item: ChronicleItem)
 async function batchSetPrivate()
 {
     if (!selected.value.length) return
-    await ElMessageBox.confirm(`将选中的 ${selected.value.length} 则纪事设为私密(仅管理员可见)吗?`, '确认', {
-        type: 'warning',
-    })
+    await ElMessageBox.confirm
+    (`将选中的 ${selected.value.length} 则纪事设为私密(仅管理员可见)吗?`, '确认',{type: 'warning',})
     for (const item of selected.value)
     {
         try
         {
             await chronicleApi.changeStatus(item.id, 3)
-        } catch
+        }
+        catch
         {
             // 单条失败继续处理其余纪事
         }
@@ -121,7 +135,8 @@ async function batchTrash()
         try
         {
             await chronicleApi.remove(item.id)
-        } catch
+        }
+        catch
         {
             // 单条失败继续处理其余纪事
         }
@@ -134,16 +149,21 @@ async function batchTrash()
 async function batchForceDelete()
 {
     if (!selected.value.length) return
-    await ElMessageBox.confirm(`彻底删除选中的 ${selected.value.length} 则纪事? 该操作不可恢复!`, '危险操作', {
-        type: 'error',
-        confirmButtonText: '彻底删除',
-    })
+    await ElMessageBox.confirm
+    (
+        `彻底删除选中的 ${selected.value.length} 则纪事? 该操作不可恢复!`, '危险操作',
+        {
+            type: 'error',
+            confirmButtonText: '彻底删除',
+        }
+    )
     for (const item of selected.value)
     {
         try
         {
             await chronicleApi.forceDelete(item.id)
-        } catch
+        }
+        catch
         {
             // 单条失败继续处理其余纪事
         }
@@ -156,7 +176,7 @@ async function batchForceDelete()
 
 <template>
     <div>
-        <h2>互联网纪事管理</h2>
+        <AdminPageHeader title="互联网纪事" description="维护纪事内容、封面与公开状态。" />
 
         <div class="admin-toolbar">
             <div class="admin-toolbar-filters">

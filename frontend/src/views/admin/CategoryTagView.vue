@@ -4,6 +4,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { categoryApi, tagApi } from '@/api'
 import type { Category, Tag } from '@/types'
 import { chipStyle } from '@/utils/chipColor'
+import AdminPageHeader from '@/components/admin/AdminPageHeader.vue'
 
 const tab = ref('category')
 const categories = ref<Category[]>([])
@@ -141,7 +142,7 @@ onMounted(load)
 
 <template>
     <div>
-        <h2>分类与标签</h2>
+        <AdminPageHeader title="分类与标签" description="维护文章分类和标签，保持内容结构清晰。" />
 
         <!-- 页眉与其它后台页一致: 标题独占一行, 工具条左侧放说明, 右侧放主操作 -->
         <div class="admin-toolbar">

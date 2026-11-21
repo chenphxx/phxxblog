@@ -4,6 +4,7 @@ import { logApi } from '@/api'
 import type { OperationLog } from '@/types'
 import ListPager from '@/components/ListPager.vue'
 import { usePagedList } from '@/composables/usePagedList'
+import AdminPageHeader from '@/components/admin/AdminPageHeader.vue'
 
 const moduleFilter = ref('')
 /** 列表分页与取数; 换筛选条件时调 reset() 回到第 1 页 */
@@ -23,7 +24,7 @@ const
 
 <template>
     <div>
-        <h2>操作日志</h2>
+        <AdminPageHeader title="操作日志" description="查看关键操作与系统活动记录。" />
 
         <div class="admin-toolbar">
             <div class="admin-toolbar-filters">

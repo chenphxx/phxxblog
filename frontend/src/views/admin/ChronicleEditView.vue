@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { chronicleApi, mediaApi } from '@/api'
 import VditorEditor from '@/components/VditorEditor.vue'
+import AdminPageHeader from '@/components/admin/AdminPageHeader.vue'
 import { useAuthStore } from '@/stores/auth'
 import { hasPermission } from '@/utils/permission'
 import { POST_STATUS_TEXT } from '@/utils/postStatus'
@@ -19,14 +20,17 @@ const accessMessage = ref('')
 const saving = ref(false)
 const uploadingCover = ref(false)
 
-const form = reactive({
-    title: '',
-    summary: '',
-    cover_image: '',
-    content_md: '',
-    status: 0,
-    public_visible: true,
-})
+const form = reactive
+(
+    {
+        title: '',
+        summary: '',
+        cover_image: '',
+        content_md: '',
+        status: 0,
+        public_visible: true,
+    }
+)
 
 const currentId = computed(() => Number(route.params.id) || 0)
 const isEdit = computed(() => currentId.value > 0)
@@ -66,11 +70,13 @@ async function load()
         form.content_md = item.content_md
         form.status = item.status
         form.public_visible = item.status !== 3
-    } catch
+    }
+    catch
     {
         accessDenied.value = true
         accessMessage.value = '无法加载纪事或确认当前账号权限, 请重新登录后再试。'
-    } finally
+    }
+    finally
     {
         loading.value = false
         checkingAccess.value = false
@@ -87,7 +93,8 @@ async function uploadCover(options: { file: File })
         const media = await mediaApi.upload(options.file)
         form.cover_image = media.url
         ElMessage.success('封面上传成功')
-    } finally
+    }
+    finally
     {
         uploadingCover.value = false
     }
@@ -158,7 +165,10 @@ async function remove()
         </el-result>
 
         <template v-else-if="!checkingAccess && !loading">
-            <h2>{{ isEdit ? '编辑纪事' : '新建纪事' }}</h2>
+            <AdminPageHeader
+                :title="isEdit ? '编辑纪事' : '新建纪事'"
+                description="编写纪事正文，并设置概览、封面与公开范围。"
+            />
 
             <div class="admin-toolbar">
                 <div class="admin-toolbar-actions">

@@ -5,6 +5,7 @@ import { commentApi } from '@/api'
 import type { CommentItem } from '@/types'
 import ListPager from '@/components/ListPager.vue'
 import { usePagedList } from '@/composables/usePagedList'
+import AdminPageHeader from '@/components/admin/AdminPageHeader.vue'
 
 const statusFilter = ref<number | undefined>(undefined)
 const selected = ref<CommentItem[]>([])
@@ -101,7 +102,7 @@ async function batchRemove()
 
 <template>
     <div>
-        <h2>评论管理</h2>
+        <AdminPageHeader title="评论管理" description="审核、隐藏或清理站点评论。" />
 
         <div class="admin-toolbar">
             <div class="admin-toolbar-filters">

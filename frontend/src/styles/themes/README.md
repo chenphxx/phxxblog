@@ -95,13 +95,21 @@ stores/theme.ts
 
 ```css
 :root {
-  --el-color-primary: var(--primary);
-  --el-color-success: var(--ok);
-  /* ...以及警告 / 危险 / 信息与各自的 light-N 色阶 */
+    --admin-canvas: color-mix(in srgb, var(--bg) 84%, var(--card-bg) 16%);
+    --admin-surface: var(--card-bg);
+    --admin-border: color-mix(in srgb, var(--border) 88%, transparent);
+
+    --el-color-primary: var(--primary);
+    --el-color-success: var(--ok);
+    /* ...以及警告 / 危险 / 信息与各自的 light-N 色阶 */
 }
 ```
 
 它必须在所有主题之后加载(见 `app.css` 的 `@import` 顺序), 且在 `:root` / `html:root` 上以同特异性后写入, 才能覆盖 Element Plus 自带的色阶 
+
+后台视觉层采用 shadcn/ui dashboard 的结构规范: 固定侧栏, 细边框卡片, 轻阴影, 7px 控件圆角与 10px 卡片圆角 页面标题统一由 `components/admin/AdminPageHeader.vue` 承载, 表格, 表单, 弹窗, 分页与移动端侧栏在 `admin.css` 中集中维护 
+
+修改后台颜色时优先使用 `--admin-canvas`, `--admin-surface`, `--admin-border` 等语义令牌, 不要在页面组件里写死后台专属色值 
 
 ## 改配色 / 改结构
 
@@ -134,7 +142,7 @@ src/styles/
   theme.css                  结构与组件样式(面板/列表行/正文/编辑器/Element Plus 细节)
   layout.css                 应用外壳(桌面顶部导航 + 移动端折叠菜单 + 画布与主内容区)
   app.css                    样式入口: theme.css + layout.css + base.css + theme-default.css + 9 套主题 + admin.css
-  admin.css                  后台主题层(Element Plus 令牌 -> 主题令牌, 后台外壳与表格)
+  admin.css                  shadcn 风格后台设计层(布局, 页面标题, 表格, 表单, 弹窗与响应式)
   fonts.css                  自托管 Cascadia Code(只给 --font-mono 用)
   themes/
     base.css                 结构令牌与字体(生成物, 全站唯一一份)

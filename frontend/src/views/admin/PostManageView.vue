@@ -8,6 +8,7 @@ import { formatDateTime } from '@/utils/datetime'
 import MetaIcon from '@/components/MetaIcon.vue'
 import ListPager from '@/components/ListPager.vue'
 import ImportExportDialogs from '@/components/ImportExportDialogs.vue'
+import AdminPageHeader from '@/components/admin/AdminPageHeader.vue'
 import { useImportExport } from '@/composables/useImportExport'
 import { usePagedList } from '@/composables/usePagedList'
 import { POST_STATUS_ORDERED, POST_STATUS_TEXT, POST_STATUS_TYPE } from '@/utils/postStatus'
@@ -175,7 +176,7 @@ async function batchForceDelete()
 
 <template>
     <div>
-        <h2>文章管理</h2>
+        <AdminPageHeader title="文章管理" description="管理文章状态、批量操作与导入导出。" />
 
         <div class="admin-toolbar">
             <div class="admin-toolbar-filters">

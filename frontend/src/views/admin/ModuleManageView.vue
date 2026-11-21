@@ -5,6 +5,7 @@ import { Refresh } from '@element-plus/icons-vue'
 import { modulesApi } from '@/api'
 import { useModulesStore } from '@/stores/modules'
 import type { ModuleInfo } from '@/types'
+import AdminPageHeader from '@/components/admin/AdminPageHeader.vue'
 
 /**
  * @brief 后台 - 模块管理
@@ -126,7 +127,7 @@ onMounted(load)
 
 <template>
     <div v-loading="loading">
-        <h2>模块管理</h2>
+        <AdminPageHeader title="模块管理" description="开启站点功能，并控制前台可见范围。" />
 
         <div class="admin-toolbar">
             <div class="admin-toolbar-filters">
@@ -194,8 +195,8 @@ onMounted(load)
                         </el-tooltip>
                     </div>
                 </div>
-
             </div>
+
         </section>
     </div>
 </template>
