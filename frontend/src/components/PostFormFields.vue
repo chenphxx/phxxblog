@@ -42,7 +42,7 @@ defineExpose({ syncContent })
                 </el-form-item>
             </el-col>
             <el-col :span="8">
-                <el-form-item label="别名(留空自动生成)">
+                <el-form-item label="别名">
                     <el-input v-model="editor.form.slug" placeholder="post-xxxx" />
                 </el-form-item>
             </el-col>
@@ -54,7 +54,7 @@ defineExpose({ syncContent })
 
         <el-row :gutter="16">
             <el-col :span="8">
-                <el-form-item label="分类(可输入新增)">
+                <el-form-item label="分类">
                     <el-select
                         v-model="editor.form.category_ids"
                         multiple
@@ -72,7 +72,7 @@ defineExpose({ syncContent })
                 </el-form-item>
             </el-col>
             <el-col :span="8">
-                <el-form-item label="标签(可输入新增)">
+                <el-form-item label="标签">
                     <el-select
                         v-model="editor.form.tag_ids"
                         multiple
@@ -90,7 +90,7 @@ defineExpose({ syncContent })
                 </el-form-item>
             </el-col>
             <el-col :span="8">
-                <el-form-item label="是否公开可见">
+                <el-form-item label="可见性">
                     <el-switch
                         v-model="editor.form.public_visible"
                         active-text="公开可见"
@@ -101,7 +101,7 @@ defineExpose({ syncContent })
             </el-col>
         </el-row>
 
-        <el-form-item label="封面图(可上传或填写 URL)">
+        <el-form-item label="封面图">
             <div class="cover-row">
                 <el-input
                     v-model="editor.form.cover_image"
@@ -114,7 +114,7 @@ defineExpose({ syncContent })
             </div>
         </el-form-item>
 
-        <el-form-item class="content-field" label="正文(Markdown, 支持图片/视频/附件/代码高亮)">
+        <el-form-item class="content-field" label="正文">
             <VditorEditor ref="contentEditor" v-model="editor.form.content_md" />
         </el-form-item>
     </el-form>

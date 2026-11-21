@@ -31,32 +31,28 @@ const cards =
 [
     {
         key: 'posts',
-        label: '文章数',
-        hint: '含草稿与回收站',
+        label: '文章',
         icon: 'file' as IconName,
         color: 'var(--primary)',
         to: '/admin/posts',
     },
     {
         key: 'views',
-        label: '总访问量',
-        hint: '全站累计阅读',
+        label: '访问',
         icon: 'eye' as IconName,
         color: 'var(--grad-to)',
         scroll: 'visits-section',
     },
     {
         key: 'comments',
-        label: '评论数',
-        hint: '含待审核回复',
+        label: '评论',
         icon: 'hash' as IconName,
         color: 'var(--ok)',
         to: '/admin/comments',
     },
     {
         key: 'users',
-        label: '用户数',
-        hint: '含管理员账号',
+        label: '用户',
         icon: 'user' as IconName,
         color: 'var(--warn)',
         to: '/admin/users',
@@ -108,7 +104,6 @@ onMounted(async () =>
                         <span class="stat-icon"><MetaIcon :name="card.icon" size="16" /></span>
                     </div>
                     <div class="stat-value">{{ overview[card.key] ?? 0 }}</div>
-                    <div class="stat-hint">{{ card.hint }}</div>
                 </div>
             </el-col>
         </el-row>
@@ -221,12 +216,5 @@ onMounted(async () =>
     margin-top: var(--space-4);
     font-variant-numeric: tabular-nums;
     color: var(--text);
-}
-/* 大数字配一句说明, 让指标有口径而不是只有数字 */
-.stat-hint
-{
-    margin-top: 6px;
-    color: var(--muted);
-    font-size: 12.5px;
 }
 </style>

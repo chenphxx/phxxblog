@@ -3,7 +3,6 @@ import { computed, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Refresh } from '@element-plus/icons-vue'
 import { modulesApi } from '@/api'
-import { MODULE_BY_ID } from '@/modules/registry'
 import { useModulesStore } from '@/stores/modules'
 import type { ModuleInfo } from '@/types'
 
@@ -74,14 +73,6 @@ const groups = computed(() =>
         .filter((group) => group.items.length > 0),
 )
 
-/** 模块占用的前台入口 / 后台菜单(来自前端注册表, 让"关掉会发生什么"一眼可见) */
-function navOf(id: string)
-{
-    const def = MODULE_BY_ID.get(id)
-    if (!def) return []
-    return [...(def.frontNav ?? []), ...(def.adminNav ?? [])].map((item) => item.label)
-}
-
 async function load()
 {
     loading.value = true
@@ -139,23 +130,13 @@ onMounted(load)
 
         <div class="admin-toolbar">
             <div class="admin-toolbar-filters">
-                <span class="muted">
-                    共 {{ modules.length }} 个模块;
-                    <template v-if="dirtyIds.length">有 {{ dirtyIds.length }} 项未保存的改动</template>
-                    <template v-else>没有未保存的改动</template>
-                </span>
+                <span v-if="dirtyIds.length" class="muted">有 {{ dirtyIds.length }} 项未保存的改动</span>
             </div>
             <div class="admin-toolbar-actions">
                 <el-button :icon="Refresh" :loading="loading" @click="load">重新载入</el-button>
                 <el-button type="primary" :loading="saving" :disabled="!dirtyIds.length" @click="save">保存</el-button>
             </div>
         </div>
-
-        <p class="muted module-hint">
-            "可见范围"控制这项能力对谁开放: 公开 = 所有访客都能使用; 仅管理员 = 只有拥有站点管理权限的账号能用
-            模块自身的权限码不受影响(例如站内搜索设为公开, 也只影响访客能否搜索, 不改变任何权限)
-            管理后台自身的内容固定为"仅管理员", 不提供调整入口
-        </p>
 
         <section v-for="group in groups" :key="group.key" class="card module-group">
             <h3>{{ group.name }}</h3>
@@ -168,8 +149,7 @@ onMounted(load)
             >
                 <div class="module-head">
                     <div class="module-title">
-                        <span class="module-name">{{ item.name }}</span>
-                        <code class="module-id">{{ item.id }}</code>
+                        <span class="module-name" :title="`${item.id} · ${item.description}`">{{ item.name }}</span>
                         <el-tag v-if="item.locked" size="small" type="info" effect="plain">核心</el-tag>
                         <el-tag v-if="item.frontend_only" size="small" type="info" effect="plain">纯前台</el-tag>
                         <el-tag v-if="item.disabled_dependencies.length" size="small" type="warning" effect="plain">
@@ -206,9 +186,7 @@ onMounted(load)
                             <el-switch
                                 :model-value="draftEnabled[item.id]"
                                 :disabled="item.locked"
-                                inline-prompt
-                                active-text="启用"
-                                inactive-text="禁用"
+                                :aria-label="`${draftEnabled[item.id] ? '禁用' : '启用'}${item.name}`"
                                 @update:model-value="
                                     (value: string | number | boolean) => (draftEnabled[item.id] = Boolean(value))
                                 "
@@ -217,23 +195,6 @@ onMounted(load)
                     </div>
                 </div>
 
-                <p class="module-desc muted">{{ item.description }}</p>
-
-                <div class="module-meta">
-                    <span v-if="item.api_prefix" class="meta-line">
-                        接口 <code>{{ item.api_prefix }}</code>
-                    </span>
-                    <span v-if="item.depends_on.length" class="meta-line">依赖 {{ item.depends_on.join(', ') }}</span>
-                    <span v-if="item.permissions.length" class="meta-line">
-                        权限
-                        <code v-for="code in item.permissions" :key="code" class="perm-chip">{{ code }}</code>
-                    </span>
-                    <span v-if="navOf(item.id).length" class="meta-line">入口 {{ navOf(item.id).join(' / ') }}</span>
-                    <!-- 有参数的功能, 参数在系统设置里配: 这里只说要到哪儿去配, 不重复渲染表单 -->
-                    <span v-if="item.settings.length" class="meta-line">
-                        {{ item.settings.length }} 项参数在「系统设置」里配置
-                    </span>
-                </div>
             </div>
         </section>
     </div>
@@ -243,14 +204,6 @@ onMounted(load)
 .module-group
 {
     margin-bottom: 16px;
-}
-
-/* 可见范围的语义说明: 放在工具条下方, 不占卡片内的空间 */
-.module-hint
-{
-    margin: 0 0 16px;
-    font-size: 12.5px;
-    line-height: 1.7;
 }
 
 /* 分类标题与卡片内其它区块保持同一节奏 */
@@ -318,43 +271,4 @@ onMounted(load)
     color: var(--text);
 }
 
-.module-id,
-.perm-chip
-{
-    font-family: var(--font-mono);
-    font-size: 11.5px;
-    color: var(--muted);
-    background: var(--code-bg);
-    border-radius: var(--radius-chip);
-    padding: 1px 7px;
-}
-
-.module-desc
-{
-    margin: 6px 0 0;
-    font-size: 13px;
-}
-
-.module-meta
-{
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px 16px;
-    margin-top: 8px;
-    font-size: 12.5px;
-    color: var(--muted);
-}
-
-.module-meta code
-{
-    font-family: var(--font-mono);
-    font-size: 11.5px;
-}
-
-.meta-line
-{
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-}
 </style>

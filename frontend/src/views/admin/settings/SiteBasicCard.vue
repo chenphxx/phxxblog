@@ -26,30 +26,24 @@ const form = props.form
 
 <template>
     <div class="card">
-        <h3>基础信息 <span class="vis-badge">公开可见</span></h3>
-        <p class="muted section-hint">
-            站点名称、标签页标题与图标显示在浏览器标签页, 个人简介显示在侧栏与首页的个人资料卡
-        </p>
+        <h3>基础信息</h3>
         <el-form label-position="top">
             <el-row :gutter="16">
-                <el-col :span="12">
+                <el-col :xs="24" :md="12">
                     <el-form-item label="站点名称">
                         <el-input v-model="form.site_name" />
                     </el-form-item>
                 </el-col>
-                <el-col :span="12">
-                    <el-form-item label="浏览器标签页名称(留空则使用站点名称)">
-                        <el-input v-model="form.site_title" placeholder="显示在浏览器标签页上的文字" />
+                <el-col :xs="24" :md="12">
+                    <el-form-item label="标签页标题">
+                        <el-input v-model="form.site_title" placeholder="留空时使用站点名称" />
                     </el-form-item>
                 </el-col>
             </el-row>
             <el-form-item label="站点描述">
-                <el-input v-model="form.site_desc" placeholder="一句话介绍这个站点" />
-                <div class="muted form-hint">
-                    站点的副标题: 会写进 RSS 订阅摘要, SEO 模块启用时也作为页面的 meta description
-                </div>
+                <el-input v-model="form.site_desc" placeholder="用于 RSS 摘要与 SEO 描述" />
             </el-form-item>
-            <el-form-item label="站点图标(浏览器标签页图标, 可上传或填写 URL)">
+            <el-form-item label="站点图标">
                 <div class="icon-row">
                     <img v-if="form.site_icon" :src="form.site_icon" alt="站点图标预览" class="icon-preview" />
                     <span v-else class="icon-preview icon-preview--empty" title="尚未设置站点图标" />
@@ -76,6 +70,7 @@ const form = props.form
 {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 12px;
     width: 100%;
 }

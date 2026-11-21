@@ -165,13 +165,9 @@ onMounted(load)
     <div>
         <h2>系统设置</h2>
 
-        <!-- 页眉与其它后台页保持一致: h2 独占一行, 下面是"左侧说明 + 右侧操作"的工具条 -->
         <div class="admin-toolbar">
             <div class="admin-toolbar-filters">
-                <span class="muted">
-                    <template v-if="dirty">有未保存的修改</template>
-                    <template v-else>所有修改都已保存</template>
-                </span>
+                <span v-if="dirty" class="muted">有未保存的修改</span>
             </div>
             <div class="admin-toolbar-actions">
                 <el-button type="primary" :loading="saving" @click="save">保存设置</el-button>
@@ -181,17 +177,9 @@ onMounted(load)
         <div class="settings-cards">
             <SiteBasicCard :form="form" :uploading-icon="uploadingIcon" :upload-icon="uploadIcon" />
 
-            <p v-if="configurableModules.length" class="muted settings-hint">
-                下面几块是已启用功能的参数; 功能的开启与关闭在
-                <router-link to="/admin/modules">模块管理</router-link> 里调整
-            </p>
-
             <!-- 每个已启用且声明了参数的功能一块, 顺序与模块管理一致(分类 -> id) -->
             <section v-for="item in configurableModules" :key="item.id" class="card">
-                <h3>
-                    {{ item.name }} <code class="module-id">{{ item.id }}</code>
-                </h3>
-                <p class="muted section-hint">{{ item.description }}</p>
+                <h3>{{ item.name }}</h3>
                 <div class="module-settings-grid">
                     <ModuleSettingField
                         v-for="setting in item.settings"
@@ -214,22 +202,6 @@ onMounted(load)
 {
     display: grid;
     gap: 20px;
-}
-
-.settings-hint
-{
-    margin: 0;
-    font-size: 13px;
-}
-
-.module-id
-{
-    font-family: var(--font-mono);
-    font-size: 11.5px;
-    color: var(--muted);
-    background: var(--code-bg);
-    border-radius: var(--radius-chip);
-    padding: 1px 7px;
 }
 
 /* 模块参数: 与页面其它卡片一致的两列排布(多行文本与行列表由字段组件自己占满整行) */

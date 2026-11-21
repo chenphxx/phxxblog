@@ -22,22 +22,30 @@ const form = props.form
 
 <template>
     <div class="card">
-        <h3>上传 <span class="vis-badge is-admin">仅管理员可见</span></h3>
-        <p class="muted section-hint">限制单次上传文件的体积, 全站所有上传入口共用这个上限</p>
+        <h3>上传</h3>
         <el-form label-position="top">
-            <el-form-item label="单文件上传大小上限(MB)">
-                <el-input-number
-                    v-model="form.max_upload_size_mb"
-                    :min="UPLOAD_SIZE_MIN_MB"
-                    :max="UPLOAD_SIZE_MAX_MB"
-                    :step="10"
-                    :precision="0"
-                    controls-position="right"
-                />
-                <div class="muted form-hint">
-                    可设置 {{ UPLOAD_SIZE_MIN_MB }} ~ {{ UPLOAD_SIZE_MAX_MB }} MB, 超出即上传失败
+            <el-form-item label="单文件上限">
+                <div class="upload-row">
+                    <el-input-number
+                        v-model="form.max_upload_size_mb"
+                        :min="UPLOAD_SIZE_MIN_MB"
+                        :max="UPLOAD_SIZE_MAX_MB"
+                        :step="10"
+                        :precision="0"
+                        controls-position="right"
+                    />
+                    <span class="muted">MB</span>
                 </div>
             </el-form-item>
         </el-form>
     </div>
 </template>
+
+<style scoped>
+.upload-row
+{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+</style>

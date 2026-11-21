@@ -229,7 +229,6 @@ defineExpose({ refresh: loadTrend })
         <div class="legend muted">
             <span><i class="swatch-line swatch-pv" />PV</span>
             <span><i class="swatch-line swatch-uv" />UV</span>
-            <span class="legend-hint">指向曲线查看单点数值, 也可用左右方向键浏览</span>
         </div>
     </div>
 </template>
@@ -352,17 +351,5 @@ defineExpose({ refresh: loadTrend })
 .swatch-uv
 {
     background: repeating-linear-gradient(90deg, var(--grad-to) 0 5px, transparent 5px 9px);
-}
-.legend-hint
-{
-    margin-left: auto;
-    opacity: 0.8;
-}
-@media (max-width: 720px)
-{
-    .legend-hint
-    {
-        margin-left: 0;
-    }
 }
 </style>

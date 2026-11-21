@@ -92,14 +92,13 @@ function removeRow(index: number)
 
 <template>
     <div class="setting-item" :class="{ 'is-wide': setting.kind === 'long_text' || setting.kind === 'rows' }">
-        <label class="setting-label">
+        <label class="setting-label" :title="setting.description || undefined">
             {{ setting.name }}
             <span v-if="setting.kind === 'long_text'" class="muted setting-meta">{{ words }} 字</span>
             <span v-if="setting.kind === 'long_text'" class="setting-preview-switch">
                 <el-switch v-model="preview" size="small" />
                 <span class="muted">预览</span>
             </span>
-            <span v-if="setting.description" class="muted setting-desc">{{ setting.description }}</span>
         </label>
 
         <el-switch
@@ -179,12 +178,6 @@ function removeRow(index: number)
     color: var(--text);
 }
 
-.setting-desc
-{
-    margin-left: 6px;
-    font-size: 12px;
-}
-
 .setting-meta
 {
     margin-left: 8px;
@@ -254,5 +247,13 @@ function removeRow(index: number)
 .rows-editor > .el-button
 {
     margin-left: calc(var(--rows-index-width) + var(--rows-gap));
+}
+
+@media (max-width: 720px)
+{
+    .rows-row
+    {
+        flex-wrap: wrap;
+    }
 }
 </style>

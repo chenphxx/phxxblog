@@ -141,7 +141,7 @@ onMounted(() =>
                     router
                     background-color="transparent"
                 >
-                    <el-menu-item-group v-for="group in menuGroups" :key="group.id" :title="group.label">
+                    <el-menu-item-group v-for="group in menuGroups" :key="group.id" :aria-label="group.label">
                         <el-menu-item v-for="item in group.items" :key="item.to" :index="item.to">
                             <el-icon v-if="item.icon"><component :is="item.icon" /></el-icon>
                             <span>{{ item.label }}</span>

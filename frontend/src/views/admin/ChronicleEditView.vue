@@ -161,9 +161,6 @@ async function remove()
             <h2>{{ isEdit ? '编辑纪事' : '新建纪事' }}</h2>
 
             <div class="admin-toolbar">
-                <div class="admin-toolbar-filters">
-                    <span class="muted">用封面、标题与概览组织杂志卡片, 正文支持 Markdown</span>
-                </div>
                 <div class="admin-toolbar-actions">
                     <el-button @click="router.push('/admin/chronicles')">取消</el-button>
                     <el-button :loading="saving" @click="save(0)">存草稿</el-button>
@@ -183,18 +180,18 @@ async function remove()
                         />
                     </el-form-item>
 
-                    <el-form-item label="卡片概览">
+                    <el-form-item label="概览">
                         <el-input
                             v-model="form.summary"
                             type="textarea"
                             :rows="3"
-                            placeholder="用一两句话概括人物或事件, 将显示在前台卡片中"
+                            placeholder="用一句话概括人物或事件"
                             maxlength="500"
                             show-word-limit
                         />
                     </el-form-item>
 
-                    <el-form-item label="封面图(可上传或填写 URL)">
+                    <el-form-item label="封面图">
                         <div class="cover-field">
                             <div class="cover-input-row">
                                 <el-input v-model="form.cover_image" placeholder="/assets/uploads/... 或 https://..." />
@@ -208,7 +205,7 @@ async function remove()
                         </div>
                     </el-form-item>
 
-                    <el-form-item label="是否公开可见">
+                    <el-form-item label="可见性">
                         <el-switch
                             v-model="form.public_visible"
                             active-text="公开可见"
@@ -217,7 +214,7 @@ async function remove()
                         />
                     </el-form-item>
 
-                    <el-form-item class="content-field" label="正文(Markdown, 支持图片/视频/附件/代码高亮)">
+                    <el-form-item class="content-field" label="正文">
                         <VditorEditor ref="editorRef" v-model="form.content_md" />
                     </el-form-item>
                 </el-form>
