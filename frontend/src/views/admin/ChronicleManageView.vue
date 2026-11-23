@@ -176,7 +176,7 @@ async function batchForceDelete()
 
 <template>
     <div>
-        <AdminPageHeader title="互联网纪事" description="维护纪事内容、封面与公开状态。" />
+        <AdminPageHeader title="互联网纪事" />
 
         <div class="admin-toolbar">
             <div class="admin-toolbar-filters">

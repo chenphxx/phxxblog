@@ -164,7 +164,7 @@ onMounted(load)
 
 <template>
     <div>
-        <AdminPageHeader title="系统设置" description="配置站点身份、模块参数与上传限制。">
+        <AdminPageHeader title="系统设置">
             <template #actions>
                 <span v-if="dirty" class="muted">有未保存的修改</span>
                 <el-button type="primary" :loading="saving" @click="save">保存设置</el-button>

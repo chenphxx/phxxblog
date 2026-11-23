@@ -174,7 +174,7 @@ onBeforeUnmount(() =>
 
 <template>
     <div class="media-page">
-        <AdminPageHeader title="媒体库" description="管理图片、视频与站内附件。" />
+        <AdminPageHeader title="媒体库" />
 
         <div class="admin-toolbar">
             <div class="admin-toolbar-filters">

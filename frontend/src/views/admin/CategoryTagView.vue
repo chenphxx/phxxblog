@@ -142,7 +142,7 @@ onMounted(load)
 
 <template>
     <div>
-        <AdminPageHeader title="分类与标签" description="维护文章分类和标签，保持内容结构清晰。" />
+        <AdminPageHeader title="分类与标签" />
 
         <!-- 页眉与其它后台页一致: 标题独占一行, 工具条左侧放说明, 右侧放主操作 -->
         <div class="admin-toolbar">

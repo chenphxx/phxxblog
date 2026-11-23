@@ -165,10 +165,7 @@ async function remove()
         </el-result>
 
         <template v-else-if="!checkingAccess && !loading">
-            <AdminPageHeader
-                :title="isEdit ? '编辑纪事' : '新建纪事'"
-                description="编写纪事正文，并设置概览、封面与公开范围。"
-            />
+            <AdminPageHeader :title="isEdit ? '编辑纪事' : '新建纪事'" />
 
             <div class="admin-toolbar">
                 <div class="admin-toolbar-actions">

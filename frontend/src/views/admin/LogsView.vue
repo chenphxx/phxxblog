@@ -24,7 +24,7 @@ const
 
 <template>
     <div>
-        <AdminPageHeader title="操作日志" description="查看关键操作与系统活动记录。" />
+        <AdminPageHeader title="操作日志" />
 
         <div class="admin-toolbar">
             <div class="admin-toolbar-filters">

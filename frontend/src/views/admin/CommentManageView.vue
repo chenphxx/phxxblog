@@ -102,7 +102,7 @@ async function batchRemove()
 
 <template>
     <div>
-        <AdminPageHeader title="评论管理" description="审核、隐藏或清理站点评论。" />
+        <AdminPageHeader title="评论管理" />
 
         <div class="admin-toolbar">
             <div class="admin-toolbar-filters">

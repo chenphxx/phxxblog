@@ -136,7 +136,7 @@ async function resetPassword()
 
 <template>
     <div>
-        <AdminPageHeader title="用户管理" description="管理账号、角色与启用状态。" />
+        <AdminPageHeader title="用户管理" />
 
         <div class="admin-toolbar">
             <div class="admin-toolbar-actions">

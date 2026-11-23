@@ -544,15 +544,6 @@ html:root .el-button--info:not(.is-plain):not(.is-text):not(.is-link)
     line-height: 1.15;
 }
 
-.admin-page-heading p
-{
-    max-width: 680px;
-    margin: 7px 0 0;
-    color: var(--muted);
-    font-size: 13px;
-    line-height: 1.55;
-}
-
 .admin-page-actions
 {
     display: flex;

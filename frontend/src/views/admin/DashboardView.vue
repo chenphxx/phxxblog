@@ -108,7 +108,7 @@ onMounted(async () =>
 
 <template>
     <div v-loading="loading" class="dashboard-page">
-        <AdminPageHeader eyebrow="Overview" title="仪表盘" description="集中查看内容规模、访问趋势与近期动态。">
+        <AdminPageHeader eyebrow="Overview" title="仪表盘">
             <template #actions>
                 <span class="dashboard-date">{{ todayLabel }}</span>
                 <el-button @click="router.push('/')">查看前台</el-button>
@@ -147,10 +147,7 @@ onMounted(async () =>
         <div class="recent-grid">
             <section class="card recent-card">
                 <div class="recent-head">
-                    <div>
-                        <h3>最新文章</h3>
-                        <p>最近创建或更新的内容</p>
-                    </div>
+                    <h3>最新文章</h3>
                     <el-button text @click="router.push('/admin/posts')">查看全部</el-button>
                 </div>
                 <el-table
@@ -173,10 +170,7 @@ onMounted(async () =>
 
             <section class="card recent-card">
                 <div class="recent-head">
-                    <div>
-                        <h3>最新评论</h3>
-                        <p>最近收到的读者反馈</p>
-                    </div>
+                    <h3>最新评论</h3>
                     <el-button text @click="router.push('/admin/comments')">管理评论</el-button>
                 </div>
                 <el-table
@@ -322,13 +316,6 @@ onMounted(async () =>
     color: var(--text);
     font-size: 14px;
     font-weight: 650;
-}
-
-.recent-head p
-{
-    margin: 4px 0 0;
-    color: var(--muted);
-    font-size: 11.5px;
 }
 
 .recent-table

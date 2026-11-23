@@ -29,10 +29,7 @@ function save(targetStatus?: number)
         </el-result>
 
         <template v-else-if="!editor.checkingAccess">
-            <AdminPageHeader
-                :title="editor.isEdit ? '编辑文章' : '新建文章'"
-                description="编写内容、整理分类并设置发布状态。"
-            />
+            <AdminPageHeader :title="editor.isEdit ? '编辑文章' : '新建文章'" />
 
             <div class="admin-toolbar">
                 <div class="admin-toolbar-actions">

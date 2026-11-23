@@ -83,7 +83,7 @@ onMounted(async () =>
 
 <template>
     <div>
-        <AdminPageHeader title="个人资料" description="更新账号资料、邮箱与登录密码。" />
+        <AdminPageHeader title="个人资料" />
 
         <div class="card" style="margin-bottom: 20px">
             <h3>账号信息</h3>

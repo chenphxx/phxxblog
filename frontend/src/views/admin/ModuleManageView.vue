@@ -127,7 +127,7 @@ onMounted(load)
 
 <template>
     <div v-loading="loading">
-        <AdminPageHeader title="模块管理" description="开启站点功能，并控制前台可见范围。" />
+        <AdminPageHeader title="模块管理" />
 
         <div class="admin-toolbar">
             <div class="admin-toolbar-filters">
