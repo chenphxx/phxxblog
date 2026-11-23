@@ -64,7 +64,7 @@ defineExpose({ refresh: refreshVisits })
 
 <template>
     <div id="visits-section" class="card">
-        <div class="trend-header">
+        <div class="trend-header visits-header">
             <h3 style="margin: 0">访问记录</h3>
             <el-button size="small" @click="refreshVisits()">刷新</el-button>
         </div>
@@ -95,3 +95,11 @@ defineExpose({ refresh: refreshVisits })
         <ListPager v-model:page="visitsPage" :page-size="visitsPageSize" :total="visitsTotal" />
     </div>
 </template>
+
+<style scoped>
+/* 表格卡片采用贴边布局, 标题随首个表格单元格保留一致的 12px 内缩 */
+.visits-header
+{
+    padding: 14px 12px 0;
+}
+</style>
