@@ -96,6 +96,12 @@ function onSelectionChange(rows: PostItem[])
     selected.value = rows
 }
 
+function setStatusFilter(value: number | undefined)
+{
+    statusFilter.value = value
+    reset()
+}
+
 async function togglePrivate(post: PostItem)
 {
     const target = post.status === 2 ? 3 : 2
@@ -179,13 +185,21 @@ async function batchForceDelete()
         <AdminPageHeader title="文章管理" />
 
         <div class="admin-toolbar">
-            <div class="admin-toolbar-filters">
-                <el-radio-group v-model="statusFilter" @change="reset()">
-                    <el-radio-button :value="undefined">全部</el-radio-button>
-                    <el-radio-button v-for="(text, index) in POST_STATUS_ORDERED" :key="index" :value="index">
-                        {{ text }}
-                    </el-radio-button>
-                </el-radio-group>
+            <div class="admin-toolbar-filters" role="group" aria-label="按文章状态筛选">
+                <el-button
+                    :type="statusFilter === undefined ? 'primary' : undefined"
+                    :aria-pressed="statusFilter === undefined"
+                    @click="setStatusFilter(undefined)"
+                    >全部</el-button
+                >
+                <el-button
+                    v-for="(text, index) in POST_STATUS_ORDERED"
+                    :key="index"
+                    :type="statusFilter === index ? 'primary' : undefined"
+                    :aria-pressed="statusFilter === index"
+                    @click="setStatusFilter(index)"
+                    >{{ text }}</el-button
+                >
             </div>
             <div class="admin-toolbar-actions">
                 <el-input v-model="keyword" placeholder="搜索标题" clearable @keyup.enter="reset()" @clear="reset()" />

@@ -56,6 +56,12 @@ function onSelectionChange(rows: CommentItem[])
     selected.value = rows
 }
 
+function setStatusFilter(value: number | undefined)
+{
+    statusFilter.value = value
+    reset()
+}
+
 async function batchSetStatus(status: number, label: string)
 {
     if (!selected.value.length) return
@@ -105,13 +111,31 @@ async function batchRemove()
         <AdminPageHeader title="评论管理" />
 
         <div class="admin-toolbar">
-            <div class="admin-toolbar-filters">
-                <el-radio-group v-model="statusFilter" @change="reset()">
-                    <el-radio-button :value="undefined">全部</el-radio-button>
-                    <el-radio-button :value="1">正常</el-radio-button>
-                    <el-radio-button :value="0">隐藏</el-radio-button>
-                    <el-radio-button :value="2">回收站</el-radio-button>
-                </el-radio-group>
+            <div class="admin-toolbar-filters" role="group" aria-label="按评论状态筛选">
+                <el-button
+                    :type="statusFilter === undefined ? 'primary' : undefined"
+                    :aria-pressed="statusFilter === undefined"
+                    @click="setStatusFilter(undefined)"
+                    >全部</el-button
+                >
+                <el-button
+                    :type="statusFilter === 1 ? 'primary' : undefined"
+                    :aria-pressed="statusFilter === 1"
+                    @click="setStatusFilter(1)"
+                    >正常</el-button
+                >
+                <el-button
+                    :type="statusFilter === 0 ? 'primary' : undefined"
+                    :aria-pressed="statusFilter === 0"
+                    @click="setStatusFilter(0)"
+                    >隐藏</el-button
+                >
+                <el-button
+                    :type="statusFilter === 2 ? 'primary' : undefined"
+                    :aria-pressed="statusFilter === 2"
+                    @click="setStatusFilter(2)"
+                    >回收站</el-button
+                >
             </div>
         </div>
 
