@@ -4,7 +4,15 @@ import Vditor from 'vditor'
 import { useThemeStore } from '@/stores/theme'
 import type { MarkdownHeading } from '@/types'
 
-const props = defineProps<{ content: string }>()
+const props = withDefaults
+(
+    defineProps<{
+        content: string
+        /** 是否立即加载正文图片(瀑布流需要先拿到真实高度再分列) */
+        eagerImages?: boolean
+    }>(),
+    { eagerImages: false },
+)
 /**
  * @brief 渲染完成后把正文标题抛给父组件(文章详情页据此生成右侧目录)
  *
@@ -223,14 +231,16 @@ function openImagePreview(event: MouseEvent)
  * 或同步解码造成主线程卡顿而影响路由切换等操作
  *
  * @param root Markdown 渲染后的根节点
+ * @param eager 是否立即加载图片
  */
-function optimizeImageLoading(root: HTMLDivElement)
+function optimizeImageLoading(root: HTMLDivElement, eager: boolean)
 {
     root.querySelectorAll<HTMLImageElement>('img').forEach((image) =>
     {
-        image.loading = 'lazy'
+        image.loading = eager ? 'eager' : 'lazy'
         image.decoding = 'async'
-        image.setAttribute('fetchpriority', 'low')
+        if (eager) image.removeAttribute('fetchpriority')
+        else image.setAttribute('fetchpriority', 'low')
     })
 }
 
@@ -338,12 +348,12 @@ async function render()
         mode: currentTheme,
         theme: { current: currentTheme },
         hljs: { lineNumber: true, style: codeStyle() },
-        lazyLoadImage: LAZY_IMAGE_PLACEHOLDER,
+        lazyLoadImage: props.eagerImages ? undefined : LAZY_IMAGE_PLACEHOLDER,
         // 导入的 Markdown 可能使用未转义的空格图片路径
         markdown: { imgPathAllowSpace: true },
     })
     if (sequence !== renderSequence || root !== el.value) return
-    optimizeImageLoading(root)
+    optimizeImageLoading(root, props.eagerImages)
     // 代码块一键复制按钮
     Vditor.codeRender(root)
     // 视频/音频/iframe 渲染

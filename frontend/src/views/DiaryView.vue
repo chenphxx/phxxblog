@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { contributionsApi, diaryApi } from '@/api'
 import type { ContributionPoint, DiaryEntry } from '@/types'
@@ -22,6 +22,15 @@ const form = ref({ content_md: '', entry_date: today() })
 const contributionYear = ref<number | null>(null)
 const modules = useModulesStore()
 const auth = useAuthStore()
+const diaryMainRef = ref<HTMLElement | null>(null)
+
+/** 瀑布流的最小列宽与间距, 与下方样式保持一致 */
+const MASONRY_MIN_COLUMN_WIDTH = 300
+const MASONRY_GAP = 16
+const MASONRY_MOBILE_WIDTH = 600
+
+let masonryObserver: ResizeObserver | undefined
+let masonryFrame = 0
 
 /**
  * 是否能管理日记(新增/编辑/删除/导入导出)
@@ -128,6 +137,74 @@ const yearGroups = computed(() =>
     return Array.from(map.entries())
 })
 
+/**
+ * @brief 根据内容区宽度计算瀑布流列数
+ *
+ * @param width 月份卡片的可用宽度
+ * @return 手机端固定一列, 其余宽度最多三列
+ */
+function masonryColumnCount(width: number): number
+{
+    if (window.matchMedia(`(max-width: ${MASONRY_MOBILE_WIDTH}px)`).matches) return 1
+    return Math.max(1, Math.min(3, Math.floor((width + MASONRY_GAP) / (MASONRY_MIN_COLUMN_WIDTH + MASONRY_GAP))))
+}
+
+/**
+ * 将每个月的卡片按文档顺序放进当前最短的列
+ *
+ * 卡片保持源码顺序, 只通过 transform 调整位置, 因此读屏顺序和键盘顺序仍与时间顺序一致
+ */
+function layoutMasonry()
+{
+    masonryFrame = 0
+    const main = diaryMainRef.value
+    if (!main) return
+
+    main.querySelectorAll<HTMLElement>('.diary-list').forEach((list) =>
+    {
+        const cards = Array.from(list.querySelectorAll<HTMLElement>(':scope > .diary-card'))
+        if (!cards.length || list.clientWidth <= 0)
+        {
+            list.style.removeProperty('height')
+            list.classList.remove('is-masonry')
+            return
+        }
+
+        const columns = masonryColumnCount(list.clientWidth)
+        const columnWidth = (list.clientWidth - MASONRY_GAP * (columns - 1)) / columns
+        const columnHeights = Array<number>(columns).fill(0)
+        list.classList.add('is-masonry')
+        list.style.setProperty('--diary-column-width', `${columnWidth}px`)
+
+        cards.forEach((card) =>
+        {
+            card.style.width = `${columnWidth}px`
+            const column = columnHeights.indexOf(Math.min(...columnHeights))
+            const top = columnHeights[column] ?? 0
+            card.style.transform = `translate3d(${column * (columnWidth + MASONRY_GAP)}px, ${top}px, 0)`
+            columnHeights[column] = top + card.getBoundingClientRect().height + MASONRY_GAP
+        })
+
+        list.style.height = `${Math.max(0, Math.max(...columnHeights) - MASONRY_GAP)}px`
+    })
+}
+
+function scheduleMasonryLayout()
+{
+    if (masonryFrame) return
+    masonryFrame = window.requestAnimationFrame(layoutMasonry)
+}
+
+async function observeMasonryCards()
+{
+    await nextTick()
+    masonryObserver?.disconnect()
+    const main = diaryMainRef.value
+    if (!main || !masonryObserver) return
+    main.querySelectorAll<HTMLElement>('.diary-card').forEach((card) => masonryObserver?.observe(card))
+    scheduleMasonryLayout()
+}
+
 function scrollToId(id: string)
 {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -163,6 +240,7 @@ async function loadContributions()
 }
 
 watch(contributionYear, loadContributions)
+watch(groupsList, observeMasonryCards, { flush: 'post' })
 
 function openCreate()
 {
@@ -217,7 +295,20 @@ async function remove(entry: DiaryEntry)
     load()
 }
 
-onMounted(load)
+onMounted(() =>
+{
+    masonryObserver = new ResizeObserver(scheduleMasonryLayout)
+    window.addEventListener('resize', scheduleMasonryLayout)
+    void document.fonts.ready.then(scheduleMasonryLayout)
+    void load()
+})
+
+onBeforeUnmount(() =>
+{
+    masonryObserver?.disconnect()
+    window.removeEventListener('resize', scheduleMasonryLayout)
+    if (masonryFrame) window.cancelAnimationFrame(masonryFrame)
+})
 </script>
 
 <template>
@@ -261,7 +352,7 @@ onMounted(load)
                 </div>
             </aside>
 
-            <main class="diary-main">
+            <main ref="diaryMainRef" class="diary-main">
                 <template v-for="[year, months] in yearGroups" :key="year">
                     <h2 :id="`diary-${year}`" class="year-title">{{ year }}</h2>
                     <div v-for="month in months" :key="month" class="month-block">
@@ -294,7 +385,7 @@ onMounted(load)
                                     </div>
                                 </header>
                                 <div class="diary-content">
-                                    <MarkdownView :content="entry.content_md" />
+                                    <MarkdownView :content="entry.content_md" eager-images />
                                 </div>
                             </article>
                         </div>
@@ -435,9 +526,23 @@ onMounted(load)
 }
 .diary-list
 {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
+}
+.diary-list.is-masonry
+{
+    display: block;
+}
+.diary-list.is-masonry .diary-card
+{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--diary-column-width);
+    margin: 0;
+    will-change: transform;
 }
 .diary-card
 {
